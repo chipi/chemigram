@@ -34,7 +34,7 @@ This is not a roadmap. The roadmap is in `architecture.md` (Phases 0–5). This 
 
 ## Programmatic vocabulary entry generation (Path C)
 
-**Status:** stretch goal, build only when vocabulary gaps become a sustained bottleneck.
+**Status:** stretch goal — but **Phase 0 testing strengthened the case** for building this earlier than originally planned.
 
 For modules with well-understood param structure (exposure, color calibration, tone equalizer, color balance rgb), the agent could generate `.dtstyle` entries on the fly: encode the hex `op_params` from a desired parameter set, wrap in the XML schema, save. Closes vocabulary gaps without authoring everything in advance.
 
@@ -42,7 +42,19 @@ For modules with well-understood param structure (exposure, color calibration, t
 
 **Realistic scope:** a small set of high-value modules (probably 4-5) where the agent can fluently generate entries. Modules with continuous-numeric parameter spaces are best candidates — they're where vocabulary granularity bites hardest.
 
-**Trigger to build:** when `vocabulary_gaps.jsonl` shows the same handful of modules appearing in gap reports across many sessions, those are the modules where Path C pays off.
+### Exposure is the natural first candidate (Phase 0 evidence)
+
+Phase 0 testing established three independent reasons exposure is the right module to start Path C with:
+
+1. **Simplest param structure** — exposure's `op_params` is a 28-byte struct with a single user-relevant float at predictable byte offset. Iteration 3 of Phase 0's experiment 4 directly demonstrated programmatic editing: changing `0000003f` (+0.5 EV) to `00000040` (+2.0 EV) at the right position produced the expected render. ~10 lines of Python suffices.
+
+2. **darktable GUI cannot author literal zero** — exposure slider has minimum granularity ~0.009 EV. A true `expo_+0.0` no-op primitive cannot be authored through the GUI alone. This is the only way to produce a literal-neutral exposure entry.
+
+3. **Continuous control is genuinely useful for exposure** — the agent often wants slightly different exposure values than what's in the discrete vocabulary (`+0.3`, `+0.5`, `+0.8`). With Path C exposure, the agent can compose `+0.42` directly when the photographer's brief calls for that.
+
+**Trigger to build:** earlier than originally planned, possibly as part of Phase 1's polish phase. The exposure encoder is small (~50 lines), well-understood, and unlocks both literal-zero primitives and continuous exposure control.
+
+**Trigger for additional modules:** when `vocabulary_gaps.jsonl` shows specific other modules (probably color calibration WB, tone equalizer, color balance rgb shadows/highlights) repeatedly appearing in gap reports across many sessions, those become the next Path C candidates.
 
 **Architectural fit:** lands as a new `ProgrammaticVocabularyGenerator` subsystem. The agent calls it via a tool: `generate_primitive(module, params, name) -> dtstyle_path`. The new entry registers in the vocabulary for the rest of the session (and, if the photographer accepts it, persists).
 

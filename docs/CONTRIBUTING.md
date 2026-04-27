@@ -102,6 +102,53 @@ We're honest about this, and we ask contributors to make the manual review as ef
 - Vocabularies that depend on specific paid plugins or non-OSS components
 - Re-uploads of existing community work without proper attribution
 
+### Authoring procedure (read this before your first vocabulary PR)
+
+Phase 0 testing surfaced several authoring caveats specific to darktable's GUI behavior. Following this procedure produces clean single-module dtstyles that pass CI mechanical checks and match the architectural assumptions in `docs/concept/CG-04-architecture.md`.
+
+**1. Use an isolated configdir for vocabulary work.**
+
+Don't author vocabulary against your everyday darktable library — auto-applied presets and prior history can contaminate captures. Set up a clean configdir:
+
+```bash
+mkdir -p ~/chemigram-vocab/dt-config ~/chemigram-vocab/raws ~/chemigram-vocab/styles
+/Applications/darktable.app/Contents/MacOS/darktable \
+  --configdir ~/chemigram-vocab/dt-config
+```
+
+Import a representative raw, develop, save styles, export. The configdir is disposable.
+
+**2. Discard history before each style.**
+
+In darkroom view, right-click in the history stack panel → "discard history" (or "compress history stack"). This removes any prior moves so you start clean. Skipping this captures whatever was on the previous edit.
+
+**3. Make exactly the move the primitive should encode.**
+
+For `expo_+0.5`: enable the exposure module, set value to `0.5` (type into the value field, press tab). For nothing else. Don't enable other modules.
+
+For WB primitives, note the coupling: in darktable's modern scene-referred pipeline, **adjusting WB while color calibration is enabled auto-updates color calibration**. Two approaches:
+
+- **Decoupled** (cleaner single-module captures): disable color calibration first, then adjust WB. The resulting style touches only `temperature`. Simpler to compose.
+- **Coupled** (truer to darktable's modern pipeline): leave color calibration enabled, adjust WB. The resulting style touches both `temperature` and `channelmixerrgb`. The manifest's `touches: [temperature, channelmixerrgb]` declaration honors this, and the synthesizer handles multi-module entries fine.
+
+Either is acceptable for vocabulary; declare the coupling in the manifest so the synthesizer knows what's being modified.
+
+**4. In the create-style dialog, uncheck non-target modules.**
+
+This is the critical step. The dialog presents a checklist of every module in the active pipeline. The default is "all checked" — accepting the default produces a 12-14 module dtstyle that includes all of darktable's `_builtin_*` defaults plus the L0 always-on stack.
+
+**Explicitly uncheck every module except the target operation(s)** before clicking create. The export will then contain just the user-authored entries.
+
+For verification: after exporting, `cat the.dtstyle` and count `<plugin>` elements. A clean single-module primitive has exactly one. A multi-module primitive (like a WB entry that captures the WB/color-calibration coupling) has just the declared `touches` count. If you see 12-14 entries, you didn't uncheck — re-do.
+
+**5. Note the darktable version.**
+
+Vocabulary is calibrated to specific module versions (`modversion` per module). If darktable bumps a module's modversion, the captured dtstyle becomes invalid for that module. Always note the darktable version you authored against in the PR template (and in the manifest's `darktable_version` field).
+
+**6. Note about literal-zero values.**
+
+Some sliders have minimum granularity that prevents authoring exact zero values. Exposure for instance: the GUI's smallest representable value is ~0.009 EV, not 0.0. For true no-op vocabulary entries, programmatic generation will eventually be needed (see `docs/TODO.md` Path C). For now, accept ~0.009 EV as the practical neutral and document it in the entry's description.
+
 ### Vocabulary PR template
 
 When you open a vocabulary PR, the PR description must include:

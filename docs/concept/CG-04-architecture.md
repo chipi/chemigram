@@ -114,6 +114,10 @@ The structurally important fact: **`params` is a hex-encoded C struct** specific
 </darktable_style>
 ```
 
+**Note on `<iop_list>`:** Phase 0 testing (darktable 5.4.1) showed that `<iop_list>` is **only present in multi-module style exports**. Clean single-module dtstyles (the canonical vocabulary form) omit the element entirely. The example above shows it for completeness; in practice most vocabulary files won't have it. Parsers must treat it as optional.
+
+**Authoring discipline:** When creating a vocabulary primitive in darktable's GUI, the create-style dialog presents an "include modules" checklist of every module in the active pipeline. The default is "all checked" — accepting the default produces a noisy 12-14 module dtstyle file that includes darktable's `_builtin_*` defaults (scene-referred default exposure, sigmoid, channelmixerrgb; auto flip; full L0 stack: rawprepare, demosaic, colorin, colorout, gamma, etc.). To author a clean single-module primitive, **explicitly uncheck every module except the target operation** before clicking create. The export will then contain just one `<plugin>` entry. See `CONTRIBUTING.md` § Vocabulary contributions for the full authoring procedure.
+
 ### 3.2 Mapping `.dtstyle` → XMP
 
 | dtstyle element | XMP attribute |
@@ -132,12 +136,28 @@ The structurally important fact: **`params` is a hex-encoded C struct** specific
 
 ### 3.3 SET semantics
 
-When the agent applies `expo_+0.5` over an existing `expo_+0.3`:
+The synthesizer has two paths depending on whether the target module already exists in the XMP history:
+
+**Path A — Replace (the common case).** When applying a vocabulary entry whose `operation` and `multi_priority` match an existing history entry:
 
 1. Parse the existing XMP
-2. Look up entries with matching `(operation, multi_priority)` — there'll be one for "exposure", `multi_priority=0`
-3. Replace its `op_params`, `enabled`, `blendop_params`, `blendop_version`, `multi_name`, `iop_order` with values from the new `.dtstyle`
-4. Re-emit the XMP with renumbered `darktable:num`
+2. Look up entries with matching `(operation, multi_priority)` — typically there's one (e.g., `exposure` at `multi_priority=0`)
+3. Replace its `op_params`, `enabled`, `blendop_params`, `blendop_version`, `multi_name` (set to empty string for user-authored entries) with values from the new `.dtstyle`
+4. **Keep the existing `darktable:num` and do NOT supply iop_order** — the replacement inherits the pipeline position of the entry it replaces
+5. Update `<darktable:history_end>` if no count change
+
+This is the dominant path because most vocabulary entries replace darktable's auto-applied `_builtin_*` defaults (scene-referred default exposure, channelmixerrgb, sigmoid, etc.) at `multi_priority=0`.
+
+**Path B — Add new instance.** When applying a vocabulary entry whose `(operation, multi_priority)` doesn't match any existing entry (e.g., adding a second exposure instance for layered effect, or adding a module that isn't in the baseline pipeline like a drawn-mask gradient):
+
+1. Append a new `<rdf:li>` with the next available `darktable:num`
+2. **Must supply `darktable:iop_order`** — copy from the source `.dtstyle` file's `<iop_order>` element (note: `.dtstyle` uses comma as decimal separator due to locale; XMP requires period: `47,474747` → `47.474747`)
+3. If iop_order isn't supplied, darktable emits `cannot get iop-order for <operation> instance N` and silently drops the entry
+4. Increment `<darktable:history_end>`
+
+**Why two paths.** Phase 0 testing established that darktable's pipeline position for new instances must be explicit, but for replacements the existing position is preserved. The two paths reflect this:
+- Path A is simpler (no iop_order math) and covers most vocabulary applications
+- Path B is necessary for additive moves (multi-instance modules, modules not in baseline)
 
 This is all XML editing — no hex param decoding. Gives clean SET semantics without fighting darktable's append behavior.
 
@@ -166,13 +186,19 @@ Each is a one-module history captured once in the GUI and saved as a `.dtstyle` 
 
 The vocabulary becomes the project's **voice**. Bad vocabulary makes the agent stupid; good vocabulary makes it expressive. This is a feature — it forces the photographer to articulate what they reach for. The vocabulary itself is a research artifact.
 
+**Authoring caveats discovered in Phase 0** (darktable 5.4.1):
+
+- The create-style dialog's "include modules" checkboxes do filter what gets serialized — but only when explicitly used. Default behavior produces a noisy 12-14 module dtstyle. See `CONTRIBUTING.md` § Vocabulary contributions.
+- Some moves naturally touch multiple coupled modules. WB adjustment with the modern scene-referred pipeline updates both `temperature` (white balance module) AND `channelmixerrgb` (color calibration). To author single-module WB primitives, color calibration must be disabled before adjusting WB. Vocabulary primitives that touch multiple coupled modules are valid (and supported by manifest's `touches: [...]` list); the choice is whether to capture the coupling or decouple it.
+- darktable's GUI cannot author literal-zero values for some sliders (exposure has minimum granularity ~0.009 EV). For true no-op primitives, programmatic generation is required — see `docs/TODO.md` Path C.
+
 ### 4.3 Architecture C — Lua bridge (rejected)
 
 The path `darktable-mcp` (w1ne) takes — Python bridge to a running darktable via Lua API. Recreates the Lightroom-SDK fragility we picked darktable to escape. App must stay open and focused. Don't.
 
 ### 4.4 Verdict
 
-**Vocabulary (B) is v1.** Hex manipulation (A) reserved as a future path for high-value modules where continuous control matters; tracked in `docs/TODO.md`.
+**Vocabulary (B) is v1.** Hex manipulation (A) reserved as a future path for high-value modules where continuous control matters; tracked in `docs/TODO.md`. **Phase 0 testing demonstrated hex op_params manipulation is feasible for exposure** (one float at predictable byte offset), validating Path A as a low-cost enrichment when needed rather than a deferred research bet.
 
 ---
 
@@ -487,6 +513,8 @@ darktable-cli \
 ```
 
 `--apply-custom-presets false` prevents user auto-presets from contaminating render. `--hq false` for previews; `--hq true` for final exports.
+
+**Important:** `--core` is the separator between cli-specific flags (above it) and core darktable flags (`--configdir` and similar, below it). It is valid for `darktable-cli` only — the GUI launcher `darktable` does NOT accept `--core` and exits with help text if passed it. The architecture's render path uses `darktable-cli` exclusively, so this is fine; just don't pattern-match the invocation onto GUI launches when scripting setup work. **Do not use `--style NAME`** for vocabulary application — its lookup behavior is unreliable in 5.4.1 (only finds GUI-imported styles, not GUI-created ones, despite both producing the same files). Always pass the synthesized XMP file directly as a positional argument, as shown above.
 
 ### 8.3 Future stages (not v1)
 
