@@ -57,21 +57,25 @@ for what to do first.
 
 ## Documentation
 
-Read in this order if you're new:
+The project's concept package is in `docs/concept/`, six numbered documents you read in order:
 
-1. `docs/chemigram.md` — the project's framing
-2. `docs/agent-context.md` — how the agent works (Claude Code analog)
-3. `docs/architecture.md` — engine spec
-4. `examples/iguana-galapagos.md` — a worked Mode A session
+1. `docs/concept/CG-00-introduction.md` — entry point, glossary, reading order
+2. `docs/concept/CG-01-vision.md` — the soul of the project
+3. `docs/concept/CG-02-project-concept.md` — what we're building at idea level (the loop, sessions, modes)
+4. `docs/concept/CG-03-data-catalog.md` — what feeds the system
+5. `docs/concept/CG-04-architecture.md` — engine spec, with open questions consolidated for Phase 2
+6. `docs/concept/CG-05-design-system.md` — minimal because Chemigram is an MCP server, not a UI app
 
-For going deeper:
+Total reading time: about two hours. If you have less, `CG-00` + `CG-01` + the first three sections of `CG-02` is enough to engage with anyone working on the project.
 
-- `docs/layers.md` — the L0–L3 model
-- `docs/local-adjustments.md` — masking, AI subject isolation
-- `docs/versioning.md` — content-addressed snapshot DAG
+Supporting documents:
+
 - `docs/LICENSING.md` — what's MIT, what's separate
 - `docs/CONTRIBUTING.md` — code and vocabulary contribution flows
 - `docs/TODO.md` — research backlog, deferred items
+- `docs/briefs/` — historical design-conversation artifacts (predate the formal package)
+- `examples/iguana-galapagos.md` — a worked Mode A session
+- `examples/phase-0-notebook.md` — hands-on validation lab notebook (do this first)
 
 ## Requirements
 
