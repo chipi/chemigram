@@ -647,37 +647,33 @@ log_vocabulary_gap(image_id, description, workaround) → {ok}
 ## 11. Project layout
 
 ```
-chemigram/                              # source repo
+chemigram/                              # OSS monorepo (engine + vocabulary, per ADR-049)
   src/
-    chemigram_core/
-      xmp.py                            # parse + synthesize XMP
-      dtstyle.py                        # parse .dtstyle into entries
-      vocab.py                          # vocabulary loading + filtering
-      versioning.py                     # objects, refs, log, DAG operations
-      pipeline.py                       # PipelineStage protocol + runner
-      stages/
-        darktable_cli.py                # the v1 stage
-      bind.py                           # EXIF auto-binding for L1/L2
-      masking/
-        __init__.py                     # MaskingProvider protocol
-        coarse_agent.py                 # bundled default
-      context.py                        # taste.md / brief.md / notes.md
-      sessions.py                       # session lifecycle
-    chemigram_mcp/
-      server.py                         # MCP tool definitions
+    chemigram/
+      core/
+        xmp.py                          # parse + synthesize XMP
+        dtstyle.py                      # parse .dtstyle into entries
+        vocab.py                        # vocabulary loading + filtering
+        versioning.py                   # objects, refs, log, DAG operations
+        pipeline.py                     # PipelineStage protocol + runner
+        stages/
+          darktable_cli.py              # the v1 stage
+        bind.py                         # EXIF auto-binding for L1/L2
+        masking/
+          __init__.py                   # MaskingProvider protocol
+          coarse_agent.py               # bundled default
+        context.py                      # taste.md / brief.md / notes.md
+        sessions.py                     # session lifecycle
+      mcp/
+        server.py                       # MCP tool definitions
+        prompts/                        # versioned templates (Slice 3, per RFC-016)
+  vocabulary/
+    starter/                            # OSS starter pack — ships in chemigram wheel
+      manifest.json
+      ATTRIBUTION.md
+    packs/                              # community packs (per ADR-032)
   tests/
   pyproject.toml
-
-chemigram-vocabulary/                   # bundled content
-  layers/
-    L1/
-    L2/
-      neutralizing/
-      film_sims/
-    L3/
-  profiles/                             # extensibility hook (empty in v1)
-  manifest.json
-  ATTRIBUTION.md
 
 ~/Pictures/Chemigram/                   # user data (per-image repos)
   <image_id>/

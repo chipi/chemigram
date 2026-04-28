@@ -122,7 +122,7 @@ Anchored from: TA/constraints/dt-orchestration-only, ADR-025
 
 ### principles/byoa
 
-No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram_core`. No model weights. Every AI capability is one MCP call away to a photographer-configured provider. Quality, speed, and cost are explicit tradeoffs the photographer makes, not engine decisions.
+No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram.core`. No model weights. Every AI capability is one MCP call away to a photographer-configured provider. Quality, speed, and cost are explicit tradeoffs the photographer makes, not engine decisions.
 
 Anchored from: TA/constraints/byoa, ADR-007
 

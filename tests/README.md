@@ -6,9 +6,9 @@
 
 ## Tiers
 
-- `tests/unit/` — pure-logic tests. No I/O beyond `tmp_path`, no subprocess, no darktable. Fast (<1s typical). Run by default.
-- `tests/integration/` — tests using real `.dtstyle` and XMP fixtures in temp filesystems. No darktable required. Validates parser + synthesizer composition.
-- `tests/e2e/` — end-to-end tests that invoke `darktable-cli`. Require darktable installed and a real raw fixture. Skipped automatically when prerequisites are absent.
+- `tests/unit/` — fast tests of pure logic. May read committed fixture files from `tests/fixtures/` and use `tmp_path` for ephemeral writes. **No subprocess, no network, no installed-binary dependencies.** Sub-second per test. Run by `make test` and on every commit (pre-push hook) and CI.
+- `tests/integration/` — tests where multiple components meet against committed real-world artifacts. No darktable subprocess. Validates parser + synthesizer + fixture wiring; covers EXIF reads from real raws via `CHEMIGRAM_TEST_RAW`. Run by `make test-integration` and CI.
+- `tests/e2e/` — full-pipeline tests that invoke `darktable-cli`. Require darktable installed and a real raw fixture. Skipped automatically when prerequisites are absent. **Not run in CI** per ADR-040 — gated to `make test-e2e` locally and `scripts/pre-release-check.sh`.
 
 ## Fixtures
 

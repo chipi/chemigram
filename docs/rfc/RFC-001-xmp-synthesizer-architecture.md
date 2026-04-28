@@ -34,7 +34,7 @@ This RFC specifies the synthesizer's API at the level the agent (and any human r
 
 ## Proposed approach
 
-**API surface in `chemigram_core/dtstyle.py`:**
+**API surface in `src/chemigram/core/dtstyle.py`:**
 
 ```python
 @dataclass
@@ -66,7 +66,7 @@ def parse_dtstyle(path: Path, touches: list[str]) -> list[PluginEntry]:
     """
 ```
 
-**API surface in `chemigram_core/xmp.py`:**
+**API surface in `src/chemigram/core/xmp.py`:**
 
 ```python
 @dataclass

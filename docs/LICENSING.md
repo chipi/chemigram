@@ -8,8 +8,8 @@ Chemigram is a permissive open-source project: engine, MCP server, documentation
 
 | Component | License | Repo |
 |-|-|-|
-| Engine (`chemigram_core`) | MIT | this monorepo |
-| MCP server (`chemigram_mcp`) | MIT | this monorepo |
+| Engine (`chemigram.core`) | MIT | this monorepo |
+| MCP server (`chemigram.mcp`) | MIT | this monorepo |
 | Documentation (`docs/`) | MIT | this monorepo |
 | Starter vocabulary (`vocabulary/starter/`) | MIT | this monorepo |
 | Borrowed / community vocabulary packs (`vocabulary/packs/`) | Per-pack (typically MIT/CC) | this monorepo with attribution |

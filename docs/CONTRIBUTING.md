@@ -6,7 +6,7 @@ This project is a research-flavored OSS project. We're happy to accept contribut
 
 ## Before you start
 
-**Read the project's framing.** `chemigram.md` and `architecture.md` explain what this project is and (importantly) what it isn't. Contributions that pull the project toward DAM features, bulk processing, or "make it more like Lightroom" will be politely declined — see "What this is not" in `chemigram.md` and the deferred-items in `TODO.md`.
+**Read the project's framing.** `docs/concept/00-introduction.md` and `docs/concept/04-architecture.md` explain what this project is and (importantly) what it isn't. Contributions that pull the project toward DAM features, bulk processing, or "make it more like Lightroom" will be politely declined — see "What this is not" in `docs/concept/01-vision.md` and the deferred-items in `docs/TODO.md`.
 
 **Open an issue before a large PR.** For non-trivial changes (new modules, new MCP tools, architectural changes, new vocabulary subsystems), please open an issue first to discuss the approach. Avoids the situation where you've built something we have to ask you to redesign.
 
@@ -24,7 +24,7 @@ Code contributions are welcome for:
 - Performance improvements
 - Tests (especially edge cases the existing tests miss)
 - Documentation corrections and clarifications
-- New `PipelineStage` implementations (per the contract in `architecture.md`)
+- New `PipelineStage` implementations (per the contract in `docs/concept/04-architecture.md`)
 - Improvements to error messages and diagnostics
 - Build/CI/packaging improvements
 

@@ -32,7 +32,7 @@ The decision must balance: ADR-007's BYOA principle, first-time-user experience,
 ## Constraints
 
 - TA/constraints/byoa — engine has no PyTorch dependency
-- ADR-007 — AI capabilities are MCP-configured, not bundled in `chemigram_core`
+- ADR-007 — AI capabilities are MCP-configured, not bundled in `chemigram.core`
 - No GPU/MPS configuration in the engine setup
 
 ## Proposed approach
@@ -41,7 +41,7 @@ The decision must balance: ADR-007's BYOA principle, first-time-user experience,
 
 Rationale:
 - The coarse provider runs without any ML dependency — first-time users are masking immediately.
-- BYOA stays clean: PyTorch never enters `chemigram_core`'s dependency graph.
+- BYOA stays clean: PyTorch never enters `chemigram.core`'s dependency graph.
 - Photographers who hit the coarse provider's quality ceiling have a clear, documented upgrade path.
 - The coarse provider is a useful **fallback** even after upgrading: when SAM is misconfigured or the photo agent's vision is preferred for fast iteration, falling back to coarse keeps the workflow alive.
 
