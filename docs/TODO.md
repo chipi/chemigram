@@ -2,7 +2,7 @@
 
 *Things we want to keep our eyes open for, enable when ready, but aren't building right now.*
 
-This is not a roadmap. The roadmap is in `architecture.md` (Phases 0–5). This is the **lower-priority surface** — research directions, possible side projects, "if we ever invent secret sauce" hooks. Items here should be revisited when the core is working.
+This is not a roadmap. The roadmap is in `docs/ROADMAP.md` (Phases 0–5). This is the **lower-priority surface** — research directions, possible side projects, "if we ever invent secret sauce" hooks. Items here should be revisited when the core is working.
 
 ---
 

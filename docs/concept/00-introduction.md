@@ -73,7 +73,7 @@ After the concept package, the project's other content includes:
 | `examples/phase-0-notebook.md` | Hands-on validation lab notebook for Phase 0 |
 | `docs/briefs/` | Historical design-conversation artifacts that predate this package |
 
-Phase 2 content (PRDs, RFCs, ADRs, UXSes) does not exist yet. It will be created when implementation work begins, with the open questions consolidated at the end of `04` becoming the initial RFC backlog.
+The definition documents (PRDs, RFCs, ADRs) in `docs/prd/`, `docs/rfc/`, and `docs/adr/` complete the doc system. They were produced after Phase 0 closed, anchoring into the concept package and into the per-plane reference docs (PA for product, TA for tech). The full project phase plan lives in `docs/ROADMAP.md`.
 
 ---
 
@@ -238,11 +238,13 @@ If you find a contradiction between the package and a brief, the package is corr
 | Aspect | Status |
 |-|-|
 | Concept package complete | Yes (v1.0) |
-| Phase 0 validation done | No — pending |
-| Phase 1 implementation started | No |
-| Phase 2 RFCs / ADRs / PRDs / UXSes | Not yet — created when Phase 2 begins |
+| Phase 0 validation done | ✅ Closed green (8 findings logged) |
+| Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
+| Phase 1 implementation started | No — next |
 
-Next action: Phase 0 hands-on validation of the architectural assumptions in `04`. See `examples/phase-0-notebook.md`.
+For the canonical phase plan and current status, see `docs/ROADMAP.md`.
+
+Next action: **Phase 1** — minimum viable loop. See `docs/ROADMAP.md` for scope and sequencing.
 
 ---
 

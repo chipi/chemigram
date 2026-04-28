@@ -1,82 +1,102 @@
-# Chemigram Documentation
+# Chemigram
 
-The doc tree has three tiers, each answering different kinds of questions.
+> Chemigram is to photos what Claude Code is to code.
 
-## Tier 1 — Concept package (`concept/`)
+A craft-research project for agent-driven photo editing. The agent reads
+your taste, you describe intent, the agent edits via a vocabulary of
+named moves on top of darktable. Sessions accumulate; the project gets
+richer over time.
 
-Read end-to-end at least once. Establishes *why* and *what* at the project level. Six numbered documents in reading order:
+**Status:** early-stage research project. v1 in active development.
+Not a Lightroom replacement. Not a digital asset manager. A probe into
+where photographic taste lives and how it transmits through language
+and feedback.
 
-- `concept/00-introduction.md` — entry point, glossary
-- `concept/01-vision.md` — the soul of the project
-- `concept/02-project-concept.md` — the loop, sessions, modes
-- `concept/03-data-catalog.md` — what feeds the system
-- `concept/04-architecture.md` — engine spec
-- `concept/05-design-system.md` — voice, vocabulary naming, session format
+## What this is
 
-These are narrative documents — they read as prose, end-to-end. Updated rarely; treated as source-of-truth for intent.
+A photo is a project, structured the way a code project is. The agent
+reads your context (`taste.md`, the brief, accumulated notes), drives
+darktable headlessly through composable vocabulary primitives, manages
+masks and snapshots, and learns across sessions. Two modes:
 
-## Tier 2 — Phase 2 definition documents (`prd/`, `rfc/`, `adr/`, `uxs/`)
+- **Mode A (the journey)** — collaborative editing where you and the
+  agent work through one photo together, conversationally.
+- **Mode B (autonomous fine-tuning)** — agent runs alone, branching to
+  explore variants, self-evaluating against criteria you provide.
 
-Per-artifact docs that argue for, deliberate over, or commit to specific aspects of the project. Read by linking-into them from work in progress.
+## What makes it different
 
-### Product plane (`prd/`)
+- **Vocabulary, not sliders.** The agent's action space is a finite
+  set of named moves you (or the community) author as `.dtstyle`
+  files. Articulating the vocabulary is part of the experiment.
+- **Three foundational disciplines** in the architecture:
+  - *darktable does the photography, Chemigram does the loop*
+  - *Bring Your Own AI* — maskers, evaluators, the photo agent itself
+    are all configurable via MCP
+  - *Agent is the only writer* — full library isolation, replace
+    semantics, predictable action space
+- **Mini git for photos.** Content-addressed DAG of edit snapshots
+  per image. Branches, tags, the works.
+- **Compounding context.** Each session reads your `taste.md` and
+  per-image notes; agent proposes additions; you confirm. Future
+  sessions are faster and more aligned because context accumulates.
 
-PRDs argue for user-value. Each PRD names a surface or experience and makes the case.
+## Status and roadmap
 
-- `prd/PA.md` — reference: audiences, promises, principles
-- `prd/PRD_TEMPLATE.md` — format
-- `prd/index.md` — listing
-- `prd/PRD-NNN-*.md` — per-experience arguments
+| Phase | What | Status |
+|-|-|-|
+| 0 | Hands-on validation of darktable composition story | ✅ Closed green |
+| Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
+| 1 | Core engine + MCP server + starter vocabulary | Not started — next |
+| 2+ | Vocabulary maturation, AI masks, continuous control | Conditional |
 
-### Tech plane (`rfc/` + `adr/`)
+For the canonical phase plan and current status, see `docs/ROADMAP.md`.
 
-Two folders for the same plane. RFCs are the moving tier (open questions, deliberation). ADRs are the settled tier (locked decisions).
+## Documentation
 
-- `adr/TA.md` — reference: components, contracts, constraints, stack, state board (`/map`)
-- `adr/ADR_TEMPLATE.md` — format
-- `adr/index.md` — listing
-- `adr/ADR-NNN-*.md` — locked decisions
+The full doc tree is in `docs/`. Start at `docs/index.md` for the ecosystem overview.
 
-- `rfc/RFC_TEMPLATE.md` — format
-- `rfc/index.md` — listing
-- `rfc/RFC-NNN-*.md` — open technical questions
+The project's concept package is in `docs/concept/`, six numbered documents you read in order:
 
-### UX plane (`uxs/`)
+1. `docs/concept/00-introduction.md` — entry point, glossary, reading order
+2. `docs/concept/01-vision.md` — the soul of the project
+3. `docs/concept/02-project-concept.md` — what we're building at idea level (the loop, sessions, modes)
+4. `docs/concept/03-data-catalog.md` — what feeds the system
+5. `docs/concept/04-architecture.md` — engine spec
+6. `docs/concept/05-design-system.md` — minimal because Chemigram is an MCP server, not a UI app
 
-N/A in v1 — Chemigram is an MCP server with no UI surfaces. Folder exists for forward-compatibility if a UI ever ships.
+Total reading time: about two hours. If you have less, `00-introduction` + `01-vision` + the first three sections of `02-project-concept` is enough to engage with anyone working on the project.
 
-## Tier 3 — Operational docs
+The definition documents (PRDs, RFCs, ADRs) live in `docs/prd/`, `docs/rfc/`, and `docs/adr/`. Each has its own `index.md`. Anchored by `docs/prd/PA.md` (product reference) and `docs/adr/TA.md` (technical architecture reference).
 
-- `LICENSING.md` — what's MIT, what's separate
-- `CONTRIBUTING.md` — code and vocabulary contribution flows
-- `TODO.md` — research backlog, deferred items
-- `briefs/` — historical design-conversation artifacts
+Supporting documents:
 
-## How the tiers relate
+- `docs/ROADMAP.md` — canonical phase plan
+- `docs/LICENSING.md` — what's MIT, what's separate
+- `docs/CONTRIBUTING.md` — code and vocabulary contribution flows
+- `docs/TODO.md` — research backlog, deferred items
+- `docs/briefs/` — historical design-conversation artifacts (predate the formal package)
+- `examples/iguana-galapagos.md` — a worked Mode A session
+- `examples/phase-0-notebook.md` — Phase 0 lab notebook (closed green)
 
-The concept package sets intent. Phase 2 docs argue, deliberate, and lock specifics within that intent. When a per-artifact doc would contradict the concept package, one of them is wrong (usually the per-artifact doc, but not always — implementation feedback can require updating the concept package too).
+## Requirements
 
-Per-artifact docs anchor to reference docs. The reference docs (PA, TA) are what make the per-artifact docs cohere. A PRD that doesn't anchor to PA is a smell. An RFC that doesn't anchor to TA is a smell.
+- darktable 5.x (Apple Silicon native build recommended)
+- Python 3.11+
+- An MCP-capable agent (Claude, etc.)
+- macOS Apple Silicon for v1; Linux best-effort
 
-Reference docs evolve with the project; concept-package docs evolve more slowly.
+## License
 
-## How to find what you need
+MIT. Engine, MCP server, docs, starter vocabulary, and borrowed community
+packs are all permissively licensed. Personal vocabularies are kept in
+separate private repos by photographers' choice. See `docs/LICENSING.md`
+for the full picture.
 
-| If you want to... | Go to... |
-|-|-|
-| Understand the project | `concept/00-introduction.md` |
-| Argue for / understand a user-experience | `prd/PRD-NNN-*.md` |
-| Look up a settled technical decision | `adr/ADR-NNN-*.md` |
-| Understand an open technical question | `rfc/RFC-NNN-*.md` |
-| Find what's settled in tech | `adr/TA.md` |
-| Find what we promise users | `prd/PA.md` |
-| Contribute vocabulary | `CONTRIBUTING.md`/Vocabulary contributions |
-| Set up the project | (Phase 1 forthcoming) |
+## Why "Chemigram"?
 
-## Conventions
-
-- File numbering is sequential within a tier (NN, PRD-NNN, RFC-NNN, ADR-NNN)
-- Slugs are lowercase-hyphenated
-- Per-artifact docs always anchor to their plane's reference doc
-- Documents stand alone — references to external methodology guides are not used in the public docs (the methodology is a private writer's tool, the artifacts are the deliverables)
-- Drafts are honest about maturity (see `rfc/index.md` for maturity legend)
+A chemigram is a cameraless photographic process where an image emerges
+from a chemical reaction on light-sensitive paper — guided by the
+artist, but not fully controlled. The name fits: each edit here emerges
+from a loop between a photographer's intent, an agent's moves, and a
+tool that responds. Authorship is shared and the result is one-of-a-kind.
