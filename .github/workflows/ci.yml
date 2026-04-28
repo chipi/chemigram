@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# CI policy per ADR-040:
+# - Python 3.11/3.12/3.13 matrix
+# - macOS-only for v1 (Linux deferred to Phase 2)
+# - Unit + integration tests run in CI; E2E tests require darktable and run locally
+#   before releases via scripts/pre-release-check.sh
+
+jobs:
+  test:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Sync dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Lint (ruff check)
+        run: uv run ruff check --no-fix
+
+      - name: Format check (ruff format --check)
+        run: uv run ruff format --check
+
+      - name: Type check (mypy)
+        run: uv run mypy src/chemigram
+
+      - name: Unit tests
+        run: uv run pytest tests/unit
+
+      - name: Integration tests
+        run: uv run pytest tests/integration

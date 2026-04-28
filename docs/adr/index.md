@@ -62,6 +62,7 @@ ADRs come from two streams:
 | ADR-045 | Prompt versioning is independent of package SemVer | Accepted |
 | ADR-046 | Golden dataset versioning (immutable, append-only) | Accepted |
 | ADR-047 | Run manifests for eval reproducibility | Accepted |
+| ADR-048 | Multi-scope taste structure (extends ADR-030) | Accepted |
 
 ## Conventions
 

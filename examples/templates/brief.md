@@ -18,6 +18,7 @@ The brief is **stable across sessions** for one image. Updates are rare — usua
 **Date captured:** <YYYY-MM-DD>
 **Captured at:** <location>
 **Intended use:** <portfolio | print | book | client | personal>
+**Tastes:** <comma-separated list of genre taste files to load, e.g. underwater, wildlife>
 
 ## Subject
 
@@ -49,6 +50,8 @@ session has to re-fight the brief.>
 <link to a reference image, mood board, or prior edit if applicable>
 ```
 
+The `Tastes` field declares which genre files from `tastes/` should load alongside the always-loaded `_default.md` (per ADR-048). Comma-separated names, no quotes; agent loads them in declared order. If the field is omitted or empty, only `_default.md` loads.
+
 ---
 
 ## Example: iguana-galapagos brief
@@ -60,6 +63,7 @@ session has to re-fight the brief.>
 **Date captured:** 2024-03-14
 **Captured at:** Cabo Marshall, Isabela Island, Galápagos
 **Intended use:** portfolio + book candidate
+**Tastes:** underwater, wildlife
 
 ## Subject
 

@@ -5,7 +5,7 @@
 
 The `notes.md` for an image lives at `~/Pictures/Chemigram/<image_id>/notes.md`. It captures **per-image reasoning that accumulates across sessions** — what was tried, what worked, what didn't, why decisions were made.
 
-Unlike `brief.md` (intent, stable) or `taste.md` (preferences, cross-image), `notes.md` is **the running session log for a single image**. Append-only by convention. Each session adds a dated entry.
+Unlike `brief.md` (intent, stable) or the `tastes/` files (preferences, cross-image), `notes.md` is **the running session log for a single image**. Append-only by convention. Each session adds a dated entry.
 
 ---
 
@@ -73,7 +73,7 @@ hash b71204...). Applied wb_cooler_subtle through the mask to nudge the
 water toward slate-blue. Worked first try.
 
 Considered desaturating the background slightly to push the subject
-forward (per taste.md note 2026-07-21). Tried it on a branch
+forward (per `underwater.md` note 2026-07-21). Tried it on a branch
 (desaturated_background); felt too processed. Backed out.
 
 Still feels a touch flat overall. Considering a subtle vignette next time.
@@ -103,12 +103,13 @@ Decision: this is the portfolio version. If we revisit, branch from
 
 ## A note on the three context files together
 
-Together, `brief.md` + `taste.md` + `notes.md` form the agent's working memory:
+Together, `brief.md` + `tastes/` files + `notes.md` form the agent's working memory:
 
 | File | Scope | Mutability |
 |-|-|-|
-| `taste.md` | Cross-image, cross-session | Stable; rare additions via propose-and-confirm |
-| `brief.md` | Per-image | Stable; rarely updated |
+| `tastes/_default.md` | Cross-image, cross-session, cross-genre | Stable; rare additions via propose-and-confirm |
+| `tastes/<genre>.md` | Cross-image, cross-session, scoped to a genre | Stable; rare additions via propose-and-confirm |
+| `brief.md` | Per-image (declares which genre tastes apply) | Stable; rarely updated |
 | `notes.md` | Per-image, per-session | Append-only; updated at end of each session |
 
 The agent reads all three at session start (plus the recent operation log). The compounding-context promise rests on these files growing meaningfully over time.
