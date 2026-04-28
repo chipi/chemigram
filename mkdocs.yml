@@ -1,0 +1,122 @@
+site_name: Chemigram
+site_description: Agent-driven photo editing on darktable, via MCP — design and engineering documentation.
+site_url: https://chipi.github.io/chemigram/
+repo_url: https://github.com/chipi/chemigram
+repo_name: chipi/chemigram
+edit_uri: edit/main/docs/
+copyright: MIT — Marko Mrdjenovic and contributors
+docs_dir: docs
+
+# Internal / historical surfaces — not for the public site.
+exclude_docs: |
+  briefs/
+  agent-prompt.md
+  starter-vocabulary.md
+  PRD_TEMPLATE.md
+  RFC_TEMPLATE.md
+  ADR_TEMPLATE.md
+  prd/PRD_TEMPLATE.md
+  rfc/RFC_TEMPLATE.md
+  adr/ADR_TEMPLATE.md
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - awesome-pages
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            docstring_style: google
+            separate_signature: true
+            line_length: 88
+            merge_init_into_class: true
+            heading_level: 2
+            show_if_no_docstring: false
+            filters: ["!^_[^_]"]  # hide single-underscore privates by default
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/chipi/chemigram
+  status:
+    new: Recently added
+    deprecated: Deprecated
+
+# Don't fail the build on missing nav entries (we don't list every
+# template/historical file in nav; awesome-pages handles auto-discovery
+# within sections). DO fail on broken links — those should always be fixed.
+strict: false

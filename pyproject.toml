@@ -55,6 +55,17 @@ dev = [
     "twine>=5.0",
 ]
 
+# Docs site (MkDocs + Material). Pure-Python toolchain; matches the
+# project's "no Node.js" stance. Build via `make docs-build`; serve
+# with live reload via `make docs-serve`. Deployed to GitHub Pages
+# by .github/workflows/docs.yml on every push to main.
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+    "mkdocs-awesome-pages-plugin>=2.9",
+]
+
 # [project.scripts] — re-added in Slice 3 when chemigram.mcp.server lands.
 # Declaring chemigram-mcp before then would point at a non-existent module
 # and fail at runtime; entry points are not validated at install time.

@@ -5,7 +5,8 @@
 # Run `make` or `make help` to see all targets.
 
 .PHONY: help setup hooks test test-unit test-integration test-e2e \
-        lint format typecheck check ci clean build
+        lint format typecheck check ci clean build \
+        docs-deps docs-serve docs-build docs-deploy docs-clean
 
 # Default target: print available commands
 help:
@@ -26,6 +27,12 @@ help:
 	@echo "  make ci              Full CI parity: same steps as .github/workflows/ci.yml"
 	@echo ""
 	@echo "  make build           Build sdist + wheel into dist/"
+	@echo ""
+	@echo "  make docs-deps       Install docs build dependencies (extra: docs)"
+	@echo "  make docs-serve      Live-reload docs preview at http://127.0.0.1:8000"
+	@echo "  make docs-build      Build static site into site/"
+	@echo "  make docs-deploy     (Local) push site to gh-pages — CI does this on main"
+	@echo ""
 	@echo "  make clean           Remove caches and build artifacts"
 
 setup:
@@ -88,6 +95,26 @@ ci:
 
 build:
 	uv build
+
+# --- docs site (MkDocs + Material) ---
+
+docs-deps:
+	uv sync --extra docs
+
+docs-serve: docs-deps
+	uv run mkdocs serve
+
+docs-build: docs-deps
+	uv run mkdocs build --strict
+
+# Local fallback for the deploy step. Normal flow: push to main and let
+# .github/workflows/docs.yml run `mkdocs gh-deploy`. Use this only to
+# debug deployment from a workstation.
+docs-deploy: docs-deps
+	uv run mkdocs gh-deploy --force
+
+docs-clean:
+	rm -rf site/
 
 clean:
 	rm -rf dist/ build/ *.egg-info src/*.egg-info

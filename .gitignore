@@ -63,3 +63,6 @@ phase-0-scratch/
 
 # Build artifacts
 *.log
+
+# MkDocs build output
+site/

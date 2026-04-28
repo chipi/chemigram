@@ -1,0 +1,5 @@
+title: Tech (ADRs)
+arrange:
+  - index.md
+  - TA.md
+  - ...
