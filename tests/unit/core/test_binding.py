@@ -43,7 +43,7 @@ class _FakeVocab:
     def lookup_l1(self, make: str, model: str, lens_model: str) -> list[DtstyleEntry]:
         key = (make, model, lens_model)
         self.calls.append(key)
-        return list(self.l1_map.get(key, []))
+        return self.l1_map.get(key, [])
 
 
 def test_bind_l1_exact_match() -> None:

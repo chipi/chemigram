@@ -80,7 +80,13 @@ class Pipeline:
             result = stage.run(context)
             if not result.success:
                 return result
-        assert result is not None  # Pipeline guarantees at least one stage
+        if result is None:
+            # Constructor guarantees ``stages`` is non-empty, so this is
+            # an invariant violation rather than a user error. Use
+            # RuntimeError instead of assert so it survives ``python -O``.
+            raise RuntimeError(
+                "Pipeline.run produced no result; stages list was unexpectedly empty"
+            )
         return result
 
 
@@ -106,9 +112,11 @@ def render(
         configdir: darktable configdir (per ADR-005, isolated per session).
             **Must be a pre-bootstrapped darktable configdir** — a fresh empty
             directory makes ``darktable-cli`` fail with "can't init develop
-            system." If ``None``, a process-local tempdir is created lazily;
-            real renders need a configdir that's been initialized at least
-            once by the darktable GUI.
+            system." If ``None``, a process-local tempdir is created lazily
+            and **never cleaned up** (left for the OS to remove on process
+            exit). Real renders need a configdir that's been initialized at
+            least once by the darktable GUI; production callers should pass
+            an explicit configdir to avoid the leak.
 
     Returns:
         :class:`StageResult` with success/duration/stderr/error_message.

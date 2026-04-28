@@ -131,3 +131,110 @@ def test_parser_raises_when_all_plugins_filtered() -> None:
     """A dtstyle with only _builtin_* plugins has no user-authored content."""
     with pytest.raises(DtstyleParseError, match="no user-authored"):
         parse_dtstyle(FIXTURES / "all_builtin_no_user.dtstyle")
+
+
+_PLUGIN_TEMPLATE = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<darktable_style version="1.0">'
+    "<info><name>t</name><description></description></info>"
+    "<style><plugin>"
+    "<num>{num}</num><module>{module}</module>"
+    "<operation>x</operation>"
+    "<op_params>{op_params}</op_params>"
+    "<enabled>1</enabled>"
+    "<blendop_params>{blendop_params}</blendop_params>"
+    "<blendop_version>14</blendop_version>"
+    "<multi_priority>0</multi_priority>"
+    "<multi_name></multi_name>"
+    "</plugin></style></darktable_style>"
+)
+
+
+def _write_plugin(tmp_path: Path, **fields: str) -> Path:
+    defaults = {"num": "0", "module": "1", "op_params": "00", "blendop_params": "gz"}
+    defaults.update(fields)
+    p = tmp_path / "test.dtstyle"
+    p.write_text(_PLUGIN_TEMPLATE.format(**defaults))
+    return p
+
+
+def test_non_integer_num_raises(tmp_path: Path) -> None:
+    p = _write_plugin(tmp_path, num="not-an-int")
+    with pytest.raises(DtstyleParseError, match=r"num.*not an integer"):
+        parse_dtstyle(p)
+
+
+def test_whitespace_only_op_params_raises(tmp_path: Path) -> None:
+    p = _write_plugin(tmp_path, op_params="   ")
+    with pytest.raises(DtstyleParseError, match="empty or whitespace-only"):
+        parse_dtstyle(p)
+
+
+def test_missing_op_params_element_raises(tmp_path: Path) -> None:
+    """A <plugin> missing <op_params> entirely fails parser validation."""
+    bad = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<darktable_style version="1.0">'
+        "<info><name>t</name><description></description></info>"
+        "<style><plugin>"
+        "<num>0</num><module>1</module><operation>x</operation>"
+        "<enabled>1</enabled><blendop_params>gz</blendop_params>"
+        "<blendop_version>14</blendop_version>"
+        "<multi_priority>0</multi_priority><multi_name></multi_name>"
+        "</plugin></style></darktable_style>"
+    )
+    p = tmp_path / "no_op_params.dtstyle"
+    p.write_text(bad)
+    with pytest.raises(DtstyleParseError, match="missing required element <op_params>"):
+        parse_dtstyle(p)
+
+
+def test_missing_multi_name_element_raises(tmp_path: Path) -> None:
+    """A <plugin> missing the <multi_name> element entirely fails."""
+    bad = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<darktable_style version="1.0">'
+        "<info><name>t</name><description></description></info>"
+        "<style><plugin>"
+        "<num>0</num><module>1</module><operation>x</operation>"
+        "<op_params>00</op_params><enabled>1</enabled>"
+        "<blendop_params>gz</blendop_params><blendop_version>14</blendop_version>"
+        "<multi_priority>0</multi_priority>"
+        "</plugin></style></darktable_style>"
+    )
+    p = tmp_path / "no_multi_name.dtstyle"
+    p.write_text(bad)
+    with pytest.raises(DtstyleParseError, match="missing required element <multi_name>"):
+        parse_dtstyle(p)
+
+
+def test_wrong_root_element_raises(tmp_path: Path) -> None:
+    bad = '<?xml version="1.0"?><not_darktable><info/></not_darktable>'
+    p = tmp_path / "wrong_root.dtstyle"
+    p.write_text(bad)
+    with pytest.raises(DtstyleParseError, match="root element must be"):
+        parse_dtstyle(p)
+
+
+def test_missing_info_raises(tmp_path: Path) -> None:
+    bad = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<darktable_style version="1.0"><style/></darktable_style>'
+    )
+    p = tmp_path / "no_info.dtstyle"
+    p.write_text(bad)
+    with pytest.raises(DtstyleParseError, match="missing <info>"):
+        parse_dtstyle(p)
+
+
+def test_missing_style_raises(tmp_path: Path) -> None:
+    bad = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<darktable_style version="1.0">'
+        "<info><name>t</name></info>"
+        "</darktable_style>"
+    )
+    p = tmp_path / "no_style.dtstyle"
+    p.write_text(bad)
+    with pytest.raises(DtstyleParseError, match="missing <style>"):
+        parse_dtstyle(p)

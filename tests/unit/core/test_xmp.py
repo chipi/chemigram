@@ -150,3 +150,75 @@ def test_write_overwrites(tmp_path: Path) -> None:
     write_xmp(xmp, out)
     assert out.read_text().startswith("<?xml")
     assert "placeholder" not in out.read_text()
+
+
+def _write_minimal_xmp(tmp_path: Path, **overrides: str) -> Path:
+    """Minimal valid XMP with overridable top-level attrs."""
+    attrs = {
+        "rating": "0",
+        "auto_presets_applied": "0",
+        "history_end": "0",
+        "iop_order_version": "4",
+        "label": "",
+    }
+    attrs.update(overrides)
+    label_attr = f' xmp:Label="{attrs["label"]}"' if attrs["label"] else ""
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 4.4.0-Exiv2">'
+        ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+        '  <rdf:Description rdf:about=""'
+        '    xmlns:xmp="http://ns.adobe.com/xap/1.0/"'
+        '    xmlns:darktable="http://darktable.sf.net/"'
+        f'   xmp:Rating="{attrs["rating"]}"{label_attr}'
+        f'   darktable:auto_presets_applied="{attrs["auto_presets_applied"]}"'
+        f'   darktable:history_end="{attrs["history_end"]}"'
+        f'   darktable:iop_order_version="{attrs["iop_order_version"]}"/>'
+        " </rdf:RDF>"
+        "</x:xmpmeta>"
+    )
+    p = tmp_path / "test.xmp"
+    p.write_text(xml)
+    return p
+
+
+def test_history_end_exceeds_length_raises(tmp_path: Path) -> None:
+    """history_end > len(history) is malformed XMP."""
+    p = _write_minimal_xmp(tmp_path, history_end="20")  # but no history entries
+    with pytest.raises(XmpParseError, match="history_end=20 exceeds"):
+        parse_xmp(p)
+
+
+def test_history_end_less_than_length_ok(tmp_path: Path) -> None:
+    """history_end can be less than len(history) — entries beyond are pending."""
+    p = _write_minimal_xmp(tmp_path, history_end="0")
+    xmp = parse_xmp(p)
+    assert xmp.history_end == 0
+    assert xmp.history == ()
+
+
+def test_label_is_stripped(tmp_path: Path) -> None:
+    """xmp:Label should be whitespace-stripped to match dtstyle.description."""
+    p = _write_minimal_xmp(tmp_path, label="  finalist  ")
+    xmp = parse_xmp(p)
+    assert xmp.label == "finalist"
+
+
+def test_missing_description_raises(tmp_path: Path) -> None:
+    """An XMP without rdf:Description is malformed."""
+    bad = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+        ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>'
+        "</x:xmpmeta>"
+    )
+    p = tmp_path / "no_desc.xmp"
+    p.write_text(bad)
+    with pytest.raises(XmpParseError, match="missing rdf:Description"):
+        parse_xmp(p)
+
+
+def test_invalid_rating_raises(tmp_path: Path) -> None:
+    p = _write_minimal_xmp(tmp_path, rating="not-an-int")
+    with pytest.raises(XmpParseError, match="not an integer"):
+        parse_xmp(p)

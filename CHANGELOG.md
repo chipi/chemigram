@@ -9,6 +9,28 @@ per ADR-041.
 ## [Unreleased]
 
 ### Changed
+- **Post-Slice-1 cleanup (2026-04-29):**
+  - Removed `SynthesisError` from `chemigram.core.xmp` — defined but never raised; YAGNI.
+    ADR-050 and ADR-051 amended with implementation notes documenting the removal.
+  - Added module docstring to `chemigram.core/__init__.py` (was empty).
+  - `parse_xmp` now validates `darktable:history_end ≤ len(history)`; raises
+    `XmpParseError` on mismatch (was previously silent).
+  - `xmp.label` is now whitespace-stripped on parse to match `dtstyle.description`.
+  - `dtstyle.py` adds explicit comment on `multi_name`'s "element required, text
+    optional" semantics (ADR-010 user-entry identity marker).
+  - `Pipeline.run` replaces `assert` with explicit `RuntimeError` so the invariant
+    check survives `python -O`.
+  - `DarktableCliStage.clear_locks()` classmethod added for long-running processes
+    that cycle through many configdirs (lock-table cleanup).
+  - `exif._stringify_tag` strips leading NUL bytes too (was trailing-only).
+  - `exif.read_exif` narrows the catch-all `except Exception` to known exifread
+    failure modes; truly unexpected exceptions propagate.
+  - `render()` docstring documents the tempdir-leak when `configdir=None`.
+  - 6 new tests cover error paths previously uncovered (parser missing-element,
+    invalid-int, whitespace-only blob, wrong-root; XMP history_end overflow,
+    invalid rating, missing description; EXIF malformed focal length, leading-NUL
+    stripping; deterministic concurrent-render serialization via mocked subprocess).
+  - Coverage: 90% → 96% (line); branch coverage 81% → 88%.
 - `chemigram.core.dtstyle.parse_dtstyle` filters `_builtin_*` plugins per ADR-010
   (safety-net per the Phase 0 working notebook). Empty post-filter raises
   `DtstyleParseError`. Two new fixtures cover the filter and the all-filtered case.

@@ -41,7 +41,12 @@ class DarktableCliStage:
 
     DEFAULT_TIMEOUT_SECONDS: ClassVar[float] = 60.0
 
-    # Per-configdir locks; the dict is process-local. Resolved-path keys.
+    # Per-configdir locks; the dict is process-local and grows monotonically
+    # (one entry per unique resolved configdir path observed in the process
+    # lifetime). Each Lock is small (~100 bytes) — bounded by the number of
+    # distinct configdirs a single process uses, which for v1 workflows is
+    # small (often 1). Long-running multi-tenant processes can call
+    # :meth:`clear_locks` between sessions to reclaim memory.
     _configdir_locks: ClassVar[dict[Path, threading.Lock]] = {}
     _locks_dict_lock: ClassVar[threading.Lock] = threading.Lock()
 
@@ -64,6 +69,18 @@ class DarktableCliStage:
                 lock = threading.Lock()
                 cls._configdir_locks[key] = lock
             return lock
+
+    @classmethod
+    def clear_locks(cls) -> None:
+        """Clear the per-configdir lock cache.
+
+        Safe to call when no renders are in flight; callers must
+        guarantee that. Useful for long-running processes that have
+        cycled through many distinct configdirs and want to reclaim
+        the lock-table memory.
+        """
+        with cls._locks_dict_lock:
+            cls._configdir_locks.clear()
 
     def _build_argv(self, context: StageContext) -> list[str]:
         return [

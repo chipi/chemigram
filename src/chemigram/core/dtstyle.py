@@ -113,6 +113,13 @@ def _parse_plugin(plugin: Any, path: Path) -> PluginEntry:
         path,
     )
 
+    # multi_name is the special case: per ADR-010, user-authored entries
+    # have <multi_name></multi_name> (empty text) — that's the identity
+    # marker. ElementTree returns text=None for elements with no content,
+    # so the `or ""` is required and semantically correct (empty user
+    # entry vs. absent element). All other plugin fields use
+    # `_require_text` and raise on absence; this field requires the
+    # element but allows empty text.
     multi_name_elem = plugin.find("multi_name")
     if multi_name_elem is None:
         raise DtstyleParseError(f"{path}: missing required element <multi_name>")

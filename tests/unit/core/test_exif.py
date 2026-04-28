@@ -143,3 +143,44 @@ def test_read_exif_file_not_found(tmp_path: Path) -> None:
     nonexistent = tmp_path / "missing.nef"
     with pytest.raises(FileNotFoundError):
         read_exif(nonexistent)
+
+
+def test_read_exif_focal_length_malformed_returns_none(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Malformed FocalLength value should not crash; returns None."""
+    raw = tmp_path / "fake.nef"
+    raw.write_bytes(b"x")
+
+    class _BrokenTag:
+        @property
+        def values(self) -> Any:
+            raise AttributeError("simulated broken IfdTag")
+
+    _patch_exifread(
+        monkeypatch,
+        {
+            "Image Make": _FakeTag("X"),
+            "Image Model": _FakeTag("Y"),
+            "EXIF FocalLength": _BrokenTag(),
+        },
+    )
+    result = read_exif(raw)
+    assert result.focal_length_mm is None
+
+
+def test_read_exif_strips_leading_nul_bytes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Leading NUL bytes are an unusual but valid EXIF case."""
+    raw = tmp_path / "fake.nef"
+    raw.write_bytes(b"x")
+    _patch_exifread(
+        monkeypatch,
+        {
+            "Image Make": _FakeTag("\x00\x00NIKON\x00"),
+            "Image Model": _FakeTag("D850"),
+        },
+    )
+    result = read_exif(raw)
+    assert result.make == "NIKON"

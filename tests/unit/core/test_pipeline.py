@@ -170,6 +170,83 @@ def test_lock_for_configdir_different_dirs_different_locks(
     assert a is not b
 
 
+def test_clear_locks_empties_the_dict(tmp_path: Path) -> None:
+    DarktableCliStage._lock_for_configdir(tmp_path)
+    assert DarktableCliStage._configdir_locks
+    DarktableCliStage.clear_locks()
+    assert not DarktableCliStage._configdir_locks
+
+
+def test_concurrent_renders_serialize_deterministic(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify per-configdir lock serializes without depending on darktable.
+
+    Mocks ``_run_locked`` to sleep deterministically. Two parallel
+    ``run()`` calls against the same configdir must take ≥ 2x the
+    sleep duration (the lock prevents overlap). Margin is generous
+    enough to handle thread scheduling overhead but tight enough to
+    fail if the lock isn't held.
+    """
+    import threading
+    import time
+
+    # Ensure clean lock state for this test's configdir
+    DarktableCliStage.clear_locks()
+
+    sleep_seconds = 0.2
+    configdir = tmp_path / "cfg"
+    configdir.mkdir()
+
+    def fake_run_locked(self: DarktableCliStage, context: StageContext) -> StageResult:
+        time.sleep(sleep_seconds)
+        # Touch the output so post-conditions in real run() would pass
+        context.output_path.touch()
+        context.output_path.write_text("fake jpeg")
+        return StageResult(
+            success=True,
+            output_path=context.output_path,
+            duration_seconds=sleep_seconds,
+            stderr="",
+        )
+
+    monkeypatch.setattr(DarktableCliStage, "_run_locked", fake_run_locked)
+
+    def _ctx(name: str) -> StageContext:
+        return StageContext(
+            raw_path=tmp_path / "r.nef",
+            xmp_path=tmp_path / "r.xmp",
+            output_path=tmp_path / f"{name}.jpg",
+            configdir=configdir,
+        )
+
+    barrier = threading.Barrier(2)
+    results: list[StageResult] = []
+
+    def runner(ctx: StageContext) -> None:
+        barrier.wait()
+        results.append(DarktableCliStage().run(ctx))
+
+    threads = [
+        threading.Thread(target=runner, args=(_ctx("a"),)),
+        threading.Thread(target=runner, args=(_ctx("b"),)),
+    ]
+    start = time.monotonic()
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    total = time.monotonic() - start
+
+    assert all(r.success for r in results)
+    # Two serialized 0.2s sleeps must take ≥ ~0.4s. Allow generous slack
+    # for thread overhead but tighter than the integration test's 1.5x
+    # threshold (no warm-cache effects to confound).
+    assert (
+        total >= sleep_seconds * 1.8
+    ), f"expected serialized renders to take >= {sleep_seconds * 1.8:.2f}s, got {total:.2f}s"
+
+
 def test_render_uses_default_tempdir_when_no_configdir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

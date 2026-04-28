@@ -48,11 +48,11 @@ def _stringify_tag(tag: Any) -> str:
     """Coerce an exifread IfdTag (or absent value) into a clean string.
 
     EXIF strings often have trailing ``\\x00`` from C-string encoding
-    plus whitespace; strip both.
+    plus whitespace on either side; strip both in one pass.
     """
     if tag is None:
         return ""
-    return str(tag).strip().rstrip("\x00").strip()
+    return str(tag).strip("\x00 \t\r\n\v\f")
 
 
 def _focal_length_mm(tag: Any) -> float | None:
@@ -93,7 +93,11 @@ def read_exif(path: Path) -> ExifData:
     try:
         with path.open("rb") as fh:
             tags = exifread.process_file(fh, details=False)
-    except Exception as exc:
+    except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError) as exc:
+        # exifread doesn't expose a single error type; these cover the
+        # families we've observed (corrupt files, malformed IFD pointers,
+        # truncated streams). Letting other exceptions propagate is
+        # intentional — they signal genuine bugs, not bad input.
         raise ExifReadError(f"failed to read EXIF from {path}: {exc}") from exc
 
     make = _stringify_tag(tags.get("Image Make"))

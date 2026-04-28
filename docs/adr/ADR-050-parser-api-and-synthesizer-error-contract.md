@@ -28,11 +28,11 @@ The `chemigram.core.dtstyle` and `chemigram.core.xmp` modules expose:
 - `synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp` — Path A only; Path B raises `NotImplementedError`
 - `Xmp` (frozen): `rating`, `label`, `auto_presets_applied`, `history_end`, `iop_order_version`, `history: tuple[HistoryEntry, ...]`, `raw_extra_fields: tuple[tuple[str, str, str], ...]`
 - `HistoryEntry` (frozen): all `<rdf:li>` darktable attributes plus `iop_order: int | None = None` for forward compatibility (absent in dt 5.4.1)
-- `XmpParseError`, `SynthesisError(Exception)` — error hierarchy
+- `XmpParseError` — error hierarchy
 
 **Error contract**
 
-- One exception type per module surface (`DtstyleParseError`, `XmpParseError`, `SynthesisError`)
+- One exception type per module surface (`DtstyleParseError`, `XmpParseError`)
 - Errors include the file path and a specific diagnostic message
 - `FileNotFoundError` propagates unwrapped from public functions (Pythonic; callers can catch separately)
 - `NotImplementedError` is the explicit signal for Path B until RFC-001's iop_order question resolves; messages name the offending `(operation, multi_priority)` tuple
@@ -76,7 +76,9 @@ Negative:
 ## Implementation notes
 
 - `src/chemigram/core/dtstyle.py` — parser, dataclasses, `DtstyleParseError`
-- `src/chemigram/core/xmp.py` — parser, writer, synthesizer, dataclasses, `XmpParseError`, `SynthesisError`, `_plugin_to_history` helper
+- `src/chemigram/core/xmp.py` — parser, writer, synthesizer, dataclasses, `XmpParseError`, `_plugin_to_history` helper
+
+**Implementation note (post-Slice-1 cleanup, 2026-04-29):** an earlier draft of this ADR listed `SynthesisError(Exception)` as part of the public error hierarchy. The class was defined but never raised — Path B uses `NotImplementedError`, and no other synthesis-error condition exists today. Per the project's "no dead code" stance, the class was removed in the cleanup commit. Re-introduce when a real synthesis-error condition surfaces.
 - Tests: `tests/unit/core/test_dtstyle.py` (10), `tests/unit/core/test_xmp.py` (13), `tests/unit/core/test_synthesize.py` (10), `tests/integration/core/test_synthesis_integration.py` (1)
 - ADR-051 separately captures the SET-replace collision rule
 - RFC-001 status moves to `Decided`; remains as historical record of the deliberation

@@ -61,10 +61,6 @@ class XmpParseError(Exception):
     """Raised when an XMP file cannot be parsed."""
 
 
-class SynthesisError(Exception):
-    """Raised when XMP synthesis cannot be completed coherently."""
-
-
 @dataclass(frozen=True)
 class HistoryEntry:
     """One ``<rdf:li>`` entry in a darktable XMP ``<rdf:Seq>``.
@@ -213,7 +209,7 @@ def _parse_description_attrs(
         if prefix == "xmp" and name == "Rating":
             rating = _int_attr(value, qname, path)
         elif prefix == "xmp" and name == "Label":
-            label = value
+            label = value.strip()
         elif prefix == "darktable" and name == "auto_presets_applied":
             auto_presets_applied = _bool_attr(value, qname, path)
         elif prefix == "darktable" and name == "history_end":
@@ -294,6 +290,15 @@ def parse_xmp(path: Path) -> Xmp:
         extra_attrs,
     ) = _parse_description_attrs(description, path)
     history, extra_elems = _parse_description_children(description, path)
+
+    # Validate: history_end is the count of *applied* entries; can be
+    # less than len(history) (entries beyond are pending/disabled), but
+    # exceeding the actual history length is malformed.
+    if history_end > len(history):
+        raise XmpParseError(
+            f"{path}: darktable:history_end={history_end} exceeds actual "
+            f"history length ({len(history)} entries)"
+        )
 
     return Xmp(
         rating=rating,

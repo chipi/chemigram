@@ -36,7 +36,7 @@ The synthesizer implements **Path A only** with these rules:
 
 ## Alternatives considered
 
-- **Raise `SynthesisError` on in-call collision** (RFC-006 proposal #2): rejected. Real callers naturally compose primitives that may collide; forcing pre-call deduplication is friction without payoff.
+- **Raise an exception (originally proposed as `SynthesisError`) on in-call collision** (RFC-006 proposal #2): rejected. Real callers naturally compose primitives that may collide; forcing pre-call deduplication is friction without payoff. (The drafted `SynthesisError` class was subsequently removed in the post-Slice-1 cleanup — it was never raised; YAGNI.)
 - **Cumulative semantics on collision** (each plugin's effect adds rather than replaces): rejected. Diverges from ADR-002 SET semantics, complicates reasoning, and would require per-field accumulation rules that don't exist for opaque blobs.
 - **Implement Path B with a heuristic iop_order** (e.g., baseline.max + 1, or insert-at-end): rejected. Phase 0 iteration 1 demonstrated that wrong iop_order causes darktable to silently drop the entry. A heuristic that "usually works" would surface as a maintenance hazard. Wait for RFC-001's principled resolution.
 - **Reject duplicate plugins inside one .dtstyle at parse time** (RFC-006 proposal #1): deferred to a future parser enhancement. Slice 1 doesn't validate this; in practice all Phase 0 fixtures are single-`<plugin>` and the synthesized multi-module fixture has distinct operations, so the collision case is unexercised. Worth adding when contributor packs grow.
@@ -57,7 +57,7 @@ Negative:
 
 - `src/chemigram/core/xmp.py::synthesize_xmp` — Path A implementation, NotImplementedError for Path B
 - `src/chemigram/core/xmp.py::_plugin_to_history` — pure dtstyle-to-XMP shape conversion
-- `src/chemigram/core/xmp.py::SynthesisError` — currently unused; reserved for future synthesis errors that aren't covered by `NotImplementedError`
+- (`SynthesisError` was originally drafted here as a reserved future error class; removed in the post-Slice-1 cleanup since no condition raised it. Re-introduce when needed.)
 - Tests: 10 unit cases in `tests/unit/core/test_synthesize.py` exercise every rule; 1 integration case in `tests/integration/core/test_synthesis_integration.py` runs the full path against real fixtures
 - RFC-006 status moves to `Decided`; remains as historical record
 - Future work: parser-level duplicate detection in dtstyle files (RFC-006 proposal #1, deferred)

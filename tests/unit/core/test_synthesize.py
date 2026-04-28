@@ -17,6 +17,13 @@ from chemigram.core.xmp import (
     synthesize_xmp,
 )
 
+# Default num values differ between PluginEntry and HistoryEntry on
+# purpose: PluginEntry.num=13 mimics the real Phase 0 fixtures (where
+# the user-authored exposure plugin has num=13 from darktable's GUI
+# capture), while HistoryEntry.num=0 mimics a baseline-XMP slot. The
+# synthesizer preserves the *baseline* num on collision (ADR-051), so
+# tests that assert num preservation start from baseline values.
+
 
 def _make_plugin(
     operation: str = "exposure",
