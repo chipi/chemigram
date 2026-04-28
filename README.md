@@ -86,6 +86,16 @@ Supporting documents:
 - An MCP-capable agent (Claude, etc.)
 - macOS Apple Silicon for v1; Linux best-effort
 
+## Contributing — quick start
+
+```bash
+git clone https://github.com/chipi/chemigram.git
+cd chemigram
+./scripts/setup.sh
+```
+
+That checks prerequisites, creates a venv, and installs everything. See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for the full process and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for what's being built right now.
+
 ## License
 
 MIT. Engine, MCP server, docs, starter vocabulary, and borrowed community

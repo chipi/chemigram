@@ -38,40 +38,43 @@ Code contributions that need prior discussion in an issue:
 
 ### Dev setup
 
-Recommended workflow uses **uv** (ADR-035). One-time install:
+The fast path:
 
 ```bash
-brew install uv               # or: pipx install uv
 git clone https://github.com/chipi/chemigram.git
 cd chemigram
-uv venv
-uv sync --all-extras --dev    # creates .venv/, installs deps + dev extras
+./scripts/setup.sh
 ```
 
-Optional but recommended — install pre-commit hooks (ADR-039):
+`setup.sh` checks prerequisites (Python 3.11+, uv if installed, darktable for E2E tests), creates a venv, installs all dependencies, and optionally installs pre-commit hooks. It's idempotent — safe to re-run after pulling new code or switching branches.
+
+If you don't have `uv` installed, the script falls back to plain `python -m venv` + `pip install -e ".[dev]"`. Install uv for faster dependency resolution: `brew install uv`, `pipx install uv`, or `pip install uv`.
+
+Day-to-day commands via the Makefile:
 
 ```bash
-uv run pre-commit install
-uv run pre-commit install --hook-type pre-push
+make test            # fast unit tests
+make test-integration  # integration tests (no darktable needed)
+make test-e2e        # E2E tests (requires darktable)
+make lint            # ruff check
+make format          # ruff format
+make typecheck       # mypy on src/chemigram
+make check           # lint + typecheck + unit (run before committing)
+make help            # list all targets
 ```
 
-Day-to-day commands:
+Or invoke the underlying tools directly:
 
 ```bash
-uv run pytest tests/unit              # fast unit tests
-uv run pytest tests/integration       # integration tests (requires no darktable)
-uv run pytest tests/e2e               # E2E tests (requires darktable installed locally)
-uv run ruff check                     # lint
-uv run ruff format                    # format
-uv run mypy src/chemigram             # type check
+uv run pytest tests/unit
+uv run ruff check
+uv run mypy src/chemigram
 ```
 
-Plain `venv + pip` also works if you prefer:
+Optional but recommended — install pre-commit hooks (ADR-039), if you didn't during setup:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+make hooks
 ```
 
 ### Process
