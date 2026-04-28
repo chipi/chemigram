@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "chemigram"
 version = "0.0.1"
@@ -15,43 +19,149 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS :: MacOS X",
-    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics",
 ]
+
+# Runtime dependencies. Kept minimal per BYOA (ADR-007) and dt-orchestration-only
+# (ADR-014). MCP for the agent protocol; standard library for everything else
+# in v1. Pillow may join when mask manipulation arrives in Slice 4.
 dependencies = [
-    # populated as Phase 1 lands
+    "mcp>=0.9",
+    "Jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
 dev = [
+    # Test framework (ADR-036)
     "pytest>=8.0",
-    "ruff>=0.5",
+    "pytest-cov>=5.0",
+    # Lint + format (ADR-037)
+    "ruff>=0.6",
+    # Type checking (ADR-038)
     "mypy>=1.10",
+    # Pre-commit (ADR-039)
+    "pre-commit>=3.7",
+    # Build tooling (ADR-042)
+    "build>=1.2",
+    "twine>=5.0",
 ]
 
+[project.scripts]
+chemigram-mcp = "chemigram.mcp.server:main"
+
 [project.urls]
+Homepage = "https://github.com/chipi/chemigram"
 Repository = "https://github.com/chipi/chemigram"
-Documentation = "https://github.com/chipi/chemigram/tree/main/docs"
 Issues = "https://github.com/chipi/chemigram/issues"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+# ---------------------------------------------------------------------------
+# Hatchling build config (ADR-034)
+# ---------------------------------------------------------------------------
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/chemigram_core", "src/chemigram_mcp"]
+packages = ["src/chemigram"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "pyproject.toml",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff (ADR-037) — lint + format in one tool
+# ---------------------------------------------------------------------------
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "UP", "B", "RUF"]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "S",      # flake8-bandit (security)
+    "C90",    # mccabe complexity
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "S101",   # assert used (fine in tests)
+    "S603",   # subprocess call without shell=True (we want this; darktable-cli)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ---------------------------------------------------------------------------
+# Mypy (ADR-038) — strict on chemigram.core, looser elsewhere
+# ---------------------------------------------------------------------------
 
 [tool.mypy]
 python_version = "3.11"
+strict = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "chemigram.core.*"
 strict = true
-warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = ["chemigram.mcp.*", "tests.*"]
+strict = false
+warn_return_any = false
+disallow_untyped_defs = false
+
+# Third-party libraries that may not have stubs
+[[tool.mypy.overrides]]
+module = ["mcp.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Pytest (ADR-036) — three tiers
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "-q",
+]
+markers = [
+    "unit: pure-logic tests, no I/O, no subprocess (fast)",
+    "integration: tests using real .dtstyle files in temp filesystem (no darktable required)",
+    "e2e: end-to-end tests that invoke darktable-cli (require darktable installed)",
+]
+
+[tool.coverage.run]
+source = ["src/chemigram"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

@@ -86,6 +86,25 @@ Standard GitHub flow:
 6. Address review comments. Be patient — most reviewers are doing this in their evenings.
 7. Merge happens after at least one approving review.
 
+### Test fixtures (raw files, .dtstyle samples)
+
+Tests in different tiers need different fixtures:
+
+**Unit tier** — pure logic, no fixtures needed. If a test wants a small `.dtstyle` blob to parse, it's defined inline in the test file.
+
+**Integration tier** — needs real `.dtstyle` files but does *not* need raws. A small set of canonical `.dtstyle` files lives at `tests/fixtures/dtstyles/` and is committed to the repo (these are tiny — a few KB each).
+
+**E2E tier** — needs real raw files, which are too large to commit. Two-part strategy:
+
+1. **A tiny synthetic raw** (`tests/fixtures/raws/synthetic.NEF` or similar, if technically feasible) committed to the repo for smoke-test E2E coverage. Goal: confirm the pipeline runs end-to-end without depending on photographer-supplied data.
+2. **Photographer-supplied raws** for substantive E2E tests. The contributor places real raws at `tests/fixtures/raws/local/` (gitignored). E2E tests parametrized on whatever's present skip cleanly when the directory is empty.
+
+The pre-release script (`scripts/pre-release-check.sh`) requires the `local/` directory to be populated with at least three real raws — this is the gate that prevents shipping without real-world validation.
+
+**Rationale.** Committing a full raw library to git is infeasible (file sizes, redistribution rights). Git-LFS adds infrastructure cost without clear benefit at v1 size. Auto-download from a public bucket adds an external dependency. Photographer-supplied raws keep the repo light and validate against real data the photographer cares about.
+
+---
+
 ### Standards
 
 - **Python 3.11+** (ADR-013). Type hints expected on public functions.

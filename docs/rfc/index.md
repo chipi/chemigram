@@ -28,12 +28,16 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
 | RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
 | RFC-015 | EXIF auto-binding rules | Draft v0.1 | ADR (pending) |
+| RFC-016 | Versioned prompt system | Accepted | ADR-043, ADR-044, ADR-045 |
+| RFC-017 | Evaluation harness and auto-research workflow | Accepted (design); built Phase 5 | ADR-046, ADR-047 |
 
 ## Maturity legend
 
 - **Draft v0.1** — written; deliberation captured; awaiting implementation evidence to close
 - **Draft v0.1 (speculative)** — question identified but problem isn't real yet (e.g. vocabulary too small to need discovery tooling); placeholder until it becomes pressing
 - **Draft v0.1 (deferred)** — question identified, deliberately not being argued in this round; revisit later
+- **Accepted** — design decision settled; closing ADRs lock the structural pieces. Distinct from "Decided" because the RFC remains a living reference for the rationale.
+- **Accepted (design); built Phase X** — design accepted now, implementation deferred to a named phase
 - **Decided** — closed into one or more ADRs; remains as historical record
 
 ## Conventions

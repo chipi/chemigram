@@ -57,6 +57,11 @@ ADRs come from two streams:
 | ADR-040 | CI on GitHub Actions, macOS-only for v1 | Accepted |
 | ADR-041 | SemVer with 0.x for Phase 1 development | Accepted |
 | ADR-042 | Distribution via PyPI, GitHub releases as supplement | Accepted |
+| ADR-043 | Jinja2 + filename-versioned templates as prompt format | Accepted |
+| ADR-044 | PromptStore API and MANIFEST.toml as active-version registry | Accepted |
+| ADR-045 | Prompt versioning is independent of package SemVer | Accepted |
+| ADR-046 | Golden dataset versioning (immutable, append-only) | Accepted |
+| ADR-047 | Run manifests for eval reproducibility | Accepted |
 
 ## Conventions
 

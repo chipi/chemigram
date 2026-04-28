@@ -1,0 +1,38 @@
+# Pre-commit hooks for Chemigram (ADR-039).
+# Install once after cloning:
+#     uv run pre-commit install
+#     uv run pre-commit install --hook-type pre-push
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        files: ^src/chemigram/
+        additional_dependencies: []
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+
+  - repo: local
+    hooks:
+      - id: pytest-unit
+        name: Fast unit tests
+        entry: uv run pytest tests/unit -q
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

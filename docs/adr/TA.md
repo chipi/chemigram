@@ -20,7 +20,7 @@ The five subsystems Chemigram's engine decomposes into. Boundaries are stable; p
 
 XMP composition engine. Reads `.dtstyle` files, parses XMPs, synthesizes new XMPs by composing vocabulary entries onto a baseline. Pure file operations — no rendering, no AI.
 
-**Files (planned):** `src/chemigram_core/xmp.py`, `src/chemigram_core/dtstyle.py`
+**Files (planned):** `src/chemigram/core/xmp.py`, `src/chemigram/core/dtstyle.py`
 
 **Public API:**
 - `parse_dtstyle(path) → list[PluginEntry]`
@@ -34,7 +34,7 @@ XMP composition engine. Reads `.dtstyle` files, parses XMPs, synthesizes new XMP
 
 Sequence of stages producing a JPEG from an XMP. v1 has one stage; the abstraction admits N.
 
-**Files (planned):** `src/chemigram_core/pipeline.py`, `src/chemigram_core/stages/darktable_cli.py`
+**Files (planned):** `src/chemigram/core/pipeline.py`, `src/chemigram/core/stages/darktable_cli.py`
 
 **Public API:**
 - `class PipelineStage(Protocol)` — inputs/outputs/run contract
@@ -47,7 +47,7 @@ Sequence of stages producing a JPEG from an XMP. v1 has one stage; the abstracti
 
 Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
-**Files (planned):** `src/chemigram_core/versioning.py`
+**Files (planned):** `src/chemigram/core/versioning.py`
 
 **Public API:**
 - `snapshot(image_id, label?, parent=HEAD) → hash`
@@ -63,7 +63,7 @@ Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
 Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
 
-**Files (planned):** `src/chemigram_core/masking/__init__.py`, `src/chemigram_core/masking/coarse_agent.py`
+**Files (planned):** `src/chemigram/core/masking/__init__.py`, `src/chemigram/core/masking/coarse_agent.py`
 
 **Public API:**
 - `class MaskingProvider(Protocol)` — generate/refine contract
@@ -75,11 +75,39 @@ Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
 
 Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
-**Files (planned):** `src/chemigram_mcp/server.py`
+**Files (planned):** `src/chemigram/mcp/server.py`
 
 **Tool surface:** see TA/contracts/mcp-tools.
 
 **Anchored from:** ADR-006, ADR-033
+
+### components/prompts
+
+Versioned prompt templates loaded by the MCP server at session start (and by the eval harness for autonomous Mode B runs). Append-only, MANIFEST-driven, Jinja2-templated.
+
+**Files (planned):** `src/chemigram/mcp/prompts/store.py`, `src/chemigram/mcp/prompts/MANIFEST.toml`, `src/chemigram/mcp/prompts/{mode_a,mode_b,helpers}/*.j2`
+
+**Public API:**
+- `PromptStore.render(path, context, version=None, provider=None) → str`
+- `PromptStore.active_version(path) → str`
+- `PromptStore.context_schema(path) → dict`
+- `PromptStore.list_templates() → list[str]`
+
+**Anchored from:** RFC-016, ADR-043, ADR-044, ADR-045
+
+### components/eval
+
+Headless eval harness for autonomous Mode B. Runs the agent against versioned golden datasets, computes mechanical and semantic metrics, writes run manifests for cross-run comparison. Phase 5 build; design locked in Phase 1.
+
+**Files (planned):** `src/chemigram/eval/runner.py`, `src/chemigram/eval/scenarios.py`, `src/chemigram/eval/metrics/{mechanical,semantic}.py`, `src/chemigram/eval/reports.py`, `src/chemigram/eval/manifest.py`
+
+**Public API (sketched):**
+- `EvalRunner(golden_version, prompt_versions, model_config).run_all() → EvalRunResult`
+- `EvalRunner.run_scenario(id) → EvalScenarioResult`
+- `EvalRunResult.save(path) → None`
+- `EvalRunResult.append_history(path) → None`
+
+**Anchored from:** RFC-017, ADR-046, ADR-047
 
 ---
 
@@ -250,7 +278,7 @@ Anchored from: ADR-005
 
 ### constraints/byoa
 
-No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram_core`. No model weights. AI is provided via MCP-configured providers.
+No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram.core`. No model weights. AI is provided via MCP-configured providers.
 
 Anchored from: ADR-007
 
@@ -307,6 +335,10 @@ Locked technology choices. Each entry has a corresponding ADR.
 | Configuration | TOML (`config.toml`) | ADR-028 |
 | Manifest format | JSON (`manifest.json`) | ADR-028 |
 | Mask format | PNG (raster, 8-bit grayscale) | ADR-021 |
+| Prompt template engine | Jinja2 | ADR-043 |
+| Active prompt version registry | TOML (`MANIFEST.toml`) | ADR-044 |
+| Eval run manifests | JSON + JSONL history | ADR-047 |
+| Golden eval datasets | Versioned directories (`golden_v1`, `golden_v2`, ...) | ADR-046 |
 | Session transcripts | JSONL | ADR-029 |
 | Default masking provider (v1) | Coarse agentic (vision-only, no PyTorch) | RFC-004 |
 | Lens correction | Lensfun (via darktable) + embedded EXIF metadata | ADR-014 |
@@ -396,6 +428,11 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-040 | CI on GitHub Actions, macOS-only for v1 | Accepted |
 | ADR-041 | SemVer with 0.x for Phase 1 development | Accepted |
 | ADR-042 | Distribution via PyPI, GitHub releases as supplement | Accepted |
+| ADR-043 | Jinja2 + filename-versioned templates as prompt format | Accepted |
+| ADR-044 | PromptStore API and MANIFEST.toml as active-version registry | Accepted |
+| ADR-045 | Prompt versioning is independent of package SemVer | Accepted |
+| ADR-046 | Golden dataset versioning (immutable, append-only) | Accepted |
+| ADR-047 | Run manifests for eval reproducibility | Accepted |
 
 ---
 

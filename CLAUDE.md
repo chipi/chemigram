@@ -24,11 +24,11 @@ This means: no "auto-save" of taste updates. No background mutations. No "smart"
 
 Chemigram contributes orchestration: vocabulary, agent loop, versioning, session capture. Every image-processing capability comes from darktable. When a question is "should we build X?" and X is color science, lens correction, denoise, tone, mask logic — the answer is no. darktable already has it.
 
-This means: no Python image-processing dependencies in `chemigram_core`. No reimplementation of capabilities darktable provides. No Lua bridge for things darktable already exposes via XMP.
+This means: no Python image-processing dependencies in `chemigram.core`. No reimplementation of capabilities darktable provides. No Lua bridge for things darktable already exposes via XMP.
 
 ### 3. BYOA — Bring Your Own AI
 
-No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram_core`. No model weights. Every AI capability is one MCP call away to a photographer-configured provider.
+No AI capabilities bundled with the engine. No PyTorch dependency in `chemigram.core`. No model weights. Every AI capability is one MCP call away to a photographer-configured provider.
 
 This means: maskers, evaluators, the photo agent itself — all configurable via MCP. Any capability that requires AI is a separate provider, often a sibling project (e.g., `chemigram-masker-sam`).
 
@@ -204,12 +204,14 @@ Three-part is typical; longer is acceptable when the move is specific. See the d
 - **JSONL** for session transcripts (ADR-029)
 - **Filesystem-based content-addressed storage** for versioning (ADR-018)
 - **PNG (8-bit grayscale)** for masks (ADR-021)
+- **Jinja2** for prompt templates (ADR-043)
 
 **Build and package:**
 - **`pyproject.toml` + hatchling** as build backend (ADR-034)
 - **`src/`-layout**, single distribution, two modules: `chemigram.core` (engine, no AI deps) and `chemigram.mcp` (MCP server adapter) (ADR-034)
 - **PyPI primary** for distribution; GitHub releases supplement (ADR-042)
 - **SemVer** for versioning, 0.x during Phase 1, 1.0.0 at Phase 1 done (ADR-041)
+- **Prompt versions are independent of package SemVer** (ADR-045)
 
 **Dev tooling:**
 - **uv** for venv + dependencies + lockfile (ADR-035)
@@ -226,6 +228,7 @@ Three-part is typical; longer is acceptable when the move is specific. See the d
 - **No PyTorch, no model weights, no AI dependencies in `chemigram.core`.** AI is provided via MCP-configured providers (ADR-007).
 - **All edit state mutations through the engine's API**, called by the agent. The engine never silently mutates state.
 - **`op_params` and `blendop_params` are opaque hex/base64 blobs.** Do not decode them in v1 (ADR-008). The exception is Path C — limited to high-value modules (currently exposure), only when there's a clear bottleneck.
+- **Prompt templates are append-only** (ADR-043). Once `<task>_v<N>.j2` ships, never edit it. New iterations go to new files. Active versions are declared in `MANIFEST.toml` (ADR-044) — the single source of truth.
 
 ### `darktable-cli` invocation form
 
@@ -333,7 +336,7 @@ If you're doing vocabulary work, you're in Phase 2 (vocabulary maturation) — b
 ### Don't
 
 - **Don't decode `op_params` or `blendop_params`.** They're hex/base64 blobs we shuffle around as opaque strings. The opacity is load-bearing — decoding leads to per-module engineering and modversion-drift maintenance. Path C exists for the rare exceptions.
-- **Don't add AI dependencies to `chemigram_core`.** PyTorch belongs in sibling projects (e.g., `chemigram-masker-sam`), behind the MCP provider abstraction.
+- **Don't add AI dependencies to `chemigram.core`.** PyTorch belongs in sibling projects (e.g., `chemigram-masker-sam`), behind the MCP provider abstraction.
 - **Don't use `darktable-cli --style`.** It only takes one style, and we need composition. We synthesize the XMP ourselves (RFC-001 closure → ADR-011).
 - **Don't propagate masks across images.** Each mask is per-image. Multi-image masking is bulk-edit territory; out of scope.
 - **Don't reimplement darktable capabilities** in Python. If darktable does it, we delegate. The 'orchestration only' constraint is structural, not stylistic.

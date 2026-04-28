@@ -89,9 +89,9 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:**
 
-- `chemigram_core.dtstyle` parser — read `.dtstyle` XML into Python objects
-- `chemigram_core.xmp` synthesizer — compose XMPs from baseline + vocabulary entries (Path A and Path B per ADR-009)
-- `chemigram_core.pipeline` with `DarktableCliStage` — single-stage render pipeline invoking `darktable-cli`
+- `chemigram.core.dtstyle` parser — read `.dtstyle` XML into Python objects
+- `chemigram.core.xmp` synthesizer — compose XMPs from baseline + vocabulary entries (Path A and Path B per ADR-009)
+- `chemigram.core.pipeline` with `DarktableCliStage` — single-stage render pipeline invoking `darktable-cli`
 - A handful of hand-rolled `.dtstyle` vocabulary entries (5–10) for testing
 - A CLI script (not MCP yet) that takes `image + primitive_name`, applies it, renders a preview
 - EXIF auto-binding stub (camera + lens detection from EXIF, no user-prompting yet)
@@ -108,7 +108,7 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 **Sketch of what comes out:**
 
 - ADRs locking parser API, error shapes, synthesizer composition algorithm
-- A working `chemigram_core` package that's useful in isolation (without MCP)
+- A working `chemigram.core` package that's useful in isolation (without MCP)
 - ~600–900 lines of Python
 
 ---
@@ -117,10 +117,10 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:**
 
-- `chemigram_core.versioning` — content-addressed DAG of XMP snapshots (per-image)
+- `chemigram.core.versioning` — content-addressed DAG of XMP snapshots (per-image)
 - Per-image repo creation: `~/Pictures/Chemigram/<image_id>/` with `objects/`, `refs/heads/`, `refs/tags/`, `HEAD`, `log.jsonl`
 - Snapshot, checkout, branch, log, diff, tag operations
-- `chemigram_core.masks` — mask registry per image with symbolic refs (current_subject_mask, etc.)
+- `chemigram.core.masks` — mask registry per image with symbolic refs (current_subject_mask, etc.)
 - Mask storage in `objects/` (raster PNGs, content-addressed)
 
 **Gate:** Apply primitives, snapshot, branch, checkout — get the same rendered state every time. Mask registry survives across sessions. Branching three from one parent and checking out each produces three correct previews.
@@ -142,21 +142,24 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:**
 
-- `chemigram_mcp.server` — MCP server adapting `chemigram_core` as agent-callable tools
+- `chemigram.mcp.server` — MCP server adapting `chemigram.core` as agent-callable tools
 - All tools from ADR-033: vocabulary, edit operations, rendering, versioning, ingestion, context (stub for context — actual implementation in Slice 5)
 - Error contracts and parameter shape validation
 - Local-first transport (stdio MCP)
+- **Prompt system bootstrap** (per RFC-016): `chemigram.mcp.prompts` package, `PromptStore` class, `MANIFEST.toml`, `mode_a/system_v1.j2` migrated from `docs/agent-prompt.md`. Loaded at session start and provided to the agent as the system prompt.
 
 **Gate:** Claude Code (or another MCP client) can drive a multi-turn editing session through the server: list vocabulary, apply primitives, render previews, snapshot, branch, checkout, export. Tool errors surface cleanly to the agent.
 
 **RFCs that close at this gate:**
 
 - **RFC-010** (MCP tool surface — parameter shapes and error contracts) — closes because the surface is exercised by a real agent in a real session
+- **RFC-016** (versioned prompt system) — closes because PromptStore is built, `mode_a/system_v1` is loaded by the MCP server, and active-version registry works as designed
 
 **Sketch of what comes out:**
 
 - ADRs locking parameter shapes, error contracts, tool naming
 - Working MCP server, ~300–500 lines
+- Working `chemigram.mcp.prompts` package with PromptStore + MANIFEST.toml + first prompt
 - The first end-to-end Mode A interaction (even if vocabulary is small and masks are fake)
 
 ---
@@ -165,7 +168,7 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:** *(can run in parallel with Slice 5 after Slice 3)*
 
-- `MaskingProvider` Protocol in `chemigram_core.masking`
+- `MaskingProvider` Protocol in `chemigram.core.masking`
 - `CoarseAgentProvider` — vision-only default masker (no PyTorch)
 - Mask-bound vocabulary entries (L3 layer per ADR-021)
 - `generate_mask`, `regenerate_mask`, `list_masks`, `invalidate_mask`, `tag_mask` MCP tools
@@ -192,7 +195,7 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:** *(can run in parallel with Slice 4 after Slice 3)*
 
-- `chemigram_core.context` — read taste.md, brief.md, notes.md per ADR-030's three-tier model
+- `chemigram.core.context` — read taste.md, brief.md, notes.md per ADR-030's three-tier model
 - `read_context`, `propose_taste_update`, `confirm_taste_update`, `propose_notes_update`, `confirm_notes_update` MCP tools
 - Session transcripts as JSONL per ADR-029 (header metadata + per-turn entries)
 - Vocabulary gap surfacing: `log_vocabulary_gap` tool, `vocabulary_gaps.jsonl` per image
