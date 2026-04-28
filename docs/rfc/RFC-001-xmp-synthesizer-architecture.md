@@ -3,7 +3,7 @@
 > Status · Draft v0.1
 > TA anchor ·/components/synthesizer ·/contracts/dtstyle-schema ·/contracts/xmp-darktable-history
 > Related · ADR-001, ADR-002, ADR-008, ADR-009, ADR-010
-> Closes into · ADR-009 (already closed), additional ADRs for parser API and error contracts (pending)
+> Closes into · ADR-TBD-parser-api, ADR-TBD-synthesizer-error-contract (pending — Slice 1 gate). Anchored by ADR-009, ADR-010, ADR-011 (already closed).
 > Why this is an RFC · The high-level synthesis approach is settled (vocabulary-via-`.dtstyle`, SET semantics, opaque-blob copying). What's open: the concrete parser API, the synthesizer's function signatures, error handling contracts, and edge cases like malformed `.dtstyle`, stale `multi_priority` collisions, and locale-dependent decimal separators in `iop_order`.
 
 ## The question

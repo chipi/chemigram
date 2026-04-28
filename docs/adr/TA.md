@@ -117,12 +117,12 @@ Data shapes between components. The boundaries that survive across implementatio
 
 ### contracts/dtstyle-schema
 
-`.dtstyle` files are XML conforming to darktable's style format. Per `04/3.1`:
+`.dtstyle` files are XML conforming to darktable's style format. Calibrated to darktable 5.4.1; per `04/3.1` and verified against Phase 0 fixtures:
 
 ```xml
 <darktable_style version="1.0">
   <info>
-    <n>NAME</n>
+    <name>NAME</name>
     <description>...</description>
     <iop_list>...</iop_list>      <!-- optional; absent in single-module exports -->
   </info>
@@ -138,7 +138,6 @@ Data shapes between components. The boundaries that survive across implementatio
       <multi_priority>0</multi_priority>
       <multi_name>STRING</multi_name>
       <multi_name_hand_edited>0</multi_name_hand_edited>
-      <iop_order>FLOAT</iop_order>
     </plugin>
     <!-- additional plugins... -->
   </style>
@@ -146,6 +145,8 @@ Data shapes between components. The boundaries that survive across implementatio
 ```
 
 User-authored entries have `<multi_name>` empty (`""`). darktable's auto-applied entries have `<multi_name>` starting with `_builtin_` (e.g., `_builtin_scene-referred default`, `_builtin_auto`).
+
+**Note (Phase 0 finding):** darktable 5.4.1 GUI exports do **not** include `<iop_order>` inside `<plugin>`. Pipeline ordering is reconstructed by darktable from the parent XMP's `darktable:iop_order_version` and a global iop_list, not from per-plugin metadata. Earlier drafts of this schema listed `<iop_order>FLOAT</iop_order>` as a sibling of `<multi_name_hand_edited>`; that was aspirational and has been removed.
 
 ### contracts/vocabulary-manifest
 
@@ -172,7 +173,7 @@ Per-pack `manifest.json`. Per `03/Vocabulary primitives`:
 
 ### contracts/xmp-darktable-history
 
-darktable's history is an RDF Seq of `<rdf:li>` elements. Per `04/3`:
+darktable's history is an RDF Seq of `<rdf:li>` elements. Calibrated to darktable 5.4.1; per `04/3` and verified against the v3 Phase 0 reference XMP:
 
 ```xml
 <rdf:li
@@ -182,13 +183,15 @@ darktable's history is an RDF Seq of `<rdf:li>` elements. Per `04/3`:
   darktable:modversion="MODVERSION"
   darktable:params="HEX"
   darktable:multi_name="STRING"
+  darktable:multi_name_hand_edited="0"
   darktable:multi_priority="0"
   darktable:blendop_version="14"
-  darktable:blendop_params="GZIP_BASE64_BLOB"
-  darktable:iop_order="FLOAT"/>     <!-- required for new instances; inherited for replacements -->
+  darktable:blendop_params="GZIP_BASE64_BLOB"/>
 ```
 
-`<darktable:history_end>` at the parent level controls how many entries are applied.
+Per-entry execution ordering comes from the parent `<rdf:Description>`'s `darktable:iop_order_version="N"` attribute and an internal iop_list, not from per-`<rdf:li>` metadata. `<darktable:history_end>` at the parent controls how many entries are applied.
+
+**Note (Phase 0 finding):** darktable 5.4.1 does not write a `darktable:iop_order` attribute on `<rdf:li>` history entries. Earlier drafts of this schema listed it as required-for-new-instances and inherited-for-replacements; that was aspirational. SET-replace under Path A inherits position implicitly because the entry stays at its baseline index. Path B (new-instance addition at a previously-unused `multi_priority`) currently has no source for `iop_order` from either dtstyle or XMP — implementations should defer Path B to a follow-up.
 
 ### contracts/per-image-repo
 
