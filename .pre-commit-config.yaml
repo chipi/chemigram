@@ -5,14 +5,18 @@
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    # Pinned to match the version uv installs from pyproject.toml's
+    # [project.optional-dependencies] dev list (ruff>=0.6). When updating,
+    # keep these in sync — drift causes pre-commit to reformat files
+    # that CI's ruff version then rejects.
+    rev: v0.15.12
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.20.2
     hooks:
       - id: mypy
         files: ^src/chemigram/

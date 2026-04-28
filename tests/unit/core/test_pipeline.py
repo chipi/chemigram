@@ -242,9 +242,9 @@ def test_concurrent_renders_serialize_deterministic(
     # Two serialized 0.2s sleeps must take ≥ ~0.4s. Allow generous slack
     # for thread overhead but tighter than the integration test's 1.5x
     # threshold (no warm-cache effects to confound).
-    assert (
-        total >= sleep_seconds * 1.8
-    ), f"expected serialized renders to take >= {sleep_seconds * 1.8:.2f}s, got {total:.2f}s"
+    assert total >= sleep_seconds * 1.8, (
+        f"expected serialized renders to take >= {sleep_seconds * 1.8:.2f}s, got {total:.2f}s"
+    )
 
 
 def test_render_uses_default_tempdir_when_no_configdir(
