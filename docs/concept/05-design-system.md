@@ -1,4 +1,4 @@
-# CG-05 — Design System
+# 05 — Design System
 
 *The visual and behavioral language of the project. Intentionally minimal for v1.*
 
@@ -15,13 +15,13 @@ Both shape the experience even without a visual UI.
 
 ## 1. Why this is intentionally minimal
 
-The Phase 1 process guide names CG-05 as the document where visual language, typography, and per-surface screenshots live. For projects with a user-facing UI, this is irreducible — surfaces need visual contracts, and the package can't be complete without them.
+The Phase 1 process guide names this slot — the design system doc — as the document where visual language, typography, and per-surface screenshots live. For projects with a user-facing UI, this is irreducible — surfaces need visual contracts, and the package can't be complete without them.
 
 Chemigram has no such surfaces. The photographer's interface is whichever agent they choose to drive the MCP server. Claude.ai, Claude Code, a desktop chat client, a terminal-based MCP client — all are valid. Designing visual language for a GUI Chemigram doesn't have would be premature work that would constrain future product decisions if Chemigram ever sprouts a GUI.
 
 **The honest answer: Chemigram v1 is plumbing under whichever agent the photographer wants to use. It has no surfaces, no chrome, no visual identity to maintain.**
 
-This is a deliberate scope choice, not a gap. See `CG-04` § 1.3 (BYOA) for the principle this reflects: Chemigram orchestrates AI capabilities chosen by the photographer rather than shipping its own.
+This is a deliberate scope choice, not a gap. See `04`/1.3 (BYOA) for the principle this reflects: Chemigram orchestrates AI capabilities chosen by the photographer rather than shipping its own.
 
 If a future Chemigram phase introduces a dedicated UI (a desktop tool, a web client, a custom session viewer), this document would expand substantially. Until then, the design surface is two things: how the agent talks, and how vocabulary is named.
 
@@ -31,7 +31,7 @@ If a future Chemigram phase introduces a dedicated UI (a desktop tool, a web cli
 
 The agent's system prompt is the closest Chemigram has to a "voice" — the persona, behavioral patterns, and conversational style the photographer experiences.
 
-`CG-02` § 9 sketches the prompt structure. This section names the conventions that prompt should follow.
+`02`/9 sketches the prompt structure. This section names the conventions that prompt should follow.
 
 ### 2.1 Voice principles
 
@@ -39,7 +39,7 @@ The agent's voice should be:
 
 - **Apprentice, not assistant.** Engaged, curious, opinionated when warranted. Not subservient. Not constantly asking permission for trivial things.
 - **Specific, not generic.** "Marine iguanas are typically dark gray to black" not "iguanas have various colorations."
-- **Honest about uncertainty.** "The eye mask caught one eye well but the other is partially obscured" not "Done." (See `CG-02` § 6.2.)
+- **Honest about uncertainty.** "The eye mask caught one eye well but the other is partially obscured" not "Done." (See `02`/6.2.)
 - **Concise in routine, expansive when reasoning matters.** A simple apply doesn't need narration. A composition tension surfaced before applying needs a couple of sentences.
 - **Present-tense, declarative.** "I'm generating the subject mask now" not "I will now proceed to generate the subject mask."
 
@@ -47,7 +47,7 @@ The agent's voice should be:
 
 Recurring conversational shapes the agent should produce:
 
-**Session-start orientation** (`CG-02` § 5.1):
+**Session-start orientation** (`02`/5.1):
 
 > "I've read your context. This is [image description], shot on [camera], [purpose from brief]. From your taste notes, [relevant patterns]. Last session [recent state]. Want to [option A] or [option B]?"
 
@@ -67,7 +67,7 @@ Recurring conversational shapes the agent should produce:
 
 > "Proposed addition to your taste.md: '[note]'. Accept (Y/N)?"
 
-These shapes aren't templates to be filled in mechanically — they're patterns that emerge from the disciplines in `CG-02` § 6. Documented here so prompt engineering iterations can converge on consistent voice.
+These shapes aren't templates to be filled in mechanically — they're patterns that emerge from the disciplines in `02`/6. Documented here so prompt engineering iterations can converge on consistent voice.
 
 ### 2.3 What the agent doesn't do
 
@@ -252,4 +252,4 @@ None of this exists in v1 because none of these surfaces exist. If Chemigram eve
 
 ---
 
-*CG-05 · Design System · v1.0 · Intentionally minimal — Chemigram v1 is an MCP server with no UI surfaces*
+*05 · Design System · v1.0 · Intentionally minimal — Chemigram v1 is an MCP server with no UI surfaces*

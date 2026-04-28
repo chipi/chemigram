@@ -1,4 +1,4 @@
-# CG-01 — Vision
+# 01 — Vision
 
 > *Chemigram is to photos what Claude Code is to code.*
 
@@ -72,4 +72,4 @@ Either way, the question is worth asking.
 
 ---
 
-*CG-01 · Vision · v1.0*
+*01 · Vision · v1.0*

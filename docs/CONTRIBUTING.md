@@ -104,7 +104,7 @@ We're honest about this, and we ask contributors to make the manual review as ef
 
 ### Authoring procedure (read this before your first vocabulary PR)
 
-Phase 0 testing surfaced several authoring caveats specific to darktable's GUI behavior. Following this procedure produces clean single-module dtstyles that pass CI mechanical checks and match the architectural assumptions in `docs/concept/CG-04-architecture.md`.
+Phase 0 testing surfaced several authoring caveats specific to darktable's GUI behavior. Following this procedure produces clean single-module dtstyles that pass CI mechanical checks and match the architectural assumptions in `docs/concept/04-architecture.md`.
 
 **1. Use an isolated configdir for vocabulary work.**
 

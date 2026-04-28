@@ -1,4 +1,4 @@
-# CG-00 — Introduction
+# 00 — Introduction
 
 *The entry point for the Chemigram concept package. Read this first. Then read the rest in the order it suggests.*
 
@@ -12,7 +12,7 @@ If you're new to the project, read this document first, then read the others in 
 
 A concept package is a set of documents that describes a project at the idea level — what it is, what it does, what it uses, how it works, and how it looks — before any formal requirements are written.
 
-This package contains six numbered documents (`CG-00` through `CG-05`), each with a specific purpose:
+This package contains six numbered documents (`00` through `05`), each with a specific purpose:
 
 | # | Name | Purpose |
 |-|-|-|
@@ -32,10 +32,10 @@ The package is the **input** to formal definition work (PRDs, RFCs, ADRs, UXSes)
 | Not a... | Because... |
 |-|-|
 | **PRD** | Product Requirements Documents come after. The package is the input to PRD writing, not the output. |
-| **RFC** | Open questions are flagged in `CG-04` but the RFCs themselves come later. |
-| **ADR** | Decisions are described with rationale in `CG-04` but the formal ADR documents come later. |
+| **RFC** | Open questions are flagged in `04` but the RFCs themselves come later. |
+| **ADR** | Decisions are described with rationale in `04` but the formal ADR documents come later. |
 | **Build plan** | The package does not define sprints, milestones, or implementation order. It defines what is being built. |
-| **A Lightroom replacement** | See `CG-01` § "What this is not" for the full list of what the project itself is not — distinct from what the package is not. |
+| **A Lightroom replacement** | See `01`/"What this is not" for the full list of what the project itself is not — distinct from what the package is not. |
 
 ---
 
@@ -45,18 +45,18 @@ Documents are numbered for reading order, not writing order. Read in this order:
 
 | Step | Document | Time | Why |
 |-|-|-|-|
-| 1 | `CG-00` (this document) | 5 min | Orient yourself; learn the vocabulary |
-| 2 | `CG-01` Vision | 10 min | Understand why the project exists |
-| 3 | `CG-02` Project Concept | 30-40 min | Understand the full project at idea level |
-| 4 | `CG-03` Data Catalog | 15 min | Understand what feeds the system |
-| 5 | `CG-04` Technical Architecture | 45-60 min | Understand how it's built and what's still open |
-| 6 | `CG-05` Design System | 5 min | Understand the (intentionally minimal) design surface |
+| 1 | `00` (this document) | 5 min | Orient yourself; learn the vocabulary |
+| 2 | `01` Vision | 10 min | Understand why the project exists |
+| 3 | `02` Project Concept | 30-40 min | Understand the full project at idea level |
+| 4 | `03` Data Catalog | 15 min | Understand what feeds the system |
+| 5 | `04` Technical Architecture | 45-60 min | Understand how it's built and what's still open |
+| 6 | `05` Design System | 5 min | Understand the (intentionally minimal) design surface |
 
-Total reading time: roughly two hours. The bulk of the package is `CG-02` (project concept) and `CG-04` (architecture).
+Total reading time: roughly two hours. The bulk of the package is `02` (project concept) and `04` (architecture).
 
-If you have less time, the minimum is `CG-00` + `CG-01` + the first three sections of `CG-02`. That gives you the soul of the project plus the structuring metaphor (Chemigram is to photos what Claude Code is to code) and is enough to engage with anyone working on the project.
+If you have less time, the minimum is `00` + `01` + the first three sections of `02`. That gives you the soul of the project plus the structuring metaphor (Chemigram is to photos what Claude Code is to code) and is enough to engage with anyone working on the project.
 
-If you're returning to the package after time away: read `CG-00` again — the glossary section is the fastest way to refresh on terminology.
+If you're returning to the package after time away: read `00` again — the glossary section is the fastest way to refresh on terminology.
 
 ---
 
@@ -73,15 +73,15 @@ After the concept package, the project's other content includes:
 | `examples/phase-0-notebook.md` | Hands-on validation lab notebook for Phase 0 |
 | `docs/briefs/` | Historical design-conversation artifacts that predate this package |
 
-Phase 2 content (PRDs, RFCs, ADRs, UXSes) does not exist yet. It will be created when implementation work begins, with the open questions consolidated at the end of `CG-04` becoming the initial RFC backlog.
+Phase 2 content (PRDs, RFCs, ADRs, UXSes) does not exist yet. It will be created when implementation work begins, with the open questions consolidated at the end of `04` becoming the initial RFC backlog.
 
 ---
 
-## Project naming convention
+## Document naming convention
 
-Documents in this package are prefixed `CG-` for **Chemigram**. The two-letter prefix is the project initials. Numbers (00 through 05) are constant across projects following this concept-package process.
+Documents in this package are numbered `00` through `05`. Numbers reflect reading order; their topics remain stable across projects following this concept-package process.
 
-When other artifacts reference these documents — RFCs, PRDs, future technical work — they use the prefix and number: `CG-04 § 5` refers to section 5 of the technical architecture document.
+When other artifacts reference these documents — RFCs, PRDs, future technical work — references in headers and links use the number-and-section path style (e.g., `04/5` for section 5 of the architecture doc), while references in body prose use topic names (e.g., "see the architecture doc").
 
 ---
 
@@ -93,7 +93,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **Chemigram** — the project itself. Named after the cameraless photographic process where an image emerges from chemical reaction on light-sensitive paper, guided but not fully controlled. The name fits because each edit emerges from a loop between photographer's intent, agent's moves, and tool's response.
 
-**Engine** — the Python code that does the orchestration. Includes XMP composition, vocabulary loading, render pipeline, versioning, mask registry, and MCP server. See `CG-04` § 2.
+**Engine** — the Python code that does the orchestration. Includes XMP composition, vocabulary loading, render pipeline, versioning, mask registry, and MCP server. See `04`/2.
 
 **Agent** — the AI capability that drives Mode A or Mode B sessions. Per the BYOA principle, the agent is photographer-configured (Claude, GPT, etc.), not bundled with Chemigram.
 
@@ -137,7 +137,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **L3** — Taste. The agent's vocabulary, mutable in the loop. The agent's playground.
 
-**Layer model** — see `CG-04` § 5 for the full model. Layers separate authorship moments, not editing moves.
+**Layer model** — see `04`/5 for the full model. Layers separate authorship moments, not editing moves.
 
 ### Versioning
 
@@ -163,11 +163,11 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **Raster mask** — a PNG mask file referenced by darktable. The path for AI-generated subject masks. Resolved symbolically at XMP synthesis time.
 
-**Mask registry** — Chemigram's per-image record of generated masks. Tracks names, generators, prompts, freshness. See `CG-04` § 6.3.
+**Mask registry** — Chemigram's per-image record of generated masks. Tracks names, generators, prompts, freshness. See `04`/6.3.
 
 **Symbolic mask reference** — a placeholder name like `current_subject_mask` that vocabulary entries use. The engine resolves the symbol to an actual PNG path at synthesis time. Lets multiple primitives reuse the same mask.
 
-**Masking provider** — a pluggable implementation that generates masks. v1 ships a coarse agentic default; production-quality masking via `chemigram-masker-sam` sibling project. Configurable per target type. See `CG-04` § 6.4.
+**Masking provider** — a pluggable implementation that generates masks. v1 ships a coarse agentic default; production-quality masking via `chemigram-masker-sam` sibling project. Configurable per target type. See `04`/6.4.
 
 ### Context files
 
@@ -181,11 +181,11 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 ### Disciplines
 
-**Agent is the only writer** — the photographer reads previews and gives feedback; the agent is the sole mutator of edit state. See `CG-04` § 1.1.
+**Agent is the only writer** — the photographer reads previews and gives feedback; the agent is the sole mutator of edit state. See `04`/1.1.
 
-**darktable does the photography, Chemigram does the loop** — every image-processing capability comes from darktable. Chemigram contributes orchestration, vocabulary, agent loop, versioning, session capture. See `CG-04` § 1.2.
+**darktable does the photography, Chemigram does the loop** — every image-processing capability comes from darktable. Chemigram contributes orchestration, vocabulary, agent loop, versioning, session capture. See `04`/1.2.
 
-**BYOA (Bring Your Own AI)** — Chemigram doesn't ship AI capabilities; it integrates them via MCP. Maskers, evaluators, the photo agent itself are all photographer-configured. See `CG-04` § 1.3.
+**BYOA (Bring Your Own AI)** — Chemigram doesn't ship AI capabilities; it integrates them via MCP. Maskers, evaluators, the photo agent itself are all photographer-configured. See `04`/1.3.
 
 ### Engineering terms
 
@@ -201,7 +201,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **Pipeline stage** — one step in the render pipeline, conforming to the `PipelineStage` protocol. v1 has one stage (darktable-cli); the abstraction admits future stages (external CLIs, GenAI tools, custom processors).
 
-**EXIF auto-binding** — Chemigram's automatic resolution of L1 and L2 bindings from a raw's EXIF data. See `CG-04` § 9.
+**EXIF auto-binding** — Chemigram's automatic resolution of L1 and L2 bindings from a raw's EXIF data. See `04`/9.
 
 **`modversion`** — darktable's per-module version number. `op_params` encoding is modversion-specific. Vocabulary needs re-capture when darktable bumps a module's modversion.
 
@@ -209,11 +209,11 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 ### Project structure
 
-**Photo project** — one image, structured the way a code project is. Per-image directory with raw, briefs, notes, snapshots, sessions, masks. See `CG-02` § 4.
+**Photo project** — one image, structured the way a code project is. Per-image directory with raw, briefs, notes, snapshots, sessions, masks. See `02`/4.
 
 **Per-image repo** — synonym for photo project. The structure is content-addressed and ref-based, mirroring git.
 
-**Concept package** — this set of six documents (`CG-00` through `CG-05`). The Phase 1 deliverable.
+**Concept package** — this set of six documents (`00` through `05`). The Phase 1 deliverable.
 
 **Brief** (in process-guide sense) — the photographer's intent statement for an image. Distinct from "concept package" or the historical design-conversation artifacts in `briefs/`.
 
@@ -225,9 +225,9 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 The Chemigram concept package was produced through a multi-session design conversation between Marko (the photographer who initiated the project) and an AI assistant. The original conversation artifacts are preserved in `docs/briefs/` as historical record.
 
-The transition to the formal CG-NN structure (this package) happened after the briefs accumulated enough thinking to justify formal organization. The CG-NN structure follows the Concept Package Process Guide v2 (an external methodology document).
+The transition to the formal numbered structure (this package) happened after the briefs accumulated enough thinking to justify formal organization. The structure follows the Concept Package Process Guide v2 (an external methodology document).
 
-The two main document deliverables, `CG-02` and `CG-04`, draw heavily from the briefs. The briefs are kept available because the formal package abstracts the conversational reasoning that produced the architecture; future-readers wanting to understand *why* a decision was made may find the briefs more illuminating than the package's distilled statements.
+The two main document deliverables, `02` and `04`, draw heavily from the briefs. The briefs are kept available because the formal package abstracts the conversational reasoning that produced the architecture; future-readers wanting to understand *why* a decision was made may find the briefs more illuminating than the package's distilled statements.
 
 If you find a contradiction between the package and a brief, the package is correct (and the brief reflects an earlier moment of thinking).
 
@@ -242,8 +242,8 @@ If you find a contradiction between the package and a brief, the package is corr
 | Phase 1 implementation started | No |
 | Phase 2 RFCs / ADRs / PRDs / UXSes | Not yet — created when Phase 2 begins |
 
-Next action: Phase 0 hands-on validation of the architectural assumptions in `CG-04`. See `examples/phase-0-notebook.md`.
+Next action: Phase 0 hands-on validation of the architectural assumptions in `04`. See `examples/phase-0-notebook.md`.
 
 ---
 
-*CG-00 · Introduction · v1.0 · Written last after CG-01 through CG-05*
+*00 · Introduction · v1.0 · Written last after 01 through 05*

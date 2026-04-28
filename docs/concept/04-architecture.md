@@ -1,4 +1,4 @@
-# CG-04 — Technical Architecture
+# 04 — Technical Architecture
 
 *How Chemigram is built. Decisions with rationale, alternatives considered, locked commitments, and the open questions that become Phase 2 RFCs.*
 
@@ -33,7 +33,7 @@ Concrete implications for v1:
 - No Chemigram noise model — darktable's profiled denoise.
 - No Chemigram tone curves, masks, sharpening, dehaze, clarity — darktable's modules.
 
-The pipeline-stages abstraction (§ 8) keeps the door open for future custom processors without committing to any of it now. v1 ships with a single darktable-cli stage.
+The pipeline-stages abstraction (/8) keeps the door open for future custom processors without committing to any of it now. v1 ships with a single darktable-cli stage.
 
 ### 1.3 Bring Your Own AI (BYOA)
 
@@ -57,8 +57,8 @@ Chemigram has five subsystems with stable boundaries:
 | # | Subsystem | Responsibility |
 |-|-|-|
 | 1 | **XMP composition engine** | Read/write `.dtstyle` files, parse/synthesize XMPs, enforce SET semantics, partition by layer. Pure file operations. |
-| 2 | **Render pipeline** | Sequence of stages producing a JPEG from an XMP. v1 has one stage (darktable-cli). See § 8. |
-| 3 | **Versioning** | Content-addressed DAG of XMP snapshots, refs, HEAD. The "mini git for photos." See § 7. |
+| 2 | **Render pipeline** | Sequence of stages producing a JPEG from an XMP. v1 has one stage (darktable-cli). See/8. |
+| 3 | **Versioning** | Content-addressed DAG of XMP snapshots, refs, HEAD. The "mini git for photos." See/7. |
 | 4 | **AI provider layer** | Pluggable maskers (and later: evaluators, generators) behind protocol-based interfaces. Per BYOA. |
 | 5 | **MCP server** | Adapts subsystems 1-4 as agent-callable tools. |
 
@@ -86,7 +86,7 @@ The structurally important fact: **`params` is a hex-encoded C struct** specific
 
 `blendop_params` is gzip+base64 (`gz12` prefix). Mask data lives there.
 
-**This single fact reshapes the architecture.** We do not decode hex blobs. Instead, we use the **vocabulary approach** (§ 4): pre-author single-module styles in darktable's GUI, save as `.dtstyle` files, and copy the hex blobs verbatim from `.dtstyle` into XMPs we synthesize.
+**This single fact reshapes the architecture.** We do not decode hex blobs. Instead, we use the **vocabulary approach** (/4): pre-author single-module styles in darktable's GUI, save as `.dtstyle` files, and copy the hex blobs verbatim from `.dtstyle` into XMPs we synthesize.
 
 ### 3.1 The `.dtstyle` schema
 
@@ -116,7 +116,7 @@ The structurally important fact: **`params` is a hex-encoded C struct** specific
 
 **Note on `<iop_list>`:** Phase 0 testing (darktable 5.4.1) showed that `<iop_list>` is **only present in multi-module style exports**. Clean single-module dtstyles (the canonical vocabulary form) omit the element entirely. The example above shows it for completeness; in practice most vocabulary files won't have it. Parsers must treat it as optional.
 
-**Authoring discipline:** When creating a vocabulary primitive in darktable's GUI, the create-style dialog presents an "include modules" checklist of every module in the active pipeline. The default is "all checked" — accepting the default produces a noisy 12-14 module dtstyle file that includes darktable's `_builtin_*` defaults (scene-referred default exposure, sigmoid, channelmixerrgb; auto flip; full L0 stack: rawprepare, demosaic, colorin, colorout, gamma, etc.). To author a clean single-module primitive, **explicitly uncheck every module except the target operation** before clicking create. The export will then contain just one `<plugin>` entry. See `CONTRIBUTING.md` § Vocabulary contributions for the full authoring procedure.
+**Authoring discipline:** When creating a vocabulary primitive in darktable's GUI, the create-style dialog presents an "include modules" checklist of every module in the active pipeline. The default is "all checked" — accepting the default produces a noisy 12-14 module dtstyle file that includes darktable's `_builtin_*` defaults (scene-referred default exposure, sigmoid, channelmixerrgb; auto flip; full L0 stack: rawprepare, demosaic, colorin, colorout, gamma, etc.). To author a clean single-module primitive, **explicitly uncheck every module except the target operation** before clicking create. The export will then contain just one `<plugin>` entry. See `CONTRIBUTING.md`/Vocabulary contributions for the full authoring procedure.
 
 ### 3.2 Mapping `.dtstyle` → XMP
 
@@ -188,7 +188,7 @@ The vocabulary becomes the project's **voice**. Bad vocabulary makes the agent s
 
 **Authoring caveats discovered in Phase 0** (darktable 5.4.1):
 
-- The create-style dialog's "include modules" checkboxes do filter what gets serialized — but only when explicitly used. Default behavior produces a noisy 12-14 module dtstyle. See `CONTRIBUTING.md` § Vocabulary contributions.
+- The create-style dialog's "include modules" checkboxes do filter what gets serialized — but only when explicitly used. Default behavior produces a noisy 12-14 module dtstyle. See `CONTRIBUTING.md`/Vocabulary contributions.
 - Some moves naturally touch multiple coupled modules. WB adjustment with the modern scene-referred pipeline updates both `temperature` (white balance module) AND `channelmixerrgb` (color calibration). To author single-module WB primitives, color calibration must be disabled before adjusting WB. Vocabulary primitives that touch multiple coupled modules are valid (and supported by manifest's `touches: [...]` list); the choice is whether to capture the coupling or decouple it.
 - darktable's GUI cannot author literal-zero values for some sliders (exposure has minimum granularity ~0.009 EV). For true no-op primitives, programmatic generation is required — see `docs/TODO.md` Path C.
 
@@ -340,7 +340,7 @@ Lifecycle:
 - **Reference**: vocabulary entries with `mask_kind: "raster"` declare `mask_ref: "current_subject_mask"`. Engine resolves to actual PNG path at XMP synthesis time.
 - **Reuse**: same mask referenced by multiple vocabulary applications. Generate once, apply many.
 - **Invalidation**: photographer regenerates, or new mask of same target overwrites `current_<target>`, or persistent custom-named masks survive.
-- **Persistence**: masks are part of edit state — versioned with snapshots (§ 7).
+- **Persistence**: masks are part of edit state — versioned with snapshots (/7).
 
 ### 6.4 Masking providers (BYOA)
 
@@ -458,7 +458,7 @@ XMP at this snapshot symbolically references `current_subject_mask`; snapshot me
 
 **Option B:** Masks stored under per-snapshot subdirectories.
 
-Option A wins on dedup (identical masks share storage); Option B simpler. Open question § 12.4.
+Option A wins on dedup (identical masks share storage); Option B simpler. Open question/12.4.
 
 ### 7.5 What we're NOT building
 
@@ -624,7 +624,7 @@ ingest(raw_path, image_id?) → {image_id, exif_summary, suggested_bindings}
 bind_layers(image_id, l1_template?, l2_template?) → {state_after}
 ```
 
-### 10.6 Context (agent's working memory — see CG-02)
+### 10.6 Context (agent's working memory — see the project concept doc)
 
 ```
 read_context(image_id) → {taste_md, brief_md, notes_md, recent_log}
@@ -709,7 +709,7 @@ These are the questions whose answers require either implementation evidence or 
 
 ### 12.1 Same-module collision behavior in darktable
 
-**Context:** SET semantics (§ 3.3) assume we can replace entries by `(operation, multi_priority)` and produce predictable results. Empirically untested on this machine.
+**Context:** SET semantics (/3.3) assume we can replace entries by `(operation, multi_priority)` and produce predictable results. Empirically untested on this machine.
 
 **Question:** Does darktable's render handle two same-module entries with the same `multi_priority` in the way our SET-by-replacement assumes? Specifically: if our composition layer fails to dedupe and the XMP contains two `exposure` entries at `multi_priority=0`, does darktable last-wins, error, or accumulate?
 
@@ -719,7 +719,7 @@ These are the questions whose answers require either implementation evidence or 
 
 ### 12.2 Canonical XMP serialization for stable hashing
 
-**Context:** Versioning (§ 7) hashes XMP content with SHA-256. Hash determinism requires canonical serialization — whitespace and attribute-order-invariant.
+**Context:** Versioning (/7) hashes XMP content with SHA-256. Hash determinism requires canonical serialization — whitespace and attribute-order-invariant.
 
 **Question:** What's the canonical XMP serialization that produces stable hashes when the semantic content is identical? Standard XML canonicalization (XML-C14N), custom serializer, or a simpler convention?
 
@@ -743,7 +743,7 @@ These are the questions whose answers require either implementation evidence or 
 
 ### 12.5 Default masking provider quality vs. dependency cost
 
-**Context:** § 6.4 names two paths for v1 default: coarse agentic provider (no ML dependency) vs. bundled SAM (heavy dependency, better quality).
+**Context:**/6.4 names two paths for v1 default: coarse agentic provider (no ML dependency) vs. bundled SAM (heavy dependency, better quality).
 
 **Question:** Is the coarse agentic default usable enough that v1 ships without ML dependencies, or does sub-par masking degrade Mode A enough to require SAM as a v1 hard dependency?
 
@@ -753,7 +753,7 @@ These are the questions whose answers require either implementation evidence or 
 
 ### 12.6 modversion drift across darktable releases
 
-**Context:** When darktable bumps a module's `modversion`, our captured `.dtstyle` files become invalid for that module. § 5.4 acknowledges this; mitigation strategy not fully specified.
+**Context:** When darktable bumps a module's `modversion`, our captured `.dtstyle` files become invalid for that module./5.4 acknowledges this; mitigation strategy not fully specified.
 
 **Question:** What's the operational policy when darktable updates and modversions change? Auto-detect, warn-and-degrade, hard-fail?
 
@@ -785,4 +785,4 @@ These are the questions whose answers require either implementation evidence or 
 
 ---
 
-*CG-04 · Technical Architecture · v1.0 · Open questions consolidated for Phase 2 RFC handoff*
+*04 · Technical Architecture · v1.0 · Open questions consolidated for Phase 2 RFC handoff*

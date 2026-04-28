@@ -1,8 +1,8 @@
-# CG-02 — Project Concept
+# 02 — Project Concept
 
 *What Chemigram is at the idea level. The loop, the sessions, the accumulating context, the two modes. Read this if you want to understand the whole project end to end.*
 
-The vision (`CG-01`) describes why this exists. The technical architecture (`CG-04`) describes how the engine is built and the architectural disciplines (agent-is-the-only-writer, darktable-does-the-photography, BYOA) that constrain it. This document describes what's actually happening when a photographer uses Chemigram — the user experience at the level of conversations, files, sessions, and how it all compounds over time.
+The vision (`01`) describes why this exists. The technical architecture (`04`) describes how the engine is built and the architectural disciplines (agent-is-the-only-writer, darktable-does-the-photography, BYOA) that constrain it. This document describes what's actually happening when a photographer uses Chemigram — the user experience at the level of conversations, files, sessions, and how it all compounds over time.
 
 ---
 
@@ -28,7 +28,7 @@ The transferable patterns:
 | Source files | Raw + XMP + masks |
 | Filesystem tools | Vocabulary primitives, masks, render, export |
 | Test suite | Render preview + photographer judgment |
-| Git underneath | Versioning DAG (per `CG-04` § 7) |
+| Git underneath | Versioning DAG (per `04`/7) |
 | Compile / run | `darktable-cli` render |
 | External libs | Vocabulary packs (community-contributed) |
 | Issue tracker | Session log + `vocabulary_gaps.jsonl` |
@@ -54,7 +54,7 @@ This is the primary mode and the foundation of the project. Mode A sessions are 
 
 Photographer provides image + brief + **evaluation criteria** + budget ("up to 200 iterations, up to 8 hours"). Agent runs the loop alone, branching to explore variants, self-evaluating against the criteria, converging to a winner (or running out of budget). At the end: best result, the explored tree, an evaluation log.
 
-The research question: **can the agent self-evaluate well enough to converge without human feedback?** The eval function is itself an open question (see `CG-04` § 12.3) — kept open deliberately, with reference-based, vision-self-eval, and learned-critic approaches all viable.
+The research question: **can the agent self-evaluate well enough to converge without human feedback?** The eval function is itself an open question (see `04`/12.3) — kept open deliberately, with reference-based, vision-self-eval, and learned-critic approaches all viable.
 
 Mode B is inspired by the data/eval/iterate pattern (Karpathy-style), and it's only meaningful with **versioning** in place — autonomous exploration produces a tree of variants, not a sequence. Without a way to record and inspect that tree, the agent's reasoning is opaque.
 
@@ -122,7 +122,7 @@ This is the per-image equivalent of a developer's per-project README. It's where
 
 ## 4. Photo project structure
 
-Each image is its own project, structured as in `CG-04` § 7 and extended for context:
+Each image is its own project, structured as in `04`/7 and extended for context:
 
 ```
 ~/Pictures/Chemigram/<image_id>/
@@ -174,7 +174,7 @@ This single message demonstrates that the agent has its bearings. It's the agent
 
 ### 5.2 Mid-session: act, surface, update
 
-During the session, the agent's behavior is governed by the disciplines (§ 6 below). The key file-touching obligations:
+During the session, the agent's behavior is governed by the disciplines (/6 below). The key file-touching obligations:
 
 - **Snapshot frequently.** Every meaningful state change becomes a snapshot. Cheap.
 - **Append to `log.jsonl`** for every operation, with enough detail that the session is reconstructible later.
@@ -414,7 +414,7 @@ DISCIPLINES:
 9. Default global, escalate local
 10. Restraint before push
 
-TOOLS: {MCP tool surface — see CG-04 § 10}
+TOOLS: {MCP tool surface — see 04/10}
 
 WORKFLOW:
 - At session start, acknowledge context and orient
@@ -463,7 +463,7 @@ Some images get returned to across sessions. `notes.md` accumulates for these. T
 
 ### 10.5 Session 50+ — Mode B becomes viable
 
-Enough Mode A preference data exists to bootstrap a learned-critic eval function (per the `CG-04` § 12.3 open question, if that path is taken). Mode B starts being used for tedious-but-tractable work: variants for different output crops, preliminary edits for batch ingestion, exploration of looks the photographer doesn't have time for in Mode A.
+Enough Mode A preference data exists to bootstrap a learned-critic eval function (per the `04`/12.3 open question, if that path is taken). Mode B starts being used for tedious-but-tractable work: variants for different output crops, preliminary edits for batch ingestion, exploration of looks the photographer doesn't have time for in Mode A.
 
 The photographer publishes their first research blog post about agent-driven editing. Anonymized session insights feed back into the project.
 
@@ -507,4 +507,4 @@ The compounding is real but bounded. It's good enough that sessions get faster a
 
 ---
 
-*CG-02 · Project Concept · v1.0*
+*02 · Project Concept · v1.0*
