@@ -27,10 +27,12 @@ classifiers = [
 ]
 
 # Runtime dependencies. Kept minimal per BYOA (ADR-007) and dt-orchestration-only
-# (ADR-014). MCP for the agent protocol; standard library for everything else
-# in v1. Pillow may join when mask manipulation arrives in Slice 4.
+# (ADR-014). MCP for the agent protocol; defusedxml for safely parsing dtstyle
+# and XMP files (untrusted XML from contributor packs); Jinja2 for the prompt
+# system (Slice 3). Pillow may join when mask manipulation arrives in Slice 4.
 dependencies = [
     "mcp>=0.9",
+    "defusedxml>=0.7",
     "Jinja2>=3.1",
 ]
 
@@ -138,7 +140,7 @@ disallow_untyped_defs = false
 
 # Third-party libraries that may not have stubs
 [[tool.mypy.overrides]]
-module = ["mcp.*"]
+module = ["mcp.*", "defusedxml.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------

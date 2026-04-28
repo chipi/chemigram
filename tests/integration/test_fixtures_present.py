@@ -15,6 +15,9 @@ def test_dtstyle_fixtures_present() -> None:
         "expo_plus_0p5.dtstyle",
         "expo_plus_0p0.dtstyle",
         "wb_warm_subtle.dtstyle",
+        "multi_module_synthetic.dtstyle",
+        "malformed_no_plugin.dtstyle",
+        "malformed_xml.dtstyle",
     ):
         path = FIXTURES / "dtstyles" / name
         assert path.is_file(), f"missing dtstyle fixture: {path}"

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<darktable_style version="1.0"><info><name>malformed_no_plugin</name><description>Well-formed XML; <style> contains no <plugin> elements. parse_dtstyle must raise DtstyleParseError.</description></info><style></style></darktable_style>

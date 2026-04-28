@@ -9,6 +9,13 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.dtstyle` — parser for darktable `.dtstyle` files (Slice 1, Issue #1).
+  Public API: `parse_dtstyle`, `DtstyleEntry`, `PluginEntry`, `DtstyleParseError`.
+  Calibrated to darktable 5.4.1; opaque blob preservation per ADR-008; user-entry
+  identity via empty `<multi_name>` per ADR-010. Uses `defusedxml`.
+- Slice 1 prep: `tests/fixtures/{dtstyles,xmps}/` with Phase 0 artifacts;
+  hand-stitched `multi_module_synthetic.dtstyle`; `make ci` target mirroring
+  `.github/workflows/ci.yml`; smoke tests in `tests/unit/` and `tests/integration/`.
 - Phase 2 doc system: PRDs, RFCs, ADRs, reference docs (TA, PA), templates, indexes
 - ROADMAP/IMPLEMENTATION plan with slice-by-slice closure-as-gate mapping
 - Initial CLAUDE.md operational handbook
