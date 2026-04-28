@@ -9,6 +9,13 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.xmp.synthesize_xmp` — XMP synthesizer (Slice 1, Issue #3).
+  Path A only (SET-replace by `(operation, multi_priority)`; last-writer-wins on
+  input order; preserves baseline `num` and `iop_order`). Path B raises
+  `NotImplementedError` until RFC-001's iop_order question resolves. Closes
+  **RFC-001** (parser/synthesizer API → ADR-050) and **RFC-006** (same-module
+  collision → ADR-051). 10 unit tests + 1 integration test against real Phase 0
+  fixtures.
 - `chemigram.core.xmp` — parser + writer for darktable XMP sidecars (Slice 1, Issue #2).
   Public API: `parse_xmp`, `write_xmp`, `Xmp`, `HistoryEntry`, `XmpParseError`.
   Round-trip property (semantic equality) verified against the v3 Phase 0 reference

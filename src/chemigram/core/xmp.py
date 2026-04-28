@@ -19,6 +19,7 @@ Public API:
     - :class:`XmpParseError` — exception raised on malformed input
 """
 
+import dataclasses
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,6 +34,8 @@ from defusedxml.ElementTree import (
 from defusedxml.ElementTree import (
     parse as _defused_parse,
 )
+
+from chemigram.core.dtstyle import DtstyleEntry, PluginEntry
 
 # Conventional namespace prefixes and their URIs. darktable XMP files
 # declare them on <rdf:Description>; we use the same set on write so
@@ -56,6 +59,10 @@ for _prefix, _uri in _NS.items():
 
 class XmpParseError(Exception):
     """Raised when an XMP file cannot be parsed."""
+
+
+class SynthesisError(Exception):
+    """Raised when XMP synthesis cannot be completed coherently."""
 
 
 @dataclass(frozen=True)
@@ -370,3 +377,101 @@ def write_xmp(xmp: Xmp, path: Path) -> None:
     tree = ET.ElementTree(xmpmeta)
     ET.indent(tree, space=" ", level=0)
     tree.write(path, encoding="utf-8", xml_declaration=True)
+
+
+def _plugin_to_history(plugin: PluginEntry) -> HistoryEntry:
+    """Convert a .dtstyle :class:`PluginEntry` into XMP :class:`HistoryEntry` shape.
+
+    Field mapping (dtstyle XML → XMP `<rdf:li>`):
+
+    - ``plugin.module`` → ``history.modversion``  (XML element renamed)
+    - ``plugin.op_params`` → ``history.params``   (XML element renamed)
+    - direct copies: ``num``, ``operation``, ``enabled``, ``multi_name``,
+      ``multi_priority``, ``blendop_version``, ``blendop_params``
+    - defaults: ``multi_name_hand_edited=False`` (not modeled in PluginEntry;
+      Phase 0 fixtures uniformly have ``<multi_name_hand_edited>0</...>``)
+    - ``iop_order=None`` (absent from dt 5.4.1; SET-replace inherits the
+      baseline's slot in :func:`synthesize_xmp`)
+    """
+    return HistoryEntry(
+        num=plugin.num,
+        operation=plugin.operation,
+        enabled=plugin.enabled,
+        modversion=plugin.module,
+        params=plugin.op_params,
+        multi_name=plugin.multi_name,
+        multi_name_hand_edited=False,
+        multi_priority=plugin.multi_priority,
+        blendop_version=plugin.blendop_version,
+        blendop_params=plugin.blendop_params,
+        iop_order=None,
+    )
+
+
+def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
+    """Compose vocabulary entries onto a baseline XMP (Path A only).
+
+    SET semantics (ADR-002, RFC-006 closure / ADR-051): a plugin entry
+    whose ``(operation, multi_priority)`` tuple matches a baseline
+    history entry REPLACES that entry in place. ``num`` and
+    ``iop_order`` are preserved from the baseline slot — Phase 0 finding:
+    SET-replace inherits position implicitly because darktable computes
+    pipeline ordering from the parent ``iop_order_version`` and an
+    internal iop_list, not per-``<rdf:li>`` metadata.
+
+    Path B (new-instance addition at a previously-unused
+    ``multi_priority``) is NOT IMPLEMENTED in Slice 1: darktable 5.4.1
+    writes no ``iop_order`` to ``.dtstyle`` or XMP, leaving Path B
+    without a source of truth for the field. Path B raises
+    :class:`NotImplementedError` until RFC-001 resolves iop_order origin.
+
+    Among multiple input plugins targeting the same
+    ``(operation, multi_priority)``, the last one wins (input order).
+    This deviates from RFC-006's original "synthesizer error" proposal;
+    the closing ADR-051 captures the rationale.
+
+    Args:
+        baseline: starting :class:`Xmp`; not mutated.
+        entries: vocabulary entries; order matters for last-writer-wins
+            among entries that share ``(operation, multi_priority)``.
+
+    Returns:
+        A new frozen :class:`Xmp` with synthesized history. Top-level
+        metadata (``rating``, ``label``, ``auto_presets_applied``,
+        ``history_end``, ``iop_order_version``, ``raw_extra_fields``)
+        is preserved verbatim.
+
+    Raises:
+        NotImplementedError: any input plugin targets an
+            ``(operation, multi_priority)`` not present in the baseline
+            (Path B). Message includes the offending tuple.
+    """
+    current: list[HistoryEntry] = list(baseline.history)
+
+    for entry in entries:
+        for plugin in entry.plugins:
+            target_idx: int | None = None
+            for i, existing in enumerate(current):
+                if (
+                    existing.operation == plugin.operation
+                    and existing.multi_priority == plugin.multi_priority
+                ):
+                    target_idx = i
+                    break
+
+            if target_idx is None:
+                raise NotImplementedError(
+                    f"Path B (new-instance add) for "
+                    f"({plugin.operation!r}, multi_priority={plugin.multi_priority}) "
+                    "is not implemented in Slice 1: iop_order source is unresolved "
+                    "in darktable 5.4.1; tracked in RFC-001."
+                )
+
+            replacement = dataclasses.replace(
+                _plugin_to_history(plugin),
+                num=current[target_idx].num,
+                iop_order=current[target_idx].iop_order,
+            )
+            current[target_idx] = replacement
+
+    return dataclasses.replace(baseline, history=tuple(current))

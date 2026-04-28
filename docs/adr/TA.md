@@ -369,12 +369,12 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 
 | RFC | Title | Status | Closes into |
 |-|-|-|-|
-| RFC-001 | XMP synthesizer architecture | Draft v0.1 | ADR-TBD-parser-api, ADR-TBD-synthesizer-error-contract (pending — Slice 1 gate) |
+| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
 | RFC-002 | Canonical XMP serialization for stable hashing | Draft v0.1 | ADR-018-amendment (pending) |
 | RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Draft v0.1 | ADR (pending) |
-| RFC-006 | Same-module collision behavior | Draft v0.1 | ADR (pending) |
+| RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Draft v0.1 | ADR-022 (pending) |
@@ -438,6 +438,8 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-047 | Run manifests for eval reproducibility | Accepted |
 | ADR-048 | Multi-scope taste structure (extends ADR-030) | Accepted |
 | ADR-049 | Vocabulary-starter ships within chemigram (clarifies ADR-032) | Accepted |
+| ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
+| ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
 
 ---
 

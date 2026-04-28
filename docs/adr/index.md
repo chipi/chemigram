@@ -64,6 +64,8 @@ ADRs come from two streams:
 | ADR-047 | Run manifests for eval reproducibility | Accepted |
 | ADR-048 | Multi-scope taste structure (extends ADR-030) | Accepted |
 | ADR-049 | Vocabulary-starter ships within chemigram (clarifies ADR-032) | Accepted |
+| ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
+| ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
 
 ## Conventions
 

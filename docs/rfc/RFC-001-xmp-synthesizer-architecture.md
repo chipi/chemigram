@@ -1,9 +1,10 @@
 # RFC-001 — XMP synthesizer architecture
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-050 at Slice 1 gate, 2026-04-28)
 > TA anchor ·/components/synthesizer ·/contracts/dtstyle-schema ·/contracts/xmp-darktable-history
 > Related · ADR-001, ADR-002, ADR-008, ADR-009, ADR-010
-> Closes into · ADR-TBD-parser-api, ADR-TBD-synthesizer-error-contract (pending — Slice 1 gate). Anchored by ADR-009, ADR-010, ADR-011 (already closed).
+> Closed by · ADR-050 (parser API and synthesizer error contract). The collision behavior question raised here is closed by ADR-051. Anchored by ADR-009, ADR-010, ADR-011 (already closed).
+> Open question that did NOT close · iop_order origin for Path B (new-instance addition). Phase 0 confirmed iop_order is absent from both `.dtstyle` and XMP `<rdf:li>` in dt 5.4.1; Path B currently raises `NotImplementedError`. A follow-up RFC may pick this up if/when a vocabulary primitive needs Path B.
 > Why this is an RFC · The high-level synthesis approach is settled (vocabulary-via-`.dtstyle`, SET semantics, opaque-blob copying). What's open: the concrete parser API, the synthesizer's function signatures, error handling contracts, and edge cases like malformed `.dtstyle`, stale `multi_priority` collisions, and locale-dependent decimal separators in `iop_order`.
 
 ## The question

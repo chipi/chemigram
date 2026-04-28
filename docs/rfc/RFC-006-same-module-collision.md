@@ -1,9 +1,9 @@
 # RFC-006 — Same-module collision behavior
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-051 at Slice 1 gate, 2026-04-28)
 > TA anchor ·/components/synthesizer
 > Related · ADR-002, ADR-009, RFC-001
-> Closes into · ADR (pending) — specifies behavior for under-tested edge cases
+> Closed by · ADR-051 (SET-replace by (operation, multi_priority); last-writer-wins; Path B deferred). The implementation deviated from this RFC's proposal #2 (raise on in-call collision) — see ADR-051 for the rationale. Phase 0 experiment 5 became moot: the synthesizer never produces a colliding XMP, so darktable's behavior on collisions is irrelevant.
 > Why this is an RFC · ADR-002 commits to SET semantics by `(operation, multi_priority)`. ADR-009 specifies Path A vs Path B. But Phase 0 experiment 5 (same-module collision testing) was deferred — we don't have direct empirical evidence for what happens when two `.dtstyle` entries touch the same `(operation, multi_priority)` in a single synthesis pass. Specifying the resolution rule (and validating it) is a real open question.
 
 ## The question
