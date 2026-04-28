@@ -32,10 +32,7 @@ repos:
     hooks:
       - id: pytest-unit
         name: Fast unit tests
-        # Wrap so empty/missing tests/unit and "no tests collected"
-        # (pytest exit 5) are both treated as pass — the tree may be
-        # empty until Slice 1 lands.
-        entry: bash -c 'if [ ! -d tests/unit ] || [ -z "$(ls -A tests/unit 2>/dev/null | grep -v ^.gitkeep$)" ]; then exit 0; fi; set +e; uv run pytest tests/unit -q; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 5 ]'
+        entry: uv run pytest tests/unit -q
         language: system
         pass_filenames: false
         stages: [pre-push]

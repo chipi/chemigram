@@ -5,7 +5,7 @@
 # Run `make` or `make help` to see all targets.
 
 .PHONY: help setup hooks test test-unit test-integration test-e2e \
-        lint format typecheck check clean build
+        lint format typecheck check ci clean build
 
 # Default target: print available commands
 help:
@@ -22,7 +22,8 @@ help:
 	@echo "  make lint            Ruff lint check"
 	@echo "  make format          Ruff format (rewrites files)"
 	@echo "  make typecheck       Mypy type check on src/chemigram"
-	@echo "  make check           lint + typecheck + unit (run before commit)"
+	@echo "  make check           lint + typecheck + unit (fast, run before commit)"
+	@echo "  make ci              Full CI parity: same steps as .github/workflows/ci.yml"
 	@echo ""
 	@echo "  make build           Build sdist + wheel into dist/"
 	@echo "  make clean           Remove caches and build artifacts"
@@ -58,10 +59,30 @@ format:
 typecheck:
 	uv run mypy src/chemigram
 
-# Run before committing: catches what CI catches.
+# Run before committing: catches what CI catches in the fast path.
 check: lint typecheck test-unit
 	@echo ""
 	@echo "✅ All checks passed."
+
+# Full CI parity. Mirrors .github/workflows/ci.yml step-for-step so a
+# clean `make ci` locally implies a clean GitHub Actions run.
+# Per ADR-040: unit + integration tests, no E2E (E2E gated to releases
+# via scripts/pre-release-check.sh).
+ci:
+	@echo "==> [1/6] uv sync --all-extras --dev"
+	uv sync --all-extras --dev
+	@echo "==> [2/6] ruff check --no-fix"
+	uv run ruff check --no-fix
+	@echo "==> [3/6] ruff format --check"
+	uv run ruff format --check
+	@echo "==> [4/6] mypy src/chemigram"
+	uv run mypy src/chemigram
+	@echo "==> [5/6] pytest tests/unit"
+	uv run pytest tests/unit
+	@echo "==> [6/6] pytest tests/integration"
+	uv run pytest tests/integration
+	@echo ""
+	@echo "✅ CI parity check passed (matches ADR-040 / ci.yml)."
 
 # --- build / cleanup ---
 
