@@ -14,7 +14,7 @@ A minimal, OSS, generic vocabulary intended to demonstrate Chemigram and bootstr
 - Detail: `clarity_subtle`, `structure_subtle`, `denoise_auto`
 - Local (Phase 1.5): `gradient_top_dampen_highlights`, `vignette_subtle`, `parametric_warm_only_highlights`
 
-See `docs/layers.md` and `docs/local-adjustments.md` for the design rationale.
+See `docs/concept/04-architecture.md` § 5 (layer model) and `docs/prd/PRD-004-local-adjustments.md` for the design rationale.
 
 ## File layout (when populated)
 

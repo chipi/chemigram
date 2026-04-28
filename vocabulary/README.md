@@ -1,6 +1,6 @@
 # Vocabulary
 
-The agent's action space. Each `.dtstyle` file is a single-module darktable style — a named primitive the agent can apply. The vocabulary is structured by layer (L1/L2/L3) per `docs/layers.md`.
+The agent's action space. Each `.dtstyle` file is a single-module darktable style — a named primitive the agent can apply. The vocabulary is structured by layer (L1/L2/L3) per `docs/concept/04-architecture.md` § 5 (the three-layer model) and ADR-015.
 
 Two subdirectories:
 

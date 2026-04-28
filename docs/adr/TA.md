@@ -326,7 +326,7 @@ Locked technology choices. Each entry has a corresponding ADR.
 
 | Layer | Choice | ADR |
 |-|-|-|
-| Image processor | darktable 5.x (CLI for rendering) | ADR-025 |
+| Image processor | darktable 5.x (CLI for rendering) | ADR-014 |
 | Language | Python 3.11+ | ADR-013 |
 | Agent protocol | MCP (Model Context Protocol) | ADR-006 |
 | Vocabulary format | darktable `.dtstyle` XML | ADR-008 |
@@ -366,7 +366,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 
 | RFC | Title | Status | Closes into |
 |-|-|-|-|
-| RFC-001 | XMP synthesizer architecture | Draft v0.1 | ADR-009, ADR-010, ADR-011 (pending) |
+| RFC-001 | XMP synthesizer architecture | Draft v0.1 | ADR-TBD-parser-api, ADR-TBD-synthesizer-error-contract (pending — Slice 1 gate) |
 | RFC-002 | Canonical XMP serialization for stable hashing | Draft v0.1 | ADR-018-amendment (pending) |
 | RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |

@@ -1,12 +1,12 @@
-# chemigram_mcp
+# chemigram.mcp
 
-The MCP server. Adapts `chemigram_core` subsystems as agent-callable tools.
+The MCP server. Adapts `chemigram.core` subsystems as agent-callable tools.
 
-Thin layer — most of the substance lives in `chemigram_core`. This module is the protocol-shaped boundary between the engine and whatever agent the photographer chooses to drive it.
+Thin layer — most of the substance lives in `chemigram.core`. This module is the protocol-shaped boundary between the engine and whatever agent the photographer chooses to drive it.
 
-**Status:** not started. Phase 1 work.
+**Status:** not started. Phase 1 Slice 3 (after `chemigram.core` synthesizer + versioning land).
 
-## Tool surface (planned per `docs/architecture.md`)
+## Tool surface (planned per ADR-033 and TA/contracts/mcp-tools)
 
 Grouped by subsystem:
 
@@ -17,4 +17,4 @@ Grouped by subsystem:
 - **Ingestion and binding:** `ingest`, `bind_layers`
 - **Context:** `read_context`, `propose_taste_update`, `confirm_taste_update`, `propose_notes_update`, `confirm_notes_update`, `log_vocabulary_gap`
 
-See `docs/architecture.md` § "MCP tool surface" for the full spec.
+Slice 3 also bootstraps the prompt store at `chemigram/mcp/prompts/` per RFC-016.

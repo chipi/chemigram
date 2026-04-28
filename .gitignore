@@ -56,7 +56,6 @@ coverage.xml
 .Trashes
 
 # Chemigram local state (never check in user data)
-~/.chemigram/
 .chemigram/
 
 # Phase 0 scratch (local validation work, not for the repo)
