@@ -434,6 +434,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-046 | Golden dataset versioning (immutable, append-only) | Accepted |
 | ADR-047 | Run manifests for eval reproducibility | Accepted |
 | ADR-048 | Multi-scope taste structure (extends ADR-030) | Accepted |
+| ADR-049 | Vocabulary-starter ships within chemigram (clarifies ADR-032) | Accepted |
 
 ---
 

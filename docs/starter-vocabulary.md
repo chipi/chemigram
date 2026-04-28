@@ -1,6 +1,6 @@
 # Starter Vocabulary — Specification
 
-> Planning document for the OSS `chemigram-vocabulary-starter` package.
+> Planning document for the starter vocabulary at `vocabulary/starter/` in the chemigram main repo (per ADR-049).
 > Proposed structure for review. Actual `.dtstyle` files captured during Phase 1 Slice 6.
 > Status · v0.1 draft
 
@@ -165,7 +165,7 @@ Once this spec is accepted, Slice 6 captures these primitives by:
 1. Opening a representative raw in an isolated darktable configdir
 2. Setting one module to the target value
 3. Saving as a style with the proposed name
-4. Exporting `.dtstyle` to the starter pack repo (`chemigram-vocabulary-starter`)
+4. Exporting `.dtstyle` to `vocabulary/starter/` in the main repo (per ADR-049)
 5. Adding a manifest entry (layer, subtype, touches, modversions, description)
 6. Per-entry CI validation (manifest schema + `.dtstyle` parse + modversion match)
 

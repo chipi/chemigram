@@ -59,15 +59,21 @@ Repository = "https://github.com/chipi/chemigram"
 Issues = "https://github.com/chipi/chemigram/issues"
 
 # ---------------------------------------------------------------------------
-# Hatchling build config (ADR-034)
+# Hatchling build config (ADR-034, ADR-049)
 # ---------------------------------------------------------------------------
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/chemigram"]
 
+# Include the starter vocabulary (per ADR-049) as package data so
+# `pip install chemigram` ships with a working starter pack out of the box.
+[tool.hatch.build.targets.wheel.force-include]
+"vocabulary/starter" = "chemigram/_starter_vocabulary"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "src/",
+    "vocabulary/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",

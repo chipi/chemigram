@@ -221,8 +221,8 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Scope:**
 
-- Author the starter vocabulary pack — ~30–50 entries per PRD-003
-- Distribute as the OSS `chemigram-vocabulary-starter` package
+- Author the starter vocabulary pack — ~30–50 entries per PRD-003 — into `vocabulary/starter/` in the main repo (per ADR-049)
+- Bundle in the `chemigram` PyPI distribution as package data
 - Manifest validation in CI
 - Run the full `iguana-galapagos.md` scenario from start to finish on a real underwater raw
 - Document session findings (what worked, what didn't, what gaps surfaced)
@@ -235,7 +235,8 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **Sketch of what comes out:**
 
-- The first published version of `chemigram-vocabulary-starter`
+- The starter vocabulary directory (`vocabulary/starter/`) populated and committed
+- The first `chemigram` release that ships with a populated vocabulary out of the box
 - A real Phase 1 session log proving Mode A works
 - Phase 1 declared closed; Phase 2 (vocabulary maturation) begins
 
