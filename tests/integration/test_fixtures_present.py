@@ -24,8 +24,14 @@ def test_dtstyle_fixtures_present() -> None:
 
 
 def test_xmp_fixtures_present() -> None:
-    path = FIXTURES / "xmps" / "synthesized_v3_reference.xmp"
-    assert path.is_file(), f"missing xmp fixture: {path}"
+    for name in (
+        "synthesized_v3_reference.xmp",
+        "minimal.xmp",
+        "single_history.xmp",
+        "with_unknown_field.xmp",
+    ):
+        path = FIXTURES / "xmps" / name
+        assert path.is_file(), f"missing xmp fixture: {path}"
 
 
 def test_fixtures_readme_present() -> None:

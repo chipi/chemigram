@@ -9,6 +9,12 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.xmp` — parser + writer for darktable XMP sidecars (Slice 1, Issue #2).
+  Public API: `parse_xmp`, `write_xmp`, `Xmp`, `HistoryEntry`, `XmpParseError`.
+  Round-trip property (semantic equality) verified against the v3 Phase 0 reference
+  (11-entry history with mixed user-authored and `_builtin_*` entries) plus minimal,
+  single-entry, and unknown-field fixtures. `iop_order` modeled `Optional[int]` per
+  Phase 0 finding (absent in dt 5.4.1 XMPs).
 - `chemigram.core.dtstyle` — parser for darktable `.dtstyle` files (Slice 1, Issue #1).
   Public API: `parse_dtstyle`, `DtstyleEntry`, `PluginEntry`, `DtstyleParseError`.
   Calibrated to darktable 5.4.1; opaque blob preservation per ADR-008; user-entry
