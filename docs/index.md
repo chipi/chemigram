@@ -47,7 +47,8 @@ N/A in v1 — Chemigram is an MCP server with no UI surfaces. Folder exists for 
 
 ## Tier 3 — Operational docs
 
-- `ROADMAP.md` — canonical phase plan for the project
+- `../CLAUDE.md` — operational handbook for AI-assisted work (at repo root)
+- `IMPLEMENTATION.md` — canonical phase plan and slice-by-slice implementation guide
 - `LICENSING.md` — what's MIT, what's separate
 - `CONTRIBUTING.md` — code and vocabulary contribution flows
 - `TODO.md` — research backlog, deferred items
@@ -66,14 +67,15 @@ Reference docs evolve with the project; concept-package docs evolve more slowly.
 | If you want to... | Go to... |
 |-|-|
 | Understand the project | `concept/00-introduction.md` |
-| See the phase plan / current status | `ROADMAP.md` |
+| See the phase plan / current status | `IMPLEMENTATION.md` |
+| Know how to work in this repo (conventions, voice, code rules) | `../CLAUDE.md` (at repo root) |
 | Argue for / understand a user-experience | `prd/PRD-NNN-*.md` |
 | Look up a settled technical decision | `adr/ADR-NNN-*.md` |
 | Understand an open technical question | `rfc/RFC-NNN-*.md` |
 | Find what's settled in tech | `adr/TA.md` |
 | Find what we promise users | `prd/PA.md` |
 | Contribute vocabulary | `CONTRIBUTING.md`/Vocabulary contributions |
-| Set up the project | (Phase 1 forthcoming — see `ROADMAP.md`) |
+| Set up the project | (Phase 1 forthcoming — see `IMPLEMENTATION.md`) |
 
 ## Conventions
 

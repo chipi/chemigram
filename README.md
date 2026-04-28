@@ -50,7 +50,7 @@ masks and snapshots, and learns across sessions. Two modes:
 | 1 | Core engine + MCP server + starter vocabulary | Not started — next |
 | 2+ | Vocabulary maturation, AI masks, continuous control | Conditional |
 
-For the canonical phase plan and current status, see `docs/ROADMAP.md`.
+For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
 ## Documentation
 
@@ -71,7 +71,7 @@ The definition documents (PRDs, RFCs, ADRs) live in `docs/prd/`, `docs/rfc/`, an
 
 Supporting documents:
 
-- `docs/ROADMAP.md` — canonical phase plan
+- `docs/IMPLEMENTATION.md` — canonical phase plan
 - `docs/LICENSING.md` — what's MIT, what's separate
 - `docs/CONTRIBUTING.md` — code and vocabulary contribution flows
 - `docs/TODO.md` — research backlog, deferred items
