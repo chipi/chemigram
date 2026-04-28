@@ -658,7 +658,8 @@ chemigram/                              # OSS monorepo (engine + vocabulary, per
         pipeline.py                     # PipelineStage protocol + runner
         stages/
           darktable_cli.py              # the v1 stage
-        bind.py                         # EXIF auto-binding for L1/L2
+        exif.py                         # EXIF read for L1 binding (Slice 1)
+        binding.py                      # L1 binding via exact-match identity (Slice 1)
         masking/
           __init__.py                   # MaskingProvider protocol
           coarse_agent.py               # bundled default

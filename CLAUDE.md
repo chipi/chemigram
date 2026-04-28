@@ -321,9 +321,9 @@ The project is currently between phases:
 
 - **Phase 0** (validation) — closed green, 8 findings logged into ADRs
 - **Doc system** — complete (PRDs, RFCs, ADRs, references all populated)
-- **Phase 1** (minimum viable loop) — **in progress**. Slice 1 at 4/5: parser (`chemigram.core.dtstyle`), XMP r/w + synthesizer (`chemigram.core.xmp`), render pipeline (`chemigram.core.pipeline` + `chemigram.core.stages.darktable_cli`) shipped. RFC-001 → ADR-050, RFC-005 → ADR-052, RFC-006 → ADR-051. Issue #5 (EXIF binding) remains.
+- **Phase 1** (minimum viable loop) — **in progress**. Slice 1 components complete: parser (`chemigram.core.dtstyle`), XMP r/w + synthesizer (`chemigram.core.xmp`), render pipeline (`chemigram.core.pipeline` + `chemigram.core.stages.darktable_cli`), EXIF binding (`chemigram.core.exif` + `chemigram.core.binding`). All 4 Slice 1 RFCs closed: RFC-001 → ADR-050, RFC-005 → ADR-052, RFC-006 → ADR-051, RFC-015 → ADR-053. Slice 1 end-to-end gate exercised in Slice 6 (first real session). Slice 2 (versioning) is next.
 
-If you're doing implementation work, you're inside Phase 1 Slice 1 (4/5 issues complete). The slices are described in `IMPLEMENTATION.md`'s Phase 1 section (Slices 1 through 6, each with its scope, gate, and the RFCs that close at that gate).
+If you're doing implementation work, you're at the end of Phase 1 Slice 1 (components complete; gate exercised in Slice 6). The slices are described in `IMPLEMENTATION.md`'s Phase 1 section (Slices 1 through 6, each with its scope, gate, and the RFCs that close at that gate).
 
 If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions are ADRs (closing RFCs as evidence comes in) or new PRDs (when scope expands).
 

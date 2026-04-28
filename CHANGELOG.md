@@ -25,6 +25,13 @@ per ADR-041.
   dtstyle-internal collision validation, and the MCP entry-point re-add.
 
 ### Added
+- `chemigram.core.exif` + `chemigram.core.binding` — EXIF auto-binding (Slice 1,
+  Issue #5). `read_exif` extracts make/model/lens_model/focal_length via
+  `exifread`; `bind_l1` resolves L1 vocabulary entries by exact-match on
+  `(make, model, lens_model)`. RFC-015 closes into **ADR-053**. 14 unit
+  tests + 1 integration test (real D850 NEF).
+- `exifread>=3.0` added to runtime deps (pure-Python, no native deps;
+  fits BYOA + minimal-core spirit per ADR-007).
 - `chemigram.core.pipeline` + `chemigram.core.stages.darktable_cli` — render pipeline
   with `PipelineStage` Protocol, `Pipeline` orchestrator, `DarktableCliStage`
   invoking `darktable-cli` per CLAUDE.md form, and a `render()` convenience entry

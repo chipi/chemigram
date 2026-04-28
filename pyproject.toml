@@ -27,12 +27,15 @@ classifiers = [
 ]
 
 # Runtime dependencies. Kept minimal per BYOA (ADR-007) and dt-orchestration-only
-# (ADR-014). MCP for the agent protocol; defusedxml for safely parsing dtstyle
-# and XMP files (untrusted XML from contributor packs); Jinja2 for the prompt
-# system (Slice 3). Pillow may join when mask manipulation arrives in Slice 4.
+# (ADR-014). defusedxml for safely parsing dtstyle and XMP files (untrusted XML
+# from contributor packs); exifread for L1 vocabulary auto-binding via camera+
+# lens identity (Slice 1, RFC-015 → ADR-053; pure-Python, no native deps);
+# Jinja2 for the prompt system (Slice 3); MCP for the agent protocol (Slice 3).
+# Pillow may join when mask manipulation arrives in Slice 4.
 dependencies = [
     "mcp>=0.9",
     "defusedxml>=0.7",
+    "exifread>=3.0",
     "Jinja2>=3.1",
 ]
 

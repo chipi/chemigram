@@ -67,6 +67,7 @@ ADRs come from two streams:
 | ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
 | ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
+| ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 
 ## Conventions
 

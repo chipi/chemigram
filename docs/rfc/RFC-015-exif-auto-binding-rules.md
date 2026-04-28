@@ -1,9 +1,9 @@
 # RFC-015 — EXIF auto-binding rules
 
-> Status · Draft v0.1
-> TA anchor ·/components/synthesizer ·/components/mcp-server
-> Related · ADR-016
-> Closes into · ADR (pending) — locks the resolution algorithm
+> Status · Decided (closed by ADR-053 at Slice 1 gate, 2026-04-28)
+> TA anchor ·/components/exif-binding
+> Related · ADR-007, ADR-013, ADR-015, ADR-016
+> Closed by · ADR-053 (exact-match on `(make, model, lens_model)`; no fuzzy, no focal-length awareness)
 > Why this is an RFC · ADR-016 commits to L1 empty by default with per-camera+lens bindings. The auto-resolution algorithm — given an image's EXIF, find the right binding template — has multiple plausible shapes. Edge cases (unknown lens, EXIF mangled, multiple matching bindings) need explicit handling. The resolution rules also affect L2 binding (chosen baseline), which has different inputs (camera, lighting context, photographer preference).
 
 ## The question

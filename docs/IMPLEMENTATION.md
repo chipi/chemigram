@@ -16,7 +16,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slice 1 at 4/5 (Issues #1–#4 closed; RFC-001 → ADR-050, RFC-006 → ADR-051, RFC-005 → ADR-052) |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slice 1 components shipped (Issues #1–#5 closed; all 4 Slice 1 RFCs closed → ADR-050, ADR-051, ADR-052, ADR-053). End-to-end gate run pending — see Slice 6. |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
@@ -103,7 +103,7 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 - ✅ **RFC-001** (XMP synthesizer architecture) — closed via Issue #3; closes into **ADR-050** (parser API + error contract). Open follow-up: Path B / iop_order origin.
 - ✅ **RFC-005** (pipeline stage protocol) — closed via Issue #4; closes into **ADR-052** (PipelineStage Protocol + v1 single-stage DarktableCliStage)
 - ✅ **RFC-006** (same-module collision behavior) — closed via Issue #3; closes into **ADR-051** (SET-replace, last-writer-wins, Path B deferred)
-- **RFC-015** (EXIF auto-binding rules) — closes when Issue #5 lands `chemigram.core.exif` + `bind_l1`
+- ✅ **RFC-015** (EXIF auto-binding rules) — closed via Issue #5; closes into **ADR-053** (exact-match on `(make, model, lens_model)`)
 
 **Sketch of what comes out:**
 

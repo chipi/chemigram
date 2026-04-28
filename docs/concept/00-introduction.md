@@ -240,11 +240,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | Yes — Slice 1 at 4/5 (parser, XMP r/w, synthesizer, render pipeline shipped; RFC-001 → ADR-050, RFC-005 → ADR-052, RFC-006 → ADR-051) |
+| Phase 1 implementation started | Yes — Slice 1 components complete (Issues #1–#5 closed; RFC-001 → ADR-050, RFC-005 → ADR-052, RFC-006 → ADR-051, RFC-015 → ADR-053) |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-Phase 1 is in progress. Next action: **Slice 1 Issue #5 (EXIF binding)** — the final piece before Slice 1 closes. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
+Slice 1 components are complete. Next action: **Slice 2 (versioning + mask registry)**. The Slice 1 end-to-end gate (5 primitives applied to a real raw, EXIF auto-bind on 3+ raws) is exercised in Slice 6's first real session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
 
 ---
 

@@ -383,7 +383,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
 | RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
-| RFC-015 | EXIF auto-binding rules | Draft v0.1 | ADR (pending) |
+| RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 
 ### ADRs
 
@@ -441,6 +441,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
 | ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
+| ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 
 ---
 

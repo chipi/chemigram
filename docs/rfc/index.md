@@ -27,7 +27,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
 | RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
-| RFC-015 | EXIF auto-binding rules | Draft v0.1 | ADR (pending) |
+| RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Accepted | ADR-043, ADR-044, ADR-045 |
 | RFC-017 | Evaluation harness and auto-research workflow | Accepted (design); built Phase 5 | ADR-046, ADR-047 |
 
