@@ -16,7 +16,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | Not started — **next** |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slice 1 at 3/5 (Issues #1, #2, #3 closed; RFC-001 → ADR-050, RFC-006 → ADR-051) |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
@@ -100,10 +100,10 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **RFCs that close at this gate:**
 
-- **RFC-001** (XMP synthesizer architecture) — closes because the parser API and synthesizer error contract are exercised by real `.dtstyle` files
-- **RFC-005** (pipeline stage protocol) — closes because the abstraction is either justified (multiple stages emerge naturally) or shown unnecessary (one stage is enough; abstraction deferred)
-- **RFC-006** (same-module collision behavior) — closes because the edge cases get exercised by composing multiple primitives that touch the same module
-- **RFC-015** (EXIF auto-binding rules) — closes because the resolution algorithm gets tested against real raws
+- ✅ **RFC-001** (XMP synthesizer architecture) — closed early via Issue #3 (synthesizer landed); closes into **ADR-050** (parser API + error contract). Open follow-up: Path B / iop_order origin.
+- **RFC-005** (pipeline stage protocol) — closes when Issue #4 lands `DarktableCliStage` and the Pipeline orchestrator
+- ✅ **RFC-006** (same-module collision behavior) — closed early via Issue #3; closes into **ADR-051** (SET-replace, last-writer-wins, Path B deferred)
+- **RFC-015** (EXIF auto-binding rules) — closes when Issue #5 lands `chemigram.core.exif` + `bind_l1`
 
 **Sketch of what comes out:**
 

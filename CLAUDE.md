@@ -321,9 +321,9 @@ The project is currently between phases:
 
 - **Phase 0** (validation) — closed green, 8 findings logged into ADRs
 - **Doc system** — complete (PRDs, RFCs, ADRs, references all populated)
-- **Phase 1** (minimum viable loop) — not started; **this is what's next**
+- **Phase 1** (minimum viable loop) — **in progress**. Slice 1 at 3/5: parser (`chemigram.core.dtstyle`), XMP r/w + synthesizer (`chemigram.core.xmp`) shipped. RFC-001 closed (→ ADR-050), RFC-006 closed (→ ADR-051). Issues #4 (render pipeline) and #5 (EXIF) remain.
 
-If you're doing implementation work, you're starting Phase 1. The slices are described in `IMPLEMENTATION.md`'s Phase 1 section (Slices 1 through 6, each with its scope, gate, and the RFCs that close at that gate).
+If you're doing implementation work, you're inside Phase 1 Slice 1 (3/5 issues complete). The slices are described in `IMPLEMENTATION.md`'s Phase 1 section (Slices 1 through 6, each with its scope, gate, and the RFCs that close at that gate).
 
 If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions are ADRs (closing RFCs as evidence comes in) or new PRDs (when scope expands).
 

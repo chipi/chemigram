@@ -6,6 +6,36 @@ This is not the implementation plan. The implementation plan is in `docs/IMPLEME
 
 ---
 
+## Slice 1 deferrals
+
+Things explicitly punted from Slice 1 as documented in closing ADRs. Track here so they don't get lost.
+
+### Path B — new-instance addition in the synthesizer
+
+**Status:** Deferred per **ADR-051** (closes RFC-006). RFC-001 is `Decided` but its iop_order origin question remains open.
+
+**The gap:** `synthesize_xmp` raises `NotImplementedError` whenever an input plugin's `(operation, multi_priority)` tuple is not present in the baseline XMP (the "add new instance" case). Phase 0 iteration 1 confirmed darktable 5.4.1 silently drops new-instance entries that lack `iop_order`, but neither `.dtstyle` nor XMP carries that attribute in 5.4.1 — so the synthesizer has no source of truth.
+
+**Trigger to revisit:** when a vocabulary primitive needs to add a module instance not present in the baseline auto-presets pipeline (e.g., a drawn-mask gradient, a custom denoise level). At that point, write a follow-up RFC (or amend RFC-001) covering iop_order origin: lookup table per `(operation, modversion)`, vocabulary-manifest declaration, runtime probe of darktable, etc.
+
+**Workaround for Slice 1:** primitives that target operations already present in the baseline (every operation in darktable's auto-applied pipeline) hit Path A and work today.
+
+### dtstyle parser does not validate same-`(operation, multi_priority)` collisions inside one file
+
+**Status:** Deferred per **ADR-051** (RFC-006 proposal #1 not implemented in Slice 1).
+
+**The gap:** the parser accepts a `.dtstyle` containing multiple `<plugin>` records with the same `(operation, multi_priority)`. They each get applied in document order during synthesis (last-writer-wins per ADR-051 rule 3). The original RFC-006 proposal #1 wanted this to be a `DtstyleSchemaError` at parse time.
+
+**Trigger to revisit:** when a real misauthored vocabulary entry surfaces this confusion (vocabulary review process is the first line of defense; CI manifest validation is the second). If/when surfaced, add a parser check.
+
+### `chemigram-mcp` PyPI entry point
+
+**Status:** Removed from `pyproject.toml` `[project.scripts]` until Slice 3.
+
+**The gap:** declaring `chemigram-mcp = "chemigram.mcp.server:main"` before `chemigram/mcp/server.py` exists makes `chemigram-mcp` from the shell raise `ModuleNotFoundError`. Re-add when Slice 3 lands the MCP server.
+
+---
+
 ## Color science reverse-engineering across sensors
 
 **Status:** research direction, possible side project.

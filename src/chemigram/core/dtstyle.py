@@ -180,7 +180,21 @@ def parse_dtstyle(path: Path) -> DtstyleEntry:
     if not plugin_elems:
         raise DtstyleParseError(f"{path}: <style> must contain at least one <plugin>")
 
-    plugins = tuple(_parse_plugin(p, path) for p in plugin_elems)
+    # Parse all plugins, then filter out darktable's auto-applied entries
+    # (multi_name prefixed "_builtin_") per ADR-010. Phase 0 working
+    # notebook recommends this safety-net filter to protect against
+    # contributor authoring errors (the "first attempt" failure mode where
+    # a contaminated dtstyle exports the full default pipeline).
+    plugins_all = tuple(_parse_plugin(p, path) for p in plugin_elems)
+    plugins = tuple(p for p in plugins_all if not p.multi_name.startswith("_builtin_"))
+
+    if not plugins:
+        filtered = len(plugins_all)
+        raise DtstyleParseError(
+            f"{path}: no user-authored <plugin> entries "
+            f"(filtered {filtered} _builtin_* entries; per ADR-010, user "
+            "entries are identified by empty <multi_name>)"
+        )
 
     return DtstyleEntry(
         name=name,

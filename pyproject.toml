@@ -52,8 +52,9 @@ dev = [
     "twine>=5.0",
 ]
 
-[project.scripts]
-chemigram-mcp = "chemigram.mcp.server:main"
+# [project.scripts] — re-added in Slice 3 when chemigram.mcp.server lands.
+# Declaring chemigram-mcp before then would point at a non-existent module
+# and fail at runtime; entry points are not validated at install time.
 
 [project.urls]
 Homepage = "https://github.com/chipi/chemigram"

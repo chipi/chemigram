@@ -240,11 +240,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | No — next |
+| Phase 1 implementation started | Yes — Slice 1 at 3/5 (parser, XMP r/w, synthesizer shipped; RFC-001 → ADR-050, RFC-006 → ADR-051) |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-Next action: **Phase 1** — minimum viable loop. See `docs/IMPLEMENTATION.md` for scope and sequencing.
+Phase 1 is in progress. Next action: **Slice 1 Issues #4 (render pipeline) and #5 (EXIF binding)**. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
 
 ---
 

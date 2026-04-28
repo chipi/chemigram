@@ -117,3 +117,17 @@ def test_file_not_found(tmp_path: Path) -> None:
     nonexistent = tmp_path / "does_not_exist.dtstyle"
     with pytest.raises(FileNotFoundError):
         parse_dtstyle(nonexistent)
+
+
+def test_parser_filters_builtin_plugins() -> None:
+    """ADR-010 + Phase 0 safety-net: _builtin_* plugins are filtered."""
+    entry = parse_dtstyle(FIXTURES / "with_builtin_filtered.dtstyle")
+    assert len(entry.plugins) == 1
+    assert entry.plugins[0].operation == "exposure"
+    assert entry.plugins[0].multi_name == ""
+
+
+def test_parser_raises_when_all_plugins_filtered() -> None:
+    """A dtstyle with only _builtin_* plugins has no user-authored content."""
+    with pytest.raises(DtstyleParseError, match="no user-authored"):
+        parse_dtstyle(FIXTURES / "all_builtin_no_user.dtstyle")

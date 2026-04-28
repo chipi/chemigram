@@ -47,7 +47,7 @@ masks and snapshots, and learns across sessions. Two modes:
 |-|-|-|
 | 0 | Hands-on validation of darktable composition story | ✅ Closed green |
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
-| 1 | Core engine + MCP server + starter vocabulary | Not started — next |
+| 1 | Core engine + MCP server + starter vocabulary | In progress — Slice 1 at 3/5 (parser, XMP r/w, synthesizer shipped; RFC-001 + RFC-006 closed) |
 | 2+ | Vocabulary maturation, AI masks, continuous control | Conditional |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.

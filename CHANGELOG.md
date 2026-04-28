@@ -8,6 +8,22 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Changed
+- `chemigram.core.dtstyle.parse_dtstyle` filters `_builtin_*` plugins per ADR-010
+  (safety-net per the Phase 0 working notebook). Empty post-filter raises
+  `DtstyleParseError`. Two new fixtures cover the filter and the all-filtered case.
+- Added two hex-edited dtstyle fixtures (`expo_plus_1p0`, `expo_minus_0p5`) to
+  reach Slice 1 gate's "5 different vocabulary primitives" requirement.
+- `pyproject.toml` `[project.scripts]` removed `chemigram-mcp` entry point —
+  pointed at non-existent `chemigram.mcp.server:main` and would fail at runtime.
+  Will re-add when Slice 3 ships the MCP server.
+- `docs/IMPLEMENTATION.md`, `README.md`, `docs/concept/00-introduction.md`,
+  `CLAUDE.md`: Phase 1 / Slice 1 status updated from "not started" to
+  "in progress (3/5 issues; RFC-001 + RFC-006 closed)".
+- `docs/adr/TA.md`: `components/synthesizer` "(planned)" → "(shipped)".
+- `docs/TODO.md`: new "Slice 1 deferrals" section tracking Path B,
+  dtstyle-internal collision validation, and the MCP entry-point re-add.
+
 ### Added
 - `chemigram.core.xmp.synthesize_xmp` — XMP synthesizer (Slice 1, Issue #3).
   Path A only (SET-replace by `(operation, multi_priority)`; last-writer-wins on

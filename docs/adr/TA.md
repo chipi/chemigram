@@ -20,7 +20,7 @@ The five subsystems Chemigram's engine decomposes into. Boundaries are stable; p
 
 XMP composition engine. Reads `.dtstyle` files, parses XMPs, synthesizes new XMPs by composing vocabulary entries onto a baseline. Pure file operations — no rendering, no AI.
 
-**Files (planned):** `src/chemigram/core/xmp.py`, `src/chemigram/core/dtstyle.py`
+**Files (shipped):** `src/chemigram/core/xmp.py`, `src/chemigram/core/dtstyle.py` (Slice 1)
 
 **Public API:**
 - `parse_dtstyle(path) → list[PluginEntry]`
