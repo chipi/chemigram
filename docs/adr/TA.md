@@ -313,6 +313,16 @@ Locked technology choices. Each entry has a corresponding ADR.
 | Noise model | darktable profiled denoise | ADR-014 |
 | Color science | darktable scene-referred pipeline | ADR-014 |
 | Subject masking (production) | `chemigram-masker-sam` sibling project | RFC-004 |
+| Build backend | hatchling (via `pyproject.toml`) | ADR-034 |
+| Package layout | `src/`-style, single distribution, two modules (`chemigram.core`, `chemigram.mcp`) | ADR-034 |
+| Dev environment | uv (lockfile: `uv.lock`) | ADR-035 |
+| Test framework | pytest, three tiers (unit / integration / e2e) | ADR-036 |
+| Linter and formatter | ruff (`ruff check` + `ruff format`) | ADR-037 |
+| Type checker | mypy (strict on `chemigram.core`) | ADR-038 |
+| Pre-commit hooks | `pre-commit` framework (ruff + mypy + unit tests on push) | ADR-039 |
+| CI | GitHub Actions, Python 3.11/3.12/3.13, macOS-only for v1 | ADR-040 |
+| Versioning | SemVer (0.x during Phase 1, 1.0.0 at Phase 1 done) | ADR-041 |
+| Distribution | PyPI primary; GitHub releases supplement; TestPyPI for early validation | ADR-042 |
 
 ---
 
@@ -377,6 +387,15 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-031 | Propose-and-confirm for context updates | Accepted |
 | ADR-032 | Distribution split (OSS engine, OSS starter, OSS packs, private personal) | Accepted |
 | ADR-033 | MCP tool surface (initial) | Accepted |
+| ADR-034 | Build system and package layout | Accepted |
+| ADR-035 | Dev environment with uv | Accepted |
+| ADR-036 | Testing strategy: pytest with three tiers | Accepted |
+| ADR-037 | Linting and formatting with ruff | Accepted |
+| ADR-038 | Type checking with mypy strict for core | Accepted |
+| ADR-039 | Pre-commit hooks for local quality gates | Accepted |
+| ADR-040 | CI on GitHub Actions, macOS-only for v1 | Accepted |
+| ADR-041 | SemVer with 0.x for Phase 1 development | Accepted |
+| ADR-042 | Distribution via PyPI, GitHub releases as supplement | Accepted |
 
 ---
 

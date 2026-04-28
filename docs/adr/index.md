@@ -48,6 +48,15 @@ ADRs come from two streams:
 | ADR-031 | Propose-and-confirm for context updates | Accepted |
 | ADR-032 | Distribution split | Accepted |
 | ADR-033 | MCP tool surface (initial) | Accepted |
+| ADR-034 | Build system and package layout (pyproject.toml + hatchling, src/-layout) | Accepted |
+| ADR-035 | Dev environment with uv | Accepted |
+| ADR-036 | Testing strategy: pytest with three tiers | Accepted |
+| ADR-037 | Linting and formatting with ruff | Accepted |
+| ADR-038 | Type checking with mypy strict for core | Accepted |
+| ADR-039 | Pre-commit hooks for local quality gates | Accepted |
+| ADR-040 | CI on GitHub Actions, macOS-only for v1 | Accepted |
+| ADR-041 | SemVer with 0.x for Phase 1 development | Accepted |
+| ADR-042 | Distribution via PyPI, GitHub releases as supplement | Accepted |
 
 ## Conventions
 

@@ -196,6 +196,7 @@ Three-part is typical; longer is acceptable when the move is specific. See the d
 
 ### Stack (locked)
 
+**Runtime stack:**
 - **Python 3.11+** — engine and MCP server (ADR-013)
 - **darktable 5.x** for all image processing (ADR-014)
 - **MCP** as the agent protocol (ADR-006)
@@ -204,11 +205,25 @@ Three-part is typical; longer is acceptable when the move is specific. See the d
 - **Filesystem-based content-addressed storage** for versioning (ADR-018)
 - **PNG (8-bit grayscale)** for masks (ADR-021)
 
+**Build and package:**
+- **`pyproject.toml` + hatchling** as build backend (ADR-034)
+- **`src/`-layout**, single distribution, two modules: `chemigram.core` (engine, no AI deps) and `chemigram.mcp` (MCP server adapter) (ADR-034)
+- **PyPI primary** for distribution; GitHub releases supplement (ADR-042)
+- **SemVer** for versioning, 0.x during Phase 1, 1.0.0 at Phase 1 done (ADR-041)
+
+**Dev tooling:**
+- **uv** for venv + dependencies + lockfile (ADR-035)
+- **pytest** with three tiers: `tests/unit/`, `tests/integration/`, `tests/e2e/` (ADR-036)
+- **ruff** for lint and format — single tool, configured in `pyproject.toml` (ADR-037)
+- **mypy** for type checking, strict on `chemigram.core`, looser elsewhere (ADR-038)
+- **pre-commit** framework with ruff + mypy + unit tests (opt-in but recommended) (ADR-039)
+- **GitHub Actions** for CI, Python 3.11/3.12/3.13 matrix, macOS-only for v1 (ADR-040)
+
 ### Structural rules
 
 - **Single Python process, no daemon, no IPC** between subsystems (ADR-006). State is the filesystem.
 - **One `darktable-cli` instance per configdir at a time.** Render pipeline must serialize subprocess calls (ADR-005).
-- **No PyTorch, no model weights, no AI dependencies in `chemigram_core`.** AI is provided via MCP-configured providers (ADR-007).
+- **No PyTorch, no model weights, no AI dependencies in `chemigram.core`.** AI is provided via MCP-configured providers (ADR-007).
 - **All edit state mutations through the engine's API**, called by the agent. The engine never silently mutates state.
 - **`op_params` and `blendop_params` are opaque hex/base64 blobs.** Do not decode them in v1 (ADR-008). The exception is Path C — limited to high-value modules (currently exposure), only when there's a clear bottleneck.
 

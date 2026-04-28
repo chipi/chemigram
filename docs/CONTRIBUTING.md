@@ -36,13 +36,51 @@ Code contributions that need prior discussion in an issue:
 - Changes to versioning / snapshot format (compatibility-sensitive)
 - Anything touching the SET-semantics or replace-not-accumulate behavior
 
+### Dev setup
+
+Recommended workflow uses **uv** (ADR-035). One-time install:
+
+```bash
+brew install uv               # or: pipx install uv
+git clone https://github.com/chipi/chemigram.git
+cd chemigram
+uv venv
+uv sync --all-extras --dev    # creates .venv/, installs deps + dev extras
+```
+
+Optional but recommended — install pre-commit hooks (ADR-039):
+
+```bash
+uv run pre-commit install
+uv run pre-commit install --hook-type pre-push
+```
+
+Day-to-day commands:
+
+```bash
+uv run pytest tests/unit              # fast unit tests
+uv run pytest tests/integration       # integration tests (requires no darktable)
+uv run pytest tests/e2e               # E2E tests (requires darktable installed locally)
+uv run ruff check                     # lint
+uv run ruff format                    # format
+uv run mypy src/chemigram             # type check
+```
+
+Plain `venv + pip` also works if you prefer:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
 ### Process
 
 Standard GitHub flow:
 
 1. Fork, create a branch with a descriptive name.
 2. Make your changes. Keep PRs focused on one concern.
-3. Add or update tests. New code paths need test coverage.
+3. Add or update tests. New code paths need test coverage in the appropriate tier (unit / integration / e2e — see ADR-036).
 4. Run the test suite locally. CI must pass.
 5. Open a PR with a clear description of *what* changed and *why*.
 6. Address review comments. Be patient — most reviewers are doing this in their evenings.
@@ -50,18 +88,30 @@ Standard GitHub flow:
 
 ### Standards
 
-- Python 3.11+. Type hints expected on public functions.
-- Formatter: `ruff format`. Linter: `ruff check`. CI enforces both.
-- Tests: `pytest`. Aim for ~80% coverage on new code; integration tests welcome.
-- Commit messages: clear and present-tense. We don't enforce conventional commits but appreciate readable history.
-- No CLA required at this stage. By submitting a PR you agree your contribution is licensed under MIT (see `LICENSING.md`).
+- **Python 3.11+** (ADR-013). Type hints expected on public functions.
+- **Formatter and linter:** `ruff format` and `ruff check` (ADR-037). CI enforces both.
+- **Tests:** `pytest` (ADR-036), three tiers. New code paths get tests in the appropriate tier. Coverage targets are pragmatic — high on the synthesizer (pure logic), reasonable elsewhere. No "must hit X%" gate.
+- **Type checking:** `mypy` strict on `chemigram.core` (ADR-038); looser elsewhere.
+- **Pre-commit hooks** are recommended (ADR-039). They run ruff + mypy on every commit and unit tests on push. CI catches the same things if you skip them.
+- **Commit messages:** clear and present-tense. We don't enforce conventional commits but appreciate readable history.
+- **No CLA required** at this stage. By submitting a PR you agree your contribution is licensed under MIT (see `LICENSING.md`).
 
 ### What CI checks
 
-- Tests pass on macOS Apple Silicon (primary target) and Linux (best-effort)
-- Linting and formatting clean
-- Type checks (`mypy --strict` on the core package)
-- Documentation builds (any `*.md` referenced from code as docstrings)
+GitHub Actions runs on every PR (ADR-040):
+
+- Tests pass on macOS Apple Silicon (Python 3.11, 3.12, 3.13)
+- Lint and format checks clean (`ruff check --no-fix` and `ruff format --check`)
+- Type checks pass (`mypy src/chemigram`)
+- Unit and integration tests pass
+
+What CI **doesn't** check (run these locally before releases):
+
+- E2E tests (require darktable installed; not in CI runners)
+- Linux compatibility (deferred to Phase 2)
+- Cross-Python forward compat beyond the matrix
+
+The pre-release script `scripts/pre-release-check.sh` runs the full suite including E2E.
 
 ---
 
