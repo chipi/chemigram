@@ -34,7 +34,7 @@ XMP composition engine. Reads `.dtstyle` files, parses XMPs, synthesizes new XMP
 
 Sequence of stages producing a JPEG from an XMP. v1 has one stage; the abstraction admits N.
 
-**Files (planned):** `src/chemigram/core/pipeline.py`, `src/chemigram/core/stages/darktable_cli.py`
+**Files (shipped):** `src/chemigram/core/pipeline.py`, `src/chemigram/core/stages/__init__.py`, `src/chemigram/core/stages/darktable_cli.py` (Slice 1)
 
 **Public API:**
 - `class PipelineStage(Protocol)` — inputs/outputs/run contract
@@ -373,7 +373,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-002 | Canonical XMP serialization for stable hashing | Draft v0.1 | ADR-018-amendment (pending) |
 | RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
-| RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Draft v0.1 | ADR (pending) |
+| RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
@@ -440,6 +440,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-049 | Vocabulary-starter ships within chemigram (clarifies ADR-032) | Accepted |
 | ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
 | ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
+| ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 
 ---
 

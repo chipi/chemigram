@@ -25,6 +25,12 @@ per ADR-041.
   dtstyle-internal collision validation, and the MCP entry-point re-add.
 
 ### Added
+- `chemigram.core.pipeline` + `chemigram.core.stages.darktable_cli` — render pipeline
+  with `PipelineStage` Protocol, `Pipeline` orchestrator, `DarktableCliStage`
+  invoking `darktable-cli` per CLAUDE.md form, and a `render()` convenience entry
+  point (Slice 1, Issue #4). Per-configdir threading lock per ADR-005;
+  `$DARKTABLE_CLI` env-var override for the macOS .app-bundle case. 13 unit +
+  4 integration tests; RFC-005 closes into **ADR-052**.
 - `chemigram.core.xmp.synthesize_xmp` — XMP synthesizer (Slice 1, Issue #3).
   Path A only (SET-replace by `(operation, multi_priority)`; last-writer-wins on
   input order; preserves baseline `num` and `iop_order`). Path B raises

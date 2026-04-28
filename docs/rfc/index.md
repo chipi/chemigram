@@ -17,7 +17,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-002 | Canonical XMP serialization for stable hashing | Draft v0.1 | ADR-018-amendment (pending) |
 | RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
-| RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Draft v0.1 | ADR (pending) |
+| RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes); deviated from in-call-collision proposal — see ADR rationale |
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |

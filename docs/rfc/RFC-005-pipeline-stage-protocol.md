@@ -1,9 +1,9 @@
 # RFC-005 — Pipeline stage protocol — abstract now or YAGNI
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-052 at Slice 1 gate, 2026-04-28)
 > TA anchor ·/components/render-pipeline
 > Related · ADR-004
-> Closes into · ADR (pending) — settles whether v1 has the abstraction or just the concrete stage
+> Closed by · ADR-052 (PipelineStage Protocol with single v1 stage). The Protocol approach was justified — fake stages make unit-testing trivial, and the seam cost ~50 lines.
 > Why this is an RFC · The architecture (04/8) describes a pipeline with multiple stages, but v1 only has one stage (`darktable-cli`). YAGNI says "just write the function" — abstraction adds complexity for a non-existent second stage. The architecture says "build the seam now to make Phase 3 cleaner." Both have merit. This RFC argues the choice and locks it.
 
 ## The question

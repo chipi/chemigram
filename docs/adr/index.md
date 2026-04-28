@@ -66,6 +66,7 @@ ADRs come from two streams:
 | ADR-049 | Vocabulary-starter ships within chemigram (clarifies ADR-032) | Accepted |
 | ADR-050 | Parser API and synthesizer error contract (closes RFC-001) | Accepted |
 | ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
+| ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 
 ## Conventions
 
