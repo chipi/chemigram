@@ -8,6 +8,51 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-04-29
+
+**Phase 1 closed.** Minimum viable loop shipped end-to-end.
+
+`pip install chemigram` produces a working Mode A agent loop out of the
+box: read context, generate masks via the calling agent's vision, apply
+mask-bound vocabulary primitives, render previews, snapshot, branch,
+checkout, propose-and-confirm taste/notes updates, log vocabulary gaps,
+write JSONL session transcripts.
+
+**Cumulative scope across v0.1.0 → v1.0.0:** dtstyle parser + XMP r/w +
+synthesizer + render pipeline + EXIF binding (v0.1.0); content-addressed
+versioning with snapshots/branches/tags + mask registry (v0.2.0); MCP
+server + 27 tools + workspace orchestrator + Jinja2 prompt system
+(v0.3.0); MaskingProvider Protocol + CoarseAgentProvider sampling-based
+default + real `generate_mask` / `apply_primitive(mask_override=...)`
+(v0.4.0); multi-scope context loaders + JSONL session transcripts + real
+`read_context` + propose/confirm tools + RFC-013 vocabulary-gap schema
+(v0.5.0); minimal starter vocabulary pack + verify-vocab CI check + Mode
+A prompt v2 (v1.0.0).
+
+**13 of 17 RFCs closed** via ADR-050..061 (and RFC-016 via ADR-043/044/045).
+Remaining RFCs are Phase 2+ scope: RFC-007 (modversion drift), RFC-008
+(vocabulary discovery at scale), RFC-012 (programmatic generation Path C).
+
+### Added
+- `pyproject.toml` `version = "1.0.0"`; classifier `Pre-Alpha` → `Beta`.
+- `chemigram-mcp` server reports `version="1.0.0"` on the MCP handshake.
+- Phase status surfaces (`docs/IMPLEMENTATION.md`,
+  `docs/concept/00-introduction.md`, `README.md`, `CLAUDE.md`) updated:
+  Phase 1 closed; Phase 2 (vocabulary maturation) in progress.
+- Slice 6 marked `✅ shipped (v1.0.0)` in IMPLEMENTATION.md.
+
+### What lands after this
+
+Phase 2: use-driven vocabulary maturation. Photographers run real
+sessions; the agent logs gaps; vocabulary grows organically. Phase 2
+doesn't decompose into slices the way Phase 1 did — work is
+intermittent and use-shaped.
+
+## [0.6.0] — pre-release
+
+(Slice 6's pre-tag work, all integrated into 1.0.0; no separate 0.6.0
+tag was cut.)
+
 ### Added
 - **Mode A prompt v2** (`src/chemigram/mcp/prompts/mode_a/system_v2.j2`).
   Refinements based on the v0.4.0 (masking real) and v0.5.0 (context

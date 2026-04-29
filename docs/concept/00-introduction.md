@@ -240,11 +240,13 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | Yes — Slices 1–5 complete (v0.1.0–v0.5.0). Issues #1–#25 closed; thirteen RFCs closed: RFC-001/005/006/015 → ADR-050/052/051/053 (v0.1.0); RFC-002/003 → ADR-054/055 (v0.2.0); RFC-010/016 → ADR-056 (v0.3.0); RFC-004/009 → ADR-058/057 (v0.4.0); RFC-011/013/014 → ADR-059/060/061 (v0.5.0). |
+| Phase 1 complete | ✅ Yes — Slices 1–6 shipped (v0.1.0 through v1.0.0). Issues #1–#29 closed; thirteen RFCs closed (ADR-050..061). |
 
-For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
+For the canonical phase plan and history, see `docs/IMPLEMENTATION.md`.
 
-Slices 1–5 are complete. The MCP surface is real, masking works end-to-end via `CoarseAgentProvider`, and the context layer (tastes + brief + notes + transcripts + RFC-013 vocabulary-gap schema) is exercised through the in-memory MCP harness. **Slice 6 (real-session polish + first photographer evidence + starter-pack populate)** is the only remaining Phase 1 work — it closes the first photographer session against real darktable + a real raw, populates `vocabulary/starter/` with real entries, and ships the Mode A prompt v2 with evidence-shaped revisions. After Slice 6: 1.0.0. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
+Phase 1 is closed at **v1.0.0**: the engine ships a working agent loop end-to-end. Mode A connects via MCP, the bundled `CoarseAgentProvider` produces masks via the calling agent's vision, the context layer reads tastes/brief/notes and writes back through propose-and-confirm, session transcripts capture every turn, and a small starter vocabulary pack ships with `pip install chemigram`.
+
+**Phase 2 (vocabulary maturation)** is now in progress. It's a use-phase, not a build-phase: the photographer runs real Mode A sessions, the agent flags gaps via `log_vocabulary_gap`, and a vocabulary-authoring evening per month grows the personal vocabulary pack. See `docs/IMPLEMENTATION.md` Phase 2 section for the work shape and `vocabulary/starter/README.md` for the personal-vocabulary growth pattern.
 
 ---
 

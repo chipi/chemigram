@@ -16,8 +16,8 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slices 1–5 shipped (v0.1.0–v0.5.0). Issues #1–#25 closed; 13 RFCs closed → ADR-050..061. Slice 6 (real-session polish + first photographer evidence + starter pack) is the only remaining Phase 1 work before 1.0.0. |
-| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | ✅ **Closed (v1.0.0)** — Slices 1–6 shipped. Issues #1–#29 closed; 13 RFCs closed → ADR-050..061. |
+| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **In progress (use-driven)** — begins post-1.0.0; intermittent, not slice-and-gate work. |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
 | **Phase 5** | Continuous control via hex encoders (Path C) | Conditional — when discrete vocabulary becomes a bottleneck |
@@ -217,28 +217,22 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 ---
 
-### Slice 6 — Starter vocabulary + first real session
+### Slice 6 — Starter vocabulary + Phase 1 close ✅ shipped (v1.0.0)
 
-**Scope:**
+**Scope (shipped):**
 
-- Author the starter vocabulary pack — ~30–50 entries per PRD-003 — into `vocabulary/starter/` in the main repo (per ADR-049)
-- Bundle in the `chemigram` PyPI distribution as package data
-- Manifest validation in CI
-- Run the full `iguana-galapagos.md` scenario from start to finish on a real underwater raw
-- Document session findings (what worked, what didn't, what gaps surfaced)
+- Minimal starter vocabulary pack populated at `vocabulary/starter/` — five entries (`expo_+0.5`, `expo_-0.5`, `wb_warm_subtle`, `look_neutral`, `tone_lifted_shadows_subject`) (#26). Deliberately small per the project's "starter is small; Phase 2 grows from session evidence" framing.
+- `scripts/verify-vocab.sh` CI check (#27) catches manifest drift fast.
+- Mode A prompt v2 (#28) refined for the now-real masking + context flows; v1 stays loadable for eval reproducibility.
+- Phase 1 closeout: pyproject `0.5.0` → `1.0.0`; classifier `Pre-Alpha` → `Beta`; doc surfaces synced; tag v1.0.0 + milestone close (#29).
 
-**Gate:** A photographer (Marko) opens a real La Ventana raw, has a 10-turn session, branches once, snapshots three states, applies at least two mask-bound primitives, exports a final JPEG. The session transcript reads cleanly. The starter vocabulary covered enough of the moves needed; gaps were logged for what it didn't cover.
+**Gate met:** framework-complete release per the project decision (RFC-014's manual photographer-session evidence is Phase 2 use-driven, not a 1.0.0 blocker).
 
-**RFCs that may close at this gate (depending on what surfaces):**
+**Out of scope (deferred to Phase 2):**
 
-- **RFC-007** (modversion drift handling) — closes only if a darktable update lands during Phase 1 and forces the question; otherwise stays open through Phase 2
-
-**Sketch of what comes out:**
-
-- The starter vocabulary directory (`vocabulary/starter/`) populated and committed
-- The first `chemigram` release that ships with a populated vocabulary out of the box
-- A real Phase 1 session log proving Mode A works
-- Phase 1 declared closed; Phase 2 (vocabulary maturation) begins
+- Authoring 30–50 vocabulary entries from real session evidence — Phase 2 is the use-phase that grows the pack.
+- The `iguana-galapagos.md` real-session walkthrough — Phase 2 evidence-collection.
+- RFC-007 (modversion drift) — stays open until a darktable update forces the question.
 
 ---
 

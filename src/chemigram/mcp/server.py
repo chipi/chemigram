@@ -86,7 +86,7 @@ def build_server(
 
     server: Server[Any, Any] = Server(
         name="chemigram-mcp",
-        version="0.3.0",
+        version="1.0.0",
         instructions="Chemigram — agent-driven photo editing on darktable.",
     )
 

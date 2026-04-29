@@ -317,17 +317,18 @@ Don't commit a partial state change. Either all related files update together, o
 
 ## Phase awareness
 
-The project is currently between phases:
+The project is currently in **Phase 2** (vocabulary maturation):
 
 - **Phase 0** (validation) — closed green, 8 findings logged into ADRs
 - **Doc system** — complete (PRDs, RFCs, ADRs, references all populated)
-- **Phase 1** (minimum viable loop) — **in progress**. Slices 1–5 shipped (v0.1.0–v0.5.0). v0.1.0: dtstyle parser, XMP r/w + synthesizer, render pipeline, EXIF binding. v0.2.0: versioning package (canonical_bytes/xmp_hash, ImageRepo, snapshot/checkout/branch/log/diff/tag, mask registry). v0.3.0: `chemigram.core.vocab`, `chemigram.mcp.prompts`, `chemigram.mcp.server` framework, 27 MCP tools, `chemigram.core.workspace` orchestrator. v0.4.0: `chemigram.core.masking` (Protocol + CoarseAgentProvider sampling-based default), real generate_mask/regenerate_mask, mask-bound L3 vocabulary entries with `apply_primitive(mask_override=...)`. v0.5.0: `chemigram.core.context` (multi-scope tastes per ADR-048, brief/notes/log/gap loaders), `chemigram.core.session` (JSONL transcripts), real read_context + propose/confirm tools, RFC-013 vocabulary-gap schema upgrade. 13 of 17 RFCs closed: RFC-001 → ADR-050, RFC-002 → ADR-054, RFC-003 → ADR-055, RFC-004 → ADR-058, RFC-005 → ADR-052, RFC-006 → ADR-051, RFC-009 → ADR-057, RFC-010 → ADR-056, RFC-011 → ADR-059, RFC-013 → ADR-060, RFC-014 → ADR-061, RFC-015 → ADR-053, RFC-016 → ADR-043/044/045. Slice 6 (real-session polish + first photographer evidence + starter pack) is the last Phase 1 work before 1.0.0.
+- **Phase 1** (minimum viable loop) — ✅ **closed at v1.0.0**. All six slices shipped: parser/XMP/synthesizer/render/EXIF (v0.1.0), versioning + masks (v0.2.0), MCP server + 27 tools + workspace + prompts (v0.3.0), masking provider + mask-bound L3 (v0.4.0), context + session transcripts (v0.5.0), starter vocabulary + Mode A v2 + 1.0.0 (v1.0.0). 13 of 17 RFCs closed: RFC-001/002/003/004/005/006/009/010/011/013/014/015/016 → ADR-050..061; RFC-016 closes via ADR-043/044/045.
+- **Phase 2** (vocabulary maturation) — **in progress (use-driven)**. Intermittent, not slice-and-gate. The work shape: run real sessions, log gaps via `log_vocabulary_gap`, periodically open darktable to capture missing primitives as `.dtstyle` files, drop into `~/.chemigram/vocabulary/personal/`. Markers: ~30–60 personal entries after 3 months. Phase 2 ends when the architecture itself can't satisfy a class of need (triggers Phase 3, 4, or 5).
 
-If you're doing implementation work, you're at the end of Phase 1 Slice 5 (context layer + transcripts complete). Slice 6 is the closer: connect Claude Code to a running `chemigram-mcp` against a real Phase 0 NEF, run a multi-turn session, observe quality, populate `vocabulary/starter/` with real entries, ship Mode A prompt v2 with evidence-shaped revisions. The slices are described in `IMPLEMENTATION.md`'s Phase 1 section.
+If you're doing implementation work, Phase 1 is closed; you're either maintaining Phase 1 (bug fixes, polish, doc updates) or starting Phase 2 work (authoring vocabulary entries, running sessions, logging findings). The Phase 2 framing is in `IMPLEMENTATION.md` § "Phase 2 — Vocabulary maturation"; the personal-vocabulary growth pattern is in `vocabulary/starter/README.md`.
 
-If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions are ADRs (closing RFCs as evidence comes in) or new PRDs (when scope expands).
+If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions now are ADRs (closing remaining open RFCs as evidence comes in) or new PRDs (when scope expands).
 
-If you're doing vocabulary work, you're in Phase 2 (vocabulary maturation) — but only after Phase 1 ships.
+If you're doing vocabulary work, this is Phase 2 — open darktable, capture moves you reached for that didn't exist in your personal pack, drop them in.
 
 ---
 
