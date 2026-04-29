@@ -52,6 +52,7 @@ def build_server(
     vocabulary: VocabularyIndex | None = None,
     prompts: PromptStore | None = None,
     masker: Any = None,
+    transcript: Any = None,
 ) -> tuple[Server[Any, Any], ToolContext]:
     """Construct the MCP ``Server`` with handlers wired to the tool registry.
 
@@ -76,7 +77,12 @@ def build_server(
         prompts = PromptStore(_resolve_prompts_root())
 
     register_all()
-    context = ToolContext(vocabulary=vocabulary, prompts=prompts, masker=masker)
+    context = ToolContext(
+        vocabulary=vocabulary,
+        prompts=prompts,
+        masker=masker,
+        transcript=transcript,
+    )
 
     server: Server[Any, Any] = Server(
         name="chemigram-mcp",
@@ -99,24 +105,67 @@ def build_server(
     async def _call_tool(
         name: str, arguments: dict[str, Any]
     ) -> tuple[list[types.ContentBlock], dict[str, Any]]:
-        spec = get_tool(name)
-        if spec is None:
-            err = ToolError(
-                code=ErrorCode.NOT_FOUND,
-                message=f"unknown tool {name!r}",
-                recoverable=False,
-            )
-            payload = ToolResult.fail(err).to_payload()
-            return (
-                [types.TextContent(type="text", text=json.dumps(payload, indent=2))],
-                payload,
-            )
-        result = await spec.handler(arguments, context)
-        payload = result.to_payload()
-        text = json.dumps(payload, indent=2, default=str)
-        return ([types.TextContent(type="text", text=text)], payload)
+        return await _dispatch_tool(name, arguments, context)
 
     return server, context
+
+
+async def _dispatch_tool(
+    name: str,
+    arguments: dict[str, Any],
+    context: ToolContext,
+) -> tuple[list[types.ContentBlock], dict[str, Any]]:
+    """One tool dispatch: transcript hooks + spec lookup + handler call."""
+    _record_tool_call(context, name, arguments)
+
+    spec = get_tool(name)
+    if spec is None:
+        err = ToolError(
+            code=ErrorCode.NOT_FOUND,
+            message=f"unknown tool {name!r}",
+            recoverable=False,
+        )
+        payload = ToolResult.fail(err).to_payload()
+        _record_tool_result(context, name, success=False, error_code=ErrorCode.NOT_FOUND.value)
+        return (
+            [types.TextContent(type="text", text=json.dumps(payload, indent=2))],
+            payload,
+        )
+
+    result = await spec.handler(arguments, context)
+    payload = result.to_payload()
+    _record_tool_result(
+        context,
+        name,
+        success=result.success,
+        error_code=(result.error.code.value if result.error else None),
+    )
+    text = json.dumps(payload, indent=2, default=str)
+    return ([types.TextContent(type="text", text=text)], payload)
+
+
+def _record_tool_call(context: ToolContext, name: str, arguments: dict[str, Any]) -> None:
+    if context.transcript is None:
+        return
+    try:
+        context.transcript.append_tool_call(name, arguments)
+    except Exception:
+        logger.warning("transcript append_tool_call failed", exc_info=True)
+
+
+def _record_tool_result(
+    context: ToolContext,
+    name: str,
+    *,
+    success: bool,
+    error_code: str | None,
+) -> None:
+    if context.transcript is None:
+        return
+    try:
+        context.transcript.append_tool_result(name, success=success, error_code=error_code)
+    except Exception:
+        logger.warning("transcript append_tool_result failed", exc_info=True)
 
 
 async def _run_stdio() -> None:

@@ -9,6 +9,26 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.session` package per ADR-029. `SessionTranscript`
+  writes JSONL transcripts to `<workspace>/sessions/<session_id>.jsonl`:
+  header line on open, per-turn entries (`tool_call`, `tool_result`,
+  `proposal`, `confirmation`, `note`), footer on close. Append-only,
+  flushed per write — crashes lose ≤1 entry. `start_session(workspace,
+  …)` factory; uuid4 hex session_id by default.
+- `chemigram.mcp.registry.ToolContext.transcript: Any = None` field.
+  When a transcript is configured, the server's tool dispatch auto-
+  appends `tool_call` (with arguments) + `tool_result` (with success +
+  error_code) entries. Transcript I/O failures are caught and logged —
+  they never abort tool dispatch.
+- `chemigram.mcp.server.build_server(transcript=...)` kwarg.
+- `chemigram.mcp.server._dispatch_tool` extracted from the call_tool
+  handler so transcript wiring + spec lookup + handler call sit in one
+  place; reduces mccabe complexity below the project threshold.
+- 14 unit tests (transcript shape + idempotency + serialize-failure
+  resilience) + 2 integration tests (transcript wired through MCP
+  dispatch + transcript-failure-doesn't-abort-dispatch).
+
+### Added
 - MCP `generate_mask` / `regenerate_mask` real implementations replacing
   the v0.3.0 slice=4 stubs. Tools render the current XMP to a cached
   preview (hash-keyed in `<workspace>/previews/_for_mask_*.jpg`), pass it

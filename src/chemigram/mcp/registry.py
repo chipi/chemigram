@@ -35,6 +35,7 @@ class ToolContext:
     prompts: Any  # PromptStore
     workspaces: dict[str, Any] = field(default_factory=dict)
     masker: Any = None  # MaskingProvider | None (Slice 4)
+    transcript: Any = None  # SessionTranscript | None (Slice 5)
 
 
 ToolHandler = Callable[[dict[str, Any], ToolContext], Awaitable[ToolResult[Any]]]
