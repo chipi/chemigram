@@ -1,6 +1,8 @@
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Phase 2 playbook: phase-2-playbook.md
+  - Phase 3 preview: phase-3-preview.md
   - Roadmap & TODO: TODO.md
   - API Reference:
       - api
