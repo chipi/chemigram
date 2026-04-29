@@ -56,6 +56,11 @@ def _render_to(
 
     xmp_path = workspace.previews_dir / f"_render_{uuid4().hex}.xmp"
     write_xmp(xmp, xmp_path)
+    # darktable-cli auto-appends `_01`, `_02`, ... when the output path
+    # already exists, silently writing to a different file. Our
+    # caller-visible contract is "the bytes at output_path are this
+    # render's output", so unlink the existing slot first.
+    output_path.unlink(missing_ok=True)
     try:
         result = render(
             raw_path=workspace.raw_path,
