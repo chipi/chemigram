@@ -122,6 +122,17 @@ async def _generate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult[d
         result = ctx.masker.generate(target=target, render_path=preview, prompt=prompt)
     except MaskingError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
+    except Exception as exc:
+        # MaskingProvider is BYOA (ADR-007) — third-party code. Any
+        # unexpected exception from a provider is the provider's
+        # concern; convert it to a structured masking_error so the
+        # agent never sees a raw stack trace.
+        return ToolResult.fail(
+            ToolError(
+                code=ErrorCode.MASKING_ERROR,
+                message=f"masker raised {type(exc).__name__}: {exc}",
+            )
+        )
 
     entry = register_mask(
         workspace.repo,
@@ -197,6 +208,15 @@ async def _regenerate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult
         )
     except MaskingError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
+    except Exception as exc:
+        # See _generate_mask: provider is BYOA, any unexpected
+        # exception becomes a structured masking_error.
+        return ToolResult.fail(
+            ToolError(
+                code=ErrorCode.MASKING_ERROR,
+                message=f"masker raised {type(exc).__name__}: {exc}",
+            )
+        )
 
     entry = register_mask(
         workspace.repo,
