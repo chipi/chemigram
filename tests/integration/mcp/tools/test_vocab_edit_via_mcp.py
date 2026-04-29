@@ -84,7 +84,8 @@ def test_apply_primitive_via_mcp(server_and_ctx: Any) -> None:
     assert state_payload["data"]["head_hash"] == apply_payload["data"]["snapshot_hash"]
 
 
-def test_mask_override_via_mcp_returns_slice_4(server_and_ctx: Any) -> None:
+def test_mask_override_on_global_entry_rejected_via_mcp(server_and_ctx: Any) -> None:
+    """mask_override on a non-mask-bound entry → INVALID_INPUT (was slice=4 in v0.3.0)."""
     server, _ = server_and_ctx
 
     async def _exercise() -> dict:
@@ -101,8 +102,7 @@ def test_mask_override_via_mcp_returns_slice_4(server_and_ctx: Any) -> None:
 
     payload = anyio.run(_exercise)
     assert payload["success"] is False
-    assert payload["error"]["code"] == "not_implemented"
-    assert payload["error"]["details"].get("slice") == 4
+    assert payload["error"]["code"] == "invalid_input"
 
 
 def test_reset_via_mcp(server_and_ctx: Any) -> None:

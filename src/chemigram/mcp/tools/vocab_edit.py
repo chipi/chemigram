@@ -18,6 +18,7 @@ from dataclasses import replace
 from typing import Any
 
 from chemigram.core.versioning import RefNotFoundError, RepoError
+from chemigram.core.versioning.masks import MaskNotFoundError
 from chemigram.core.versioning.ops import VersioningError, checkout, snapshot
 from chemigram.core.vocab import VocabEntry
 from chemigram.core.xmp import synthesize_xmp
@@ -28,7 +29,6 @@ from chemigram.mcp.errors import (
     ToolResult,
     error_invalid_input,
     error_not_found,
-    error_not_implemented,
 )
 from chemigram.mcp.registry import ToolContext, register_tool
 
@@ -133,13 +133,26 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     if entry is None:
         return ToolResult.fail(error_not_found(f"primitive {primitive_name!r}"))
 
-    if mask_override is not None:
+    if entry.mask_kind == "raster":
+        target_name = mask_override or entry.mask_ref
+        if target_name is None:
+            return ToolResult.fail(
+                error_invalid_input(
+                    f"primitive {primitive_name!r} is raster-mask-bound "
+                    "but neither entry.mask_ref nor mask_override is set"
+                )
+            )
+        try:
+            from chemigram.mcp.tools._masks_apply import materialize_mask_for_dt
+
+            materialize_mask_for_dt(workspace, target_name)
+        except MaskNotFoundError as exc:
+            return ToolResult.fail(error_not_found(str(exc)))
+    elif mask_override is not None:
         return ToolResult.fail(
-            error_not_implemented(
-                "mask_override requires Slice 4 (real masking provider); "
-                "the parameter is accepted now to lock the API shape but the "
-                "code path returns NOT_IMPLEMENTED until the provider lands.",
-                slice=4,
+            error_invalid_input(
+                f"primitive {primitive_name!r} (mask_kind={entry.mask_kind!r}) "
+                "doesn't accept mask_override"
             )
         )
 

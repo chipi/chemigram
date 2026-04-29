@@ -9,6 +9,26 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `apply_primitive(mask_override=…)` real path replacing the v0.3.0
+  slice=4 stub. Mask-bound L3 entries (`mask_kind: "raster"`) now require
+  a registered mask matching `entry.mask_ref` (or the override) to be
+  present in the per-image registry; the tool materializes the PNG to
+  `<workspace>/masks/<name>.png` (where darktable-cli reads raster
+  masks) before snapshotting.
+- `chemigram.mcp.tools._masks_apply.materialize_mask_for_dt(workspace,
+  mask_name)` helper. Idempotent — skips the write if the file already
+  matches the registered hash.
+- Test pack gained `tone_lifted_shadows_subject` mask-bound L3 entry
+  (`mask_kind: "raster"`, `mask_ref: "current_subject_mask"`).
+
+### Changed
+- `apply_primitive(mask_override=...)` no longer returns
+  `NOT_IMPLEMENTED slice=4`; now returns `INVALID_INPUT` if passed on a
+  non-mask-bound entry, `NOT_FOUND` if the referenced mask isn't
+  registered, or success with the mask materialized otherwise. (Pre-
+  release; no migration concerns.)
+
+### Added
 - `chemigram.core.session` package per ADR-029. `SessionTranscript`
   writes JSONL transcripts to `<workspace>/sessions/<session_id>.jsonl`:
   header line on open, per-turn entries (`tool_call`, `tool_result`,
