@@ -99,6 +99,21 @@ def init_workspace_root(root: Path) -> None:
         (root / sub).mkdir(exist_ok=True)
 
 
+def tastes_dir() -> Path:
+    """Global tastes directory (per ADR-048).
+
+    Defaults to ``~/.chemigram/tastes/``. Override via the
+    ``CHEMIGRAM_TASTES_DIR`` env var (used by tests for isolation and by
+    photographers who want a non-standard location).
+    """
+    import os
+
+    raw = os.environ.get("CHEMIGRAM_TASTES_DIR")
+    if raw:
+        return Path(raw).expanduser().resolve()
+    return Path.home() / ".chemigram" / "tastes"
+
+
 _SAFE_ID = re.compile(r"[^a-zA-Z0-9_.-]+")
 
 

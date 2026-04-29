@@ -9,6 +9,18 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.context` package — loaders for the agent's first turn:
+  `Tastes` (multi-scope per ADR-048: `_default.md` + brief-declared genres
+  with conflict surfacing), `Brief` (parses `Tastes:` line + intent),
+  `Notes` (line-truncation summarization per RFC-011: first 10 + last 30
+  + ellision marker), `RecentLog` (tail of `log.jsonl`, newest first,
+  partial-line tolerant), `RecentGaps` (handles both v0.3.0 minimal and
+  post-#24 RFC-013 schemas).
+- `chemigram.core.workspace.tastes_dir()` — resolves the global tastes
+  directory; defaults to `~/.chemigram/tastes/`, override via
+  `CHEMIGRAM_TASTES_DIR` env var.
+- 22 unit tests covering all loaders + the env override + backwards-compat
+  for legacy gap records.
 - `chemigram.core.masking` package — `MaskingProvider` Protocol, `MaskResult`
   dataclass, exception hierarchy (`MaskingError`, `MaskGenerationError`,
   `MaskFormatError`). Sync contract; async path reserved for a follow-up RFC.
