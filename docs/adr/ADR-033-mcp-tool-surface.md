@@ -82,4 +82,6 @@ Negative:
 
 ## Implementation notes
 
-`src/chemigram_mcp/server.py` registers each tool with the MCP framework. RFC-010 specifies parameter shapes, return schemas, and error contracts. Each tool's implementation delegates to `chemigram_core` (e.g., `apply_primitive` → `xmp.synthesize_xmp` + `versioning.snapshot` + `pipeline.render`).
+`src/chemigram/mcp/server.py` boots the registry; tool implementations live under `src/chemigram/mcp/tools/*` and register themselves at module load. RFC-010 specifies parameter shapes, return schemas, and error contracts (closed by ADR-056 with the v0.3.0 surface as evidence). Each tool's implementation delegates to `chemigram.core` (e.g., `apply_primitive` → `xmp.synthesize_xmp` + `versioning.snapshot`; `render_preview` → `pipeline.render`).
+
+> **Errata (2026-04-29):** earlier drafts used the underscore-form path `src/chemigram_mcp/server.py` and the package name `chemigram_core`. The shipped layout uses the `chemigram.mcp` and `chemigram.core` namespaces (single distribution per ADR-034). ADR-056 supersedes this paragraph for path-of-truth questions.

@@ -1,9 +1,16 @@
 # RFC-010 — MCP tool surface — parameter shapes and error contracts
 
-> Status · Draft v0.1
+> Status · Decided
+> Date · drafted 2026-04; closed 2026-04-29
 > TA anchor ·/components/mcp-server ·/contracts/mcp-tools
 > Related · ADR-033, RFC-001, RFC-009
-> Closes into · ADR (pending) — locks parameter shapes and error contracts
+> Closes into · ADR-056 (parameter shapes + return contract + error code enum + state_after shape)
+>
+> **Closure note (2026-04-29):** RFC-010 closes via ADR-056 with the
+> v0.3.0 surface as evidence. 27 tools registered through
+> `chemigram.mcp.registry`, exercised end-to-end by
+> `tests/integration/mcp/test_full_session.py`. ADR-033 stays as the
+> initial sketch; ADR-056 supersedes its implementation-path detail.
 > Why this is an RFC · ADR-033 lists the 30 v1 MCP tools. But the parameter shapes (types, required vs optional, default values), return shapes (success and error formats), and error contracts (what conditions surface as which errors) are open. The agent's behavior depends critically on these — clear contracts make the agent reliable; ambiguous contracts make it brittle.
 
 ## The question

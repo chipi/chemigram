@@ -22,7 +22,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Draft v0.1 | ADR (pending) |
-| RFC-010 | MCP tool surface — parameter shapes and errors | Draft v0.1 | ADR (pending) |
+| RFC-010 | MCP tool surface — parameter shapes and errors | Decided | ADR-056 (closes) |
 | RFC-011 | Agent context loading order and format | Draft v0.1 | ADR-031 (pending) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |

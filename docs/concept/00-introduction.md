@@ -240,11 +240,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | Yes — Slice 1 (v0.1.0) and Slice 2 (v0.2.0) components complete. Issues #1–#9 closed; six RFCs closed (RFC-001/005/006/015 in v0.1.0 → ADR-050/052/051/053; RFC-002/003 in v0.2.0 → ADR-054/055). |
+| Phase 1 implementation started | Yes — Slices 1–3 complete (v0.1.0, v0.2.0, v0.3.0). Issues #1–#16 closed; eight RFCs closed: RFC-001/005/006/015 in v0.1.0 → ADR-050/052/051/053; RFC-002/003 in v0.2.0 → ADR-054/055; RFC-010/016 in v0.3.0 → ADR-056 (RFC-016 closure landed in #11). |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-Slice 1 and Slice 2 components are complete. Next action: **Slice 3 (MCP server + tool surface)** — adapts `chemigram.core` as agent-callable tools and bootstraps the prompt system. End-to-end gate runs (real darktable renders, real session flow) are exercised in Slice 6's first photographer session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
+Slices 1–3 are complete; the MCP surface is real and exercised end-to-end through an in-memory client. **Slice 4 (real masking provider)** and **Slice 5 (context layer)** are parallel-unblocked — they ran behind Slice 3's tool surface and can now proceed independently. End-to-end gate runs against real darktable + a real raw remain Slice 6's first photographer session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
 
 ---
 

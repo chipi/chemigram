@@ -78,11 +78,11 @@ Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
 
 Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
-**Files (planned):** `src/chemigram/mcp/server.py`
+**Files (shipped v0.3.0):** `src/chemigram/mcp/server.py` (bootstrap + stdio), `src/chemigram/mcp/registry.py` (tool registry + `ToolContext`), `src/chemigram/mcp/errors.py` (`ToolResult` / `ToolError` / `ErrorCode`), `src/chemigram/mcp/_test_harness.py` (in-memory client/server harness), `src/chemigram/mcp/tools/*` (27 tools across vocab/edit, versioning, rendering, ingest, masks, plus context stubs).
 
 **Tool surface:** see TA/contracts/mcp-tools.
 
-**Anchored from:** ADR-006, ADR-033
+**Anchored from:** ADR-006, ADR-033, ADR-056 (closes RFC-010)
 
 ### components/prompts
 
@@ -381,7 +381,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Draft v0.1 | ADR-022 (pending) |
-| RFC-010 | MCP tool surface — parameter shapes and error contracts | Draft v0.1 | ADR (pending) |
+| RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
 | RFC-011 | Agent context loading order and format | Draft v0.1 | ADR-031 (pending) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
@@ -448,6 +448,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
 | ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
+| ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
 
 ---
 

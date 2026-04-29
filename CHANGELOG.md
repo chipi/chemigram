@@ -8,6 +8,35 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-29
+
+Slice 3 of Phase 1 — agent-callable MCP tool surface.
+
+### Added
+- **End-to-end Mode A gate test** (`tests/integration/mcp/test_full_session.py`)
+  drives ingest → bind_layers → list_vocabulary → apply_primitive (×2 across
+  branches) → snapshot → branch + checkout → diff → tag → log →
+  log_vocabulary_gap → read_context (stub) end-to-end through the in-memory
+  client/server harness. The render path is exercised conditionally on
+  `darktable-cli` availability; with placeholder raw bytes the contract still
+  holds (clean `darktable_error`).
+- **ADR-056** — closes RFC-010 with the v0.3.0 surface as evidence. Locks the
+  return contract (`{success, data, error}`), the closed `ErrorCode` enum
+  (9 codes), the `state_after` shape, and tool-naming conventions. ADR-033
+  is preserved; ADR-056 supersedes its implementation-path note.
+- ADR-033 implementation-note errata: shipped paths use the `chemigram.mcp`
+  / `chemigram.core` namespaces (not the underscore forms in earlier drafts).
+- **Doc surface sync:**
+  - `docs/concept/04-architecture.md` gained paragraphs on the MCP component,
+    prompt system, and workspace orchestrator.
+  - `docs/adr/TA.md` `components/mcp-server` and `components/prompts` move
+    from `(planned)` → `(shipped)`; `## map` updated for RFC-010 / RFC-016
+    closure and ADR-056 acceptance.
+  - `docs/IMPLEMENTATION.md`, `docs/concept/00-introduction.md`, `README.md`,
+    `CLAUDE.md` — Phase 1 status synced to "Slices 1–3 shipped; Slices 4
+    (masking) and 5 (context) parallel-unblocked."
+- **Version bump** `0.2.0` → `0.3.0` in `pyproject.toml`.
+
 ### Added
 - **MCP tool batch 3 (ingest + workspace + masks):**
   - `chemigram.core.workspace.ingest_workspace` plus `workspace_id_for`

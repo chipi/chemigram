@@ -64,6 +64,12 @@ Chemigram has five subsystems with stable boundaries:
 
 The five are decoupled enough that 1-4 are testable without an agent involved, and the MCP server is a thin layer over the rest.
 
+The **MCP component** (subsystem 5) is implemented in `chemigram.mcp` and shipped in v0.3.0. It boots the official `mcp` SDK over stdio, loads vocabulary + prompts at startup, and dispatches every tool through a small registry (`chemigram.mcp.registry`). Tools return structured `ToolResult` payloads — `{success, data, error}` with a closed `ErrorCode` enum — so agents can branch on category without parsing messages. Tool implementations live under `chemigram.mcp.tools.*` (vocab/edit, versioning, rendering, ingest, masks, context stubs); they're thin wrappers around `chemigram.core` plus the workspace registry. ADR-056 (closing RFC-010) locks the parameter shapes and error contract.
+
+The **prompt system** (`chemigram.mcp.prompts`, also v0.3.0) is the agent's pre-loaded operating manual. Templates live as Jinja2 files at `<task>_v<N>.j2`; `MANIFEST.toml` declares which version is active per task. The MCP server renders the active version of `mode_a/system` at session start and provides it to the agent as the system prompt. Versions are append-only — once `system_v1.j2` ships, new iterations land alongside as `system_v2.j2`, `system_v3.j2`, etc., independent of package SemVer. ADR-043/044/045 cover the design; RFC-016 closes with the v0.3.0 implementation.
+
+The **workspace orchestrator** (`chemigram.core.workspace.Workspace`) is the runtime handle for one image. `Workspace.ingest_workspace(raw_path, …)` symlinks the raw, reads EXIF, runs the L1 binding lookup, builds a baseline XMP, snapshots it, tags `baseline`, and returns a `Workspace` ready for the rest of the tools to operate on. The MCP server's tool context carries a per-session `dict[str, Workspace]` keyed by `image_id` — `ingest` populates it, every other tool reads from it. The directory layout under each workspace follows `TA/contracts/per-image-repo`.
+
 ---
 
 ## 3. The XMP foundation
