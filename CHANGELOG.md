@@ -9,6 +9,12 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `scripts/verify-vocab.sh` — CI manifest-validation check, same shape
+  as `verify-prompts.sh`. Runs `VocabularyIndex(pack_root)` + asserts
+  the eager-load succeeds; exits ≠0 on `ManifestError`. Picks up `uv
+  run python` if available, falls back to bare `python3` for activated
+  venvs. Wired into `make ci` (step 8/8) and
+  `.github/workflows/ci.yml`.
 - **Starter vocabulary pack populated.** `vocabulary/starter/` ships 5
   entries (deliberately small per IMPLEMENTATION.md; Phase 2 grows the
   pack from real session evidence): `expo_+0.5`, `expo_-0.5`,

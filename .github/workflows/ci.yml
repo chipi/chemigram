@@ -51,3 +51,6 @@ jobs:
 
       - name: Verify prompt manifest
         run: ./scripts/verify-prompts.sh
+
+      - name: Verify vocabulary manifest
+        run: ./scripts/verify-vocab.sh
