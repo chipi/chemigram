@@ -2,7 +2,7 @@
 
 > Project conventions compiled into actionable rules.
 > For AI agents (and humans) doing work on the Chemigram codebase and doc tree.
-> Last updated · 2026-04-27
+> Last updated · 2026-04-29
 
 This document is the operational handbook. It tells you *how* to work in this repo: where things go, what patterns to follow, what to avoid, how to add new artifacts. It compiles rules that are scattered across the doc tree into a single place you can scan in five minutes.
 

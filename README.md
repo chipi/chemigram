@@ -7,10 +7,10 @@ your taste, you describe intent, the agent edits via a vocabulary of
 named moves on top of darktable. Sessions accumulate; the project gets
 richer over time.
 
-**Status:** early-stage research project. v1 in active development.
-Not a Lightroom replacement. Not a digital asset manager. A probe into
-where photographic taste lives and how it transmits through language
-and feedback.
+**Status:** v1.0.0 shipped April 2026 — Phase 1 closed; Phase 2 (use-driven
+vocabulary maturation) in progress. Not a Lightroom replacement. Not a
+digital asset manager. A probe into where photographic taste lives and
+how it transmits through language and feedback.
 
 ## What this is
 

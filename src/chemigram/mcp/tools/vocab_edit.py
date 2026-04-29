@@ -184,7 +184,8 @@ register_tool(
     name="apply_primitive",
     description=(
         "Apply a vocabulary primitive to the current XMP and snapshot the "
-        "result. mask_override is reserved for Slice 4 (real masking)."
+        "result. For mask-bound primitives (mask_kind=raster), pass "
+        "mask_override to use a registered mask name other than entry.mask_ref."
     ),
     input_schema={
         "type": "object",

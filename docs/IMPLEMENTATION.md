@@ -3,7 +3,7 @@
 > The slice-by-slice implementation guide for Chemigram.
 > Names slices, gates, RFC closures.
 > Source of truth for "what gets built when."
-> Last updated · 2026-04-27
+> Last updated · 2026-04-29
 
 This document describes the implementation phases for building Chemigram, decomposed where possible into concrete slices with acceptance gates. Each slice's gate is the moment when a set of RFCs gets closed into ADRs — closure is not a continuous process, it's a checkpoint.
 
