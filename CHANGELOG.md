@@ -9,6 +9,23 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.mcp.server` framework — boots the official `mcp` SDK over stdio,
+  loads `VocabularyIndex` and `PromptStore` at startup, and dispatches
+  registered tools via `chemigram.mcp.registry`. **Partial RFC-010 closure:**
+  the error contract types and parameter validation pipeline lock here; full
+  closure is the v0.3.0 gate (#16) once tools land.
+- `chemigram.mcp.errors` — `ToolResult`, `ToolError`, `ErrorCode` (per
+  RFC-010), helper constructors (`error_invalid_input`, `error_not_found`,
+  `error_not_implemented`).
+- `chemigram.mcp.registry` — global tool registry (`register_tool`,
+  `list_registered`, `get_tool`, `clear_registry`) plus `ToolContext`
+  carrier for vocabulary/prompts/workspaces.
+- `chemigram.mcp._test_harness.in_memory_session` — async context manager
+  that pairs the server with an `mcp.client.session.ClientSession` over
+  in-memory streams. Used by per-batch integration tests (#13/#14/#15).
+- `pyproject.toml` re-adds `chemigram-mcp = "chemigram.mcp.server:main"` as a
+  console script. Bumps `mcp` minimum to 1.27 (the SDK API we're integrating
+  against; `>=0.9` was a placeholder).
 - `chemigram.mcp.prompts.PromptStore` — Jinja2 prompt loader / renderer driven
   by a top-level `MANIFEST.toml` registry. Closes **RFC-016** (versioned
   prompt system) by landing the implementation behind ADR-043, ADR-044, and

@@ -302,7 +302,7 @@ requires-dist = [
     { name = "defusedxml", specifier = ">=0.7" },
     { name = "exifread", specifier = ">=3.0" },
     { name = "jinja2", specifier = ">=3.1" },
-    { name = "mcp", specifier = ">=0.9" },
+    { name = "mcp", specifier = ">=1.27" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
     { name = "mkdocs-awesome-pages-plugin", marker = "extra == 'docs'", specifier = ">=2.9" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },

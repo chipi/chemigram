@@ -33,7 +33,7 @@ classifiers = [
 # Jinja2 for the prompt system (Slice 3); MCP for the agent protocol (Slice 3).
 # Pillow may join when mask manipulation arrives in Slice 4.
 dependencies = [
-    "mcp>=0.9",
+    "mcp>=1.27",
     "defusedxml>=0.7",
     "exifread>=3.0",
     "Jinja2>=3.1",
@@ -66,9 +66,8 @@ docs = [
     "mkdocs-awesome-pages-plugin>=2.9",
 ]
 
-# [project.scripts] — re-added in Slice 3 when chemigram.mcp.server lands.
-# Declaring chemigram-mcp before then would point at a non-existent module
-# and fail at runtime; entry points are not validated at install time.
+[project.scripts]
+chemigram-mcp = "chemigram.mcp.server:main"
 
 [project.urls]
 Homepage = "https://github.com/chipi/chemigram"
