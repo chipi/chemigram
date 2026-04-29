@@ -17,17 +17,37 @@ from typing import Any, Generic, TypeVar
 
 
 class ErrorCode(StrEnum):
-    """Canonical error categories. Agents branch on these without parsing messages."""
+    """Canonical error categories. Agents branch on these without parsing messages.
+
+    **Reachability:** ``SYNTHESIZER_ERROR``, ``PERMISSION_ERROR``, and
+    ``NOT_IMPLEMENTED`` are part of the public MCP error contract but
+    have no callsite in the current engine. They're reserved for future
+    use:
+
+    - ``SYNTHESIZER_ERROR`` — for failures inside ``synthesize_xmp``
+      that aren't ``invalid_input`` or ``versioning_error``. Currently
+      the synthesizer raises only typed exceptions caught upstream and
+      re-coded.
+    - ``PERMISSION_ERROR`` — for filesystem permission denials.
+      Currently bubble as ``versioning_error`` or ``state_error``.
+    - ``NOT_IMPLEMENTED`` — for slice-stub tools. v1.0.0 closed all
+      stubs; the helper :func:`error_not_implemented` is preserved for
+      future stubs (e.g. when a new MCP tool ships in two phases).
+
+    Tests for these are gated until they have a real callsite. Don't
+    delete: agents may already switch on these strings, and removing
+    enum values is a breaking MCP-contract change.
+    """
 
     INVALID_INPUT = "invalid_input"
     NOT_FOUND = "not_found"
     DARKTABLE_ERROR = "darktable_error"
-    SYNTHESIZER_ERROR = "synthesizer_error"
+    SYNTHESIZER_ERROR = "synthesizer_error"  # reserved (see class docstring)
     VERSIONING_ERROR = "versioning_error"
     MASKING_ERROR = "masking_error"
-    PERMISSION_ERROR = "permission_error"
+    PERMISSION_ERROR = "permission_error"  # reserved
     STATE_ERROR = "state_error"
-    NOT_IMPLEMENTED = "not_implemented"
+    NOT_IMPLEMENTED = "not_implemented"  # reserved (no current stubs)
 
 
 @dataclass(frozen=True)
