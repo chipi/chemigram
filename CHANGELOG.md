@@ -8,6 +8,29 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Added
+- **Starter vocabulary pack populated.** `vocabulary/starter/` ships 5
+  entries (deliberately small per IMPLEMENTATION.md; Phase 2 grows the
+  pack from real session evidence): `expo_+0.5`, `expo_-0.5`,
+  `wb_warm_subtle`, `look_neutral` (L2 baseline), and
+  `tone_lifted_shadows_subject` (mask-bound L3 referencing
+  `current_subject_mask`). Calibrated to darktable 5.4.1.
+- `pip install chemigram` now produces a working starter pack out of
+  the box. `chemigram.core.vocab.load_starter()` succeeds without
+  requiring user setup. The bundled pack ships as
+  `chemigram/_starter_vocabulary/` (per ADR-049, force-included via
+  `pyproject.toml`).
+- `vocabulary/starter/README.md` rewritten — drops the planning stub
+  text; documents what's shipped, what's deferred to Phase 2, and the
+  personal-vocabulary growth pattern (`~/.chemigram/vocabulary/personal/`).
+- `tests/integration/core/vocab/test_starter_load.py` no longer skips;
+  asserts the real pack contents.
+
+### Changed
+- `chemigram.core.vocab.load_starter()`'s in-repo fallback path
+  corrected (`parents[4]` was `parents[3]`); editable-install
+  development now resolves the in-repo `vocabulary/starter/` directly.
+
 ## [0.5.0] — 2026-04-29
 
 Slice 5 of Phase 1 — context layer + session transcripts.

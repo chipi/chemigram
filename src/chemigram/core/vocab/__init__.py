@@ -279,13 +279,16 @@ def load_starter() -> VocabularyIndex:
     except (ModuleNotFoundError, FileNotFoundError):
         pass
 
-    repo_pack = Path(__file__).resolve().parents[3] / "vocabulary" / "starter"
+    # Editable install fallback: walk up from this file
+    # (src/chemigram/core/vocab/__init__.py) to the repo root and look at
+    # vocabulary/starter/. parents[4] lands at the repo root.
+    repo_pack = Path(__file__).resolve().parents[4] / "vocabulary" / "starter"
     if (repo_pack / "manifest.json").exists():
         return VocabularyIndex(repo_pack)
 
     raise VocabError(
         "Starter vocabulary pack not found. Looked in the bundled "
         "_starter_vocabulary resource and at vocabulary/starter/manifest.json. "
-        "Phase 1 Slice 6 populates the starter pack; until then, construct "
-        "VocabularyIndex against a custom pack_root."
+        "Reinstall the package or construct VocabularyIndex against a "
+        "custom pack_root."
     )

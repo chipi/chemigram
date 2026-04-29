@@ -1,0 +1,73 @@
+{
+  "_comment": "Starter vocabulary pack. Deliberately small per IMPLEMENTATION.md (Phase 2 grows this from real session evidence). Calibrated to darktable 5.4.1.",
+  "entries": [
+    {
+      "name": "expo_+0.5",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/exposure/expo_+0.5.dtstyle",
+      "touches": ["exposure"],
+      "tags": ["exposure", "lift", "global"],
+      "description": "Lift exposure +0.5 EV.",
+      "modversions": {"exposure": 6},
+      "darktable_version": "5.4",
+      "source": "starter",
+      "license": "MIT"
+    },
+    {
+      "name": "expo_-0.5",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/exposure/expo_-0.5.dtstyle",
+      "touches": ["exposure"],
+      "tags": ["exposure", "lower", "global"],
+      "description": "Lower exposure -0.5 EV.",
+      "modversions": {"exposure": 6},
+      "darktable_version": "5.4",
+      "source": "starter",
+      "license": "MIT"
+    },
+    {
+      "name": "wb_warm_subtle",
+      "layer": "L3",
+      "subtype": "wb",
+      "path": "layers/L3/wb/wb_warm_subtle.dtstyle",
+      "touches": ["temperature"],
+      "tags": ["wb", "warm", "global"],
+      "description": "Warm white balance, subtle.",
+      "modversions": {"temperature": 3},
+      "darktable_version": "5.4",
+      "source": "starter",
+      "license": "MIT"
+    },
+    {
+      "name": "look_neutral",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_neutral.dtstyle",
+      "touches": ["exposure", "temperature"],
+      "tags": ["look", "neutral"],
+      "description": "Neutral L2 look — exposure + warm-subtle WB baseline.",
+      "modversions": {"exposure": 6, "temperature": 3},
+      "darktable_version": "5.4",
+      "source": "starter",
+      "license": "MIT"
+    },
+    {
+      "name": "tone_lifted_shadows_subject",
+      "layer": "L3",
+      "subtype": "tone",
+      "path": "layers/L3/tone/tone_lifted_shadows_subject.dtstyle",
+      "touches": ["exposure"],
+      "tags": ["tone", "shadows", "local", "subject"],
+      "description": "Lift shadow zones, restricted to the subject mask.",
+      "mask_kind": "raster",
+      "mask_ref": "current_subject_mask",
+      "global_variant": "tone_lifted_shadows",
+      "modversions": {"exposure": 6},
+      "darktable_version": "5.4",
+      "source": "starter",
+      "license": "MIT"
+    }
+  ]
+}
