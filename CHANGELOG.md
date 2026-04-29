@@ -9,6 +9,16 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.versioning.masks` — per-image mask registry + raster
+  mask storage (issue #9). Closes **RFC-003** via **ADR-055**: PNG bytes
+  share the `objects/` store with XMP snapshots (same content-addressed
+  primitives, automatic dedup); `masks/registry.json` maps symbolic
+  names to hashes plus provenance (generator, prompt, timestamp).
+  Public API: `register_mask`, `get_mask`, `list_masks`, `invalidate_mask`,
+  `tag_mask` (immutable alias). PNG validation is byte-magic only in
+  v0.2.0 (no Pillow dep; full format validation lands with a masking
+  provider that needs it). 17 unit tests + inline `make_test_png`
+  fixture (~80-byte 8-bit grayscale PNG via `zlib`+`struct`).
 - `chemigram.core.versioning` operations: `snapshot`, `checkout`, `branch`,
   `log`, `diff`, `tag` (issue #8). Pure functions over an `ImageRepo` that
   resolve refs, read/write XMP objects via `canonical_bytes`, and append

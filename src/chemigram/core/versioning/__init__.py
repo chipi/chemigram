@@ -15,6 +15,17 @@ Future modules in this package (later issues in the v0.2.0 milestone):
 """
 
 from chemigram.core.versioning.canonical import canonical_bytes, xmp_hash
+from chemigram.core.versioning.masks import (
+    InvalidMaskError,
+    MaskEntry,
+    MaskError,
+    MaskNotFoundError,
+    get_mask,
+    invalidate_mask,
+    list_masks,
+    register_mask,
+    tag_mask,
+)
 from chemigram.core.versioning.ops import (
     LogEntry,
     PrimitiveDiff,
@@ -36,7 +47,11 @@ from chemigram.core.versioning.repo import (
 
 __all__ = [
     "ImageRepo",
+    "InvalidMaskError",
     "LogEntry",
+    "MaskEntry",
+    "MaskError",
+    "MaskNotFoundError",
     "ObjectNotFoundError",
     "PrimitiveDiff",
     "RefEntry",
@@ -47,8 +62,13 @@ __all__ = [
     "canonical_bytes",
     "checkout",
     "diff",
+    "get_mask",
+    "invalidate_mask",
+    "list_masks",
     "log",
+    "register_mask",
     "snapshot",
     "tag",
+    "tag_mask",
     "xmp_hash",
 ]

@@ -371,7 +371,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 |-|-|-|-|
 | RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
-| RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
+| RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
@@ -443,6 +443,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 | ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
+| ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
 
 ---
 

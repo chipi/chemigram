@@ -15,7 +15,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 |-|-|-|-|
 | RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
-| RFC-003 | Mask storage in versioning | Draft v0.1 | ADR-022-amendment (pending) |
+| RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
 | RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes); deviated from in-call-collision proposal — see ADR rationale |

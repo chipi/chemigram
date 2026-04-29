@@ -1,9 +1,9 @@
 # RFC-003 — Mask storage in versioning
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-055 at the v0.2.0 milestone, 2026-04-29)
 > TA anchor ·/components/versioning ·/components/ai-providers
 > Related · ADR-018, ADR-021, ADR-022
-> Closes into · ADR-022-amendment (pending)
+> Closed by · ADR-055 (raster masks share the per-image objects/ store; masks/registry.json maps symbolic names to hashes plus provenance). PNG validation is byte-magic only in v0.2.0; full format validation lands when a masking provider needing Pillow ships.
 > Why this is an RFC · ADR-022 commits to the mask registry pattern, but doesn't specify how masks integrate with snapshot-based versioning. Two viable storage strategies exist with different trade-offs around storage efficiency, simplicity, and cross-snapshot mask sharing. The choice affects how `checkout`, `snapshot`, `gc`, and `compare` interact with masks.
 
 ## The question
