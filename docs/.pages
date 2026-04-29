@@ -1,17 +1,19 @@
 nav:
   - Home: index.md
   - Getting started: getting-started.md
-  - Implementation: IMPLEMENTATION.md
-  - Concept Package:
-      - concept
-  - Product (PRDs):
-      - prd
-  - Tech (RFCs):
-      - rfc
-  - Tech (ADRs):
-      - adr
-  - Contributing: CONTRIBUTING.md
-  - Licensing: LICENSING.md
   - Roadmap & TODO: TODO.md
   - API Reference:
       - api
+  - Licensing: LICENSING.md
+  - Project Internals:
+      - Doc tree: doc-tree.md
+      - Implementation: IMPLEMENTATION.md
+      - Concept Package:
+          - concept
+      - Product (PRDs):
+          - prd
+      - Tech (RFCs):
+          - rfc
+      - Tech (ADRs):
+          - adr
+      - Contributing: CONTRIBUTING.md

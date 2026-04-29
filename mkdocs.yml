@@ -23,11 +23,11 @@ theme:
   name: material
   language: en
   features:
-    # Navigation: single sidebar on the left, no top tabs. Sections
-    # collapse by default; only the section the reader is currently
-    # inside auto-expands. TOC stays on the right via toc.follow.
-    - navigation.sections        # group siblings under section labels
-    - navigation.indexes         # let section landing pages (index.md) render
+    # Navigation: single sidebar on the left. Top-level entries are
+    # clickable expandable folders (no static section labels). Each
+    # section has its own index.md as the landing page (clicked label
+    # opens that index). TOC stays on the right via toc.follow.
+    - navigation.indexes         # index.md becomes the section's clickable landing
     - navigation.tracking        # update URL hash as the reader scrolls
     - navigation.top             # back-to-top button
     - search.highlight
