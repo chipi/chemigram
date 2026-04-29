@@ -9,8 +9,8 @@ the MCP transport accepts connections.
 Modules:
     - :mod:`chemigram.mcp.tools.vocab_edit` — list_vocabulary, get_state,
       apply_primitive, remove_module, reset (#13)
-    - :mod:`chemigram.mcp.tools.context_stubs` — read_context, taste/notes
-      propose-and-confirm stubs (#13; real impl in Slice 5)
+    - :mod:`chemigram.mcp.tools.context` — read_context + propose/confirm
+      taste/notes tools (#23, Slice 5; replaces v0.3.0 ``context_stubs``)
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ def register_all() -> None:
 
     modules = [
         "chemigram.mcp.tools.vocab_edit",
-        "chemigram.mcp.tools.context_stubs",
+        "chemigram.mcp.tools.context",
         "chemigram.mcp.tools.versioning",
         "chemigram.mcp.tools.rendering",
         "chemigram.mcp.tools.ingest",

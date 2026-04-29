@@ -149,7 +149,8 @@ def test_remove_module_via_mcp(server_and_ctx: Any) -> None:
     assert removed["data"]["state_after"]["entry_count"] < before["data"]["entry_count"]
 
 
-def test_context_stubs_via_mcp(server_and_ctx: Any) -> None:
+def test_read_context_via_vocab_session(server_and_ctx: Any) -> None:
+    """Slice 5 shipped read_context for real; verify it works in this fixture."""
     server, _ = server_and_ctx
 
     async def _exercise() -> dict:
@@ -158,6 +159,6 @@ def test_context_stubs_via_mcp(server_and_ctx: Any) -> None:
             return _decode(r)
 
     payload = anyio.run(_exercise)
-    assert payload["success"] is False
-    assert payload["error"]["code"] == "not_implemented"
-    assert payload["error"]["details"].get("slice") == 5
+    assert payload["success"] is True
+    assert "tastes" in payload["data"]
+    assert "brief" in payload["data"]

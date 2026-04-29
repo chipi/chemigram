@@ -36,6 +36,24 @@ class ToolContext:
     workspaces: dict[str, Any] = field(default_factory=dict)
     masker: Any = None  # MaskingProvider | None (Slice 4)
     transcript: Any = None  # SessionTranscript | None (Slice 5)
+    proposals: dict[str, Proposal] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Proposal:
+    """One pending taste-update or notes-update proposal (Slice 5).
+
+    Lives in the in-memory ``ToolContext.proposals`` store; cleared when
+    confirmed or when the session ends. v0.5.0 doesn't persist proposals
+    across server restarts — that matches the workspaces dict (also
+    in-memory) and keeps the lifecycle simple.
+    """
+
+    kind: str  # "taste" | "notes"
+    content: str
+    category: str | None = None  # taste-only: "appearance" | "process" | "value"
+    target_file: str | None = None  # taste-only: e.g. "underwater.md"
+    image_id: str | None = None  # notes-only
 
 
 ToolHandler = Callable[[dict[str, Any], ToolContext], Awaitable[ToolResult[Any]]]

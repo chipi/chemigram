@@ -176,13 +176,12 @@ def test_full_session_end_to_end(server, tmp_path: Path) -> None:
             for expected in ("snapshot", "branch", "checkout", "tag"):
                 assert expected in ops, f"{expected} missing from log ops {ops}"
 
-            # 11. read_context — confirms stub contract
+            # 11. read_context — Slice 5 shipped real impl
             rc_r = _decode(
                 await session.call_tool("read_context", arguments={"image_id": image_id})
             )
-            assert rc_r["success"] is False
-            assert rc_r["error"]["code"] == "not_implemented"
-            assert rc_r["error"]["details"].get("slice") == 5
+            assert rc_r["success"] is True
+            assert "tastes" in rc_r["data"]
 
             # 12. log_vocabulary_gap
             gap_r = _decode(

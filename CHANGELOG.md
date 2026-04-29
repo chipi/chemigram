@@ -9,6 +9,33 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.mcp.tools.context` — replaces v0.3.0 `context_stubs.py` with
+  real implementations of all 5 slice=5 stubs:
+  - `read_context(image_id)` — loads tastes/brief/notes/recent_log/
+    recent_gaps via `chemigram.core.context`. Returns the structured-top
+    + prose-body shape per RFC-011.
+  - `propose_taste_update(content, category, file?)` — registers a
+    taste proposal in `ToolContext.proposals`. Validates `category` ∈
+    {appearance, process, value} and non-empty content. Auto-adds `.md`
+    extension to `file` when missing.
+  - `confirm_taste_update(proposal_id)` — atomically appends to the
+    target file under `~/.chemigram/tastes/`; clears the proposal.
+  - `propose_notes_update(image_id, content)` /
+    `confirm_notes_update(proposal_id)` — same pattern, per-image
+    `<workspace>/notes.md`.
+- `chemigram.mcp.registry.Proposal` dataclass + `ToolContext.proposals:
+  dict[str, Proposal]` field. Proposals live in-memory per session;
+  unconfirmed ones expire when the session ends. No explicit `decline_*`
+  tool — RFC-031's closing ADR documents the lifecycle.
+- Tool handlers record proposal/confirmation entries on
+  `ctx.transcript` when configured. Failures are logged, never abort.
+
+### Changed
+- The 5 context tools no longer return `NOT_IMPLEMENTED slice=5`.
+  v0.3.0 `context_stubs.py` removed; tests updated to assert real
+  behavior. (Pre-release; no migration concerns.)
+
+### Added
 - `apply_primitive(mask_override=…)` real path replacing the v0.3.0
   slice=4 stub. Mask-bound L3 entries (`mask_kind: "raster"`) now require
   a registered mask matching `entry.mask_ref` (or the override) to be
