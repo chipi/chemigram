@@ -240,11 +240,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | Yes — Slice 1 components complete (Issues #1–#5 closed; RFC-001 → ADR-050, RFC-005 → ADR-052, RFC-006 → ADR-051, RFC-015 → ADR-053) |
+| Phase 1 implementation started | Yes — Slice 1 (v0.1.0) and Slice 2 (v0.2.0) components complete. Issues #1–#9 closed; six RFCs closed (RFC-001/005/006/015 in v0.1.0 → ADR-050/052/051/053; RFC-002/003 in v0.2.0 → ADR-054/055). |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-Slice 1 components are complete. Next action: **Slice 2 (versioning + mask registry)**. The Slice 1 end-to-end gate (5 primitives applied to a real raw, EXIF auto-bind on 3+ raws) is exercised in Slice 6's first real session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
+Slice 1 and Slice 2 components are complete. Next action: **Slice 3 (MCP server + tool surface)** — adapts `chemigram.core` as agent-callable tools and bootstraps the prompt system. End-to-end gate runs (real darktable renders, real session flow) are exercised in Slice 6's first photographer session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
 
 ---
 

@@ -253,6 +253,42 @@ def _parse_description_children(
     return history, extra_elems
 
 
+def _parse_description_to_xmp(description: Any, source: Path) -> Xmp:
+    """Common post-find logic shared by :func:`parse_xmp` and
+    :func:`parse_xmp_from_bytes`. ``source`` is used only for error
+    message formatting; for the from-bytes path it's a synthetic
+    ``Path("<bytes>")`` or similar caller-supplied label.
+    """
+    (
+        rating,
+        label,
+        auto_presets_applied,
+        history_end,
+        iop_order_version,
+        extra_attrs,
+    ) = _parse_description_attrs(description, source)
+    history, extra_elems = _parse_description_children(description, source)
+
+    # Validate: history_end is the count of *applied* entries; can be
+    # less than len(history) (entries beyond are pending/disabled), but
+    # exceeding the actual history length is malformed.
+    if history_end > len(history):
+        raise XmpParseError(
+            f"{source}: darktable:history_end={history_end} exceeds actual "
+            f"history length ({len(history)} entries)"
+        )
+
+    return Xmp(
+        rating=rating,
+        label=label,
+        auto_presets_applied=auto_presets_applied,
+        history_end=history_end,
+        iop_order_version=iop_order_version,
+        history=tuple(history),
+        raw_extra_fields=tuple(extra_attrs + extra_elems),
+    )
+
+
 def parse_xmp(path: Path) -> Xmp:
     """Parse a darktable XMP sidecar file.
 
@@ -281,34 +317,45 @@ def parse_xmp(path: Path) -> Xmp:
     if description is None:
         raise XmpParseError(f"{path}: missing rdf:Description")
 
-    (
-        rating,
-        label,
-        auto_presets_applied,
-        history_end,
-        iop_order_version,
-        extra_attrs,
-    ) = _parse_description_attrs(description, path)
-    history, extra_elems = _parse_description_children(description, path)
+    return _parse_description_to_xmp(description, path)
 
-    # Validate: history_end is the count of *applied* entries; can be
-    # less than len(history) (entries beyond are pending/disabled), but
-    # exceeding the actual history length is malformed.
-    if history_end > len(history):
-        raise XmpParseError(
-            f"{path}: darktable:history_end={history_end} exceeds actual "
-            f"history length ({len(history)} entries)"
-        )
 
-    return Xmp(
-        rating=rating,
-        label=label,
-        auto_presets_applied=auto_presets_applied,
-        history_end=history_end,
-        iop_order_version=iop_order_version,
-        history=tuple(history),
-        raw_extra_fields=tuple(extra_attrs + extra_elems),
-    )
+def parse_xmp_from_bytes(data: bytes, *, source: str = "<bytes>") -> Xmp:
+    """Parse an XMP from in-memory bytes.
+
+    Counterpart to :func:`parse_xmp` that avoids a filesystem
+    round-trip. Useful when the bytes already live in memory — e.g.,
+    content-addressed reads from
+    :class:`~chemigram.core.versioning.repo.ImageRepo`.
+
+    Args:
+        data: UTF-8 encoded XMP bytes.
+        source: Human-readable label used in error messages (e.g.,
+            ``"sha256:abc..."`` for content-addressed reads). Defaults
+            to ``"<bytes>"``.
+
+    Returns:
+        An :class:`Xmp`.
+
+    Raises:
+        XmpParseError: malformed XML, invalid UTF-8, or missing
+            ``<rdf:Description>``.
+    """
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise XmpParseError(f"{source}: not valid UTF-8: {exc}") from exc
+
+    try:
+        root = _defused_fromstring(text)
+    except _DefusedParseError as exc:
+        raise XmpParseError(f"{source}: malformed XML: {exc}") from exc
+
+    description = root.find(f".//{{{_NS['rdf']}}}Description")
+    if description is None:
+        raise XmpParseError(f"{source}: missing rdf:Description")
+
+    return _parse_description_to_xmp(description, Path(source))
 
 
 def _history_entry_attrs(entry: HistoryEntry) -> dict[str, str]:

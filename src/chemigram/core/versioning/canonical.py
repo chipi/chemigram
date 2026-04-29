@@ -37,7 +37,6 @@ import xml.etree.ElementTree as ET
 from defusedxml.ElementTree import fromstring as _defused_fromstring
 
 from chemigram.core.xmp import (
-    _NS,
     HistoryEntry,
     Xmp,
     _clark,
@@ -114,12 +113,11 @@ def canonical_bytes(xmp: Xmp) -> bytes:
 
     The output is a complete, valid XMP document. Use :func:`xmp_hash`
     for the SHA-256 hex digest used as the content-address key.
-    """
-    # Ensure namespace registrations are in place. xmp.py registers them
-    # at module import; this is a defensive re-call that's idempotent.
-    for prefix, uri in _NS.items():
-        ET.register_namespace(prefix, uri)
 
+    Namespace prefixes are registered at ``chemigram.core.xmp`` import
+    time (which this module triggers via the import above), so each
+    call to ``canonical_bytes`` finds the registry already populated.
+    """
     root = _build_tree(xmp)
     tree = ET.ElementTree(root)
     ET.indent(tree, space=" ", level=0)

@@ -27,6 +27,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from chemigram.core.versioning.repo import ImageRepo, ObjectNotFoundError
@@ -61,7 +62,7 @@ class MaskEntry:
 # ---------- registry I/O ----------------------------------------------------
 
 
-def _registry_path(repo: ImageRepo) -> Any:
+def _registry_path(repo: ImageRepo) -> Path:
     masks_dir = repo.root / "masks"
     masks_dir.mkdir(parents=True, exist_ok=True)
     return masks_dir / _REGISTRY_FILENAME

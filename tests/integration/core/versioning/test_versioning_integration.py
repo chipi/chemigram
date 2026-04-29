@@ -61,11 +61,16 @@ def test_full_workflow_against_v3_reference(tmp_path: Path) -> None:
     main_xmp = checkout(repo, h_baseline)
     assert xmp_hash(main_xmp) == h_baseline
 
-    # Log shows all operations newest first
+    # Log shows all operations newest first. Exact ordered match
+    # catches future regressions that add or reorder log entries.
     entries = log(repo)
-    ops = [e.op for e in entries]
-    # We did: snapshot, branch, checkout, snapshot, tag, checkout, checkout
-    assert ops[0] == "checkout"
-    assert "tag" in ops
-    assert "branch" in ops
-    assert ops.count("snapshot") == 2
+    ops_list = [e.op for e in entries]
+    assert ops_list == [
+        "checkout",  # checkout(repo, h_baseline) — final detached
+        "checkout",  # checkout(repo, "main") — back to symbolic main
+        "tag",  # tag("expo-plus-0p5-applied")
+        "snapshot",  # snapshot(modified)
+        "checkout",  # checkout("experimental")
+        "branch",  # branch("experimental")
+        "snapshot",  # snapshot(baseline)
+    ]

@@ -222,3 +222,56 @@ def test_invalid_rating_raises(tmp_path: Path) -> None:
     p = _write_minimal_xmp(tmp_path, rating="not-an-int")
     with pytest.raises(XmpParseError, match="not an integer"):
         parse_xmp(p)
+
+
+# --- parse_xmp_from_bytes -------------------------------------------------
+
+
+def test_parse_xmp_from_bytes_round_trip(tmp_path: Path) -> None:
+    """parse_xmp_from_bytes accepts what canonical_bytes produces."""
+    from chemigram.core.versioning import canonical_bytes
+    from chemigram.core.xmp import parse_xmp_from_bytes
+
+    original = parse_xmp(FIXTURES / "synthesized_v3_reference.xmp")
+    raw = canonical_bytes(original)
+    reparsed = parse_xmp_from_bytes(raw)
+    assert reparsed == original
+
+
+def test_parse_xmp_from_bytes_uses_source_in_errors() -> None:
+    from chemigram.core.xmp import parse_xmp_from_bytes
+
+    bad = b"<?xml version='1.0'?><not_closed"
+    with pytest.raises(XmpParseError, match=r"sha256:abc.*malformed XML"):
+        parse_xmp_from_bytes(bad, source="sha256:abc")
+
+
+def test_parse_xmp_from_bytes_invalid_utf8() -> None:
+    from chemigram.core.xmp import parse_xmp_from_bytes
+
+    # Random bytes that aren't valid UTF-8
+    bad = b"\xff\xfe\x00\x80\x81\x82"
+    with pytest.raises(XmpParseError, match="not valid UTF-8"):
+        parse_xmp_from_bytes(bad)
+
+
+def test_parse_xmp_from_bytes_missing_description() -> None:
+    from chemigram.core.xmp import parse_xmp_from_bytes
+
+    bad = (
+        b'<?xml version="1.0" encoding="UTF-8"?>'
+        b'<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+        b' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>'
+        b"</x:xmpmeta>"
+    )
+    with pytest.raises(XmpParseError, match="missing rdf:Description"):
+        parse_xmp_from_bytes(bad)
+
+
+def test_parse_xmp_from_bytes_default_source() -> None:
+    """Default source label is '<bytes>' for callers who don't supply one."""
+    from chemigram.core.xmp import parse_xmp_from_bytes
+
+    bad = b"not xml at all"
+    with pytest.raises(XmpParseError, match=r"<bytes>"):
+        parse_xmp_from_bytes(bad)

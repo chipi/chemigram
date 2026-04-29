@@ -47,17 +47,20 @@ Sequence of stages producing a JPEG from an XMP. v1 has one stage; the abstracti
 
 Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
-**Files (planned):** `src/chemigram/core/versioning.py`
+**Files (shipped):** `src/chemigram/core/versioning/{canonical,repo,ops,masks}.py` (v0.2.0)
 
 **Public API:**
-- `snapshot(image_id, label?, parent=HEAD) → hash`
-- `checkout(image_id, ref_or_hash) → state`
-- `branch(image_id, name, from=HEAD) → ref`
-- `log(image_id, ref?, limit?) → list[Entry]`
-- `diff(image_id, hash_a, hash_b) → list[PrimitiveDiff]`
-- `tag(image_id, name, hash?) → ref`
+- `canonical_bytes(xmp) → bytes`, `xmp_hash(xmp) → str` — content-address primitive
+- `ImageRepo.init(root)`, `write_object`, `read_object`, `write_ref`, `resolve_ref`, `list_refs`, `delete_ref`, `append_log`, `read_log`
+- `snapshot(repo, xmp, *, label?, parent="HEAD", metadata?) → hash`
+- `checkout(repo, ref_or_hash) → Xmp`
+- `branch(repo, name, from_="HEAD") → ref_name`
+- `log(repo, *, ref?, limit?) → list[LogEntry]`
+- `diff(repo, hash_a, hash_b) → list[PrimitiveDiff]`
+- `tag(repo, name, hash_?) → ref_name`
+- `register_mask`, `get_mask`, `list_masks`, `invalidate_mask`, `tag_mask` — mask registry
 
-**Anchored from:** RFC-002, RFC-003, ADR-017, ADR-018, ADR-019
+**Anchored from:** RFC-002 (→ ADR-054), RFC-003 (→ ADR-055), ADR-017, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022
 
 ### components/ai-providers
 

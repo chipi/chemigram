@@ -8,6 +8,47 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Changed
+- **v0.2.0 polish (pre-tag cleanup):**
+  - `chemigram.core.xmp` gains `parse_xmp_from_bytes(data, *, source="<bytes>")`
+    so callers with in-memory XMP bytes (e.g., content-addressed reads from
+    `chemigram.core.versioning`) avoid a filesystem round-trip. `parse_xmp`
+    now delegates its post-find logic to a shared private helper, so both
+    paths produce identical output.
+  - `chemigram.core.versioning.ops.checkout` and `_load_xmp_for_diff`
+    refactored to use `parse_xmp_from_bytes` instead of the
+    `tempfile.NamedTemporaryFile + parse_xmp + unlink` pattern. ~16 lines
+    of duplicated boilerplate removed.
+  - `chemigram.core.versioning.canonical.canonical_bytes` no longer
+    re-registers namespaces on every call — the `chemigram.core.xmp` import
+    triggers registration once at module load. Defensive but redundant.
+  - `chemigram.core.versioning.masks._registry_path` return type annotated
+    as `Path` (was `Any`) — closes the type-erasure gap.
+  - `chemigram.core.versioning.__init__` docstring rewritten: drops the
+    "Future modules" framing (the modules are shipped) and adds a section
+    documenting the three sibling exception roots (`RepoError`,
+    `VersioningError`, `MaskError`) and how to catch the union.
+  - `chemigram.core.versioning.ops._resolve_input` docstring documents
+    branch-vs-tag precedence on name collision (branch wins).
+  - `tests/integration/core/versioning/test_versioning_integration.py`
+    tightened: the ops list assertion is now exact-ordered match (catches
+    future regressions that add or reorder log entries) instead of the
+    previous "in" / count-based weak assertion.
+  - `tests/unit/core/versioning/test_ops.py::test_log_entry_dataclass_shape`
+    replaced `dataclasses.MISSING` (a sentinel, not a datetime) with a real
+    `datetime.now(UTC)`; added assertions that all default fields are None
+    and that `LogEntry` rejects mutation (frozen).
+  - 5 new tests for `parse_xmp_from_bytes` (round-trip, source label in
+    errors, invalid UTF-8, missing rdf:Description, default source).
+  - Doc surfaces synced to v0.2.0: `TA.md` `components/versioning` now
+    `(shipped)` with full file list and ADR-054/055 anchored; `README.md`
+    Phase 1 row mentions Slice 2; `concept/00`, `CLAUDE.md`,
+    `IMPLEMENTATION.md` reflect Slice 3 as next; IMPLEMENTATION.md Slice 2
+    section marks RFC-002 / RFC-003 ✅ closed.
+  - `pyproject.toml` version bumped `0.0.1` → `0.2.0`.
+  - Tests now: 175 unit + 10 integration = 185 passing (was 180); coverage
+    94% line / 89% branch.
+
 ### Added
 - `chemigram.core.versioning.masks` — per-image mask registry + raster
   mask storage (issue #9). Closes **RFC-003** via **ADR-055**: PNG bytes

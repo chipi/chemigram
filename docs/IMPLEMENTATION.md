@@ -16,7 +16,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slice 1 components shipped (Issues #1–#5 closed; all 4 Slice 1 RFCs closed → ADR-050, ADR-051, ADR-052, ADR-053). End-to-end gate run pending — see Slice 6. |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slice 1 (v0.1.0) and Slice 2 (v0.2.0) components shipped (Issues #1–#9 closed; 6 RFCs closed → ADR-050..055). Slice 3 (MCP server) is next. End-to-end gate runs pending — see Slice 6. |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
@@ -127,14 +127,14 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 **RFCs that close at this gate:**
 
-- **RFC-002** (canonical XMP serialization for stable hashing) — closes because hashing gets exercised; canonicalization choices either hold or get revised
-- **RFC-003** (mask storage in versioning) — closes because mask storage gets exercised by real snapshots that reference masks
+- ✅ **RFC-002** (canonical XMP serialization for stable hashing) — closed via Issue #6; closes into **ADR-054** (canonical XMP serialization). Snapshot tests pin the v3 reference and minimal fixture hashes against literal expected values.
+- ✅ **RFC-003** (mask storage in versioning) — closed via Issue #9; closes into **ADR-055** (raster masks share `objects/`; `masks/registry.json` maps symbolic names to hashes plus provenance).
 
-**Sketch of what comes out:**
+**Sketch of what came out:**
 
-- ADR-018 amendment locking canonical XMP serialization
-- ADR-022 amendment locking mask storage details
-- ~400–600 lines of Python for the versioning subsystem
+- ADR-054 (canonical XMP serialization), ADR-055 (mask storage)
+- `chemigram.core.versioning` package: `canonical.py`, `repo.py`, `ops.py`, `masks.py`
+- ~1,500 lines of Python (well above the 400–600 estimate — the surface was richer than projected)
 
 ---
 

@@ -290,9 +290,17 @@ def test_tag_unknown_hash_raises(tmp_path: Path) -> None:
 
 def test_log_entry_dataclass_shape() -> None:
     """LogEntry is a frozen dataclass with sensible defaults."""
-    entry = LogEntry(timestamp=dataclasses.MISSING, op="snapshot")  # type: ignore[arg-type]
+    from datetime import UTC, datetime
+
+    entry = LogEntry(timestamp=datetime.now(UTC), op="snapshot")
     assert entry.hash is None
+    assert entry.ref is None
+    assert entry.parent is None
+    assert entry.label is None
     assert entry.metadata == {}
+    # Frozen — should refuse mutation
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        entry.op = "checkout"  # type: ignore[misc]
 
 
 def test_primitive_diff_dataclass_shape() -> None:

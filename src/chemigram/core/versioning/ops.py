@@ -29,7 +29,7 @@ from chemigram.core.versioning.repo import (
     RefNotFoundError,
     RepoError,
 )
-from chemigram.core.xmp import Xmp, parse_xmp
+from chemigram.core.xmp import Xmp, parse_xmp_from_bytes
 
 
 class VersioningError(Exception):
@@ -77,6 +77,12 @@ def _resolve_input(repo: ImageRepo, ref_or_hash: str) -> tuple[str, str | None]:
     Tries: branch name → tag name → raw hash. Returns the resolved
     hash plus, when input was a branch, the branch's full ref name
     (so the caller can set HEAD symbolically).
+
+    **Precedence on collision:** if a name exists as both a branch
+    AND a tag, the branch wins. Convention (and ADR-019's namespace
+    split between ``refs/heads/`` and ``refs/tags/``) makes this
+    collision unlikely in practice, but the rule is here so callers
+    can rely on it.
     """
     branch_ref = f"refs/heads/{ref_or_hash}"
     try:
@@ -169,20 +175,7 @@ def checkout(repo: ImageRepo, ref_or_hash: str) -> Xmp:
     except ObjectNotFoundError as exc:
         raise VersioningError(str(exc)) from exc
 
-    # parse_xmp wants a path; write to a tmp file inside the repo to keep
-    # filesystem semantics consistent. Object bytes are already on disk
-    # at `objects/NN/REST` — we read them into memory and parse via a
-    # named temp file so parse_xmp's path-based API is happy.
-    import tempfile
-    from pathlib import Path
-
-    with tempfile.NamedTemporaryFile(suffix=".xmp", delete=False) as tmp:
-        tmp.write(raw)
-        tmp_path = Path(tmp.name)
-    try:
-        xmp = parse_xmp(tmp_path)
-    finally:
-        tmp_path.unlink(missing_ok=True)
+    xmp = parse_xmp_from_bytes(raw, source=f"sha256:{target_hash}")
 
     if branch_ref is not None:
         repo.write_ref("HEAD", f"ref: {branch_ref}")
@@ -344,17 +337,7 @@ def _load_xmp_for_diff(repo: ImageRepo, hash_: str) -> Xmp:
         raw = repo.read_object(hash_)
     except ObjectNotFoundError as exc:
         raise VersioningError(str(exc)) from exc
-
-    import tempfile
-    from pathlib import Path
-
-    with tempfile.NamedTemporaryFile(suffix=".xmp", delete=False) as tmp:
-        tmp.write(raw)
-        tmp_path = Path(tmp.name)
-    try:
-        return parse_xmp(tmp_path)
-    finally:
-        tmp_path.unlink(missing_ok=True)
+    return parse_xmp_from_bytes(raw, source=f"sha256:{hash_}")
 
 
 # Re-export the hash function so callers don't need to know about canonical/

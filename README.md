@@ -47,7 +47,7 @@ masks and snapshots, and learns across sessions. Two modes:
 |-|-|-|
 | 0 | Hands-on validation of darktable composition story | ✅ Closed green |
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
-| 1 | Core engine + MCP server + starter vocabulary | In progress — Slice 1 components complete (parser, XMP r/w, synthesizer, render pipeline, EXIF binding all shipped; all 4 Slice 1 RFCs closed) |
+| 1 | Core engine + MCP server + starter vocabulary | In progress — Slice 1 (v0.1.0) and Slice 2 (v0.2.0) shipped; 6 of 17 RFCs closed (RFC-001/002/003/005/006/015 → ADR-050..055). Slice 3 (MCP server) is next. |
 | 2+ | Vocabulary maturation, AI masks, continuous control | Conditional |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
