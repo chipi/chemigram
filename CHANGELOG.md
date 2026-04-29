@@ -8,6 +8,41 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-04-29
+
+Slice 5 of Phase 1 — context layer + session transcripts.
+
+### Added
+- **End-to-end context gate test** (`tests/integration/mcp/test_full_session_with_context.py`)
+  drives read_context → apply_primitive ×2 → propose_taste_update +
+  confirm_taste_update → log_vocabulary_gap (RFC-013 shape) →
+  propose_notes_update + confirm_notes_update → read_context (sees gap +
+  log entries) through the in-memory MCP harness with a real
+  SessionTranscript writer attached. Asserts files updated, transcript
+  JSONL contains all events in order.
+- **ADR-059** — closes RFC-011 (agent context loading order and format).
+  Locks the loading sequence (tastes → brief → notes → recent_log →
+  recent_gaps), the structured-top + prose-body shape, the long-notes
+  line-truncation rule (10 + 30 + ellision), and missing-file tolerance.
+- **ADR-060** — closes RFC-013 (vocabulary gap JSONL schema). Locks the
+  full record shape with auto-populated `session_id` + `snapshot_hash`,
+  and the backwards-compat reader that handles both v0.3.0 minimal and
+  full records.
+- **ADR-061** — closes RFC-014 (end-of-session synthesis). Documents
+  that wrap-up is agent-orchestrated (no engine `end_session` tool); the
+  Mode A v1 prompt's "End of session" section names the canonical
+  sequence (0–2 taste proposals, gap recap, 1 notes proposal, optional
+  tag).
+- TA `components/context` and `components/session` added as `(shipped
+  v0.5.0)`. ADR-059/060/061 added to `## map` and `adr/index.md`.
+  RFC-011/013/014 status `Draft v0.1` → `Decided`.
+- `docs/concept/04-architecture.md` gains a context-component +
+  session-component paragraph documenting loaders, transcript shape,
+  and the agent-orchestrated wrap-up.
+- `docs/IMPLEMENTATION.md` Slice 5 marked `✅ shipped`; Phase 1 status
+  synced across `README.md`, `concept/00`, `CLAUDE.md`.
+- `pyproject.toml` `0.4.0` → `0.5.0`.
+
 ## [0.4.0] — 2026-04-29
 
 Slice 4 of Phase 1 — real masking provider.

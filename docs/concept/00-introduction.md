@@ -240,11 +240,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Concept package complete | Yes (v1.0) |
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
-| Phase 1 implementation started | Yes — Slices 1–4 complete (v0.1.0–v0.4.0). Issues #1–#20 closed; ten RFCs closed: RFC-001/005/006/015 → ADR-050/052/051/053 (v0.1.0); RFC-002/003 → ADR-054/055 (v0.2.0); RFC-010/016 → ADR-056 (v0.3.0); RFC-004/009 → ADR-058/057 (v0.4.0). |
+| Phase 1 implementation started | Yes — Slices 1–5 complete (v0.1.0–v0.5.0). Issues #1–#25 closed; thirteen RFCs closed: RFC-001/005/006/015 → ADR-050/052/051/053 (v0.1.0); RFC-002/003 → ADR-054/055 (v0.2.0); RFC-010/016 → ADR-056 (v0.3.0); RFC-004/009 → ADR-058/057 (v0.4.0); RFC-011/013/014 → ADR-059/060/061 (v0.5.0). |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-Slices 1–4 are complete: the MCP surface is real, the bundled `CoarseAgentProvider` produces masks via MCP sampling, and mask-bound L3 primitives apply end-to-end. **Slice 5 (context layer)** ships next as v0.5.0 — the five context tools currently land their stubs from v0.3.0 and become real readers/writers of `~/.chemigram/tastes/`, `brief.md`, `notes.md`, plus session transcripts. End-to-end gate runs against real darktable + a real raw remain Slice 6's first photographer session. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
+Slices 1–5 are complete. The MCP surface is real, masking works end-to-end via `CoarseAgentProvider`, and the context layer (tastes + brief + notes + transcripts + RFC-013 vocabulary-gap schema) is exercised through the in-memory MCP harness. **Slice 6 (real-session polish + first photographer evidence + starter-pack populate)** is the only remaining Phase 1 work — it closes the first photographer session against real darktable + a real raw, populates `vocabulary/starter/` with real entries, and ships the Mode A prompt v2 with evidence-shaped revisions. After Slice 6: 1.0.0. See `docs/IMPLEMENTATION.md` for the full Phase 1 plan.
 
 ---
 

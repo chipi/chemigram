@@ -73,6 +73,9 @@ ADRs come from two streams:
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
 | ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
 | ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
+| ADR-059 | Agent context loading order and format (closes RFC-011) | Accepted |
+| ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
+| ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
 
 ## Conventions
 

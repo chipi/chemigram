@@ -23,10 +23,10 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes) |
 | RFC-010 | MCP tool surface — parameter shapes and errors | Decided | ADR-056 (closes) |
-| RFC-011 | Agent context loading order and format | Draft v0.1 | ADR-031 (pending) |
+| RFC-011 | Agent context loading order and format | Decided | ADR-059 (closes) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
-| RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
-| RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
+| RFC-013 | Vocabulary gap surfacing format | Decided | ADR-060 (closes) |
+| RFC-014 | End-of-session synthesis flow | Decided | ADR-061 (closes) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 | RFC-017 | Evaluation harness and auto-research workflow | Accepted (design); built Phase 5 | ADR-046, ADR-047 |

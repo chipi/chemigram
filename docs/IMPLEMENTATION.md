@@ -16,7 +16,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slices 1–4 shipped (v0.1.0–v0.4.0). Issues #1–#20 closed; 10 RFCs closed → ADR-050..058. Slice 5 (context layer) ships next (v0.5.0); end-to-end gate against real darktable runs in Slice 6. |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slices 1–5 shipped (v0.1.0–v0.5.0). Issues #1–#25 closed; 13 RFCs closed → ADR-050..061. Slice 6 (real-session polish + first photographer evidence + starter pack) is the only remaining Phase 1 work before 1.0.0. |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
@@ -190,29 +190,30 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 ---
 
-### Slice 5 — Context layer + sessions
+### Slice 5 — Context layer + sessions ✅ shipped (v0.5.0)
 
-**Scope:** *(can run in parallel with Slice 4 after Slice 3)*
+**Scope (shipped):**
 
-- `chemigram.core.context` — read taste.md, brief.md, notes.md per ADR-030's three-tier model
-- `read_context`, `propose_taste_update`, `confirm_taste_update`, `propose_notes_update`, `confirm_notes_update` MCP tools
-- Session transcripts as JSONL per ADR-029 (header metadata + per-turn entries)
-- Vocabulary gap surfacing: `log_vocabulary_gap` tool, `vocabulary_gaps.jsonl` per image
-- End-of-session synthesis flow (the agent's wrap-up turn)
+- `chemigram.core.context` — multi-scope `Tastes` loader (per ADR-048: `_default.md` + brief-declared genres), `Brief` parser, `Notes` with line-truncation summarization (10 + 30 + ellision per RFC-011), `RecentLog`, `RecentGaps` (handles both v0.3.0 minimal and post-#24 RFC-013 records). Tolerant of missing files (#21).
+- `chemigram.core.session.SessionTranscript` — JSONL writer per ADR-029. `start_session()` factory; `build_server(transcript=...)` plumbs into the MCP server's tool dispatch so every tool call auto-logs `tool_call` + `tool_result` entries (#22).
+- Real `read_context` + propose/confirm tools (`propose_taste_update`, `confirm_taste_update`, `propose_notes_update`, `confirm_notes_update`) replacing the v0.3.0 slice=5 stubs. Proposals live in-memory in `ToolContext.proposals`; confirmation appends to the target file (`~/.chemigram/tastes/<file>.md` or `<workspace>/notes.md`) and clears the proposal (#23).
+- Vocabulary gap schema upgrade to RFC-013 shape: `session_id` (auto from `ctx.transcript`), `snapshot_hash` (auto from HEAD), `intent`, `intent_category`, `missing_capability`, `operations_involved`, `vocabulary_used`, `satisfaction`, `notes`. Backwards-compat reader handles both shapes (#24).
+- End-to-end gate test (`tests/integration/mcp/test_full_session_with_context.py`) drives read_context → apply ×2 → propose/confirm taste → log_gap → propose/confirm notes → read_context (sees gap + log entries) (#25).
 
-**Gate:** Complete a real Mode A session with: context loaded at start (taste + brief + notes + recent log), taste update proposed and confirmed at end, vocabulary gaps logged when they arise, full session transcript written to `sessions/<timestamp>.jsonl`.
+**Gate met:** full Mode A flow exercised end-to-end through the in-memory MCP harness with a real transcript writer attached. Tastes file + notes file gain confirmed lines; transcript JSONL contains header + tool_call/tool_result/proposal/confirmation + footer in order.
 
-**RFCs that close at this gate:**
+**RFCs closed:**
 
-- **RFC-011** (agent context loading order and format) — closes because the actual loading sequence gets exercised; ordering choices either hold or get revised
-- **RFC-013** (vocabulary gap surfacing format) — closes because real sessions surface real gaps; the format proves usable or gets revised
-- **RFC-014** (end-of-session synthesis flow) — closes because the wrap-up sequence runs in real sessions
+- **RFC-011** → ADR-059 (loading order tastes→brief→notes→recent_log→recent_gaps; structured-top + prose-body shape; line-truncation summarization).
+- **RFC-013** → ADR-060 (full JSONL schema; `session_id` + `snapshot_hash` auto-population; backwards-compat reader).
+- **RFC-014** → ADR-061 (end-of-session is agent-orchestrated; no engine `end_session` tool).
 
-**Sketch of what comes out:**
+**Out of scope (deferred):**
 
-- ADRs locking context-loading order, gap format, end-of-session sequence
-- Working context layer, ~300–500 lines
-- The first session whose transcript reads cleanly end-to-end
+- LLM-based notes summarization — Phase 2 if line-truncation proves inadequate.
+- Auto-classification of `intent_category` — Phase 2; defaults to `"uncategorized"`.
+- Cross-session reflection ("across the last 3 sessions you've reached for X") — future tool.
+- Mode A prompt v2 with end-of-session refinements — Slice 6 evidence-driven.
 
 ---
 

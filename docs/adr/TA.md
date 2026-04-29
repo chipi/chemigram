@@ -98,6 +98,26 @@ Versioned prompt templates loaded by the MCP server at session start (and by the
 
 **Anchored from:** RFC-016, ADR-043, ADR-044, ADR-045
 
+### components/context
+
+Per-image and per-photographer context loaders. Reads tastes (multi-scope per ADR-048: `~/.chemigram/tastes/_default.md` plus brief-declared genre files), `brief.md` (with `Tastes:` declaration), `notes.md` (with line-truncation summarization for long files), recent log entries, recent vocabulary gaps. Tolerates missing files (returns empty structures so the agent's first turn works on a fresh workspace).
+
+**Files (shipped v0.5.0):** `src/chemigram/core/context/__init__.py` — `Tastes`, `Brief`, `Notes`, `RecentLog`, `RecentGaps` loaders + their content dataclasses. MCP wiring in `src/chemigram/mcp/tools/context.py` (read_context + propose/confirm tools).
+
+**Public API:** loaders' `.load(workspace, ...)` classmethods; `read_context(image_id)` MCP tool.
+
+**Anchored from:** RFC-011 (→ ADR-059), ADR-031, ADR-048
+
+### components/session
+
+JSONL session transcripts per ADR-029. Header line, per-turn entries (`tool_call`, `tool_result`, `proposal`, `confirmation`, `note`), footer on close. Append-only, flushed per write.
+
+**Files (shipped v0.5.0):** `src/chemigram/core/session/__init__.py` — `SessionTranscript`, `SessionHeader`, `start_session`. MCP server's tool dispatch (`build_server(transcript=...)`) auto-records every tool call.
+
+**Public API:** `start_session(workspace, *, mode, session_id, ...) -> SessionTranscript`; `transcript.append_*` helpers; `transcript.close(summary?)`.
+
+**Anchored from:** ADR-029, ADR-031, RFC-014 (→ ADR-061)
+
 ### components/eval
 
 Headless eval harness for autonomous Mode B. Runs the agent against versioned golden datasets, computes mechanical and semantic metrics, writes run manifests for cross-run comparison. Phase 5 build; design locked in Phase 1.
@@ -382,10 +402,10 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes) |
 | RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
-| RFC-011 | Agent context loading order and format | Draft v0.1 | ADR-031 (pending) |
+| RFC-011 | Agent context loading order and format | Decided | ADR-059 (closes) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
-| RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
-| RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
+| RFC-013 | Vocabulary gap surfacing format | Decided | ADR-060 (closes) |
+| RFC-014 | End-of-session synthesis flow | Decided | ADR-061 (closes) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 
@@ -451,6 +471,9 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
 | ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
 | ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
+| ADR-059 | Agent context loading order and format (closes RFC-011) | Accepted |
+| ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
+| ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
 
 ---
 
