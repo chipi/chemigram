@@ -8,6 +8,21 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Added
+- `chemigram.core.masking` package — `MaskingProvider` Protocol, `MaskResult`
+  dataclass, exception hierarchy (`MaskingError`, `MaskGenerationError`,
+  `MaskFormatError`). Sync contract; async path reserved for a follow-up RFC.
+- `chemigram.core.masking.coarse_agent.CoarseAgentProvider` — bundled default
+  masker. Uses an injected `ask_agent` callable (production: MCP sampling
+  round-trip; tests: a fake) to get a region descriptor, rasterizes via
+  Pillow to a grayscale PNG matching the render's dimensions. No PyTorch,
+  no model weights — satisfies ADR-007 (BYOA). The MCP wiring lands in
+  #18; this issue ships the abstraction in isolation per the v0.4.0 plan.
+- `polygon_hint` (≥3 points) takes precedence over `bbox`; under-3 points
+  fall back to the bbox; neither-present raises `MaskGenerationError`.
+- 16 unit tests cover the Protocol shape and the rasterizer (bbox /
+  polygon precedence / dimension matching / failure modes).
+
 ## [0.3.0] — 2026-04-29
 
 Slice 3 of Phase 1 — agent-callable MCP tool surface.
