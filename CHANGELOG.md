@@ -8,6 +8,32 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-04-29
+
+Slice 4 of Phase 1 — real masking provider.
+
+### Added
+- **End-to-end masking gate test** (`tests/integration/mcp/test_full_session_with_masks.py`)
+  drives ingest → generate_mask → list_masks → apply_primitive(mask_override) →
+  regenerate_mask → log through the in-memory MCP harness with a fake
+  sampling-based masker injected via `build_server(masker=...)`.
+- **ADR-057** — closes RFC-009 (MaskingProvider Protocol shape). Locks the
+  sync `generate` / `regenerate` keyword-only contract, the `MaskResult`
+  dataclass shape, the exception → MCP-error mapping (`MaskGenerationError`
+  → `MASKING_ERROR` recoverable; `MaskFormatError` → `MASKING_ERROR`).
+- **ADR-058** — closes RFC-004 (default masking provider). Locks the
+  bundled default as `CoarseAgentProvider` (sampling-based, BYOA-aligned)
+  with `chemigram-masker-sam` (Phase 4 sibling) as the recommended
+  production upgrade.
+- TA `components/ai-providers` moves `(planned)` → `(shipped v0.4.0)`;
+  ADR-057 + ADR-058 added to `## map` and `adr/index.md`. RFC-004 +
+  RFC-009 status `Draft v0.1` → `Decided`.
+- `docs/concept/04-architecture.md` gains a masking-component paragraph
+  documenting the Protocol + sampling pattern.
+- `docs/IMPLEMENTATION.md` Slice 4 marked `✅ shipped`; Phase 1 status
+  synced across `README.md`, `concept/00`, `CLAUDE.md`.
+- `pyproject.toml` `0.3.0` → `0.4.0`.
+
 ### Changed
 - **Vocabulary gap schema upgrade (RFC-013).**
   `chemigram.mcp.tools.ingest._log_vocabulary_gap` now writes records

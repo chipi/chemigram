@@ -71,6 +71,8 @@ ADRs come from two streams:
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
 | ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
+| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
+| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
 
 ## Conventions
 

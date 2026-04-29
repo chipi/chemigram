@@ -66,13 +66,13 @@ Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
 Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
 
-**Files (planned):** `src/chemigram/core/masking/__init__.py`, `src/chemigram/core/masking/coarse_agent.py`
+**Files (shipped v0.4.0):** `src/chemigram/core/masking/__init__.py` (Protocol + result + errors), `src/chemigram/core/masking/coarse_agent.py` (`CoarseAgentProvider`, `AgentRequest`, rasterizer). MCP wiring lives in `src/chemigram/mcp/tools/masks.py` and `src/chemigram/mcp/server.build_server(masker=...)`.
 
 **Public API:**
-- `class MaskingProvider(Protocol)` — generate/refine contract
-- `CoarseAgentProvider(MaskingProvider)` — bundled default
+- `class MaskingProvider(Protocol)` — generate/refine contract (ADR-057)
+- `CoarseAgentProvider(MaskingProvider)` — bundled sampling-based default (ADR-058)
 
-**Anchored from:** RFC-004, ADR-007, ADR-021, ADR-022
+**Anchored from:** RFC-004 (→ ADR-058), RFC-009 (→ ADR-057), ADR-007, ADR-021, ADR-022, ADR-032
 
 ### components/mcp-server
 
@@ -375,12 +375,12 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
 | RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
-| RFC-004 | Default masking provider — coarse vs SAM | Draft v0.1 | ADR (pending) |
+| RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
-| RFC-009 | Mask provider protocol shape | Draft v0.1 | ADR-022 (pending) |
+| RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes) |
 | RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
 | RFC-011 | Agent context loading order and format | Draft v0.1 | ADR-031 (pending) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
@@ -449,6 +449,8 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
 | ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
+| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
+| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
 
 ---
 

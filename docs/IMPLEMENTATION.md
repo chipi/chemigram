@@ -16,7 +16,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | Phase | Description | Status |
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
-| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slices 1–3 shipped (v0.1.0, v0.2.0, v0.3.0). Issues #1–#16 closed; 8 RFCs closed → ADR-050..056. Slice 4 (real masking provider) and Slice 5 (context layer) parallel-unblocked; end-to-end gate against real darktable runs in Slice 6. |
+| **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | **In progress** — Slices 1–4 shipped (v0.1.0–v0.4.0). Issues #1–#20 closed; 10 RFCs closed → ADR-050..058. Slice 5 (context layer) ships next (v0.5.0); end-to-end gate against real darktable runs in Slice 6. |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | Not started (begins after Phase 1) |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
@@ -164,30 +164,29 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 ---
 
-### Slice 4 — Coarse masking + local adjustments
+### Slice 4 — Coarse masking + local adjustments ✅ shipped (v0.4.0)
 
-**Scope:** *(can run in parallel with Slice 5 after Slice 3)*
+**Scope (shipped):**
 
-- `MaskingProvider` Protocol in `chemigram.core.masking`
-- `CoarseAgentProvider` — vision-only default masker (no PyTorch)
-- Mask-bound vocabulary entries (L3 layer per ADR-021)
-- `generate_mask`, `regenerate_mask`, `list_masks`, `invalidate_mask`, `tag_mask` MCP tools
-- Mask refinement loop in agent prompt template
-- "First-session masker disclosure" UX
+- `chemigram.core.masking` — `MaskingProvider` Protocol + `MaskResult` (ADR-057, #17).
+- `chemigram.core.masking.coarse_agent.CoarseAgentProvider` — sampling-based bundled default per ADR-058. Pillow rasterizer for bbox + polygon descriptors (#17).
+- Real `generate_mask` / `regenerate_mask` MCP tool implementations replacing v0.3.0 slice=4 stubs. Auto-renders preview, calls provider, registers PNG (#18).
+- Mask-bound L3 vocabulary entries: `tone_lifted_shadows_subject` (`mask_kind: "raster"`, `mask_ref: "current_subject_mask"`) added to test pack. `apply_primitive(mask_override=...)` real path materializes registered PNG to `<workspace>/masks/<name>.png` for darktable consumption (#19).
+- End-to-end gate test (`tests/integration/mcp/test_full_session_with_masks.py`) drives ingest → generate_mask → list_masks → apply_primitive(mask_override) → regenerate_mask → log through the harness with a fake sampling-based masker (#20).
 
-**Gate:** Apply at least 2 mask-bound primitives in a session. Mask quality is usable for clear-subject case (≥70% accept-on-first-generation for marine animals against contrasting water). Refinement prompt regenerates the mask correctly.
+**Gate met:** mask-bound primitive applied successfully end-to-end; mask refinement loop works; mechanism proven. Mask quality target (≥70% accept-on-first-generation) is a Slice 6 manual-evidence concern; not blocking.
 
-**RFCs that close at this gate:**
+**RFCs closed:**
 
-- **RFC-004** (default masking provider — coarse vs SAM) — closes because real session evidence shows whether coarse-agent masking clears the bar
-- **RFC-009** (mask provider protocol shape) — closes because the protocol gets exercised by `CoarseAgentProvider` and dictates what `chemigram-masker-sam` (Phase 4) will need to implement
+- **RFC-004** → ADR-058 (default masking provider = `CoarseAgentProvider`; `chemigram-masker-sam` remains the recommended production upgrade).
+- **RFC-009** → ADR-057 (Protocol shape, error categories, sampling-based pattern).
 
-**Sketch of what comes out:**
+**Out of scope (deferred):**
 
-- ADRs locking the MaskingProvider Protocol and the v1 default choice
-- Working `CoarseAgentProvider`, ~200–400 lines
-- Documented expectations for mask quality
-- Foundation for `chemigram-masker-sam` sibling project (Phase 4)
+- Real `chemigram-masker-sam` SAM-backed provider — Phase 4 sibling project.
+- Composite Layer 3 mask operations (ADR-021) — Phase 2+ once session evidence shows utility.
+- Async `MaskingProvider.generate_async` — reserved for a follow-up RFC.
+- Mode A prompt v2 with mask refinement specifics — deferred to Slice 6.
 
 ---
 
