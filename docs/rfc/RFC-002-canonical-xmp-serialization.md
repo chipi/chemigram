@@ -1,9 +1,9 @@
 # RFC-002 — Canonical XMP serialization for stable hashing
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-054 at the v0.2.0 milestone, 2026-04-29)
 > TA anchor ·/components/versioning ·/components/synthesizer
 > Related · ADR-018, RFC-001
-> Closes into · ADR-018-amendment (pending) — specifies the canonicalization
+> Closed by · ADR-054 (canonical XMP serialization for stable content hashing). The implementation lives at `chemigram.core.versioning.canonical`; snapshot tests pin the v3 reference and minimal fixture hashes against literal expected values.
 > Why this is an RFC · ADR-018 commits to "SHA-256 over the canonical XMP serialization" as the snapshot identifier, but doesn't specify what canonical means. Whitespace, attribute ordering, namespace prefix choice, and XML declaration form all affect the hash. Without a specification, identical-edit-state XMPs produce different hashes — defeating the content-addressing guarantee.
 
 ## The question

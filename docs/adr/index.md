@@ -68,6 +68,7 @@ ADRs come from two streams:
 | ADR-051 | Same-module SET-replace; last-writer-wins; Path B deferred (closes RFC-006) | Accepted |
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 | ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
+| ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
 
 ## Conventions
 

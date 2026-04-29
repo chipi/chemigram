@@ -8,6 +8,14 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Added
+- `chemigram.core.versioning` package with `canonical_bytes(xmp) -> bytes`
+  and `xmp_hash(xmp) -> str` (issue #6). Deterministic byte form of an
+  `Xmp` for content addressing per RFC-002 (closes via **ADR-054**).
+  Snapshot tests pin the v3 reference and minimal fixture hashes against
+  literal expected values, so any drift in the canonicalization rules
+  fails CI loudly. 12 unit tests; 98 unit + 9 integration total.
+
 ### Changed
 - **Post-Slice-1 cleanup (2026-04-29):**
   - Removed `SynthesisError` from `chemigram.core.xmp` — defined but never raised; YAGNI.
