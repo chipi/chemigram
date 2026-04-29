@@ -15,6 +15,17 @@ Future modules in this package (later issues in the v0.2.0 milestone):
 """
 
 from chemigram.core.versioning.canonical import canonical_bytes, xmp_hash
+from chemigram.core.versioning.ops import (
+    LogEntry,
+    PrimitiveDiff,
+    VersioningError,
+    branch,
+    checkout,
+    diff,
+    log,
+    snapshot,
+    tag,
+)
 from chemigram.core.versioning.repo import (
     ImageRepo,
     ObjectNotFoundError,
@@ -25,10 +36,19 @@ from chemigram.core.versioning.repo import (
 
 __all__ = [
     "ImageRepo",
+    "LogEntry",
     "ObjectNotFoundError",
+    "PrimitiveDiff",
     "RefEntry",
     "RefNotFoundError",
     "RepoError",
+    "VersioningError",
+    "branch",
     "canonical_bytes",
+    "checkout",
+    "diff",
+    "log",
+    "snapshot",
+    "tag",
     "xmp_hash",
 ]

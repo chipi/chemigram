@@ -9,6 +9,16 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.versioning` operations: `snapshot`, `checkout`, `branch`,
+  `log`, `diff`, `tag` (issue #8). Pure functions over an `ImageRepo` that
+  resolve refs, read/write XMP objects via `canonical_bytes`, and append
+  structured `LogEntry` records to `log.jsonl`. Branch checkout sets HEAD
+  symbolically; tag/hash checkout detaches. `diff` is the per-(operation,
+  multi_priority) symmetric difference between two snapshots, sorted for
+  stable output. `tag` is immutable. Detached-HEAD snapshots are refused
+  (clear `VersioningError`). 26 unit tests + 1 integration test against
+  the v3 reference XMP exercising the full snapshot → branch → checkout
+  → modify-via-synthesize → diff → tag flow.
 - `chemigram.core.versioning.repo.ImageRepo` — per-image filesystem layout
   + low-level objects/refs/HEAD/log primitives (issue #7). Locks ADR-019's
   git-shaped storage into code: content-addressed `objects/NN/REST...`,
