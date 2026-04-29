@@ -43,23 +43,33 @@ def test_build_server_carries_context(vocab: VocabularyIndex, prompts: PromptSto
     assert server.name == "chemigram-mcp"
 
 
-def test_build_server_with_no_tools_lists_empty(
-    vocab: VocabularyIndex, prompts: PromptStore
-) -> None:
-    """No tools registered yet — list_tools returns empty list."""
+def test_build_server_registers_batch_1_tools(vocab: VocabularyIndex, prompts: PromptStore) -> None:
+    """build_server() runs register_all() — batch-1 tools should appear."""
     import anyio
 
     server, _ = build_server(vocabulary=vocab, prompts=prompts)
 
-    async def _exercise() -> list:
+    async def _exercise() -> list[str]:
         from mcp import types
 
         handler = server.request_handlers[types.ListToolsRequest]
         result = await handler(types.ListToolsRequest(method="tools/list"))
-        return result.root.tools  # ServerResult unwrap
+        return [t.name for t in result.root.tools]
 
-    tools = anyio.run(_exercise)
-    assert tools == []
+    names = anyio.run(_exercise)
+    expected = {
+        "list_vocabulary",
+        "get_state",
+        "apply_primitive",
+        "remove_module",
+        "reset",
+        "read_context",
+        "propose_taste_update",
+        "confirm_taste_update",
+        "propose_notes_update",
+        "confirm_notes_update",
+    }
+    assert expected.issubset(set(names))
 
 
 def test_call_unknown_tool_returns_not_found(vocab: VocabularyIndex, prompts: PromptStore) -> None:

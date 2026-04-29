@@ -43,20 +43,22 @@ def test_get_unknown_returns_none() -> None:
     assert get_tool("does_not_exist") is None
 
 
-def test_register_duplicate_raises() -> None:
-    register_tool(
-        name="dup",
-        description="x",
-        input_schema={"type": "object"},
-        handler=_noop_handler,
-    )
-    with pytest.raises(ValueError, match="already registered"):
-        register_tool(
-            name="dup",
-            description="x",
-            input_schema={"type": "object"},
-            handler=_noop_handler,
-        )
+def test_register_duplicate_replaces() -> None:
+    """Re-registering the same name overrides — supports ``register_all``
+    being called multiple times across test reruns."""
+
+    async def first(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict]:
+        return ToolResult.ok({"who": "first"})
+
+    async def second(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict]:
+        return ToolResult.ok({"who": "second"})
+
+    register_tool(name="dup", description="x", input_schema={}, handler=first)
+    register_tool(name="dup", description="x", input_schema={}, handler=second)
+
+    spec = get_tool("dup")
+    assert spec is not None
+    assert spec.handler is second
 
 
 def test_list_registered_sorted_by_name() -> None:

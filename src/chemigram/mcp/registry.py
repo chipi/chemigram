@@ -15,25 +15,25 @@ with a hand-rolled context.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from chemigram.mcp.errors import ToolResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class ToolContext:
     """Shared server-side resources passed to every tool invocation.
 
-    Phase 1 carries vocabulary + prompts. Slice-3 tool batches that need a
-    workspace registry use :attr:`workspaces`; the actual orchestrator type
-    lands in #15 — until then the field is a free-form ``Any`` so #13/#14
-    can be developed in parallel.
+    Carries vocabulary + prompts plus a workspace registry keyed by
+    ``image_id``. The :func:`workspaces` field is a mutable dict so the
+    ``ingest`` tool can register newly-created workspaces and downstream
+    tools can resolve by id.
     """
 
     vocabulary: Any  # VocabularyIndex; Any to avoid circular import for stubs
     prompts: Any  # PromptStore
-    workspaces: Any = None  # Workspace registry (lands in #15)
+    workspaces: dict[str, Any] = field(default_factory=dict)
 
 
 ToolHandler = Callable[[dict[str, Any], ToolContext], Awaitable[ToolResult[Any]]]
@@ -59,9 +59,13 @@ def register_tool(
     input_schema: dict[str, Any],
     handler: ToolHandler,
 ) -> None:
-    """Register a tool. Raises ``ValueError`` on duplicate name."""
-    if name in _REGISTRY:
-        raise ValueError(f"tool {name!r} already registered")
+    """Register (or replace) a tool by name.
+
+    Idempotent: registering the same name twice replaces the prior spec.
+    This keeps :func:`~chemigram.mcp.tools.register_all` safe to call
+    repeatedly (the bootstrap path) and lets tests freely
+    ``clear_registry`` and re-register.
+    """
     _REGISTRY[name] = ToolSpec(
         name=name,
         description=description,

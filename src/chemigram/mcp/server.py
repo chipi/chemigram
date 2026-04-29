@@ -27,6 +27,7 @@ from chemigram.core.vocab import VocabularyIndex, load_starter
 from chemigram.mcp.errors import ErrorCode, ToolError, ToolResult
 from chemigram.mcp.prompts import PromptStore
 from chemigram.mcp.registry import ToolContext, get_tool, list_registered
+from chemigram.mcp.tools import register_all
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ def build_server(
     if prompts is None:
         prompts = PromptStore(_resolve_prompts_root())
 
+    register_all()
     context = ToolContext(vocabulary=vocabulary, prompts=prompts)
 
     server: Server[Any, Any] = Server(

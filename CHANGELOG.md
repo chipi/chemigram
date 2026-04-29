@@ -9,6 +9,32 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- **MCP tool batch 1 (vocab + edit + context stubs):**
+  - `list_vocabulary(layer?, tags?)` — wraps
+    `VocabularyIndex.list_all` (tags filter is OR per the established
+    convention). Returns serialized `VocabEntry` records.
+  - `get_state(image_id)` — head_hash + entry_count + per-layer presence
+    flags; the canonical `state_after` shape per RFC-010.
+  - `apply_primitive(image_id, primitive_name, mask_override?)` —
+    synthesizes the entry onto current XMP and snapshots; `mask_override`
+    is parameter-stable but returns `NOT_IMPLEMENTED` with `slice=4` until
+    the masking provider lands.
+  - `remove_module(image_id, module_name)` — strips history entries by
+    operation, snapshots; `NOT_FOUND` if no entries match.
+  - `reset(image_id)` — checkout the workspace's `baseline_ref` (defaults
+    to the `baseline` tag) and return its state summary.
+  - 5 context-read stubs (`read_context`, `propose_taste_update`,
+    `confirm_taste_update`, `propose_notes_update`,
+    `confirm_notes_update`) — return `NOT_IMPLEMENTED` with `slice=5`. The
+    surface is shape-stable from v0.3.0 forward.
+- `chemigram.core.workspace.Workspace` — runtime per-image handle
+  (image_id, root, repo, raw_path, baseline_ref, configdir) plus the
+  `init_workspace_root(root)` helper that creates the directory shape
+  declared in `contracts/per-image-repo`.
+- `chemigram.mcp._state` — shared helpers (`summarize_state`,
+  `resolve_workspace`, `current_xmp`) reused across tool batches.
+- `chemigram.mcp.tools.register_all()` — idempotent registration of every
+  tool batch via `importlib.reload`; called from `build_server()`.
 - `chemigram.mcp.server` framework — boots the official `mcp` SDK over stdio,
   loads `VocabularyIndex` and `PromptStore` at startup, and dispatches
   registered tools via `chemigram.mcp.registry`. **Partial RFC-010 closure:**
