@@ -9,6 +9,28 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- **MCP tool batch 3 (ingest + workspace + masks):**
+  - `chemigram.core.workspace.ingest_workspace` plus `workspace_id_for`
+    helper. Bootstraps a per-image workspace: creates the directory
+    layout, initializes `ImageRepo`, symlinks the raw, reads EXIF,
+    suggests L1 bindings, builds + snapshots a baseline XMP (using a
+    bundled `_baseline_v1.xmp` stand-in until darktable-cli baseline
+    generation lands in a later slice), and tags `baseline`.
+  - `ingest(raw_path, image_id?, workspace_root?)` MCP tool wraps the
+    bootstrap, returns `{image_id, root, exif_summary, suggested_bindings}`,
+    and registers the workspace with the server context.
+  - `bind_layers(image_id, l1_template?, l2_template?)` validates layer
+    membership, synthesizes the templates onto the current XMP, and
+    snapshots. With both omitted, returns the current state.
+  - `log_vocabulary_gap(image_id, description, workaround?)` appends a
+    JSONL record to the image's `vocabulary_gaps.jsonl`.
+  - `list_masks` / `tag_mask` / `invalidate_mask` — real wrappers over
+    `chemigram.core.versioning.masks` (useful when masks are registered
+    out-of-band).
+  - `generate_mask` / `regenerate_mask` — stubs returning
+    `NOT_IMPLEMENTED` with `slice=4`.
+- `Workspace` gained `exif`/`suggested_bindings` fields populated by
+  `ingest_workspace`.
 - **MCP tool batch 2 (versioning + rendering):**
   - `snapshot(image_id, label?)` → `{hash}`. Wraps `versioning.ops.snapshot`.
   - `checkout(image_id, ref_or_hash)` → `state_after`-shaped summary. Wraps
