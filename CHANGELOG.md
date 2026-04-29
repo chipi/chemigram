@@ -9,12 +9,21 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.core.versioning.repo.ImageRepo` — per-image filesystem layout
+  + low-level objects/refs/HEAD/log primitives (issue #7). Locks ADR-019's
+  git-shaped storage into code: content-addressed `objects/NN/REST...`,
+  symbolic `HEAD` (resolves through `refs/heads/<branch>` chains),
+  branch + tag refs, append-only `log.jsonl` with auto-timestamping.
+  Single-writer per ADR-006; cross-process locking out of scope. 29 unit
+  tests covering layout, idempotent init, object dedup, ref resolution
+  (incl. circular and depth-exceeded paths), delete semantics, log
+  round-trip. No new ADR — implementation matches existing decisions.
 - `chemigram.core.versioning` package with `canonical_bytes(xmp) -> bytes`
   and `xmp_hash(xmp) -> str` (issue #6). Deterministic byte form of an
   `Xmp` for content addressing per RFC-002 (closes via **ADR-054**).
   Snapshot tests pin the v3 reference and minimal fixture hashes against
   literal expected values, so any drift in the canonicalization rules
-  fails CI loudly. 12 unit tests; 98 unit + 9 integration total.
+  fails CI loudly. 12 unit tests; 127 unit + 9 integration total.
 
 ### Changed
 - **Post-Slice-1 cleanup (2026-04-29):**
