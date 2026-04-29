@@ -1,6 +1,8 @@
 # Chemigram Documentation
 
-The doc tree has three tiers, each answering different kinds of questions.
+If you just want to **install and use Chemigram**, start at **[`getting-started.md`](getting-started.md)**. It walks through `pip install`, MCP-client configuration (Claude Code, Claude Desktop, Cursor, Continue, Cline, Zed, OpenAI), your first session, and how to grow your personal vocabulary in Phase 2.
+
+The rest of this tree is the project's design archive — three tiers of documents that answer different kinds of questions.
 
 ## Tier 1 — Concept package (`concept/`)
 

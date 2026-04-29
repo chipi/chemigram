@@ -53,41 +53,115 @@ masks and snapshots, and learns across sessions. Two modes:
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
+## Quickstart
+
+```bash
+# 1. install
+pip install chemigram
+
+# 2. set up your taste (cross-image preferences)
+mkdir -p ~/.chemigram/tastes
+$EDITOR ~/.chemigram/tastes/_default.md   # what you generally like
+
+# 3. point your AI client at chemigram-mcp.  e.g. for Claude Code, drop this
+#    into .mcp.json (project) or ~/.claude/mcp.json (global):
+#
+#    {"mcpServers": {"chemigram": {"command": "chemigram-mcp"}}}
+
+# 4. start a conversation in your client:
+#    "Ingest /path/to/photo.NEF.  Read context.  Render a preview."
+```
+
+For the full flow — darktable setup, MCP-client matrix (Claude Code / Desktop, Cursor, Continue, Cline, Zed, OpenAI), 10-turn worked session, troubleshooting — read **[`docs/getting-started.md`](docs/getting-started.md)**.
+
+## How it works
+
+```
+       ┌────────────────────┐         ┌──────────────────────────────┐
+       │  Your AI client    │  MCP    │  chemigram-mcp (this package) │
+       │  Claude Code, etc. │◄───────►│                              │
+       └────────────────────┘ stdio   │   ┌─────────────────────┐    │
+                  ▲                   │   │ chemigram.core      │    │
+                  │ vision + sampling │   │   vocab │ versioning │    │
+                  │ (for masks)       │   │   masking│ context    │    │
+                  ▼                   │   │   pipeline │ session  │    │
+       ┌────────────────────┐         │   └──────────┬──────────┘    │
+       │  ~/.chemigram/     │         │              │               │
+       │   tastes/          │         │              ▼               │
+       │   vocabulary/      │         │       ┌──────────────┐       │
+       │     personal/      │         │       │ darktable-cli│       │
+       └────────────────────┘         │       │  (rendering) │       │
+                                      │       └──────────────┘       │
+                                      └──────────────┬───────────────┘
+                                                     │ writes
+                                                     ▼
+                              ~/Pictures/Chemigram/<image_id>/
+                                snapshots/  exports/  sessions/  masks/
+```
+
+The agent reads your context and the brief, drives darktable through a vocabulary of named moves, manages snapshots and masks, and proposes updates to your taste files at session end. Every tool call is recorded to a JSONL transcript so sessions are auditable and replayable.
+
+A typical 6-turn opening:
+
+```
+You:    Ingest /tmp/manta.NEF.  Read context.
+
+Agent:  Ingested as image_id "manta".  Tastes loaded:
+        natural tone curves, lifted shadows, restrained colors.
+        EOS R5, no L1 templates yet.  Notes empty.
+
+You:    Render preview.  The water feels too cyan.
+
+Agent:  [render → wb_warm_subtle → render]  Slate-blue now.
+
+You:    Lift the shadows on the manta belly.  Use a subject mask.
+
+Agent:  [generate_mask → apply tone_lifted_shadows_subject]  Edge
+        too sharp?  I can regenerate with softer feathering.
+
+You:    Yes.  Then export at full res.  Tag this v1-export.
+
+Agent:  [regenerate_mask → re-apply → tag → export_final]  Done.
+        Two propose-and-confirms before we wrap?
+```
+
+See **[`docs/getting-started.md`](docs/getting-started.md#your-first-session)** for a full 10-turn walkthrough.
+
+## Growing your vocabulary
+
+The starter vocabulary that ships with `chemigram` is deliberately small — five entries. Phase 2 grows it from real session evidence: the agent logs gaps when it reaches for moves you don't have; once a month or so, you open darktable, capture the missing primitives as `.dtstyle` files, and drop them into `~/.chemigram/vocabulary/personal/`. After 3 months of regular use most photographers reach 30–60 personal entries; after 6 months, 80–120. The vocabulary becomes an articulation of *your* craft.
+
+Full procedure in **[`docs/getting-started.md`](docs/getting-started.md#growing-your-vocabulary)** and **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)**.
+
 ## Documentation
 
-The full doc tree is in `docs/`. Start at `docs/index.md` for the ecosystem overview.
+For users:
 
-The project's concept package is in `docs/concept/`, six numbered documents you read in order:
+- **[`docs/getting-started.md`](docs/getting-started.md)** — install, MCP-client config, first session, troubleshooting
+- **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)** — what ships in the bundled pack, how to grow your personal pack
 
-1. `docs/concept/00-introduction.md` — entry point, glossary, reading order
-2. `docs/concept/01-vision.md` — the soul of the project
-3. `docs/concept/02-project-concept.md` — what we're building at idea level (the loop, sessions, modes)
-4. `docs/concept/03-data-catalog.md` — what feeds the system
-5. `docs/concept/04-architecture.md` — engine spec
-6. `docs/concept/05-design-system.md` — minimal because Chemigram is an MCP server, not a UI app
+For people engaging with the project deeper:
 
-Total reading time: about two hours. If you have less, `00-introduction` + `01-vision` + the first three sections of `02-project-concept` is enough to engage with anyone working on the project.
-
-The definition documents (PRDs, RFCs, ADRs) live in `docs/prd/`, `docs/rfc/`, and `docs/adr/`. Each has its own `index.md`. Anchored by `docs/prd/PA.md` (product reference) and `docs/adr/TA.md` (technical architecture reference).
-
-Supporting documents:
-
-- `docs/IMPLEMENTATION.md` — canonical phase plan
-- `docs/LICENSING.md` — what's MIT, what's separate
-- `docs/CONTRIBUTING.md` — code and vocabulary contribution flows
-- `docs/TODO.md` — research backlog, deferred items
-- `docs/briefs/` — historical design-conversation artifacts (predate the formal package)
-- `examples/iguana-galapagos.md` — a worked Mode A session
-- `examples/phase-0-notebook.md` — Phase 0 lab notebook (closed green)
+- **`docs/concept/`** — six numbered concept documents (read end-to-end, ~2h):
+  `00-introduction.md`, `01-vision.md`, `02-project-concept.md`,
+  `03-data-catalog.md`, `04-architecture.md`, `05-design-system.md`
+- **`docs/prd/`**, **`docs/rfc/`**, **`docs/adr/`** — definition documents (PRDs argue user-value; RFCs argue open technical questions; ADRs commit to settled decisions). Anchored by `docs/prd/PA.md` and `docs/adr/TA.md`.
+- **`docs/IMPLEMENTATION.md`** — canonical phase plan
+- **`docs/CONTRIBUTING.md`** — code + vocabulary contribution flows
+- **`docs/LICENSING.md`** — what's MIT, what's separate
+- **`docs/TODO.md`** — research backlog, deferred items
+- **`examples/iguana-galapagos.md`** — a worked Mode A session, prose form
 
 ## Requirements
 
 - darktable 5.x (Apple Silicon native build recommended)
 - Python 3.11+
-- An MCP-capable agent (Claude, etc.)
+- An MCP-capable AI client — Claude Code, Claude Desktop, Cursor, Continue, Cline, Zed, or anything that supports MCP stdio servers
 - macOS Apple Silicon for v1; Linux best-effort
 
-## Contributing — quick start
+## Contributing
+
+If you want to work on the engine itself (not just use it):
 
 ```bash
 git clone https://github.com/chipi/chemigram.git
@@ -95,7 +169,9 @@ cd chemigram
 ./scripts/setup.sh
 ```
 
-That checks prerequisites, creates a venv, and installs everything. See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for the full process and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for what's being built right now.
+That checks prerequisites, creates a venv, and installs everything. See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for the full process and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for what's being worked on now.
+
+If you want to contribute vocabulary entries (Phase 2 path), see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) § Vocabulary contributions.
 
 ## License
 
