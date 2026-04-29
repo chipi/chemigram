@@ -193,6 +193,67 @@ def checkout(repo: ImageRepo, ref_or_hash: str) -> Xmp:
     return xmp
 
 
+_DEFAULT_PRIMARY_BRANCH = "refs/heads/main"
+
+
+def reset_to(repo: ImageRepo, ref_or_hash: str) -> Xmp:
+    """Rewind the current branch to ``ref_or_hash`` and ensure HEAD is
+    symbolic on a branch (per ADR-062).
+
+    Resolves the input as branch / tag / hash. If HEAD is symbolic,
+    force-writes the current branch's ref to the resolved hash. If
+    HEAD is detached, attaches HEAD to ``refs/heads/main`` and
+    force-writes that branch to the resolved hash. Either way, after
+    the call, HEAD is symbolic and the current branch's tip is the
+    resolved hash. ``"HEAD"`` is rejected as input — resetting HEAD
+    to itself is meaningless and almost certainly a caller bug.
+
+    Returns the parsed :class:`Xmp` at the resolved hash, mirroring
+    :func:`checkout` so the caller can summarize state without an
+    extra read.
+
+    Raises:
+        VersioningError: input unresolvable, input is "HEAD", or the
+            object can't be read/parsed.
+    """
+    if ref_or_hash == "HEAD":
+        raise VersioningError("reset target cannot be 'HEAD' (ambiguous self-reference)")
+
+    target_hash, _ = _resolve_input(repo, ref_or_hash)
+
+    try:
+        raw = repo.read_object(target_hash)
+    except ObjectNotFoundError as exc:
+        raise VersioningError(str(exc)) from exc
+    xmp = parse_xmp_from_bytes(raw, source=f"sha256:{target_hash}")
+
+    head_raw = repo.read_ref_raw("HEAD")
+    if head_raw.startswith("ref: "):
+        current_branch_ref = head_raw[len("ref: ") :].strip()
+    else:
+        current_branch_ref = _DEFAULT_PRIMARY_BRANCH
+        repo.write_ref("HEAD", f"ref: {current_branch_ref}")
+
+    try:
+        prior_hash: str | None = repo.resolve_ref(current_branch_ref)
+    except (RefNotFoundError, RepoError):
+        prior_hash = None
+
+    repo.write_ref(current_branch_ref, target_hash)
+
+    repo.append_log(
+        {
+            "timestamp": _now_iso(),
+            "op": "reset",
+            "hash": target_hash,
+            "ref": current_branch_ref,
+            "parent": prior_hash,
+            "metadata": {"prior_hash": prior_hash, "target": ref_or_hash},
+        }
+    )
+    return xmp
+
+
 def branch(repo: ImageRepo, name: str, from_: str = "HEAD") -> str:
     """Create ``refs/heads/<name>`` pointing at the resolved hash of
     ``from_``. Does NOT switch HEAD to the new branch.
@@ -349,6 +410,7 @@ __all__ = [
     "checkout",
     "diff",
     "log",
+    "reset_to",
     "snapshot",
     "tag",
     "xmp_hash",

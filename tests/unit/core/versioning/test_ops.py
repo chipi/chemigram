@@ -16,6 +16,7 @@ from chemigram.core.versioning.ops import (
     checkout,
     diff,
     log,
+    reset_to,
     snapshot,
     tag,
 )
@@ -286,6 +287,98 @@ def test_tag_unknown_hash_raises(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     with pytest.raises(VersioningError):
         tag(repo, "v1", hash_="0" * 64)
+
+
+# ---- reset_to ---------------------------------------------------------------
+#
+# Per ADR-062: rewinds the current branch to the target hash and ensures
+# HEAD is symbolic on a branch. ``apply_primitive`` (i.e. snapshot) must
+# work immediately after.
+
+
+def test_reset_to_tag_attaches_head_and_moves_branch(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    h_baseline = snapshot(repo, _xmp(), label="baseline")
+    tag(repo, "baseline")
+    h_after = snapshot(repo, _xmp(rating=1), label="agent move")
+    assert repo.resolve_ref("refs/heads/main") == h_after  # tip advanced
+
+    reset_to(repo, "baseline")
+
+    # Branch tip rewound, HEAD still symbolic on main.
+    assert repo.resolve_ref("refs/heads/main") == h_baseline
+    assert repo.read_ref_raw("HEAD") == "ref: refs/heads/main"
+
+
+def test_reset_to_re_attaches_detached_head(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    h_baseline = snapshot(repo, _xmp())
+    tag(repo, "baseline")
+    repo.write_ref("HEAD", h_baseline)  # detach
+
+    reset_to(repo, "baseline")
+
+    assert repo.read_ref_raw("HEAD") == "ref: refs/heads/main"
+    assert repo.resolve_ref("refs/heads/main") == h_baseline
+
+
+def test_reset_to_enables_subsequent_snapshot(tmp_path: Path) -> None:
+    """The whole point of ADR-062: reset → apply must work."""
+    repo = _repo(tmp_path)
+    snapshot(repo, _xmp(), label="baseline")
+    tag(repo, "baseline")
+    snapshot(repo, _xmp(rating=1))
+    reset_to(repo, "baseline")
+    h_new = snapshot(repo, _xmp(rating=2))  # would raise pre-fix
+    assert repo.resolve_ref("refs/heads/main") == h_new
+
+
+def test_reset_to_logs_entry_with_prior_hash(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    h_baseline = snapshot(repo, _xmp(), label="baseline")
+    tag(repo, "baseline")
+    h_prior = snapshot(repo, _xmp(rating=1))
+    reset_to(repo, "baseline")
+    entries = log(repo)
+    reset_entries = [e for e in entries if e.op == "reset"]
+    assert len(reset_entries) == 1
+    e = reset_entries[0]
+    assert e.hash == h_baseline
+    assert e.ref == "refs/heads/main"
+    assert e.parent == h_prior
+    assert e.metadata.get("prior_hash") == h_prior
+    assert e.metadata.get("target") == "baseline"
+
+
+def test_reset_to_rejects_head_target(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    snapshot(repo, _xmp())
+    with pytest.raises(VersioningError, match="HEAD"):
+        reset_to(repo, "HEAD")
+
+
+def test_reset_to_unknown_target_raises(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    snapshot(repo, _xmp())
+    with pytest.raises(VersioningError, match="unknown"):
+        reset_to(repo, "no-such-ref")
+
+
+def test_reset_to_resets_current_branch_not_main(tmp_path: Path) -> None:
+    """If HEAD is on `experiment-1`, reset rewinds experiment-1 — not main."""
+    repo = _repo(tmp_path)
+    h_baseline = snapshot(repo, _xmp(), label="baseline")
+    tag(repo, "baseline")
+    branch(repo, "experiment-1", from_="refs/tags/baseline")
+    checkout(repo, "experiment-1")
+    snapshot(repo, _xmp(rating=1))  # advance experiment-1
+
+    reset_to(repo, "baseline")
+
+    assert repo.read_ref_raw("HEAD") == "ref: refs/heads/experiment-1"
+    assert repo.resolve_ref("refs/heads/experiment-1") == h_baseline
+    # main was untouched (still pointing to baseline from initial snapshot)
+    assert repo.resolve_ref("refs/heads/main") == h_baseline
 
 
 def test_log_entry_dataclass_shape() -> None:

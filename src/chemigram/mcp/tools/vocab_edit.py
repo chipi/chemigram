@@ -19,7 +19,7 @@ from typing import Any
 
 from chemigram.core.versioning import RefNotFoundError, RepoError
 from chemigram.core.versioning.masks import MaskNotFoundError
-from chemigram.core.versioning.ops import VersioningError, checkout, snapshot
+from chemigram.core.versioning.ops import VersioningError, reset_to, snapshot
 from chemigram.core.vocab import VocabEntry
 from chemigram.core.xmp import synthesize_xmp
 from chemigram.mcp._state import current_xmp, resolve_workspace, summarize_state
@@ -271,7 +271,7 @@ async def _reset(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str,
         return ToolResult.fail(error_not_found(f"image {image_id!r}"))
 
     try:
-        baseline_xmp = checkout(workspace.repo, workspace.baseline_ref)
+        baseline_xmp = reset_to(workspace.repo, workspace.baseline_ref)
     except (VersioningError, RefNotFoundError, RepoError) as exc:
         return ToolResult.fail(
             ToolError(
@@ -284,7 +284,12 @@ async def _reset(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str,
 
 register_tool(
     name="reset",
-    description="Checkout the workspace's baseline ref and return its state summary.",
+    description=(
+        "Rewind the workspace's current branch to its baseline ref (per "
+        "ADR-062). Destructive on the current branch's tip — capture a tag "
+        "or branch first if you need to keep the prior state. After reset, "
+        "HEAD is attached and apply_primitive can resume immediately."
+    ),
     input_schema={
         "type": "object",
         "properties": {"image_id": {"type": "string"}},

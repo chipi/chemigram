@@ -239,3 +239,75 @@ def test_mcp_session_render_then_no_change(
         f"two consecutive render_preview calls should produce the same image; "
         f"got a={a_lum:.3f}, b={b_lum:.3f}"
     )
+
+
+def test_mcp_session_reset_then_apply_then_render(
+    test_raw: Path,
+    configdir: Path,
+    starter_vocab: VocabularyIndex,
+    darktable_binary: str,
+    tmp_path: Path,
+) -> None:
+    """ADR-062 regression: reset must leave the workspace ready to apply.
+
+    Drives apply → reset → apply → render through the MCP harness. The
+    second apply (post-reset) must not raise a "detached HEAD" error,
+    and the render must produce a valid JPEG matching what
+    apply_primitive(expo_-0.5)-from-baseline would produce.
+
+    This is the test that surfaced the pre-ADR-062 bug.
+    """
+    _ = darktable_binary
+    clear_registry()
+    prompts = PromptStore(_SHIPPED_PROMPTS)
+    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    ws = _build_workspace_with_phase_0_raw(tmp_path, test_raw, configdir)
+    ctx.workspaces[ws.image_id] = ws
+
+    async def _exercise() -> tuple[bytes, str]:
+        async with in_memory_session(server) as session:
+            apply_plus = _decode(
+                await session.call_tool(
+                    "apply_primitive",
+                    arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                )
+            )
+            assert apply_plus["success"], apply_plus.get("error")
+
+            reset_r = _decode(await session.call_tool("reset", arguments={"image_id": "phase0"}))
+            assert reset_r["success"], reset_r.get("error")
+
+            apply_minus = _decode(
+                await session.call_tool(
+                    "apply_primitive",
+                    arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                )
+            )
+            assert apply_minus["success"], (
+                f"reset should leave HEAD attached so apply works (ADR-062); "
+                f"got error: {apply_minus.get('error')}"
+            )
+            minus_hash = apply_minus["data"]["snapshot_hash"]
+
+            render_r = _decode(
+                await session.call_tool(
+                    "render_preview",
+                    arguments={"image_id": "phase0", "size": 256},
+                )
+            )
+            assert render_r["success"], render_r.get("error")
+            return Path(render_r["data"]["jpeg_path"]).read_bytes(), minus_hash
+
+    try:
+        jpeg_bytes, minus_hash = anyio.run(_exercise)
+    finally:
+        clear_registry()
+
+    assert len(jpeg_bytes) > 1000  # plausible JPEG, not an empty file
+    lum = _read_jpeg_mean_luma_bytes(jpeg_bytes)
+    # Sanity: the render isn't pure black/white. Tight bounds aren't
+    # the assertion here — the assertion is "the workflow works".
+    assert 5 < lum < 250, (
+        f"render after reset+apply produced suspicious luma={lum:.2f}; "
+        f"snapshot_hash={minus_hash[:12]}"
+    )

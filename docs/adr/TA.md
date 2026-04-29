@@ -474,6 +474,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-059 | Agent context loading order and format (closes RFC-011) | Accepted |
 | ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
 | ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
+| ADR-062 | Reset rewinds the current branch to baseline | Accepted |
 
 ---
 
