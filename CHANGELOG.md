@@ -8,6 +8,24 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Added
+- `chemigram.core.vocab.VocabularyIndex` — eager-loading, validated vocabulary
+  pack reader. Reads `manifest.json` (per
+  `docs/adr/TA.md::contracts/vocabulary-manifest`) plus the referenced
+  `.dtstyle` files, validates entry shape + `touches` ↔ plugin operation
+  consistency, and exposes `lookup_by_name`, `list_all(layer=, tags=)`, and
+  `lookup_l1(make, model, lens_model)` (satisfying the
+  `chemigram.core.binding.VocabularyIndex` Protocol per ADR-053).
+- `chemigram.core.vocab.load_starter()` resolves the bundled
+  `chemigram/_starter_vocabulary/` resource (ADR-049), with a development
+  fallback to in-repo `vocabulary/starter/` for editable installs.
+- Tag filter on `list_all` is OR (any-match) — documented in the module
+  docstring.
+- `tests/fixtures/vocabulary/test_pack/` — hand-stitched validation pack
+  symlinking existing `tests/fixtures/dtstyles/` files.
+- `docs/CONTRIBUTING.md` — new "v0.3.0+ — registry layout" section in the
+  Vocabulary contributions area.
+
 ### Changed
 - **v0.2.0 polish (pre-tag cleanup):**
   - `chemigram.core.xmp` gains `parse_xmp_from_bytes(data, *, source="<bytes>")`
