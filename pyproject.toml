@@ -37,6 +37,11 @@ dependencies = [
     "defusedxml>=0.7",
     "exifread>=3.0",
     "Jinja2>=3.1",
+    # Pillow lands here for the `compare` MCP tool's side-by-side stitch.
+    # Pure infrastructure (image reading/writing/composition) — does not
+    # violate BYOA (ADR-007) or dt-orchestration-only (ADR-014). When Slice 4
+    # adds the masking pipeline, Pillow gets reused for raster mask handling.
+    "Pillow>=10.0",
 ]
 
 [project.optional-dependencies]

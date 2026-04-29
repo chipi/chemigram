@@ -9,6 +9,28 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- **MCP tool batch 2 (versioning + rendering):**
+  - `snapshot(image_id, label?)` → `{hash}`. Wraps `versioning.ops.snapshot`.
+  - `checkout(image_id, ref_or_hash)` → `state_after`-shaped summary. Wraps
+    `versioning.ops.checkout` (which moves HEAD).
+  - `branch(image_id, name, from_?)` → `{ref}`. `from_` must be HEAD or
+    fully qualified (`refs/...`); per `ImageRepo.resolve_ref`.
+  - `log(image_id, limit?)` → list of `LogEntry` dicts (newest-first).
+  - `diff(image_id, hash_a, hash_b)` → list of `PrimitiveDiff` dicts.
+  - `tag(image_id, name, hash?)` → `{ref}`. Re-tag with same name returns
+    `VERSIONING_ERROR` per ADR-019 immutability.
+  - `render_preview(image_id, size=1024, ref_or_hash?)` → `{jpeg_path,
+    duration_seconds}`. Renders to `<workspace>/previews/`.
+  - `compare(image_id, hash_a, hash_b, size=1024)` → `{jpeg_path}`.
+    Renders both states and stitches into one labeled side-by-side JPEG
+    via Pillow.
+  - `export_final(image_id, ref_or_hash?, size=None, format="jpeg")` →
+    `{output_path, duration_seconds, format}`. Writes to
+    `<workspace>/exports/`. `format` ∈ {jpeg, png}; size omitted means
+    full resolution (16384 sentinel — darktable-cli treats `--width/--height`
+    as upper bounds per ADR-004).
+- `Pillow>=10.0` added to runtime deps for the `compare` stitch (pure
+  composition; rationale comment in `pyproject.toml`).
 - **MCP tool batch 1 (vocab + edit + context stubs):**
   - `list_vocabulary(layer?, tags?)` — wraps
     `VocabularyIndex.list_all` (tags filter is OR per the established

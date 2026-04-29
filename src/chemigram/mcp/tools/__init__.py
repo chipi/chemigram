@@ -30,6 +30,8 @@ def register_all() -> None:
     modules = [
         "chemigram.mcp.tools.vocab_edit",
         "chemigram.mcp.tools.context_stubs",
+        "chemigram.mcp.tools.versioning",
+        "chemigram.mcp.tools.rendering",
     ]
     for name in modules:
         mod = importlib.import_module(name)
