@@ -74,16 +74,40 @@ def _is_hex_hash(s: str) -> bool:
 def _resolve_input(repo: ImageRepo, ref_or_hash: str) -> tuple[str, str | None]:
     """Resolve user input into (hash, branch_name_or_None).
 
-    Tries: branch name → tag name → raw hash. Returns the resolved
-    hash plus, when input was a branch, the branch's full ref name
-    (so the caller can set HEAD symbolically).
+    Accepted shapes:
+    - bare branch name (``"main"``) — resolves via ``refs/heads/<name>``
+    - bare tag name (``"baseline"``) — resolves via ``refs/tags/<name>``
+    - full branch ref (``"refs/heads/main"``)
+    - full tag ref (``"refs/tags/baseline"``)
+    - 64-char hex hash, if the object exists
 
-    **Precedence on collision:** if a name exists as both a branch
-    AND a tag, the branch wins. Convention (and ADR-019's namespace
-    split between ``refs/heads/`` and ``refs/tags/``) makes this
-    collision unlikely in practice, but the rule is here so callers
-    can rely on it.
+    Returns the resolved hash plus, when input names a branch, the
+    branch's full ref name (so the caller can set HEAD symbolically).
+
+    **Precedence on bare-name collision:** if a name exists as both a
+    branch AND a tag, the branch wins. ADR-019's namespace split makes
+    this collision unlikely in practice, but the rule is here so
+    callers can rely on it. Full-ref-form input bypasses this lookup
+    chain entirely — ``"refs/tags/main"`` always resolves to a tag.
     """
+    if ref_or_hash.startswith("refs/heads/"):
+        try:
+            h = repo.resolve_ref(ref_or_hash)
+            return h, ref_or_hash
+        except RefNotFoundError as exc:
+            raise VersioningError(
+                f"unknown ref or hash: {ref_or_hash!r} (not a branch, tag, or known object)"
+            ) from exc
+
+    if ref_or_hash.startswith("refs/tags/"):
+        try:
+            h = repo.resolve_ref(ref_or_hash)
+            return h, None
+        except RefNotFoundError as exc:
+            raise VersioningError(
+                f"unknown ref or hash: {ref_or_hash!r} (not a branch, tag, or known object)"
+            ) from exc
+
     branch_ref = f"refs/heads/{ref_or_hash}"
     try:
         h = repo.resolve_ref(branch_ref)
@@ -258,6 +282,12 @@ def branch(repo: ImageRepo, name: str, from_: str = "HEAD") -> str:
     """Create ``refs/heads/<name>`` pointing at the resolved hash of
     ``from_``. Does NOT switch HEAD to the new branch.
 
+    ``from_`` accepts the same shapes as :func:`checkout` and the
+    ``ref_or_hash`` arguments of other ops: a branch name (``"main"``),
+    a tag name (``"baseline"``), a full ref (``"refs/heads/main"``,
+    ``"refs/tags/v1"``), ``"HEAD"``, or a 64-char hex hash. Unresolvable
+    input raises ``VersioningError``.
+
     Returns the full ref name.
 
     Raises:
@@ -271,10 +301,13 @@ def branch(repo: ImageRepo, name: str, from_: str = "HEAD") -> str:
     if existing is not None:
         raise VersioningError(f"branch {name!r} already exists")
 
-    try:
-        target_hash = repo.resolve_ref(from_)
-    except (RefNotFoundError, RepoError) as exc:
-        raise VersioningError(f"cannot resolve {from_!r}: {exc}") from exc
+    if from_ == "HEAD":
+        try:
+            target_hash = repo.resolve_ref("HEAD")
+        except (RefNotFoundError, RepoError) as exc:
+            raise VersioningError(f"cannot resolve {from_!r}: {exc}") from exc
+    else:
+        target_hash, _ = _resolve_input(repo, from_)
 
     repo.write_ref(new_ref, target_hash)
     repo.append_log(

@@ -157,8 +157,73 @@ def test_branch_name_exists_raises(tmp_path: Path) -> None:
 
 def test_branch_from_unknown_raises(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    with pytest.raises(VersioningError, match="cannot resolve"):
+    with pytest.raises(VersioningError, match=r"unknown ref or hash|cannot resolve"):
         branch(repo, "feature", from_="nonexistent")
+
+
+def test_branch_from_full_branch_ref(tmp_path: Path) -> None:
+    """branch() accepts ``refs/heads/X`` (full ref form), not just ``X``."""
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    branch(repo, "from-full-ref", from_="refs/heads/main")
+    assert repo.resolve_ref("refs/heads/from-full-ref") == h
+
+
+def test_branch_from_full_tag_ref(tmp_path: Path) -> None:
+    """branch() accepts ``refs/tags/X`` (full ref form), not just ``X``."""
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    tag(repo, "v1")
+    branch(repo, "from-full-tag", from_="refs/tags/v1")
+    assert repo.resolve_ref("refs/heads/from-full-tag") == h
+
+
+def test_branch_from_bare_tag_name(tmp_path: Path) -> None:
+    """Symmetry with checkout: bare tag name resolves correctly."""
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    tag(repo, "baseline")
+    branch(repo, "exp", from_="baseline")
+    assert repo.resolve_ref("refs/heads/exp") == h
+
+
+def test_branch_from_bare_branch_name(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    branch(repo, "exp", from_="main")
+    assert repo.resolve_ref("refs/heads/exp") == h
+
+
+def test_branch_from_hash_directly(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    branch(repo, "from-hash", from_=h)
+    assert repo.resolve_ref("refs/heads/from-hash") == h
+
+
+def test_checkout_to_full_branch_ref(tmp_path: Path) -> None:
+    """Symmetry: checkout accepts ``refs/heads/X`` directly."""
+    repo = _repo(tmp_path)
+    snapshot(repo, _xmp())
+    checkout(repo, "refs/heads/main")
+    assert repo.read_ref_raw("HEAD") == "ref: refs/heads/main"
+
+
+def test_checkout_to_full_tag_ref(tmp_path: Path) -> None:
+    """Symmetry: checkout accepts ``refs/tags/X`` directly."""
+    repo = _repo(tmp_path)
+    h = snapshot(repo, _xmp())
+    tag(repo, "v1")
+    checkout(repo, "refs/tags/v1")
+    # Tag checkout detaches HEAD per ADR-019
+    assert repo.read_ref_raw("HEAD") == h
+
+
+def test_checkout_full_ref_unknown_raises(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    snapshot(repo, _xmp())
+    with pytest.raises(VersioningError):
+        checkout(repo, "refs/heads/no-such-branch")
 
 
 def test_branch_does_not_switch_head(tmp_path: Path) -> None:
