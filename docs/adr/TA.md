@@ -88,7 +88,7 @@ Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
 Versioned prompt templates loaded by the MCP server at session start (and by the eval harness for autonomous Mode B runs). Append-only, MANIFEST-driven, Jinja2-templated.
 
-**Files (planned):** `src/chemigram/mcp/prompts/store.py`, `src/chemigram/mcp/prompts/MANIFEST.toml`, `src/chemigram/mcp/prompts/{mode_a,mode_b,helpers}/*.j2`
+**Files (shipped v0.3.0):** `src/chemigram/mcp/prompts/store.py` (PromptStore), `src/chemigram/mcp/prompts/MANIFEST.toml` (active-version registry), `src/chemigram/mcp/prompts/mode_a/system_v1.j2` (Mode A v1; migrated from `docs/agent-prompt.md`). Mode B + helpers ship in later phases per their RFC closures.
 
 **Public API:**
 - `PromptStore.render(path, context, version=None, provider=None) → str`
@@ -387,6 +387,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-013 | Vocabulary gap surfacing format | Draft v0.1 | ADR (pending) |
 | RFC-014 | End-of-session synthesis flow | Draft v0.1 | ADR (pending) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
+| RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 
 ### ADRs
 

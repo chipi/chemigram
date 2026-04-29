@@ -48,3 +48,6 @@ jobs:
 
       - name: Integration tests
         run: uv run pytest tests/integration
+
+      - name: Verify prompt manifest
+        run: ./scripts/verify-prompts.sh

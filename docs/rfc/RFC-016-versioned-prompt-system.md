@@ -1,10 +1,17 @@
 # RFC-016 — Versioned prompt system
 
-> Status · Accepted
-> Date · 2026-04-28
+> Status · Decided
+> Date · 2026-04-28; closed 2026-04-29
 > TA anchor · /components/prompts
 > Related ADRs · ADR-043, ADR-044, ADR-045
 > Related PRDs · PRD-001 (Mode A), PRD-002 (Mode B)
+>
+> **Closure note (2026-04-29):** RFC-016 closes with the v0.3.0 Slice 3
+> implementation of `chemigram.mcp.prompts.PromptStore`,
+> `src/chemigram/mcp/prompts/MANIFEST.toml`, the migrated
+> `mode_a/system_v1.j2` prompt, and `scripts/verify-prompts.sh`. The runtime
+> tree is now the source of truth; `docs/agent-prompt.md` was reduced to a
+> redirect note. Open Question #4 (canonical-source location) is answered.
 
 ## Why this is an RFC
 

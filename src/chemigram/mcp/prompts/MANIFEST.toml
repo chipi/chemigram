@@ -1,0 +1,18 @@
+# MANIFEST — active-version registry for chemigram's prompts.
+#
+# Per ADR-044: this is the single source of truth for which template version
+# is "live" per task. Version pinning for eval reproducibility happens at the
+# call site (PromptStore.render(version="v2")). Append-only against the
+# version dimension: once vN ships, leave it. New iterations go to v(N+1)
+# and bump the `active` key here.
+#
+# CI runs scripts/verify-prompts.sh to confirm every active path resolves
+# to an on-disk <task>_v<N>.j2 file.
+
+[prompts."mode_a/system"]
+active = "v1"
+context_required = ["vocabulary_size", "image_id"]
+context_optional = ["masker_available"]
+
+# Mode B prompts ship in Phase 5 (eval harness; RFC-002 follow-up).
+# Helper prompts (taste consistency, gap framing) ship in Phase 2+.

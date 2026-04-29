@@ -9,6 +9,24 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- `chemigram.mcp.prompts.PromptStore` — Jinja2 prompt loader / renderer driven
+  by a top-level `MANIFEST.toml` registry. Closes **RFC-016** (versioned
+  prompt system) by landing the implementation behind ADR-043, ADR-044, and
+  ADR-045. Public API: `render(path, context, *, version=None, provider=None)`,
+  `active_version(path)`, `context_schema(path)`, `list_templates()`. Errors
+  exposed as `PromptError` / `PromptNotFoundError` /
+  `PromptVersionNotFoundError` / `PromptContextError`.
+- `src/chemigram/mcp/prompts/MANIFEST.toml` — active-version registry; first
+  entry is `mode_a/system` → `v1`.
+- `src/chemigram/mcp/prompts/mode_a/system_v1.j2` — Mode A v1 system prompt,
+  migrated verbatim from `docs/agent-prompt.md`. Required context: `image_id`,
+  `vocabulary_size`. Optional: `masker_available` (gates the local-adjustments
+  guidance).
+- `src/chemigram/mcp/prompts/mode_a/system_v1.changelog.md` — per-version
+  rationale log; new versions append below.
+- `scripts/verify-prompts.sh` — CI consistency check that every active-version
+  MANIFEST entry resolves to a `<task>_v<N>.j2` file on disk. Wired into
+  `make ci` step 7/7 and `.github/workflows/ci.yml`.
 - `chemigram.core.vocab.VocabularyIndex` — eager-loading, validated vocabulary
   pack reader. Reads `manifest.json` (per
   `docs/adr/TA.md::contracts/vocabulary-manifest`) plus the referenced
@@ -25,6 +43,10 @@ per ADR-041.
   symlinking existing `tests/fixtures/dtstyles/` files.
 - `docs/CONTRIBUTING.md` — new "v0.3.0+ — registry layout" section in the
   Vocabulary contributions area.
+- `docs/agent-prompt.md` reduced to a redirect note pointing at the runtime
+  source tree (RFC-016 Open Question #4 answered).
+- RFC-016 status moved `Accepted → Decided` in `docs/rfc/index.md` and
+  `docs/adr/TA.md` `## map`.
 
 ### Changed
 - **v0.2.0 polish (pre-tag cleanup):**

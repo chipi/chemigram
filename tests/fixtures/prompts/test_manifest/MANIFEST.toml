@@ -1,0 +1,9 @@
+[prompts."mode_a/system"]
+active = "v1"
+context_required = ["greeting", "name"]
+context_optional = ["mood"]
+
+[prompts."mode_a/system_no_required"]
+active = "v1"
+context_required = []
+context_optional = []

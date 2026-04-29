@@ -76,18 +76,20 @@ check: lint typecheck test-unit
 # Per ADR-040: unit + integration tests, no E2E (E2E gated to releases
 # via scripts/pre-release-check.sh).
 ci:
-	@echo "==> [1/6] uv sync --all-extras --dev"
+	@echo "==> [1/7] uv sync --all-extras --dev"
 	uv sync --all-extras --dev
-	@echo "==> [2/6] ruff check --no-fix"
+	@echo "==> [2/7] ruff check --no-fix"
 	uv run ruff check --no-fix
-	@echo "==> [3/6] ruff format --check"
+	@echo "==> [3/7] ruff format --check"
 	uv run ruff format --check
-	@echo "==> [4/6] mypy src/chemigram"
+	@echo "==> [4/7] mypy src/chemigram"
 	uv run mypy src/chemigram
-	@echo "==> [5/6] pytest tests/unit"
+	@echo "==> [5/7] pytest tests/unit"
 	uv run pytest tests/unit
-	@echo "==> [6/6] pytest tests/integration"
+	@echo "==> [6/7] pytest tests/integration"
 	uv run pytest tests/integration
+	@echo "==> [7/7] verify-prompts.sh"
+	./scripts/verify-prompts.sh
 	@echo ""
 	@echo "✅ CI parity check passed (matches ADR-040 / ci.yml)."
 
