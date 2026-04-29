@@ -9,6 +9,27 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- **Mode A prompt v2** (`src/chemigram/mcp/prompts/mode_a/system_v2.j2`).
+  Refinements based on the v0.4.0 (masking real) and v0.5.0 (context
+  real) shipping. v1 stays on disk for eval reproducibility per
+  ADR-045; `MANIFEST.toml` bumps `active = "v2"`.
+- v2 changes vs v1: drops the `{% if masker_available %}` conditional
+  (masking is bundled per ADR-058); concretizes `read_context` shape
+  references (`tastes.conflicts`, recent_gaps as part of context, notes
+  summarization); names the `propose_taste_update` `category` enum
+  (`appearance | process | value` per ADR-031) and `file` default; adds
+  a "Vocabulary gaps" section documenting the full RFC-013 schema
+  (intent, intent_category, missing_capability, satisfaction, etc.);
+  updates the end-of-session sequence to reference ADR-061 (no engine
+  `end_session` tool — agent orchestrates via existing tools); removes
+  future-tense hedging from flows that are now real.
+- `system_v2.changelog.md` — cumulative version log (v2 + v1 entries);
+  `system_v1.changelog.md` removed (its content is in v2's log).
+- 6 new/updated tests cover v2 active version + render content +
+  category-enum references + end-of-session orchestration; `v1` still
+  loadable explicitly via `version="v1"`.
+
+### Added
 - `scripts/verify-vocab.sh` — CI manifest-validation check, same shape
   as `verify-prompts.sh`. Runs `VocabularyIndex(pack_root)` + asserts
   the eager-load succeeds; exits ≠0 on `ManifestError`. Picks up `uv

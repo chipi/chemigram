@@ -120,24 +120,66 @@ def test_render_no_required_keys_works(store: PromptStore) -> None:
     assert "no required keys" in out
 
 
-def test_real_mode_a_v1_renders() -> None:
-    """The actual shipped mode_a/system_v1.j2 renders against sample context."""
+def test_active_version_now_v2() -> None:
     real_store = PromptStore(SHIPPED_ROOT)
-    out = real_store.render(
-        "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123", "masker_available": True},
-    )
-    assert "image `abc123`" in out
-    assert "vocabulary of 30 named moves" in out
-    # masker-available branch
-    assert "generate_mask" in out
-    assert "masker provider isn't installed" not in out
+    assert real_store.active_version("mode_a/system") == "v2"
 
 
-def test_real_mode_a_v1_renders_without_masker() -> None:
+def test_real_mode_a_v2_renders() -> None:
+    """The shipped mode_a/system_v2.j2 renders against sample context."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
         {"vocabulary_size": 30, "image_id": "abc123"},
     )
-    assert "masker provider isn't installed" in out
+    assert "image `abc123`" in out
+    assert "vocabulary of 30 named moves" in out
+    # v2 references the real masking flow unconditionally
+    assert "generate_mask" in out
+    assert "regenerate_mask" in out
+
+
+def test_real_mode_a_v2_drops_masker_conditional() -> None:
+    """v2 doesn't have the v1 'masker provider isn't installed' branch."""
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {"vocabulary_size": 30, "image_id": "abc123"},
+    )
+    assert "masker provider isn't installed" not in out
+
+
+def test_real_mode_a_v2_references_propose_taste_categories() -> None:
+    """v2 names the category enum directly."""
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {"vocabulary_size": 30, "image_id": "abc123"},
+    )
+    assert "appearance" in out
+    assert "process" in out
+    assert "value" in out
+
+
+def test_real_mode_a_v2_documents_end_session_orchestration() -> None:
+    """v2 references ADR-061's agent-orchestrated end-of-session pattern."""
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {"vocabulary_size": 30, "image_id": "abc123"},
+    )
+    assert "`end_session` tool" in out
+    assert "you orchestrate" in out or "you use the existing tools" in out
+
+
+def test_v1_still_loadable_explicitly() -> None:
+    """v1 stays on disk for eval reproducibility per ADR-045."""
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {"vocabulary_size": 30, "image_id": "abc123", "masker_available": True},
+        version="v1",
+    )
+    assert "image `abc123`" in out
+    # v1 had the conditional masker branch
+    assert "masker provider isn't installed" not in out
