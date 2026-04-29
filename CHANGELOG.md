@@ -8,6 +8,21 @@ per ADR-041.
 
 ## [Unreleased]
 
+### Changed
+- **Vocabulary gap schema upgrade (RFC-013).**
+  `chemigram.mcp.tools.ingest._log_vocabulary_gap` now writes records
+  with the full RFC-013 shape: `session_id` (auto-populated from
+  `ctx.transcript`), `snapshot_hash` (auto-populated from current HEAD),
+  `intent`, `intent_category` (default `"uncategorized"`),
+  `missing_capability`, `operations_involved`, `vocabulary_used`,
+  `satisfaction` (`-1`/`0`/`1`), and `notes`.
+- The tool's MCP `inputSchema` adds those optional fields; required
+  fields stay `[image_id, description]` for backwards-compat with
+  agents written against the v0.3.0 minimal shape.
+- `RecentGaps.load` (#21) reads both v0.3.0 minimal and post-upgrade
+  records — old records take dataclass defaults for new fields. JSONL is
+  append-only; pre-release, no migration concerns.
+
 ### Added
 - `chemigram.mcp.tools.context` — replaces v0.3.0 `context_stubs.py` with
   real implementations of all 5 slice=5 stubs:

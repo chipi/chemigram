@@ -173,3 +173,110 @@ def test_log_vocabulary_gap_empty_description_rejected(
     )
     assert result.success is False
     assert result.error.code == ErrorCode.INVALID_INPUT
+
+
+# --- RFC-013 schema upgrade --------------------------------------------
+
+
+def _ingest_image(empty_ctx: ToolContext, tmp_path: Path) -> str:
+    raw = _make_stub_raw(tmp_path)
+    ws_root = tmp_path / "workspaces"
+    r = _call("ingest", {"raw_path": str(raw), "workspace_root": str(ws_root)}, empty_ctx)
+    return r.data["image_id"]
+
+
+def test_log_gap_full_rfc_013_args_propagate(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    result = _call(
+        "log_vocabulary_gap",
+        {
+            "image_id": image_id,
+            "description": "no parametric warm gradient",
+            "workaround": "approximated with wb_warm_subtle",
+            "intent": "warm gradient on highlights only",
+            "intent_category": "tone",
+            "missing_capability": "parametric_warm_gradient",
+            "operations_involved": ["temperature"],
+            "vocabulary_used": ["wb_warm_subtle"],
+            "satisfaction": 0,
+            "notes": "approximation only",
+        },
+        empty_ctx,
+    )
+    assert result.success is True
+    record = json.loads(Path(result.data["path"]).read_text().strip())
+    assert record["intent"] == "warm gradient on highlights only"
+    assert record["intent_category"] == "tone"
+    assert record["operations_involved"] == ["temperature"]
+    assert record["satisfaction"] == 0
+    assert record["notes"] == "approximation only"
+
+
+def test_log_gap_auto_populates_session_id(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    """When ctx.transcript is set, session_id auto-populates."""
+    from chemigram.core.session import start_session
+
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    workspace = empty_ctx.workspaces[image_id]
+    transcript = start_session(workspace, session_id="auto-pop")
+    empty_ctx.transcript = transcript
+    try:
+        result = _call(
+            "log_vocabulary_gap",
+            {"image_id": image_id, "description": "x"},
+            empty_ctx,
+        )
+        assert result.success is True
+        record = json.loads(Path(result.data["path"]).read_text().strip())
+        assert record["session_id"] == "auto-pop"
+    finally:
+        transcript.close()
+
+
+def test_log_gap_auto_populates_snapshot_hash(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    """ingest creates a baseline snapshot, so HEAD resolves → snapshot_hash."""
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    result = _call(
+        "log_vocabulary_gap",
+        {"image_id": image_id, "description": "x"},
+        empty_ctx,
+    )
+    record = json.loads(Path(result.data["path"]).read_text().strip())
+    assert isinstance(record["snapshot_hash"], str)
+    assert len(record["snapshot_hash"]) == 64
+
+
+def test_log_gap_no_transcript_session_id_null(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    result = _call(
+        "log_vocabulary_gap",
+        {"image_id": image_id, "description": "x"},
+        empty_ctx,
+    )
+    record = json.loads(Path(result.data["path"]).read_text().strip())
+    assert record["session_id"] is None
+
+
+def test_log_gap_invalid_satisfaction_rejected(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    result = _call(
+        "log_vocabulary_gap",
+        {"image_id": image_id, "description": "x", "satisfaction": 5},
+        empty_ctx,
+    )
+    assert result.success is False
+    assert result.error.code == ErrorCode.INVALID_INPUT
+
+
+def test_log_gap_minimal_args_still_works(tmp_path: Path, empty_ctx: ToolContext) -> None:
+    """Backwards-compat: only image_id + description still works."""
+    image_id = _ingest_image(empty_ctx, tmp_path)
+    result = _call(
+        "log_vocabulary_gap",
+        {"image_id": image_id, "description": "minimal"},
+        empty_ctx,
+    )
+    assert result.success is True
+    record = json.loads(Path(result.data["path"]).read_text().strip())
+    assert record["intent_category"] == "uncategorized"
+    assert record["operations_involved"] == []

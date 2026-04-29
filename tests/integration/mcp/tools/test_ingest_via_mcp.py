@@ -108,6 +108,81 @@ def test_log_vocabulary_gap_via_mcp(empty_server, tmp_path: Path) -> None:
     assert gap_path.exists()
 
 
+def test_log_gap_full_rfc_013_schema_via_mcp(empty_server, tmp_path: Path) -> None:
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+    ws_root = tmp_path / "ws"
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={"raw_path": str(raw), "workspace_root": str(ws_root)},
+                )
+            )
+            return _decode(
+                await session.call_tool(
+                    "log_vocabulary_gap",
+                    arguments={
+                        "image_id": ingest_r["data"]["image_id"],
+                        "description": "needs gradient warmth",
+                        "intent": "warm gradient highlights",
+                        "intent_category": "tone",
+                        "missing_capability": "parametric_warm_gradient",
+                        "operations_involved": ["temperature"],
+                        "vocabulary_used": ["wb_warm_subtle"],
+                        "satisfaction": 0,
+                        "notes": "approximation only",
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"]
+    import json as _json
+
+    record = _json.loads(Path(payload["data"]["path"]).read_text().strip())
+    assert record["intent_category"] == "tone"
+    assert record["satisfaction"] == 0
+    assert isinstance(record["snapshot_hash"], str)
+
+
+def test_log_gap_read_back_via_read_context(empty_server, tmp_path: Path) -> None:
+    """Logging a gap then read_context should surface it in recent_gaps."""
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+    ws_root = tmp_path / "ws"
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={"raw_path": str(raw), "workspace_root": str(ws_root)},
+                )
+            )
+            image_id = ingest_r["data"]["image_id"]
+            await session.call_tool(
+                "log_vocabulary_gap",
+                arguments={
+                    "image_id": image_id,
+                    "description": "bring back the gradient warm tone",
+                    "missing_capability": "parametric_warm_gradient",
+                },
+            )
+            return _decode(
+                await session.call_tool("read_context", arguments={"image_id": image_id})
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"]
+    gaps = payload["data"]["recent_gaps"]
+    assert any("gradient warm tone" in g["description"] for g in gaps)
+
+
 def test_mask_no_masker_via_mcp(empty_server, tmp_path: Path) -> None:
     """build_server without masker → MASKING_ERROR (was slice=4 NOT_IMPLEMENTED in v0.3.0)."""
     server = empty_server

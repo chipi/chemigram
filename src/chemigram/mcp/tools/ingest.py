@@ -194,10 +194,21 @@ def _now_iso() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
+_VALID_SATISFACTION = (-1, 0, 1)
+
+
+def _read_head_hash(repo: Any) -> str | None:
+    """Resolve current HEAD hash; returns None if no snapshot exists yet."""
+    try:
+        return repo.resolve_ref("HEAD")
+    except Exception:
+        return None
+
+
 async def _log_vocabulary_gap(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     image_id = args["image_id"]
     description = args["description"]
-    workaround = args.get("workaround", "")
+
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
         return ToolResult.fail(error_not_found(f"image {image_id!r}"))
@@ -205,24 +216,50 @@ async def _log_vocabulary_gap(args: dict[str, Any], ctx: ToolContext) -> ToolRes
     if not description.strip():
         return ToolResult.fail(error_invalid_input("description must be non-empty"))
 
+    satisfaction = args.get("satisfaction")
+    if satisfaction is not None and satisfaction not in _VALID_SATISFACTION:
+        return ToolResult.fail(
+            error_invalid_input(f"satisfaction must be -1|0|1, got {satisfaction!r}")
+        )
+
+    session_id = ctx.transcript.session_id if ctx.transcript is not None else None
+    snapshot_hash = _read_head_hash(workspace.repo)
+
     record = {
         "timestamp": _now_iso(),
         "image_id": image_id,
+        "session_id": session_id,
+        "snapshot_hash": snapshot_hash,
         "description": description,
-        "workaround": workaround,
+        "workaround": args.get("workaround", ""),
+        "intent": args.get("intent"),
+        "intent_category": args.get("intent_category", "uncategorized"),
+        "missing_capability": args.get("missing_capability"),
+        "operations_involved": list(args.get("operations_involved", [])),
+        "vocabulary_used": list(args.get("vocabulary_used", [])),
+        "satisfaction": satisfaction,
+        "notes": args.get("notes", ""),
     }
     workspace.vocabulary_gaps_path.parent.mkdir(parents=True, exist_ok=True)
     with workspace.vocabulary_gaps_path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record) + "\n")
 
-    return ToolResult.ok({"path": str(workspace.vocabulary_gaps_path), "appended": True})
+    return ToolResult.ok(
+        {
+            "path": str(workspace.vocabulary_gaps_path),
+            "appended": True,
+            "session_id": session_id,
+        }
+    )
 
 
 register_tool(
     name="log_vocabulary_gap",
     description=(
         "Append a vocabulary-gap record to the image's vocabulary_gaps.jsonl. "
-        "Used by the agent when the available primitives don't cover a request."
+        "RFC-013 schema. The agent calls this when no primitive matches the "
+        "photographer's request. session_id and snapshot_hash auto-populate "
+        "from the active session/HEAD when available."
     ),
     input_schema={
         "type": "object",
@@ -230,6 +267,13 @@ register_tool(
             "image_id": {"type": "string"},
             "description": {"type": "string"},
             "workaround": {"type": "string"},
+            "intent": {"type": "string"},
+            "intent_category": {"type": "string"},
+            "missing_capability": {"type": "string"},
+            "operations_involved": {"type": "array", "items": {"type": "string"}},
+            "vocabulary_used": {"type": "array", "items": {"type": "string"}},
+            "satisfaction": {"type": "integer", "enum": [-1, 0, 1]},
+            "notes": {"type": "string"},
         },
         "required": ["image_id", "description"],
         "additionalProperties": False,
