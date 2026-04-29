@@ -108,6 +108,9 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.smartsymbols
 
+extra_css:
+  - stylesheets/extra.css
+
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -115,6 +118,7 @@ extra:
   status:
     new: Recently added
     deprecated: Deprecated
+  generator: false  # drop the "Made with Material for MkDocs" footer line
 
 # Don't fail the build on missing nav entries (we don't list every
 # template/historical file in nav; awesome-pages handles auto-discovery

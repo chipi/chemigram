@@ -1,8 +1,17 @@
-# Chemigram Documentation
+<div class="chem-hero" markdown>
 
-If you just want to **install and use Chemigram**, start at **[`getting-started.md`](getting-started.md)**. It walks through `pip install`, MCP-client configuration (Claude Code, Claude Desktop, Cursor, Continue, Cline, Zed, OpenAI), your first session, and how to grow your personal vocabulary in Phase 2.
+# Chemigram
 
-The rest of this tree is the project's design archive — three tiers of documents that answer different kinds of questions.
+<p class="chem-tagline">Agent-driven photo editing on darktable, via MCP.</p>
+
+[Get started](getting-started.md){ .chem-cta }
+[GitHub →](https://github.com/chipi/chemigram){ .chem-cta .chem-cta--ghost }
+
+</div>
+
+The agent reads your taste, you describe intent, the agent edits via a vocabulary of named moves on top of darktable. Sessions accumulate; the project gets richer over time. **v1.0.0 shipped April 2026** — Phase 1 closed; Phase 2 (vocabulary maturation) in progress.
+
+If you want to install and use it, start at **[Getting started](getting-started.md)**. The rest of this tree is the project's design archive — three tiers of documents that answer different kinds of questions.
 
 ## Tier 1 — Concept package (`concept/`)
 
