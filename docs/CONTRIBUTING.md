@@ -97,14 +97,17 @@ Tests in different tiers need different fixtures:
 
 **Integration tier** — needs real `.dtstyle` files but does *not* need raws. A small set of canonical `.dtstyle` files lives at `tests/fixtures/dtstyles/` and is committed to the repo (these are tiny — a few KB each).
 
-**E2E tier** — needs real raw files, which are too large to commit. Two-part strategy:
+**E2E tier** — needs real raw files, which are too large to commit. The current convention uses a contributor-supplied Phase 0 setup outside the repo, discovered via env vars or default paths:
 
-1. **A tiny synthetic raw** (`tests/fixtures/raws/synthetic.NEF` or similar, if technically feasible) committed to the repo for smoke-test E2E coverage. Goal: confirm the pipeline runs end-to-end without depending on photographer-supplied data.
-2. **Photographer-supplied raws** for substantive E2E tests. The contributor places real raws at `tests/fixtures/raws/local/` (gitignored). E2E tests parametrized on whatever's present skip cleanly when the directory is empty.
+| What | Default path | Override env var |
+|-|-|-|
+| Test raw (NEF) | `~/chemigram-phase0/raws/raw-test.NEF` | `CHEMIGRAM_TEST_RAW` |
+| darktable configdir | `~/chemigram-phase0/dt-config` | `CHEMIGRAM_DT_CONFIGDIR` |
+| `darktable-cli` binary | on PATH | `DARKTABLE_CLI` |
 
-The pre-release script (`scripts/pre-release-check.sh`) requires the `local/` directory to be populated with at least three real raws — this is the gate that prevents shipping without real-world validation.
+E2e tests skip cleanly when prereqs are absent (per `tests/e2e/conftest.py`). They're gated to `make test-e2e`, never run in CI per ADR-040. The pre-release script (`scripts/pre-release-check.sh`) is where they're expected to run before tagging.
 
-**Rationale.** Committing a full raw library to git is infeasible (file sizes, redistribution rights). Git-LFS adds infrastructure cost without clear benefit at v1 size. Auto-download from a public bucket adds an external dependency. Photographer-supplied raws keep the repo light and validate against real data the photographer cares about.
+**Rationale.** Committing a full raw library to git is infeasible (file sizes, redistribution rights). Git-LFS adds infrastructure cost without clear benefit at v1 size. Auto-download from a public bucket adds an external dependency. Contributor-supplied raws keep the repo light and validate against real data the contributor cares about. The full testing strategy lives in [`docs/testing.md`](testing.md) — read that for the rationale on each tier.
 
 ### Testing standards (the bar for code PRs)
 

@@ -66,15 +66,17 @@ The fixed set is:
 | `invalid_input` | Argument shape valid by JSON Schema but semantically wrong (unknown enum value, empty required string, layer mismatch) |
 | `not_found` | Image / primitive / mask / module / ref unknown to the server |
 | `darktable_error` | `darktable-cli` exited non-zero or rendering failed; `details.stderr` carries a tail of stderr |
-| `synthesizer_error` | XMP synthesis failed (Path B not implemented, `op_params` mismatch) |
+| `synthesizer_error` | XMP synthesis failed (Path B not implemented, `op_params` mismatch). **Reserved as of v1.1.0** — no current callsite; existing synthesis failures bubble as `versioning_error` or `invalid_input`. Preserved in the enum because removing values is a breaking contract change for agents that switch on it. |
 | `versioning_error` | Repo invariant violated (detached-HEAD snapshot, unknown ref, hash collision, ref already exists) |
-| `masking_error` | Mask registry inconsistency (registered hash missing from object store) |
-| `permission_error` | Filesystem operation refused (reserved; not currently raised) |
+| `masking_error` | Mask registry inconsistency (registered hash missing from object store), or unexpected exception from a BYOA `MaskingProvider` (per ADR-007) — the handler catches broad `Exception` from provider calls so the agent never sees a raw stack trace |
+| `permission_error` | Filesystem operation refused. **Reserved as of v1.1.0** — no current callsite; permission denials currently bubble as `versioning_error` or `state_error`. Preserved for the same reason as `synthesizer_error`. |
 | `state_error` | Workspace not in a state that supports the operation (no baseline yet, image_id collision, fresh workspace bind_layers without history) |
-| `not_implemented` | Stub or deferred path. `details.slice` indicates the slice that lands the real impl (`4` = masking, `5` = context layer) |
+| `not_implemented` | Stub or deferred path. `details.slice` indicates the slice that lands the real impl. **Reserved as of v1.1.0** — v1.0.0 closed all stubs; the helper `error_not_implemented` is preserved for future stubs (e.g. when a new MCP tool ships in two phases). |
 
 Tool callers branch on `error.code` without parsing `message`. The enum
-is closed: new categories require an ADR amendment.
+is closed: new categories require an ADR amendment. The "reserved"
+notes above are the canonical reference; `src/chemigram/mcp/errors.py`'s
+class docstring mirrors this list with implementation context.
 
 ### Parameter shapes
 

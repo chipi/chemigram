@@ -186,7 +186,7 @@ Categories:
 
 ### Error path coverage
 
-Every `ErrorCode` enum value (`invalid_input`, `not_found`, `state_error`, `versioning_error`, `darktable_error`, `masking_error`, `prompt_error`, `not_implemented`, `internal`) needs at least one integration test exercising the path.
+Every reachable `ErrorCode` enum value needs at least one integration test exercising the path. The current enum has six reachable codes (`invalid_input`, `not_found`, `state_error`, `versioning_error`, `darktable_error`, `masking_error`) and three reserved-for-future-use codes (`synthesizer_error`, `permission_error`, `not_implemented`) — see the docstring on `ErrorCode` in `src/chemigram/mcp/errors.py` for why each reserved value is preserved without a current callsite. The `tests/integration/mcp/test_error_paths.py` file enforces this split with an audit-style test that fails if the enum gains values not accounted for in either set.
 
 ### Versioning operations
 

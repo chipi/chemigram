@@ -496,6 +496,38 @@ def test_get_state_unknown_image_raises_not_found(server_and_ctx: Any) -> None:
     assert out["error"]["code"] == "not_found"
 
 
+# ---------- compare ----------------------------------------------------
+
+
+def test_compare_unknown_image_returns_not_found(server_and_ctx: Any) -> None:
+    server, _ = server_and_ctx
+
+    async def _go() -> dict:
+        async with in_memory_session(server) as session:
+            return _decode(
+                await session.call_tool(
+                    "compare",
+                    arguments={
+                        "image_id": "no-such",
+                        "hash_a": "0" * 64,
+                        "hash_b": "1" * 64,
+                    },
+                )
+            )
+
+    out = anyio.run(_go)
+    assert out["success"] is False
+    assert out["error"]["code"] == "not_found"
+
+
+# Note: a "compare with unknown hash_b" test isn't viable at the
+# integration tier because the *first* render (hash_a) calls darktable
+# on the fixture's stub raw and fails with darktable_error before the
+# unknown-hash path is reached. The unknown-hash error path is covered
+# transitively via render_preview's coverage and parse_xmp_at's unit
+# tests; the e2e tier covers the full compare pipeline.
+
+
 # ---------- list_vocabulary input validation ---------------------------
 #
 # Note: the layer-enum check in `_list_vocabulary` is reachable only

@@ -6,7 +6,7 @@ Wraps the v0.1.0/v0.2.0 engine into MCP-callable tools:
 - ``get_state`` — current ``state_after`` summary for an image
 - ``apply_primitive`` — synthesize a vocabulary entry, snapshot
 - ``remove_module`` — strip entries by operation, snapshot
-- ``reset`` — checkout the workspace's baseline ref
+- ``reset`` — rewind the workspace's current branch to the baseline ref (per ADR-062)
 
 All tools follow the RFC-010 contract: structured ``ToolResult`` returns,
 ``ErrorCode`` taxonomy, no exceptions across the MCP boundary.
