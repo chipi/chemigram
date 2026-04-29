@@ -183,6 +183,210 @@ def test_log_gap_read_back_via_read_context(empty_server, tmp_path: Path) -> Non
     assert any("gradient warm tone" in g["description"] for g in gaps)
 
 
+# ---------- ingest error paths ----------------------------------------
+
+
+def test_ingest_nonexistent_raw_returns_not_found(empty_server, tmp_path: Path) -> None:
+    server = empty_server
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            return _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={
+                        "raw_path": str(tmp_path / "no-such.NEF"),
+                        "workspace_root": str(tmp_path / "ws"),
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "not_found"
+
+
+def test_ingest_duplicate_image_id_returns_state_error(empty_server, tmp_path: Path) -> None:
+    """Re-ingesting the same image_id without removing the workspace
+    first must fail cleanly — silently overwriting would lose history.
+    """
+    server = empty_server
+    raw = tmp_path / "dupe.NEF"
+    raw.write_bytes(b"raw")
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            await session.call_tool(
+                "ingest",
+                arguments={
+                    "raw_path": str(raw),
+                    "workspace_root": str(tmp_path / "ws"),
+                    "image_id": "fixed",
+                },
+            )
+            return _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={
+                        "raw_path": str(raw),
+                        "workspace_root": str(tmp_path / "ws"),
+                        "image_id": "fixed",
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "state_error"
+
+
+# ---------- bind_layers error paths -----------------------------------
+
+
+def test_bind_layers_unknown_image_returns_not_found(empty_server, tmp_path: Path) -> None:
+    server = empty_server
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            return _decode(
+                await session.call_tool(
+                    "bind_layers",
+                    arguments={"image_id": "no-such-image"},
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "not_found"
+
+
+def test_bind_layers_unknown_vocab_returns_not_found(empty_server, tmp_path: Path) -> None:
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={
+                        "raw_path": str(raw),
+                        "workspace_root": str(tmp_path / "ws"),
+                    },
+                )
+            )
+            return _decode(
+                await session.call_tool(
+                    "bind_layers",
+                    arguments={
+                        "image_id": ingest_r["data"]["image_id"],
+                        "l1_template": "no_such_l1",
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "not_found"
+
+
+def test_bind_layers_wrong_layer_returns_invalid_input(empty_server, tmp_path: Path) -> None:
+    """Passing an L3 entry as l1_template should fail invalid_input —
+    the contract is that l1_template must be an L1 entry.
+    """
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={
+                        "raw_path": str(raw),
+                        "workspace_root": str(tmp_path / "ws"),
+                    },
+                )
+            )
+            # expo_+0.5 is L3 in the test pack; pass it as l1_template.
+            return _decode(
+                await session.call_tool(
+                    "bind_layers",
+                    arguments={
+                        "image_id": ingest_r["data"]["image_id"],
+                        "l1_template": "expo_+0.5",
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "invalid_input"
+
+
+def test_bind_layers_no_templates_returns_current_state(empty_server, tmp_path: Path) -> None:
+    """bind_layers with neither L1 nor L2 is a state-summary read."""
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={
+                        "raw_path": str(raw),
+                        "workspace_root": str(tmp_path / "ws"),
+                    },
+                )
+            )
+            return _decode(
+                await session.call_tool(
+                    "bind_layers",
+                    arguments={"image_id": ingest_r["data"]["image_id"]},
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"], payload.get("error")
+    assert payload["data"]["applied"] == []
+    assert "state_after" in payload["data"]
+
+
+# ---------- log_vocabulary_gap error paths ----------------------------
+
+
+def test_log_gap_empty_description_invalid_input(empty_server, tmp_path: Path) -> None:
+    server = empty_server
+    raw = tmp_path / "p.NEF"
+    raw.write_bytes(b"raw")
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            ingest_r = _decode(
+                await session.call_tool(
+                    "ingest",
+                    arguments={"raw_path": str(raw), "workspace_root": str(tmp_path / "ws")},
+                )
+            )
+            return _decode(
+                await session.call_tool(
+                    "log_vocabulary_gap",
+                    arguments={
+                        "image_id": ingest_r["data"]["image_id"],
+                        "description": "   ",  # whitespace-only
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is False
+    assert payload["error"]["code"] == "invalid_input"
+
+
 def test_mask_no_masker_via_mcp(empty_server, tmp_path: Path) -> None:
     """build_server without masker → MASKING_ERROR (was slice=4 NOT_IMPLEMENTED in v0.3.0)."""
     server = empty_server
