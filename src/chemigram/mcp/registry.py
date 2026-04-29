@@ -34,6 +34,7 @@ class ToolContext:
     vocabulary: Any  # VocabularyIndex; Any to avoid circular import for stubs
     prompts: Any  # PromptStore
     workspaces: dict[str, Any] = field(default_factory=dict)
+    masker: Any = None  # MaskingProvider | None (Slice 4)
 
 
 ToolHandler = Callable[[dict[str, Any], ToolContext], Awaitable[ToolResult[Any]]]

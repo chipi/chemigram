@@ -51,6 +51,7 @@ def build_server(
     *,
     vocabulary: VocabularyIndex | None = None,
     prompts: PromptStore | None = None,
+    masker: Any = None,
 ) -> tuple[Server[Any, Any], ToolContext]:
     """Construct the MCP ``Server`` with handlers wired to the tool registry.
 
@@ -59,6 +60,11 @@ def build_server(
             ``None``, calls :func:`chemigram.core.vocab.load_starter`.
         prompts: Inject a custom :class:`PromptStore`. When ``None``,
             resolves the bundled prompts directory.
+        masker: Inject a :class:`~chemigram.core.masking.MaskingProvider`.
+            When ``None``, mask-generation tools return
+            ``MASKING_ERROR`` ("no masker configured"). Production callers
+            wire :class:`CoarseAgentProvider` against the MCP session's
+            sampling callback at server startup.
 
     Returns:
         Tuple of (server, context). The context is also captured by the
@@ -70,7 +76,7 @@ def build_server(
         prompts = PromptStore(_resolve_prompts_root())
 
     register_all()
-    context = ToolContext(vocabulary=vocabulary, prompts=prompts)
+    context = ToolContext(vocabulary=vocabulary, prompts=prompts, masker=masker)
 
     server: Server[Any, Any] = Server(
         name="chemigram-mcp",

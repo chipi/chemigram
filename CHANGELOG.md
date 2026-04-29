@@ -9,6 +9,27 @@ per ADR-041.
 ## [Unreleased]
 
 ### Added
+- MCP `generate_mask` / `regenerate_mask` real implementations replacing
+  the v0.3.0 slice=4 stubs. Tools render the current XMP to a cached
+  preview (hash-keyed in `<workspace>/previews/_for_mask_*.jpg`), pass it
+  to the configured `MaskingProvider`, register the result via
+  `chemigram.core.versioning.masks.register_mask`. `regenerate_mask`
+  passes the prior PNG to the provider for refinement; `target` is
+  inferred from the `current_<target>_mask` name convention or required
+  explicitly.
+- `chemigram.mcp.registry.ToolContext.masker: Any = None` field. When
+  unset, `generate_mask` / `regenerate_mask` surface `MASKING_ERROR`
+  ("no masker configured") rather than silently failing.
+- `chemigram.mcp.server.build_server(masker=...)` kwarg — production
+  callers wire `CoarseAgentProvider` against the MCP session's sampling
+  callback at server startup; tests inject fakes.
+
+### Changed
+- The two mask-generation tools no longer return `NOT_IMPLEMENTED slice=4`;
+  callers that relied on the v0.3.0 stub behavior get clean
+  `MASKING_ERROR` instead. (Pre-release; no migration concerns.)
+
+### Added
 - `chemigram.core.context` package — loaders for the agent's first turn:
   `Tastes` (multi-scope per ADR-048: `_default.md` + brief-declared genres
   with conflict surfacing), `Brief` (parses `Tastes:` line + intent),

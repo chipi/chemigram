@@ -108,7 +108,8 @@ def test_log_vocabulary_gap_via_mcp(empty_server, tmp_path: Path) -> None:
     assert gap_path.exists()
 
 
-def test_mask_stubs_via_mcp(empty_server, tmp_path: Path) -> None:
+def test_mask_no_masker_via_mcp(empty_server, tmp_path: Path) -> None:
+    """build_server without masker → MASKING_ERROR (was slice=4 NOT_IMPLEMENTED in v0.3.0)."""
     server = empty_server
     raw = tmp_path / "p.NEF"
     raw.write_bytes(b"raw")
@@ -137,5 +138,5 @@ def test_mask_stubs_via_mcp(empty_server, tmp_path: Path) -> None:
 
     payload = anyio.run(_exercise)
     assert payload["success"] is False
-    assert payload["error"]["code"] == "not_implemented"
-    assert payload["error"]["details"].get("slice") == 4
+    assert payload["error"]["code"] == "masking_error"
+    assert "no masker configured" in payload["error"]["message"]
