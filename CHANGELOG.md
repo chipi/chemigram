@@ -8,6 +8,125 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-04-30
+
+**Comprehensive validation milestone.** A from-first-principles testing
+strategy + 8 GH issues (#31–#38) of capability-matrix coverage work that
+closed real engine bugs before they reached photographers.
+
+The shipped capability matrix lives in [GH #30](https://github.com/chipi/chemigram/issues/30);
+the full philosophy and standards live in [`docs/testing.md`](docs/testing.md).
+
+**Engine bugs found and fixed by the new test surface (3):**
+
+- **`reset` was detaching HEAD** (closes ADR-062). The MCP `reset` tool
+  called `checkout(baseline-tag)` which detaches HEAD per ADR-019;
+  subsequent `apply_primitive` then raised "cannot snapshot from a
+  detached HEAD". The implementation contradicted ADR-015's spec
+  ("reset goes to baseline_end, ready to keep applying"). New engine
+  op `reset_to(repo, ref_or_hash)` rewinds the current branch to the
+  baseline hash and re-attaches HEAD if previously detached. Matches
+  `git reset --hard` semantics. Surfaced by the e2e MCP-level
+  regression in #31.
+- **`branch` and `checkout` resolved input inconsistently.** `branch()`
+  called `repo.resolve_ref(from_)` directly which only accepts `"HEAD"`
+  or full `"refs/..."` form; `checkout()` used `_resolve_input` which
+  also accepts bare branch/tag names and hashes. So
+  `branch(repo, "exp", from_="baseline")` failed while
+  `checkout(repo, "baseline")` worked — same input, different verbs.
+  `_resolve_input` extended to accept full ref form too, and `branch()`
+  routed through it. Surfaced by the integration tests in #31.
+- **Provider exceptions escaped the MCP boundary** (ADR-007 BYOA
+  invariant). `generate_mask` / `regenerate_mask` only caught
+  `MaskingError`; any other exception (RuntimeError, ImportError,
+  anything from a third-party `MaskingProvider`) escaped and the agent
+  saw an empty content envelope instead of a structured error. Both
+  handlers now catch broad `Exception` and convert to a structured
+  `masking_error` with the exception's type + message. Surfaced by the
+  integration tests in #33.
+
+**Other fixes during this milestone:**
+
+- `_render_to` in `mcp/tools/rendering.py` now unlinks the deterministic
+  preview path before invoking darktable-cli. Previously, when the
+  output file already existed, darktable silently auto-appended `_01`
+  to the filename, so two consecutive `render_preview` calls returned
+  the *first* render's bytes. Surfaced by the original e2e MCP session
+  test (committed as part of the test/e2e suite, pre-#31).
+
+### Added
+
+- `docs/testing.md` (~14 KB) — testing strategy from first principles.
+  Five rules: test through the agent boundary; test against real bytes;
+  direction-of-change not magnitudes; skip cleanly on missing prereqs;
+  cover the full surface as a capability matrix.
+- `docs/adr/ADR-062-reset-rewinds-current-branch.md` — locks the
+  reset-rewinds-current-branch implementation, mirrors `git reset --hard`
+  semantics, includes the rationale + alternatives considered.
+- `chemigram.core.versioning.ops.reset_to(repo, ref_or_hash) -> Xmp` —
+  new public engine op (exported via `__all__`). Resolves
+  branch/tag/hash, force-writes the current branch's ref, re-attaches
+  HEAD if detached, appends a `reset` log entry with `prior_hash`.
+- `tests/e2e/` gains: `test_full_mcp_session.py` (3 tests),
+  `test_render_validation.py` (6), `test_versioning_combinations.py`
+  (3), `test_vocabulary_primitives.py` (2), `test_mask_shaping.py` (1),
+  `test_export_pipeline.py` (4), `test_ingest_lifecycle.py` (3),
+  `test_compare_and_persistence.py` (2). All gated to `make test-e2e`
+  per ADR-040; skip cleanly when Phase 0 fixtures aren't available.
+- `tests/integration/mcp/test_error_paths.py` — every reachable
+  `ErrorCode` round-trips as a structured envelope through the MCP
+  harness; an audit-style test fails if a new enum value is added
+  without classifying it as reachable or reserved.
+- `tests/integration/mcp/tools/test_versioning_ops_via_mcp.py` —
+  per-tool integration coverage for the versioning surface.
+- `tests/integration/mcp/tools/test_export_via_mcp.py` — error-path
+  coverage for `export_final`.
+- `docs/CONTRIBUTING.md` — testing-standards section enforcing the bar
+  for code PRs; revised E2E fixtures section reflects the actual Phase
+  0 env-var convention (`CHEMIGRAM_TEST_RAW`, `CHEMIGRAM_DT_CONFIGDIR`,
+  `DARKTABLE_CLI`).
+- `pyproject.toml` `version = "1.1.0"`.
+
+### Changed
+
+- `chemigram.core.versioning.ops._resolve_input` extended to accept
+  full ref form (`"refs/heads/X"`, `"refs/tags/X"`) in addition to
+  bare names + hashes. `branch()` now routes through it (was: direct
+  `resolve_ref` call). Symmetric behavior with `checkout()`.
+- MCP `reset` tool description rewritten to call out destructive-on-
+  current-branch semantics.
+- `chemigram.mcp.tools.masks._generate_mask` and `_regenerate_mask`
+  catch broad `Exception` and convert to `masking_error` — provider
+  exceptions never escape the MCP boundary as raw stack traces.
+- `chemigram.mcp.tools.rendering._render_to` unlinks `output_path`
+  before invoking darktable-cli, preserving the function's contract
+  that the bytes at `output_path` are this render's output.
+- `chemigram.mcp.errors.ErrorCode` class docstring documents
+  `SYNTHESIZER_ERROR`, `PERMISSION_ERROR`, `NOT_IMPLEMENTED` as
+  reserved-for-future-use (no current callsite, preserved because
+  removing enum values is a breaking MCP-contract change). The
+  ADR-056 error-code table mirrors this with reserved-as-of-v1.1.0
+  notes.
+
+### Closed
+
+- GH #30 — v1.1.0 tracking issue + capability matrix
+- GH #31 — versioning operation coverage
+- GH #32 — vocabulary primitive e2e coverage
+- GH #33 — mask pipeline coverage
+- GH #34 — error-path coverage + reachability audit
+- GH #35 — export pipeline coverage
+- GH #36 — ingest pipeline coverage
+- GH #37 — session transcript coverage
+- GH #38 — context loading coverage
+
+### Numbers
+
+- Test count: 435 → 519 (+84). Wall-clock for the full suite
+  (unit + integration + e2e against real darktable): ~90 seconds.
+- One ADR (ADR-062). Three engine bugs root-caused and fixed.
+- Three `ErrorCode` values formalized as reserved.
+
 ## [1.0.0] — 2026-04-29
 
 **Phase 1 closed.** Minimum viable loop shipped end-to-end.

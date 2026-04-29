@@ -7,8 +7,9 @@ your taste, you describe intent, the agent edits via a vocabulary of
 named moves on top of darktable. Sessions accumulate; the project gets
 richer over time.
 
-**Status:** v1.0.0 shipped April 2026 — Phase 1 closed; Phase 2 (use-driven
-vocabulary maturation) in progress. Not a Lightroom replacement. Not a
+**Status:** v1.1.0 shipped April 2026 — Phase 1 closed; comprehensive
+validation milestone shipped (519 tests, real-darktable e2e suite, three
+engine bugs fixed); Phase 2 (use-driven vocabulary maturation) in progress. Not a Lightroom replacement. Not a
 digital asset manager. A probe into where photographic taste lives and
 how it transmits through language and feedback.
 
@@ -48,7 +49,8 @@ masks and snapshots, and learns across sessions. Two modes:
 | 0 | Hands-on validation of darktable composition story | ✅ Closed green |
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
 | 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped; 13 of 17 RFCs closed (ADR-050..061). |
-| 2 | Vocabulary maturation — grow vocab from session evidence | In progress (use-driven; intermittent post-1.0.0 work). |
+| 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 519 tests; 3 engine bugs fixed (ADR-062). |
+| 2 | Vocabulary maturation — grow vocab from session evidence | In progress (use-driven; intermittent post-1.1.0 work). |
 | 3+ | AI masks, continuous control | Conditional |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.

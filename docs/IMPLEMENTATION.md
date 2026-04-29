@@ -17,7 +17,8 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 |-|-|-|
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
 | **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | ✅ **Closed (v1.0.0)** — Slices 1–6 shipped. Issues #1–#29 closed; 13 RFCs closed → ADR-050..061. |
-| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **In progress (use-driven)** — begins post-1.0.0; intermittent, not slice-and-gate work. |
+| **Phase 1.1** | Comprehensive validation — capability matrix + real-darktable e2e suite | ✅ **Closed (v1.1.0)** — 519 tests; 3 engine bugs root-caused and fixed (ADR-062 + branch/checkout consistency + provider-exception escape). Issues #30–#38 closed. |
+| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **In progress (use-driven)** — begins post-1.1.0; intermittent, not slice-and-gate work. |
 | **Phase 3** | Parametric masks in vocabulary | Conditional — when Phase 2 surfaces gaps |
 | **Phase 4** | AI masks via external raster module | Conditional — when local adjustments demand it |
 | **Phase 5** | Continuous control via hex encoders (Path C) | Conditional — when discrete vocabulary becomes a bottleneck |

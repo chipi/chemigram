@@ -241,10 +241,11 @@ If you find a contradiction between the package and a brief, the package is corr
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
 | Phase 1 complete | ✅ Yes — Slices 1–6 shipped (v0.1.0 through v1.0.0). Issues #1–#29 closed; thirteen RFCs closed (ADR-050..061). |
+| Phase 1.1 complete | ✅ Yes — Comprehensive validation milestone shipped at v1.1.0. 519 tests, real-darktable e2e suite, three engine bugs root-caused and fixed (ADR-062). Issues #30–#38 closed. |
 
 For the canonical phase plan and history, see `docs/IMPLEMENTATION.md`.
 
-Phase 1 is closed at **v1.0.0**: the engine ships a working agent loop end-to-end. Mode A connects via MCP, the bundled `CoarseAgentProvider` produces masks via the calling agent's vision, the context layer reads tastes/brief/notes and writes back through propose-and-confirm, session transcripts capture every turn, and a small starter vocabulary pack ships with `pip install chemigram`.
+Phase 1 is closed at **v1.0.0**: the engine ships a working agent loop end-to-end. **v1.1.0** adds a comprehensive-validation milestone — a capability matrix walked through 8 sub-issues with real-darktable e2e coverage, finding and fixing three engine bugs that integration-stub tests had missed. Mode A connects via MCP, the bundled `CoarseAgentProvider` produces masks via the calling agent's vision, the context layer reads tastes/brief/notes and writes back through propose-and-confirm, session transcripts capture every turn, and a small starter vocabulary pack ships with `pip install chemigram`.
 
 **Phase 2 (vocabulary maturation)** is now in progress. It's a use-phase, not a build-phase: the photographer runs real Mode A sessions, the agent flags gaps via `log_vocabulary_gap`, and a vocabulary-authoring evening per month grows the personal vocabulary pack. See `docs/IMPLEMENTATION.md` Phase 2 section for the work shape and `vocabulary/starter/README.md` for the personal-vocabulary growth pattern.
 

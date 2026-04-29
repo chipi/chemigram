@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chemigram"
-version = "1.0.0"
+version = "1.1.0"
 description = "Agent-driven photo editing on darktable, via MCP."
 readme = "README.md"
 requires-python = ">=3.11"
