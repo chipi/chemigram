@@ -10,6 +10,7 @@ nav:
   - Project Internals:
       - Doc tree: doc-tree.md
       - Implementation: IMPLEMENTATION.md
+      - Testing strategy: testing.md
       - Concept Package:
           - concept
       - Product (PRDs):

@@ -106,13 +106,25 @@ The pre-release script (`scripts/pre-release-check.sh`) requires the `local/` di
 
 **Rationale.** Committing a full raw library to git is infeasible (file sizes, redistribution rights). Git-LFS adds infrastructure cost without clear benefit at v1 size. Auto-download from a public bucket adds an external dependency. Photographer-supplied raws keep the repo light and validate against real data the photographer cares about.
 
+### Testing standards (the bar for code PRs)
+
+The full philosophy lives in [`docs/testing.md`](testing.md). The summary every contributor should internalize:
+
+- **Test through the agent boundary.** Every shipped MCP tool gets at least one integration test through the in-memory MCP harness — calling the engine directly is not enough.
+- **Test against real bytes for renders.** Every primitive that ships, every render code path, every export path needs an e2e test that drives real `darktable-cli` and asserts on the rendered pixel statistics.
+- **Direction-of-change, not magnitudes.** Pixel assertions are loose ("brighter than" or "warmer than"), well above noise but well below brittle. Don't tighten tolerances to chase regressions; investigate.
+- **Skip cleanly when prereqs absent.** E2e tests skip when darktable / Phase 0 raw / configdir aren't available. They never fail because of environment shape.
+- **Cover the full surface.** Every shipped MCP tool, every error code, every primitive, every versioning op gets a row in the [capability matrix](testing.md#capability-matrix). Adding capability without adding coverage is incomplete work.
+
+**When tests find a bug:** root-cause first, fix second. No `xfail` to dodge real failures, no tolerance loosening to make a regression go away. If you're stuck, ask — don't guess.
+
 ---
 
 ### Standards
 
 - **Python 3.11+** (ADR-013). Type hints expected on public functions.
 - **Formatter and linter:** `ruff format` and `ruff check` (ADR-037). CI enforces both.
-- **Tests:** `pytest` (ADR-036), three tiers. New code paths get tests in the appropriate tier. Coverage targets are pragmatic — high on the synthesizer (pure logic), reasonable elsewhere. No "must hit X%" gate.
+- **Tests:** `pytest` (ADR-036), three tiers. New code paths get tests in the appropriate tier per the [Testing standards](#testing-standards-the-bar-for-code-prs) above and the full strategy in [`docs/testing.md`](testing.md). No "must hit X%" gate — coverage is tracked as a [capability matrix](testing.md#capability-matrix), not a percentage.
 - **Type checking:** `mypy` strict on `chemigram.core` (ADR-038); looser elsewhere.
 - **Pre-commit hooks** are recommended (ADR-039). They run ruff + mypy on every commit and unit tests on push. CI catches the same things if you skip them.
 - **Commit messages:** clear and present-tense. We don't enforce conventional commits but appreciate readable history.
