@@ -5,6 +5,14 @@ Each pack is a directory containing a ``manifest.json`` (per
 The index loads everything eagerly at construction time and validates manifest
 entries against the actual files on disk.
 
+**Multi-pack loading (RFC-018, v1.2.0):** :class:`VocabularyIndex` accepts
+either a single ``pack_root: Path`` (legacy single-pack form) or a
+``list[Path]`` (multi-pack form). When multiple packs are loaded, entries are
+merged into a single namespace; cross-pack name collisions raise
+``ManifestError`` because pack names should be namespaces and a collision
+indicates an authoring bug. :func:`load_packs` is the conventional entry point
+for multi-pack loading by name.
+
 Implements the :class:`~chemigram.core.binding.VocabularyIndex` Protocol
 (declared in v0.1.0) plus name and layer/tag lookup methods needed by the
 MCP tool surface (``list_vocabulary``, ``apply_primitive``, ``bind_layers``).
@@ -21,8 +29,9 @@ ADR-053 the match is exact (case-sensitive, no fuzzy) — see
 
 Public API:
     - :class:`VocabEntry` — full entry record (manifest fields + parsed dtstyle)
-    - :class:`VocabularyIndex` — loaded, validated pack
-    - :func:`load_starter` — bundled-pack loader
+    - :class:`VocabularyIndex` — loaded, validated pack(s)
+    - :func:`load_starter` — bundled starter-pack loader
+    - :func:`load_packs` — multi-pack loader by name
     - :class:`VocabError`, :class:`ManifestError` — exceptions
 """
 
@@ -62,7 +71,16 @@ _VALID_LAYERS = ("L1", "L2", "L3")
 
 @dataclass(frozen=True)
 class VocabEntry:
-    """One vocabulary primitive: manifest metadata plus parsed dtstyle."""
+    """One vocabulary primitive: manifest metadata plus parsed dtstyle.
+
+    Path B entries (RFC-018) require ``iop_order`` populated from the
+    probe-iop-order workflow at authoring time. Path A entries leave it
+    ``None`` (the synthesizer's SET-replace branch preserves the baseline's
+    iop_order verbatim and never reads the entry's value). The
+    ``iop_order_source`` and ``iop_order_darktable_version`` fields document
+    provenance + the dt version the value was probed against, for RFC-007's
+    drift detection.
+    """
 
     name: str
     layer: str
@@ -80,59 +98,102 @@ class VocabEntry:
     mask_ref: str | None = None
     global_variant: str | None = None
     applies_to: dict[str, str] = field(default_factory=dict)
+    iop_order: float | None = None
+    iop_order_source: str | None = None
+    iop_order_darktable_version: str | None = None
 
 
 class VocabularyIndex:
-    """Loaded, validated vocabulary pack. Eagerly read at construction.
+    """Loaded, validated vocabulary pack(s). Eagerly read at construction.
 
     Implements :class:`~chemigram.core.binding.VocabularyIndex` Protocol
     (`lookup_l1` only — extended methods are additive).
+
+    Accepts either a single ``Path`` (single-pack form, legacy) or a
+    ``list[Path]`` (multi-pack form, RFC-018). Multi-pack loading merges
+    entries into one namespace; cross-pack name collisions raise
+    ``ManifestError``.
     """
 
-    def __init__(self, pack_root: Path) -> None:
-        """Load and validate the pack at ``pack_root``.
+    def __init__(self, pack_root: Path | list[Path]) -> None:
+        """Load and validate one or more packs at ``pack_root``.
 
         Raises:
             ManifestError: ``manifest.json`` missing, malformed, references a
-                file that doesn't exist, the dtstyle fails to parse, or its
+                file that doesn't exist, the dtstyle fails to parse, its
                 user-authored plugin's operation isn't in the manifest's
-                ``touches`` list.
+                ``touches`` list, or two packs declare the same entry name.
         """
-        self._pack_root = pack_root
-        manifest_path = pack_root / "manifest.json"
+        if isinstance(pack_root, Path):
+            pack_roots: list[Path] = [pack_root]
+        else:
+            pack_roots = list(pack_root)
+        if not pack_roots:
+            raise ManifestError("VocabularyIndex requires at least one pack_root")
+
+        self._pack_roots: tuple[Path, ...] = tuple(pack_roots)
+        by_name, provenance, l1_entries = self._load_all_packs(pack_roots)
+        self._by_name = by_name
+        self._provenance = provenance
+        self._l1_entries = tuple(l1_entries)
+        self._all_entries = tuple(by_name.values())
+
+    def _load_all_packs(
+        self, pack_roots: list[Path]
+    ) -> tuple[dict[str, VocabEntry], dict[str, Path], list[VocabEntry]]:
+        by_name: dict[str, VocabEntry] = {}
+        provenance: dict[str, Path] = {}
+        l1_entries: list[VocabEntry] = []
+
+        for root in pack_roots:
+            manifest_path = root / "manifest.json"
+            entries_raw = self._read_manifest(manifest_path)
+            for raw_entry in entries_raw:
+                entry = self._build_entry(raw_entry, manifest_path, root)
+                if entry.name in by_name:
+                    prior = provenance[entry.name]
+                    if prior == root:
+                        raise ManifestError(f"{manifest_path}: duplicate entry name {entry.name!r}")
+                    raise ManifestError(
+                        f"name collision across packs: {entry.name!r} declared in "
+                        f"{prior} and {root}"
+                    )
+                by_name[entry.name] = entry
+                provenance[entry.name] = root
+                if entry.layer == "L1":
+                    l1_entries.append(entry)
+        return by_name, provenance, l1_entries
+
+    def _read_manifest(self, manifest_path: Path) -> list[Any]:
         if not manifest_path.exists():
             raise ManifestError(f"manifest.json not found at {manifest_path}")
-
         try:
             raw = json.loads(manifest_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             raise ManifestError(f"{manifest_path}: malformed JSON: {exc}") from exc
-
         entries_raw = raw.get("entries")
         if not isinstance(entries_raw, list):
             raise ManifestError(f"{manifest_path}: top-level 'entries' must be a list")
+        return entries_raw
 
-        by_name: dict[str, VocabEntry] = {}
-        l1_entries: list[VocabEntry] = []
+    @property
+    def pack_roots(self) -> tuple[Path, ...]:
+        """Pack roots loaded by this index, in load order."""
+        return self._pack_roots
 
-        for raw_entry in entries_raw:
-            entry = self._build_entry(raw_entry, manifest_path)
-            if entry.name in by_name:
-                raise ManifestError(f"{manifest_path}: duplicate entry name {entry.name!r}")
-            by_name[entry.name] = entry
-            if entry.layer == "L1":
-                l1_entries.append(entry)
+    def pack_for(self, name: str) -> Path | None:
+        """Return the pack root that contributed ``name``, or ``None``."""
+        return self._provenance.get(name)
 
-        self._by_name = by_name
-        self._l1_entries = tuple(l1_entries)
-        self._all_entries = tuple(by_name.values())
-
-    def _build_entry(self, raw: Any, manifest_path: Path) -> VocabEntry:
+    def _build_entry(self, raw: Any, manifest_path: Path, pack_root: Path) -> VocabEntry:
         self._validate_shape(raw, manifest_path)
         layer = raw["layer"]
-        dtstyle_path, dtstyle = self._load_dtstyle(raw, manifest_path)
+        dtstyle_path, dtstyle = self._load_dtstyle(raw, manifest_path, pack_root)
         touches = self._validate_touches(raw, dtstyle, manifest_path)
         applies_to = self._extract_applies_to(raw, layer, manifest_path)
+        iop_order, iop_order_source, iop_order_dt_version = self._extract_iop_order(
+            raw, manifest_path
+        )
 
         return VocabEntry(
             name=str(raw["name"]),
@@ -151,6 +212,9 @@ class VocabularyIndex:
             mask_ref=raw.get("mask_ref"),
             global_variant=raw.get("global_variant"),
             applies_to=applies_to,
+            iop_order=iop_order,
+            iop_order_source=iop_order_source,
+            iop_order_darktable_version=iop_order_dt_version,
         )
 
     def _validate_shape(self, raw: Any, manifest_path: Path) -> None:
@@ -170,8 +234,10 @@ class VocabularyIndex:
                 f"expected one of {_VALID_LAYERS}"
             )
 
-    def _load_dtstyle(self, raw: dict[str, Any], manifest_path: Path) -> tuple[Path, DtstyleEntry]:
-        dtstyle_path = (self._pack_root / raw["path"]).resolve()
+    def _load_dtstyle(
+        self, raw: dict[str, Any], manifest_path: Path, pack_root: Path
+    ) -> tuple[Path, DtstyleEntry]:
+        dtstyle_path = (pack_root / raw["path"]).resolve()
         if not dtstyle_path.exists():
             raise ManifestError(
                 f"{manifest_path}: entry {raw['name']!r} references missing file {dtstyle_path}"
@@ -183,6 +249,43 @@ class VocabularyIndex:
                 f"{manifest_path}: entry {raw['name']!r} dtstyle failed to parse: {exc}"
             ) from exc
         return dtstyle_path, dtstyle
+
+    def _extract_iop_order(
+        self, raw: dict[str, Any], manifest_path: Path
+    ) -> tuple[float | None, str | None, str | None]:
+        """Pull RFC-018's iop_order trio from the manifest entry.
+
+        All three fields are optional. If ``iop_order`` is present, the other
+        two should be too (we warn-by-error during validation if missing —
+        provenance is required for RFC-007 drift detection).
+        """
+        iop_order = raw.get("iop_order")
+        if iop_order is not None:
+            try:
+                iop_order = float(iop_order)
+            except (TypeError, ValueError) as exc:
+                raise ManifestError(
+                    f"{manifest_path}: entry {raw['name']!r} iop_order must be a number, "
+                    f"got {iop_order!r}"
+                ) from exc
+        source = raw.get("iop_order_source")
+        if source is not None and not isinstance(source, str):
+            raise ManifestError(
+                f"{manifest_path}: entry {raw['name']!r} iop_order_source must be a string"
+            )
+        dt_version = raw.get("iop_order_darktable_version")
+        if dt_version is not None and not isinstance(dt_version, str):
+            raise ManifestError(
+                f"{manifest_path}: entry {raw['name']!r} iop_order_darktable_version "
+                f"must be a string"
+            )
+        if iop_order is not None and (source is None or dt_version is None):
+            raise ManifestError(
+                f"{manifest_path}: entry {raw['name']!r} declares iop_order but is missing "
+                f"iop_order_source and/or iop_order_darktable_version (required for "
+                f"RFC-007 drift detection)"
+            )
+        return iop_order, source, dt_version
 
     def _validate_touches(
         self, raw: dict[str, Any], dtstyle: DtstyleEntry, manifest_path: Path
@@ -264,27 +367,19 @@ class VocabularyIndex:
         return result
 
 
-def load_starter() -> VocabularyIndex:
-    """Load the bundled starter pack.
-
-    Resolves via :mod:`importlib.resources`; falls back to the in-repo
-    ``vocabulary/starter/`` directory for editable installs (``uv sync``)
-    where the bundled copy may not be on the filesystem.
-    """
+def _resolve_starter_path() -> Path:
+    """Locate the starter pack directory (bundled resource or editable install)."""
     try:
         bundled = resource_files("chemigram") / "_starter_vocabulary"
         bundled_path = Path(cast(Any, bundled))
         if (bundled_path / "manifest.json").exists():
-            return VocabularyIndex(bundled_path)
+            return bundled_path
     except (ModuleNotFoundError, FileNotFoundError):
         pass
 
-    # Editable install fallback: walk up from this file
-    # (src/chemigram/core/vocab/__init__.py) to the repo root and look at
-    # vocabulary/starter/. parents[4] lands at the repo root.
     repo_pack = Path(__file__).resolve().parents[4] / "vocabulary" / "starter"
     if (repo_pack / "manifest.json").exists():
-        return VocabularyIndex(repo_pack)
+        return repo_pack
 
     raise VocabError(
         "Starter vocabulary pack not found. Looked in the bundled "
@@ -292,3 +387,59 @@ def load_starter() -> VocabularyIndex:
         "Reinstall the package or construct VocabularyIndex against a "
         "custom pack_root."
     )
+
+
+def _resolve_pack_path(name: str) -> Path:
+    """Resolve a non-starter pack name to a directory.
+
+    Search order:
+    1. ``~/.chemigram/packs/<name>/`` — user-installed personal pack
+    2. ``vocabulary/packs/<name>/`` — in-repo (editable install)
+
+    Future: bundled-resource fallback once shipped packs are bundled
+    alongside the starter resource.
+    """
+    home = Path.home() / ".chemigram" / "packs" / name
+    if (home / "manifest.json").exists():
+        return home
+
+    repo_pack = Path(__file__).resolve().parents[4] / "vocabulary" / "packs" / name
+    if (repo_pack / "manifest.json").exists():
+        return repo_pack
+
+    raise VocabError(
+        f"Vocabulary pack {name!r} not found. Looked in {home} and {repo_pack}. "
+        f"Install the pack to ~/.chemigram/packs/<name>/ or construct "
+        f"VocabularyIndex against a custom pack_root."
+    )
+
+
+def load_starter() -> VocabularyIndex:
+    """Load the bundled starter pack as a single-pack index.
+
+    Equivalent to ``load_packs(["starter"])`` but kept as a stable alias
+    for the common case (single-pack default).
+    """
+    return VocabularyIndex(_resolve_starter_path())
+
+
+def load_packs(pack_names: list[str]) -> VocabularyIndex:
+    """Load and merge the named vocabulary packs (RFC-018, v1.2.0).
+
+    Resolution: ``"starter"`` resolves to the bundled starter pack; any
+    other name resolves to ``~/.chemigram/packs/<name>/`` (user override)
+    or ``vocabulary/packs/<name>/`` (editable install). Cross-pack name
+    collisions raise ``ManifestError``.
+
+    Pack order matters for explanation only — the resulting index has a
+    flat namespace, so collisions are reported in input order.
+    """
+    if not pack_names:
+        raise VocabError("load_packs requires at least one pack name")
+    pack_roots: list[Path] = []
+    for name in pack_names:
+        if name == "starter":
+            pack_roots.append(_resolve_starter_path())
+        else:
+            pack_roots.append(_resolve_pack_path(name))
+    return VocabularyIndex(pack_roots)

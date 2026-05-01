@@ -288,3 +288,141 @@ def test_malformed_json_raises(tmp_path: Path) -> None:
     (tmp_path / "manifest.json").write_text("{ not json")
     with pytest.raises(ManifestError, match="malformed JSON"):
         VocabularyIndex(tmp_path)
+
+
+# ---------- multi-pack loading (RFC-018, v1.2.0) -----------------------
+
+
+def _make_simple_pack(tmp_path: Path, name: str, entries: list[dict]) -> Path:
+    """Create a minimal pack on disk with given entry names + a stub dtstyle each."""
+    pack = tmp_path / name
+    pack.mkdir()
+    layers_dir = pack / "layers" / "L3" / "exposure"
+    layers_dir.mkdir(parents=True)
+
+    # Reuse the test_pack's expo_+0.5.dtstyle as a reference dtstyle for stubs
+    src = TEST_PACK_ROOT / "layers" / "L3" / "exposure" / "expo_+0.5.dtstyle"
+
+    full_entries = []
+    for e in entries:
+        dtstyle_filename = f"{e['name']}.dtstyle"
+        shutil.copy(src, layers_dir / dtstyle_filename)
+        full_entries.append(
+            {
+                "name": e["name"],
+                "layer": "L3",
+                "subtype": "exposure",
+                "path": f"layers/L3/exposure/{dtstyle_filename}",
+                "touches": ["exposure"],
+                "tags": [],
+                "description": e["name"],
+                "modversions": {"exposure": 7},
+                "darktable_version": "5.4",
+                "source": "test",
+                "license": "MIT",
+                **{k: v for k, v in e.items() if k not in ("name",)},
+            }
+        )
+    (pack / "manifest.json").write_text(json.dumps({"entries": full_entries}))
+    return pack
+
+
+def test_multi_pack_loads_merged_namespace(tmp_path: Path) -> None:
+    pack_a = _make_simple_pack(tmp_path, "pack_a", [{"name": "expo_+0.5"}])
+    pack_b = _make_simple_pack(tmp_path, "pack_b", [{"name": "expo_-0.5"}])
+    idx = VocabularyIndex([pack_a, pack_b])
+    names = {e.name for e in idx.list_all()}
+    assert names == {"expo_+0.5", "expo_-0.5"}
+    assert idx.pack_for("expo_+0.5") == pack_a
+    assert idx.pack_for("expo_-0.5") == pack_b
+
+
+def test_multi_pack_collision_raises_with_both_paths(tmp_path: Path) -> None:
+    pack_a = _make_simple_pack(tmp_path, "pack_a", [{"name": "boom"}])
+    pack_b = _make_simple_pack(tmp_path, "pack_b", [{"name": "boom"}])
+    with pytest.raises(ManifestError, match=r"name collision across packs.*boom"):
+        VocabularyIndex([pack_a, pack_b])
+
+
+def test_multi_pack_pack_roots_property(tmp_path: Path) -> None:
+    pack_a = _make_simple_pack(tmp_path, "pack_a", [{"name": "a1"}])
+    pack_b = _make_simple_pack(tmp_path, "pack_b", [{"name": "b1"}])
+    idx = VocabularyIndex([pack_a, pack_b])
+    assert idx.pack_roots == (pack_a, pack_b)
+
+
+def test_single_path_constructor_still_works(tmp_path: Path) -> None:
+    """Backward-compat: VocabularyIndex(pack_root: Path) — legacy form."""
+    pack = _make_simple_pack(tmp_path, "single", [{"name": "alpha"}])
+    idx = VocabularyIndex(pack)
+    assert {e.name for e in idx.list_all()} == {"alpha"}
+    assert idx.pack_roots == (pack,)
+
+
+def test_empty_pack_list_raises(tmp_path: Path) -> None:
+    with pytest.raises(ManifestError, match="at least one pack_root"):
+        VocabularyIndex([])
+
+
+# ---------- iop_order manifest fields (RFC-018) ------------------------
+
+
+def test_iop_order_optional_absent_means_none(tmp_path: Path) -> None:
+    """Path A entries (no Path B) leave iop_order absent."""
+    pack = _make_simple_pack(tmp_path, "no_iop", [{"name": "a"}])
+    idx = VocabularyIndex(pack)
+    entry = idx.lookup_by_name("a")
+    assert entry is not None
+    assert entry.iop_order is None
+    assert entry.iop_order_source is None
+    assert entry.iop_order_darktable_version is None
+
+
+def test_iop_order_present_with_provenance(tmp_path: Path) -> None:
+    """Path B entries declare iop_order + source + dt version."""
+    pack = _make_simple_pack(
+        tmp_path,
+        "with_iop",
+        [
+            {
+                "name": "grain_heavy",
+                "iop_order": 47.4747,
+                "iop_order_source": "xmp_probe",
+                "iop_order_darktable_version": "5.4.1",
+            }
+        ],
+    )
+    idx = VocabularyIndex(pack)
+    entry = idx.lookup_by_name("grain_heavy")
+    assert entry is not None
+    assert entry.iop_order == 47.4747
+    assert entry.iop_order_source == "xmp_probe"
+    assert entry.iop_order_darktable_version == "5.4.1"
+
+
+def test_iop_order_without_source_raises(tmp_path: Path) -> None:
+    """RFC-007 drift detection requires the provenance fields."""
+    pack = _make_simple_pack(
+        tmp_path,
+        "missing_provenance",
+        [{"name": "x", "iop_order": 1.0}],
+    )
+    with pytest.raises(ManifestError, match="iop_order_source"):
+        VocabularyIndex(pack)
+
+
+def test_iop_order_non_numeric_raises(tmp_path: Path) -> None:
+    pack = _make_simple_pack(
+        tmp_path,
+        "bad_iop",
+        [
+            {
+                "name": "x",
+                "iop_order": "not-a-number",
+                "iop_order_source": "xmp_probe",
+                "iop_order_darktable_version": "5.4.1",
+            }
+        ],
+    )
+    with pytest.raises(ManifestError, match="iop_order must be a number"):
+        VocabularyIndex(pack)

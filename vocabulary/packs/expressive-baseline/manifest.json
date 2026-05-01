@@ -1,0 +1,4 @@
+{
+  "_comment": "Expressive baseline vocabulary pack. v1.2.0 / RFC-018. Calibrated to darktable 5.4.1. Path A entries land first (no engine deps); Path B entries land after the synthesizer Path B implementation + probe-iop-order workflow.",
+  "entries": []
+}
