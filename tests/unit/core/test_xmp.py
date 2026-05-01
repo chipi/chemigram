@@ -83,10 +83,116 @@ def test_params_byte_identity() -> None:
 
 
 def test_iop_order_optional_none() -> None:
-    """darktable 5.4.1 doesn't write iop_order on history entries."""
+    """darktable 5.4.1 .dtstyle files don't write iop_order on history entries."""
     xmp = parse_xmp(FIXTURES / "synthesized_v3_reference.xmp")
     for entry in xmp.history:
         assert entry.iop_order is None
+
+
+def test_iop_order_parses_as_float(tmp_path: Path) -> None:
+    """Sidecar XMPs (rendered output) carry iop_order as a float
+    (e.g. 47.4747). Probe-iop-order workflow (RFC-018) extracts these
+    for Path B vocabulary entries; the parser must round-trip floats.
+    """
+    xmp_text = """<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:darktable="http://darktable.sf.net/"
+    darktable:history_end="1"
+    darktable:iop_order_version="5">
+   <darktable:history>
+    <rdf:Seq>
+     <rdf:li
+       darktable:num="0"
+       darktable:operation="exposure"
+       darktable:enabled="1"
+       darktable:modversion="6"
+       darktable:params="00000040"
+       darktable:multi_name=""
+       darktable:multi_priority="0"
+       darktable:blendop_version="11"
+       darktable:blendop_params=""
+       darktable:iop_order="47.4747"/>
+    </rdf:Seq>
+   </darktable:history>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>"""
+    sample = tmp_path / "sidecar_with_iop_order.xmp"
+    sample.write_text(xmp_text)
+    parsed = parse_xmp(sample)
+    assert len(parsed.history) == 1
+    entry = parsed.history[0]
+    assert entry.iop_order == 47.4747
+    assert isinstance(entry.iop_order, float)
+
+
+def test_iop_order_float_round_trips(tmp_path: Path) -> None:
+    """write_xmp + parse_xmp preserve a float iop_order verbatim."""
+    from chemigram.core.xmp import HistoryEntry, Xmp, write_xmp
+
+    xmp = Xmp(
+        rating=0,
+        label="",
+        auto_presets_applied=False,
+        history_end=1,
+        iop_order_version=5,
+        history=(
+            HistoryEntry(
+                num=0,
+                operation="grain",
+                enabled=True,
+                modversion=4,
+                params="abcd",
+                multi_name="",
+                multi_name_hand_edited=False,
+                multi_priority=0,
+                blendop_version=11,
+                blendop_params="",
+                iop_order=47.4747,
+            ),
+        ),
+    )
+    out = tmp_path / "round_trip_iop_order.xmp"
+    write_xmp(xmp, out)
+    re_parsed = parse_xmp(out)
+    assert re_parsed.history[0].iop_order == 47.4747
+
+
+def test_iop_order_invalid_value_raises_parse_error(tmp_path: Path) -> None:
+    """Non-float iop_order in a sidecar surfaces a clear XmpParseError."""
+    xmp_text = """<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:darktable="http://darktable.sf.net/"
+    darktable:history_end="1"
+    darktable:iop_order_version="5">
+   <darktable:history>
+    <rdf:Seq>
+     <rdf:li
+       darktable:num="0"
+       darktable:operation="exposure"
+       darktable:enabled="1"
+       darktable:modversion="6"
+       darktable:params="00000040"
+       darktable:multi_name=""
+       darktable:multi_priority="0"
+       darktable:blendop_version="11"
+       darktable:blendop_params=""
+       darktable:iop_order="not-a-number"/>
+    </rdf:Seq>
+   </darktable:history>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>"""
+    sample = tmp_path / "bad_iop_order.xmp"
+    sample.write_text(xmp_text)
+    from chemigram.core.xmp import XmpParseError
+
+    with pytest.raises(XmpParseError, match="iop_order"):
+        parse_xmp(sample)
 
 
 def test_round_trip_minimal(tmp_path: Path) -> None:

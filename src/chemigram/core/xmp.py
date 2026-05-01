@@ -68,11 +68,12 @@ class HistoryEntry:
     Calibrated to darktable 5.4.1. ``params`` and ``blendop_params``
     are opaque blobs (ADR-008) and are never decoded.
 
-    ``iop_order`` is ``None`` in 5.4.1 (per-entry ordering comes from
-    the parent's ``darktable:iop_order_version`` and an internal iop_list,
-    not from per-``<rdf:li>`` metadata). The field is kept Optional for
-    forward compatibility with future darktable versions that might
-    re-introduce it.
+    ``iop_order`` is ``None`` in 5.4.1 ``.dtstyle`` files (per-entry ordering
+    comes from the parent's ``darktable:iop_order_version`` and an internal
+    iop_list, not from per-``<rdf:li>`` metadata). It IS present in rendered
+    XMP sidecars as a float (e.g. ``47.4747``); the probe-iop-order workflow
+    (RFC-018) extracts these for Path B vocabulary entries. The field stays
+    Optional + ``float`` to handle both shapes.
     """
 
     num: int
@@ -85,7 +86,7 @@ class HistoryEntry:
     multi_priority: int
     blendop_version: int
     blendop_params: str
-    iop_order: int | None = None
+    iop_order: float | None = None
 
 
 @dataclass(frozen=True)
@@ -155,6 +156,13 @@ def _int_attr(s: str, qname: str, path: Path) -> int:
         raise XmpParseError(f"{path}: {qname} not an integer: {s!r}") from exc
 
 
+def _float_attr(s: str, qname: str, path: Path) -> float:
+    try:
+        return float(s)
+    except ValueError as exc:
+        raise XmpParseError(f"{path}: {qname} not a float: {s!r}") from exc
+
+
 def _parse_history_entry(li: Any, path: Path) -> HistoryEntry:
     attrs: dict[str, str] = {}
     for clark_key, value in li.attrib.items():
@@ -169,7 +177,9 @@ def _parse_history_entry(li: Any, path: Path) -> HistoryEntry:
 
     iop_order_raw = attrs.get("iop_order")
     iop_order = (
-        _int_attr(iop_order_raw, "darktable:iop_order", path) if iop_order_raw is not None else None
+        _float_attr(iop_order_raw, "darktable:iop_order", path)
+        if iop_order_raw is not None
+        else None
     )
 
     return HistoryEntry(
