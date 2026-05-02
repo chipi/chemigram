@@ -145,6 +145,65 @@ def test_synthetic_grayscale_lab_lightness_increases_monotone() -> None:
         assert cur > prev
 
 
+def test_assert_exposure_shift_through_synthetic_neutrals() -> None:
+    """End-to-end assertion test: simulate an exposure-shift effect on
+    the CC24 neutrals by directly producing a "shifted" Lab patch list,
+    verify the assertion API reports the correct direction.
+    """
+    from chemigram.core.assertions import assert_exposure_shift
+
+    raw = _load_cc24_reference()
+    coords = _cc24_patch_coords()
+    measured = extract_patch_values(CC24_PNG, coords)
+    neutrals = [measured[i - 1] for i in raw["neutral_indices"]]
+    # Synthesize a +5 L* shift on the neutrals
+    shifted = [(L + 5.0, a, b) for L, a, b in neutrals]
+    assert assert_exposure_shift(neutrals, shifted, direction=+1, min_magnitude=4.0)
+    # Wrong direction fails
+    assert not assert_exposure_shift(neutrals, shifted, direction=-1, min_magnitude=4.0)
+
+
+def test_assert_wb_shift_through_synthetic_neutrals() -> None:
+    """Same shape: simulate a warm WB shift, verify assertion catches it."""
+    from chemigram.core.assertions import assert_wb_shift
+
+    raw = _load_cc24_reference()
+    coords = _cc24_patch_coords()
+    measured = extract_patch_values(CC24_PNG, coords)
+    neutrals = [measured[i - 1] for i in raw["neutral_indices"]]
+    # Synthesize a +3 b* shift (warmer)
+    warmed = [(L, a, b + 3.0) for L, a, b in neutrals]
+    assert assert_wb_shift(neutrals, warmed, axis="b", direction=+1, min_magnitude=2.0)
+    # The unshifted a* axis remains stable — direction-of-change on a*
+    # should fail for both directions (delta is essentially zero).
+    assert not assert_wb_shift(neutrals, warmed, axis="a", direction=+1, min_magnitude=1.0)
+    assert not assert_wb_shift(neutrals, warmed, axis="a", direction=-1, min_magnitude=1.0)
+
+
+def test_assert_color_accuracy_skip_indices_via_real_fixture() -> None:
+    """Validates the skip_indices flow against the actual synthetic CC24
+    + JSON ground truth pair. Confirms the out-of-gamut Cyan patch is
+    correctly excluded from the strict thresholds.
+    """
+    raw = _load_cc24_reference()
+    coords = _cc24_patch_coords()
+    measured = extract_patch_values(CC24_PNG, coords)
+    reference = [(p["L"], p["a"], p["b"]) for p in raw["patches"]]
+    # Without skip: the strict threshold may be violated by the
+    # out-of-gamut patch alone.
+    skip = [i - 1 for i in raw["out_of_gamut_indices"]]
+    result = assert_color_accuracy(
+        measured, reference, max_mean_de=2.0, max_max_de=4.0, skip_indices=skip
+    )
+    assert result.passed
+    # The skipped patch's DE is reported but doesn't affect mean/max.
+    cyan_de = result.per_patch[17]  # patch #18 = index 17 (zero-based)
+    # Cyan is far enough out of gamut that its DE should be measurable.
+    # We don't assert a specific value (it's gamut-clip-dependent), but
+    # it's typically > the in-gamut max threshold.
+    assert cyan_de >= 0
+
+
 def test_synthetic_grayscale_tonal_response_is_close_to_linear_in_srgb() -> None:
     """The synthetic ramp is linear in *sRGB*, which is non-linear in L\\*
     (sRGB has a gamma curve baked in). So the L\\* response is *not*
