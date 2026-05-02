@@ -60,16 +60,20 @@ def test_load_packs_starter_only_equivalent_to_load_starter() -> None:
 
 
 def test_load_packs_starter_plus_expressive_baseline_loads() -> None:
-    """Both packs load together; expressive-baseline currently empty
-    (entries: []) but the index still merges cleanly.
+    """Both packs load together; the index merges cleanly without name collisions.
+
+    The expressive-baseline pack grew from 0 entries (v1.2.0 scaffold) to
+    a positive count as entries are authored programmatically per RFC-018
+    + the audit guide at docs/guides/expressive-baseline-authoring.md.
     """
     from chemigram.core.vocab import load_packs
 
     via_packs = load_packs(["starter", "expressive-baseline"])
     assert len(via_packs.pack_roots) == 2
-    # Empty expressive-baseline contributes 0 entries; total = starter count.
     starter_count = len(load_starter().list_all())
-    assert len(via_packs.list_all()) == starter_count
+    # Expressive-baseline contributes 0+; total >= starter and never less.
+    # No name collisions allowed (would raise during load).
+    assert len(via_packs.list_all()) >= starter_count
 
 
 def test_load_packs_unknown_pack_raises() -> None:

@@ -1,4 +1,84 @@
 {
   "_comment": "Expressive baseline vocabulary pack. v1.2.0 / RFC-018. Calibrated to darktable 5.4.1. Path A entries land first (no engine deps); Path B entries land after the synthesizer Path B implementation + probe-iop-order workflow.",
-  "entries": []
+  "_authoring": "Entries authored programmatically by reverse-engineering darktable's iop/<module>.c struct layouts (RFC-012 / Path C technique formalized for vocabulary authoring). See docs/guides/expressive-baseline-authoring.md for per-module struct mappings and how to validate by re-authoring in darktable's GUI.",
+  "entries": [
+    {
+      "name": "grain_fine",
+      "layer": "L3",
+      "subtype": "grain",
+      "path": "layers/L3/grain/grain_fine.dtstyle",
+      "touches": ["grain"],
+      "tags": ["grain", "subtle", "global"],
+      "description": "Subtle film-grain texture; strength 8/100.",
+      "modversions": {"grain": 2},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grain_medium",
+      "layer": "L3",
+      "subtype": "grain",
+      "path": "layers/L3/grain/grain_medium.dtstyle",
+      "touches": ["grain"],
+      "tags": ["grain", "medium", "global"],
+      "description": "Visible film-grain texture; strength 25/100.",
+      "modversions": {"grain": 2},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grain_heavy",
+      "layer": "L3",
+      "subtype": "grain",
+      "path": "layers/L3/grain/grain_heavy.dtstyle",
+      "touches": ["grain"],
+      "tags": ["grain", "heavy", "global"],
+      "description": "Heavy film-grain texture; strength 50/100, coarser scale.",
+      "modversions": {"grain": 2},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "vignette_subtle",
+      "layer": "L3",
+      "subtype": "vignette",
+      "path": "layers/L3/vignette/vignette_subtle.dtstyle",
+      "touches": ["vignette"],
+      "tags": ["vignette", "subtle", "global"],
+      "description": "Subtle corner darkening; brightness -0.25.",
+      "modversions": {"vignette": 4},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "vignette_medium",
+      "layer": "L3",
+      "subtype": "vignette",
+      "path": "layers/L3/vignette/vignette_medium.dtstyle",
+      "touches": ["vignette"],
+      "tags": ["vignette", "medium", "global"],
+      "description": "Medium corner darkening; brightness -0.5.",
+      "modversions": {"vignette": 4},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "vignette_heavy",
+      "layer": "L3",
+      "subtype": "vignette",
+      "path": "layers/L3/vignette/vignette_heavy.dtstyle",
+      "touches": ["vignette"],
+      "tags": ["vignette", "heavy", "global"],
+      "description": "Strong corner darkening; brightness -0.8.",
+      "modversions": {"vignette": 4},
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    }
+  ]
 }

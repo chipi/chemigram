@@ -52,6 +52,7 @@ def render_with_entry(
         pytest.skip(f"entry {entry_name!r} not yet authored in expressive-baseline")
 
     synthesized = synthesize_xmp(baseline, [entry.dtstyle])
+    out_dir.mkdir(parents=True, exist_ok=True)
     xmp_path = out_dir / f"{entry_name}.xmp"
     out_path = out_dir / f"{entry_name}.jpg"
     write_xmp(synthesized, xmp_path)
