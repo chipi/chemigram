@@ -61,10 +61,10 @@ src/chemigram/
       versioning.py        ← branch / tag / checkout / log / diff
       binding.py           ← bind_layers / unbind_layers
       render.py            ← render_preview / compare
-      export.py            ← export
+      export.py            ← export_final
       masks.py             ← generate_mask / regenerate_mask / list_masks / tag_mask
       context.py           ← read_context / propose_*_update / confirm_*_update / log_vocabulary_gap
-      lifecycle.py         ← ingest_workspace
+      lifecycle.py         ← ingest
       status.py            ← status (diagnostic, not a tool wrapper)
     output.py              ← HumanWriter + JsonWriter behind OutputWriter Protocol
     exit_codes.py          ← ExitCode IntEnum
@@ -219,16 +219,20 @@ Each verb takes the same parameter shape as its MCP tool. Bracketed flag groups 
 - `chemigram bind-layers <image_id> --l1 <name> --l2 <name>` → `bind_layers`
 - `chemigram unbind-layers <image_id>` → `unbind_layers`
 
+**Versioning (snapshot grouped here for cohesion):**
+- `chemigram snapshot <image_id> [--message <m>]` → `snapshot`
+
 **Render / export:**
 - `chemigram render-preview <image_id> [--width <px>] [--height <px>]` → `render_preview`
 - `chemigram compare <image_id> <ref_a> <ref_b>` → `compare`
-- `chemigram export <image_id> [--format jpeg] [--quality <0-100>]` → `export`
+- `chemigram export-final <image_id> [--format jpeg] [--quality <0-100>]` → `export_final`
 
 **Masks:**
 - `chemigram masks list <image_id>` → `list_masks`
 - `chemigram masks generate <image_id> --target <subject>` → `generate_mask`
 - `chemigram masks regenerate <image_id> --name <mask>` → `regenerate_mask`
 - `chemigram masks tag <image_id> --name <mask> --tag <name>` → `tag_mask`
+- `chemigram masks invalidate <image_id> --name <mask>` → `invalidate_mask`
 
 **Context:**
 - `chemigram read-context <image_id>` → `read_context`
@@ -239,7 +243,7 @@ Each verb takes the same parameter shape as its MCP tool. Bracketed flag groups 
 - `chemigram log-vocabulary-gap <image_id> --description <text>` → `log_vocabulary_gap`
 
 **Lifecycle:**
-- `chemigram ingest-workspace <raw_path>` → `ingest_workspace`
+- `chemigram ingest <raw_path>` → `ingest`
 
 **Diagnostic (not an MCP tool):**
 - `chemigram status` — chemigram version, darktable-cli path + version, configured packs, workspace root, prompt store version, output schema version
@@ -266,7 +270,7 @@ def test_apply_primitive_json_mode(tmp_workspace):
 
 **CLI ↔ MCP parity audit:** a single test that walks every MCP tool and asserts a CLI verb exists with the right name + parameter shape. Fails if a new MCP tool is added without a CLI counterpart.
 
-E2e: one e2e test that drives a tiny session through the CLI (ingest → apply-primitive → render-preview → export) end-to-end, including real `darktable-cli`. Lives next to the existing MCP e2e tests.
+E2e: one e2e test that drives a tiny session through the CLI (ingest → apply-primitive → render-preview → export-final) end-to-end, including real `darktable-cli`. Lives next to the existing MCP e2e tests.
 
 ### H. `chemigram status`
 
