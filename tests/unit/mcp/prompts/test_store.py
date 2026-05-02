@@ -128,6 +128,18 @@ def test_active_version_now_v2() -> None:
 # ---------- v3 (active) ----------
 
 
+def test_real_mode_a_v3_missing_vocabulary_packs_raises() -> None:
+    """vocabulary_packs is in MANIFEST.context_required as of v3 — render
+    must surface a PromptContextError when callers omit it.
+    """
+    real_store = PromptStore(SHIPPED_ROOT)
+    with pytest.raises(PromptContextError, match="missing required context keys"):
+        real_store.render(
+            "mode_a/system",
+            {"vocabulary_size": 40, "image_id": "abc"},  # vocabulary_packs missing
+        )
+
+
 def test_real_mode_a_v3_renders() -> None:
     """The shipped mode_a/system_v3.j2 renders against sample context."""
     real_store = PromptStore(SHIPPED_ROOT)

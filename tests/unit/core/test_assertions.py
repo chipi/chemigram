@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import pytest
+from PIL import Image
 
 from chemigram.core.assertions import (
     ColorAccuracyResult,
@@ -15,6 +16,7 @@ from chemigram.core.assertions import (
     assert_tonal_response,
     assert_wb_shift,
     delta_e_2000,
+    extract_patch_values,
     lab_to_srgb,
     srgb_to_lab,
 )
@@ -80,6 +82,43 @@ def test_delta_e_known_pair_neutral_lightness_shift() -> None:
     # The DE2000 lightness term equals delta_L / SL; for L≈55 the SL
     # factor is small, so the result is near 10.
     assert 9.0 < de < 11.0, f"expected ~10, got {de}"
+
+
+def test_delta_e_near_zero_chroma_is_finite() -> None:
+    """Two near-neutral patches: avg_C ≈ 0 makes the G-factor and Hue terms
+    numerically delicate, but DE2000 must remain finite and small.
+    """
+    de = delta_e_2000((50.0, 0.001, -0.001), (50.0, -0.001, 0.001))
+    assert math.isfinite(de)
+    assert de < 0.05
+
+
+def test_delta_e_hue_wrap_at_0_360_boundary() -> None:
+    """A pair with hues straddling the 0°/360° wrap (near-red on either side)
+    must use the wrap-around average, not a 180° flip. The two colors are
+    perceptually almost identical, so DE2000 should be small (well under 1).
+    """
+    # Pick two near-red colors: a slight +b (hue ≈ 1°) and a slight -b
+    # (hue ≈ 359°). Naive averaging would give 180°; correct behavior wraps.
+    de = delta_e_2000((50.0, 30.0, 0.5), (50.0, 30.0, -0.5))
+    assert math.isfinite(de)
+    assert de < 1.0, f"hue wrap mishandled: DE2000={de}"
+
+
+def test_delta_e_symmetric_in_arguments() -> None:
+    """DE2000 is symmetric: DE(A, B) == DE(B, A)."""
+    a = (40.0, 25.0, -15.0)
+    b = (55.0, -10.0, 30.0)
+    assert delta_e_2000(a, b) == pytest.approx(delta_e_2000(b, a), abs=1e-9)
+
+
+def test_delta_e_out_of_gamut_inputs_are_finite() -> None:
+    """Lab values outside the sRGB gamut (high chroma, e.g. spectral cyan)
+    are still valid CIE coordinates. DE2000 must remain finite.
+    """
+    de = delta_e_2000((50.0, -100.0, -50.0), (50.0, 0.0, 0.0))
+    assert math.isfinite(de)
+    assert de > 0.0
 
 
 # ----- assert_color_accuracy ---------------------------------------------
@@ -157,6 +196,18 @@ def test_tonal_response_length_mismatch_raises() -> None:
 def test_tonal_response_too_few_points_raises() -> None:
     with pytest.raises(ValueError):
         assert_tonal_response([1.0], [1.0])
+
+
+def test_tonal_response_negative_slope_passes_when_linear() -> None:
+    """R² is slope-agnostic: a perfectly inverted ramp is still linear and
+    must pass. (Catches a regression where the regression formula required
+    slope > 0.)
+    """
+    ref = [10.0, 20.0, 30.0, 40.0, 50.0]
+    measured = [50.0, 40.0, 30.0, 20.0, 10.0]
+    result = assert_tonal_response(measured, ref, min_r_squared=0.99)
+    assert result.passed
+    assert result.r_squared > 0.999
 
 
 # ----- assert_exposure_shift ---------------------------------------------
@@ -237,3 +288,38 @@ def test_patch_coord_frozen() -> None:
     c = PatchCoord(x=10, y=20, w=30, h=40)
     with pytest.raises(dataclasses.FrozenInstanceError):
         c.x = 0  # type: ignore[misc]
+
+
+# ----- extract_patch_values -----------------------------------------------
+
+
+def test_extract_patch_values_accepts_pil_image_directly() -> None:
+    """Callers that already hold a PIL ``Image.Image`` shouldn't have to
+    write it to disk. The function accepts both ``Path`` and ``Image``.
+    """
+    img = Image.new("RGB", (50, 50), color=(255, 255, 255))
+    coords = [PatchCoord(x=10, y=10, w=20, h=20)]
+    result = extract_patch_values(img, coords)
+    assert len(result) == 1
+    L, a, b = result[0]
+    assert math.isclose(L, 100.0, abs_tol=0.5)
+    assert abs(a) < 0.5
+    assert abs(b) < 0.5
+
+
+def test_extract_patch_values_multiple_solid_patches() -> None:
+    """Two patches over a hand-built two-region image return the two
+    expected Lab triples in input order.
+    """
+    img = Image.new("RGB", (200, 100), color=(0, 0, 0))
+    # Right half: pure mid-gray
+    for x in range(100, 200):
+        for y in range(100):
+            img.putpixel((x, y), (128, 128, 128))
+    coords = [
+        PatchCoord(x=10, y=10, w=80, h=80),
+        PatchCoord(x=110, y=10, w=80, h=80),
+    ]
+    [(L1, _, _), (L2, _, _)] = extract_patch_values(img, coords)
+    assert math.isclose(L1, 0.0, abs_tol=1.0)
+    assert 50.0 < L2 < 60.0  # sRGB 128 → L* ≈ 53.6 (D50)
