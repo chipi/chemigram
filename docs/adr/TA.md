@@ -84,6 +84,24 @@ Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
 **Anchored from:** ADR-006, ADR-033, ADR-056 (closes RFC-010)
 
+### components/cli
+
+Subprocess-callable adapter over the same core that the MCP server adapts. Mirrors the MCP tool surface verb-for-verb (with `_` → `-` for shell ergonomics). Ships in v1.3.0 (RFC-020 closure). Two adapters, one core; no domain logic in either adapter layer (lint-enforced).
+
+**Files (planned v1.3.0):** `src/chemigram/cli/main.py` (Typer root app + global-options callback), `src/chemigram/cli/commands/*` (one file per verb group), `src/chemigram/cli/output.py` (`HumanWriter` + `JsonWriter` behind `OutputWriter` Protocol), `src/chemigram/cli/exit_codes.py` (`ExitCode` IntEnum), `src/chemigram/cli/error_mapping.py` (maps `chemigram.mcp.errors.ErrorCode` to `ExitCode`).
+
+**Entry point:** `chemigram` binary via `pyproject.toml` `[project.scripts]`, alongside `chemigram-mcp`.
+
+**Verb surface:** see RFC-020 §F. Each verb maps 1:1 to an MCP tool from ADR-033/056 plus a diagnostic `chemigram status` (not a tool wrapper).
+
+**Output:** human-readable text by default; NDJSON via `--json`. Schema mirrors `chemigram.mcp.errors.ToolResult` shape; versioned independently of package SemVer (same pattern as ADR-045 for prompts); surfaced in `chemigram status`.
+
+**Exit codes:** `ExitCode` IntEnum mapped from `ErrorCode`; the two enums move in lockstep, audit-tested.
+
+**Constraint (ADR-071):** No XML, subprocess, or raw filesystem imports in this layer or in `chemigram.mcp/`. All domain operations come from `chemigram.core`. CI lints for forbidden imports.
+
+**Anchored from:** PRD-005, RFC-020, ADR-069, ADR-070, ADR-071, ADR-072
+
 ### components/prompts
 
 Versioned prompt templates loaded by the MCP server at session start (and by the eval harness for autonomous Mode B runs). Append-only, MANIFEST-driven, Jinja2-templated.
@@ -408,8 +426,9 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-014 | End-of-session synthesis flow | Decided | ADR-061 (closes) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
-| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 | ADR-063, ADR-064 |
+| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 (engine + scaffold in v1.2.0; authoring deferred to v1.4.0) | ADR-063, ADR-064 |
 | RFC-019 | Reference-image validation baseline | Draft v0.2 | ADR-066, ADR-067, ADR-068 |
+| RFC-020 | Command-line interface for Chemigram | Draft v0.1 | ADR-069, ADR-070, ADR-071, ADR-072 (pending v1.3.0 closure) |
 
 ### ADRs
 
@@ -482,6 +501,10 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
 | ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
 | ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
+| ADR-069 | CLI alongside MCP, won't replace it (closes RFC-020) | Reserved — closure at v1.3.0 ship |
+| ADR-070 | CLI framework: Typer (closes RFC-020) | Reserved — closure at v1.3.0 ship |
+| ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Reserved — closure at v1.3.0 ship |
+| ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Reserved — closure at v1.3.0 ship |
 
 ---
 

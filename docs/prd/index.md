@@ -17,6 +17,7 @@ PRDs are not implementation specs, not feature lists, not user stories. They're 
 | PRD-002 | Mode B — autonomous fine-tuning | Draft v0.1 |
 | PRD-003 | Vocabulary as voice | Draft v0.1 |
 | PRD-004 | Local adjustments through AI masking | Draft v0.1 |
+| PRD-005 | A command-line interface for Chemigram | Draft v0.1 |
 
 ## Conventions
 
