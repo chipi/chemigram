@@ -8,6 +8,7 @@ image_id. Real-bytes assertions live in the e2e suite.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -125,3 +126,31 @@ def test_export_final_unknown_ref_versioning_error(
         ],
     )
     assert result.exit_code == ExitCode.VERSIONING_ERROR.value
+
+
+# ----- JSON-mode error event shape ---------------------------------------
+
+
+def test_render_preview_json_error_shape(runner: CliRunner, cli_workspace_root: Path) -> None:
+    """In ``--json`` mode an error emits one NDJSON event to stderr; verify
+    the shape so consumers (agent loops) can rely on the contract."""
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "render-preview",
+            "test-image",
+            "--ref",
+            "no-such-ref",
+        ],
+    )
+    assert result.exit_code == ExitCode.VERSIONING_ERROR.value
+    err_lines = [line for line in result.stderr.splitlines() if line.strip()]
+    payload = json.loads(err_lines[-1])
+    assert payload["event"] == "error"
+    assert payload["status"] == "error"
+    assert payload["exit_code"] == ExitCode.VERSIONING_ERROR.value
+    assert payload["exit_code_name"] == "VERSIONING_ERROR"
+    assert "ref_or_hash" in payload

@@ -137,22 +137,22 @@ def _global_options(
     verbose: int = typer.Option(
         0, "--verbose", "-v", count=True, help="Increase log verbosity (stackable)."
     ),
-    dry_run: bool = typer.Option(
-        False,
-        "--dry-run",
-        help="Describe what would happen without writing any files. (Currently a "
-        "no-op for v1.3.0 foundation; verbs that mutate filesystem state will "
-        "honor it as they ship in #54..#59.)",
-    ),
 ) -> None:
-    """Set up the per-invocation context (writer, flags). Runs before any subcommand."""
+    """Set up the per-invocation context (writer, flags). Runs before any subcommand.
+
+    A ``--dry-run`` global flag was prototyped during v1.3.0 development but
+    removed before ship: no verb actually checked it, so it was a silent
+    no-op (a footgun for users who'd assume their write was suppressed).
+    A future RFC will reintroduce ``--dry-run`` once a verb-by-verb
+    semantics is decided (does ``ingest --dry-run`` short-circuit before
+    EXIF read? before symlink? etc.).
+    """
     obj: CliContext = {
         "json": json,
         "workspace": workspace,
         "configdir": configdir,
         "quiet": quiet,
         "verbose": verbose,
-        "dry_run": dry_run,
         "writer": make_writer(json_mode=json, quiet=quiet, verbose=verbose),
     }
     ctx.obj = obj

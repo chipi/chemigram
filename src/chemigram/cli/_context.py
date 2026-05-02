@@ -21,5 +21,4 @@ class CliContext(TypedDict):
     configdir: Path | None
     quiet: bool
     verbose: int
-    dry_run: bool
     writer: OutputWriter
