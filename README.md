@@ -48,8 +48,9 @@ masks and snapshots, and learns across sessions. Two modes:
 |-|-|-|
 | 0 | Hands-on validation of darktable composition story | ✅ Closed green |
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
-| 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped; 13 of 17 RFCs closed (ADR-050..061). |
+| 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped (ADR-050..061). |
 | 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 519 tests; 3 engine bugs fixed (ADR-062). |
+| 1.2 | Vocabulary expansion + reference-image validation | In progress — RFC-018 engine + RFC-019 assertion library shipped; authoring underway (ADR-063..068). |
 | 2 | Vocabulary maturation — grow vocab from session evidence | In progress (use-driven; intermittent post-1.1.0 work). |
 | 3+ | AI masks, continuous control | Conditional |
 

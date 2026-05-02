@@ -249,6 +249,31 @@ If a tolerance ever fails, **investigate the cause before tightening or loosenin
 
 ---
 
+## Reference-target validation (RFC-019)
+
+A second, more rigorous form of pixel assertion lives alongside direction-of-change: **measuring rendered patches against published colorimetric ground truth.** Where direction-of-change asks "did the move push pixels the right way?", reference-target validation asks "is the system producing pixels accurate to a real-world reference?"
+
+The `chemigram.core.assertions` module ships the math (per ADR-067):
+
+- **CIE DE2000** for perceptual color difference (Sharma/Wu/Dalal 2005).
+- **sRGB ↔ Lab D50** via Lindbloom Bradford adaptation.
+- `extract_patch_values(image, coords)` — average sRGB over a rectangle, convert to Lab.
+- `assert_color_accuracy(measured, reference, max_mean_de, max_max_de, skip_indices=...)` — DE2000 across N patches.
+- `assert_tonal_response(measured_L, expected_L, min_r_squared)` — linearity check on a grayscale ramp.
+- `assert_exposure_shift`, `assert_wb_shift` — direction-of-change on neutrals.
+
+**Two tiers** (per ADR-066):
+
+- **Tier A (synthetic)** — ships in v1.2.0. Hand-built CC24 + grayscale ramp PNGs in `tests/fixtures/reference-targets/`, paired with a JSON ground-truth file. CI-safe (no darktable, no real RAW). Validates the math, the patch extraction, and the round-trip against published L*a*b* D50 values. See `tests/integration/test_reference_synthetic.py`.
+- **Tier B (real-RAW)** — deferred. Requires shooting a real ColorChecker24 + tonal ramp under controlled lighting. Out of scope for v1.2.0; logged for a later release.
+
+**When to use which kind of assertion:**
+
+- Direction-of-change is the default for vocabulary primitives (the move's intent is what we're testing).
+- Reference-target is for math regressions, color-management correctness, and any future module that claims colorimetric accuracy.
+
+---
+
 ## When tests find a bug
 
 This will happen. Software has bugs; tests find them. Three rules:

@@ -13,7 +13,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 
 | RFC | Title | Status | Closes into |
 |-|-|-|-|
-| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes Path A); ADR-063 closes the Path B / iop_order question |
+| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (Path A parser + error contract) + ADR-063 (Path B unblocking; resolves the iop_order question) |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
 | RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
 | RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes) |
@@ -30,8 +30,8 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 | RFC-017 | Evaluation harness and auto-research workflow | Accepted (design); built Phase 5 | ADR-046, ADR-047 |
-| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 | ADR-063, ADR-064 |
-| RFC-019 | Reference-image validation baseline | Draft v0.2 | ADR-066, ADR-067, ADR-068 |
+| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 (engine + assertion library shipped; authoring in flight) | ADR-063, ADR-064 |
+| RFC-019 | Reference-image validation baseline | Draft v0.2 (Tier A synthetic shipped; Tier B real-RAW deferred) | ADR-066, ADR-067, ADR-068 |
 
 ## Maturity legend
 

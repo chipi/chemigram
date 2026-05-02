@@ -79,6 +79,7 @@ ADRs come from two streams:
 | ADR-062 | Reset rewinds the current branch to baseline | Accepted |
 | ADR-063 | Path B unblocking; iop_order resolved as None (closes RFC-001, RFC-018) | Accepted |
 | ADR-064 | Vocabulary authoring workflow (post-v0.2) (closes RFC-018) | Accepted |
+| ADR-065 | *(deliberately gapped — see Conventions below)* | — |
 | ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
 | ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
 | ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
@@ -90,3 +91,4 @@ ADRs come from two streams:
 - Superseded ADRs stay in the record with `Status · Superseded by ADR-NNN`
 - Every ADR references its TA anchor
 - Short by design — full deliberation lives in the related RFC if there was one
+- **Gaps in numbering are deliberate.** ADR-065 is intentionally unused: during the parallel authoring of RFC-018's and RFC-019's closing ADRs, both initially claimed 063–065. The conflict was resolved by giving RFC-018 → 063+064 and shifting RFC-019 → 066+067+068. The gap is preserved rather than re-numbered (per the append-only rule applied to the registry as a whole).
