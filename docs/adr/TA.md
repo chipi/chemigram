@@ -408,7 +408,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-014 | End-of-session synthesis flow | Decided | ADR-061 (closes) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
-| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.1 | ADR-063, ADR-064 |
+| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 | ADR-063, ADR-064 |
 
 ### ADRs
 

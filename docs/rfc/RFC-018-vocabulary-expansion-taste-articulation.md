@@ -329,7 +329,7 @@ the rationale.
 | Tier | Count | Engine work required | Pack |
 |---|---|---|---|
 | Path A, new entries | 16 | None — authoring only | `packs/expressive-baseline/` |
-| Path B, new entries | 19 | iop_order in manifest + synthesizer Path B | `packs/expressive-baseline/` |
+| Path B, new entries | 19 | synthesizer Path B (shipped post-v0.2) | `packs/expressive-baseline/` |
 | Already shipped | 5 | — | `starter/` (unchanged) |
 | **Total v1.2.0 target** | **40** | — | starter + expressive-baseline |
 
@@ -548,7 +548,7 @@ expressive-baseline pack populated.
 - TA/components/synthesizer — `synthesize_xmp` is the implementation surface
 - TA/components/mcp-server — `apply_primitive` tool calls synthesize_xmp
 - RFC-001 — synthesizer architecture; iop_order open question originated here
-- RFC-007 — modversion drift handling; `iop_order_darktable_version` drift lands here. Should close before or alongside RFC-018 to handle the concentration risk on 40 entries calibrated to 5.4.1.
+- RFC-007 — modversion drift handling; concentration risk on 40 entries calibrated to dt 5.4.1 (each entry's manifest `darktable_version: "5.4"` field is the drift-detection key). Should close before or alongside RFC-018.
 - RFC-012 — Path C (programmatic generation); complementary, not conflicting
 - ADR-009 — Path A vs Path B semantics (this RFC decides iop_order for Path B)
 - ADR-051 — formal deferral of Path B; this RFC picks it up

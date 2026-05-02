@@ -68,12 +68,12 @@ class HistoryEntry:
     Calibrated to darktable 5.4.1. ``params`` and ``blendop_params``
     are opaque blobs (ADR-008) and are never decoded.
 
-    ``iop_order`` is ``None`` in 5.4.1 ``.dtstyle`` files (per-entry ordering
-    comes from the parent's ``darktable:iop_order_version`` and an internal
-    iop_list, not from per-``<rdf:li>`` metadata). It IS present in rendered
-    XMP sidecars as a float (e.g. ``47.4747``); the probe-iop-order workflow
-    (RFC-018) extracts these for Path B vocabulary entries. The field stays
-    Optional + ``float`` to handle both shapes.
+    ``iop_order`` is ``None`` in 5.4.1 ``.dtstyle`` files and is unnecessary
+    for Path B (per RFC-018 v0.2 empirical evidence). darktable resolves
+    pipeline order from the parent's ``darktable:iop_order_version`` + an
+    internal iop_list. The field stays Optional + ``float`` because rendered
+    XMP sidecars *can* carry per-entry iop_order as a float (e.g.
+    ``47.4747``); the parser must round-trip those.
     """
 
     num: int
