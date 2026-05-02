@@ -8,6 +8,83 @@ per ADR-041.
 
 ## [Unreleased]
 
+**v1.3.0 work in progress — chemigram CLI (RFC-020 / PRD-005).**
+
+A subprocess-callable adapter alongside the existing MCP server, mirroring
+the tool surface verb-for-verb (with `_` → `-` for shell ergonomics). For
+batch processing, custom agent loops, watch-folder daemons, and CI
+pipelines where MCP's session model is the wrong shape. PRD-005 frames
+the user-value case; RFC-020 locks the design.
+
+**Adapter:**
+
+- New `chemigram.cli` package with `chemigram` entry point on `$PATH`
+  (alongside `chemigram-mcp`). 22 verbs total, organized as: status,
+  ingest, apply-primitive, remove-module, reset, get-state, snapshot,
+  branch, tag, checkout, log, diff, bind-layers, render-preview,
+  compare, export-final, masks list/generate/regenerate/tag/invalidate,
+  read-context, log-vocabulary-gap, apply-taste-update,
+  apply-notes-update, vocab list/show.
+- Global flags: `--json`, `--workspace` (env: `CHEMIGRAM_WORKSPACE`),
+  `--configdir` (env: `CHEMIGRAM_DT_CONFIGDIR`), `--quiet`, `--verbose`.
+- Output: human-readable text by default, NDJSON via `--json`. The
+  output schema version is locked at `1.0` (independently of package
+  SemVer per RFC-020, the same pattern as ADR-045 for prompts) and
+  surfaced via `chemigram status`.
+- 11-value `ExitCode` IntEnum maps each `chemigram.mcp.errors.ErrorCode`
+  to a distinct non-zero code. The `match` statement is mypy-exhaustive;
+  a runtime audit-style integration test catches drift.
+
+**Architectural decisions:**
+
+- Both MCP and CLI are thin wrappers over `chemigram.core` (ADR-071).
+  No domain logic in either adapter; lint-enforced via
+  `scripts/audit-cli-imports.py` (wired into `make ci` step 7/10).
+- The conversational propose/confirm pair (`propose_taste_update`,
+  `confirm_taste_update`, plus notes counterparts) stays MCP-only.
+  The CLI ships direct apply verbs (`apply-taste-update`,
+  `apply-notes-update`) because cross-process proposal storage would
+  race under parallel batch invocations. RFC-020 §F documents the
+  divergence.
+- Mask `generate` / `regenerate` exit `MASKING_ERROR (7)` because the
+  CLI has no provider-injection path equivalent to MCP's
+  `build_server(masker=...)`. List/tag/invalidate work fully without
+  a provider.
+- Pre-existing core helper `append_markdown` lifted from
+  `chemigram.mcp.tools.context` to `chemigram.core.workspace` so
+  both adapters share one implementation.
+- Pre-existing core helper `current_xmp` / `summarize_state` /
+  `_serialize_entry` etc. stay in `chemigram.mcp` for now; pragmatic
+  shared imports until a future "lift to core helpers" refactor.
+
+**Documentation:**
+
+- README — new "Quickstart — scripts and agent loops (CLI)" section
+  alongside the existing MCP block.
+- `docs/getting-started.md` — new "Driving Chemigram from a script
+  or agent loop" section after the MCP first-session walk-through.
+  Includes the canonical Python integration pattern (subprocess +
+  NDJSON + ExitCode branching).
+- `docs/guides/cli-reference.md` — auto-generated from
+  `chemigram --help`. CI step `[10/10]` runs the generator with
+  `--check` to fail on drift between live `--help` and the
+  checked-in file.
+- `docs/index.md` — tagline updated to mention both adapters; new
+  "Two planes of control" section explaining when to reach for each.
+- `docs/concept/04-architecture.md` — subsystems table grew from 5
+  to 6 (CLI as subsystem 6); new §2.1 "Two planes of control".
+
+**ADR closures pending v1.3.0 release (#61):**
+ADR-069 (CLI alongside MCP), ADR-070 (Typer framework), ADR-071
+(thin-wrapper discipline + lint), ADR-072 (output format + exit codes).
+RFC-020 will move from Draft v0.1 to Decided.
+
+**Tests:** 674 unit + integration green (was 556 pre-CLI). 4 e2e
+session tests against real darktable: ingest → apply → get-state →
+reset; render-preview + export-final round-trip; compare across two
+snapshots; standalone status. ruff + mypy + audit + cli-reference
+sync check all green.
+
 ## [1.2.0] — 2026-05-02
 
 **Engine unblock + reference-image validation infrastructure.** Closes

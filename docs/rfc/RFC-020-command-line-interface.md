@@ -59,7 +59,7 @@ src/chemigram/
       vocab.py             ← vocab list / show / validate
       edit.py              ← apply_primitive / remove_module / reset / get_state / list_vocabulary
       versioning.py        ← branch / tag / checkout / log / diff
-      binding.py           ← bind_layers / unbind_layers
+      binding.py           ← bind_layers
       render.py            ← render_preview / compare
       export.py            ← export_final
       masks.py             ← generate_mask / regenerate_mask / list_masks / tag_mask
@@ -217,7 +217,9 @@ Each verb takes the same parameter shape as its MCP tool. Bracketed flag groups 
 
 **Layer binding:**
 - `chemigram bind-layers <image_id> --l1 <name> --l2 <name>` → `bind_layers`
-- `chemigram unbind-layers <image_id>` → `unbind_layers`
+  *(MCP has no ``unbind_layers`` tool — layer removal is via ``remove-module``.
+  An earlier draft of this RFC listed ``unbind-layers``; that was a drafting
+  error and was dropped before v1.3.0 ship.)*
 
 **Versioning (snapshot grouped here for cohesion):**
 - `chemigram snapshot <image_id> [--message <m>]` → `snapshot`

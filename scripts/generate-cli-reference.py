@@ -25,6 +25,11 @@ The chemigram CLI mirrors the MCP tool surface verb-for-verb (with
 `_` → `-`). Output is human-readable by default and newline-delimited
 JSON via `--json`. Exit codes are stable per RFC-020 §D / ADR-072.
 
+For the user-value rationale and design discussion see
+[PRD-005](../prd/PRD-005-command-line-interface.md) and
+[RFC-020](../rfc/RFC-020-command-line-interface.md). When to reach for
+the CLI vs the MCP server: see `docs/index.md` § Two planes of control.
+
 ## Global options
 
 These apply to every verb. See `chemigram --help` for the canonical

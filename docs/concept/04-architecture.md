@@ -52,7 +52,7 @@ This makes Chemigram consistently a substrate that orchestrates AI capabilities 
 
 ## 2. Subsystems
 
-Chemigram has five subsystems with stable boundaries:
+Chemigram has four engine subsystems plus two adapter layers, all with stable boundaries:
 
 | # | Subsystem | Responsibility |
 |-|-|-|
@@ -60,15 +60,28 @@ Chemigram has five subsystems with stable boundaries:
 | 2 | **Render pipeline** | Sequence of stages producing a JPEG from an XMP. v1 has one stage (darktable-cli). See/8. |
 | 3 | **Versioning** | Content-addressed DAG of XMP snapshots, refs, HEAD. The "mini git for photos." See/7. |
 | 4 | **AI provider layer** | Pluggable maskers (and later: evaluators, generators) behind protocol-based interfaces. Per BYOA. |
-| 5 | **MCP server** | Adapts subsystems 1-4 as agent-callable tools. |
+| 5 | **MCP server** | Adapts subsystems 1-4 as agent-callable tools (the conversational adapter). |
+| 6 | **CLI** (v1.3.0+) | Adapts subsystems 1-4 as subprocess-callable verbs (the programmatic adapter). |
 
-The five are decoupled enough that 1-4 are testable without an agent involved, and the MCP server is a thin layer over the rest.
+The four engine subsystems are decoupled enough that 1-4 are testable without any adapter involved. Subsystems 5 and 6 are sibling thin wrappers — neither imports the other; both depend only on 1-4 (lint-enforced per ADR-071).
+
+### 2.1 Two planes of control: MCP and CLI
+
+The same engine surfaces through two adapters because it serves two distinct workflow shapes:
+
+- **MCP (conversational, v0.3.0+).** A long-lived session with an agent in an MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop). The agent reads context, you respond, the loop continues for as many turns as the photo needs. Session transcripts (JSONL) are written automatically. Designed for one-image-deep collaborative editing — PRD-001 (Mode A) is built around this.
+
+- **CLI (programmatic, v1.3.0+).** Subprocess calls from shell scripts, custom Python loops, batch jobs, watch-folder daemons, CI pipelines. No session lifecycle; each invocation is one operation. Stable exit codes and newline-delimited JSON output via `--json`. Designed for automation and scripting where MCP's session model is overhead — PRD-005 / RFC-020 cover the design.
+
+Both adapters mirror the engine's tool surface verb-for-verb (with `_` → `-` for shell ergonomics on the CLI side), call `chemigram.core` directly per ADR-071, and produce the same workspace state on disk. The choice between MCP and CLI is about workflow shape — conversational vs. scripted — not capability. A photographer can move between them freely; the workspace is the shared state.
 
 The **masking component** (subsystem 4 — AI provider layer) shipped in v0.4.0 (`chemigram.core.masking`). The `MaskingProvider` Protocol (ADR-057) is the contract every masker implements. The bundled default is `CoarseAgentProvider` (ADR-058): it asks the calling agent (e.g., Claude with vision) for a region descriptor via MCP sampling, then rasterizes the descriptor to a grayscale PNG via Pillow. No PyTorch in core. Production-quality masking lives in the sibling `chemigram-masker-sam` project (Phase 4) and implements the same Protocol — substituting providers is a one-line `build_server(masker=...)` change.
 
 The **context component** (`chemigram.core.context`, shipped in v0.5.0) loads the agent's first-turn information per RFC-011 → ADR-059: tastes (multi-scope per ADR-048 — `~/.chemigram/tastes/_default.md` plus brief-declared genre files), `brief.md` (with `Tastes:` declaration), `notes.md` (with line-truncation summarization for long files), recent log entries, recent vocabulary gaps. All loaders tolerate missing files. Conflicts (same line in two genre files) surface to the agent for mediation, not auto-resolved by the engine. The companion **session component** (`chemigram.core.session`) writes JSONL transcripts per ADR-029 — one record per tool call, proposal, and confirmation; closed with a footer summary. The MCP server's tool dispatch auto-records when `build_server(transcript=...)` is configured. Vocabulary-gap records follow the full RFC-013 → ADR-060 schema (session_id and snapshot_hash auto-populate). End-of-session synthesis is agent-orchestrated per ADR-061 (no engine `end_session` tool); the agent uses existing tools (`propose_*`, `log_vocabulary_gap`, `tag`, `snapshot`) to wrap up.
 
 The **MCP component** (subsystem 5) is implemented in `chemigram.mcp` and shipped in v0.3.0. It boots the official `mcp` SDK over stdio, loads vocabulary + prompts at startup, and dispatches every tool through a small registry (`chemigram.mcp.registry`). Tools return structured `ToolResult` payloads — `{success, data, error}` with a closed `ErrorCode` enum — so agents can branch on category without parsing messages. Tool implementations live under `chemigram.mcp.tools.*` (vocab/edit, versioning, rendering, ingest, masks, context stubs); they're thin wrappers around `chemigram.core` plus the workspace registry. ADR-056 (closing RFC-010) locks the parameter shapes and error contract.
+
+The **CLI component** (subsystem 6, shipped in v1.3.0) is implemented in `chemigram.cli`. Entry point `chemigram = "chemigram.cli.main:app"` lands the binary on `$PATH` alongside `chemigram-mcp`. The 22 verbs mirror the MCP tool surface verb-for-verb (with `_` → `-`); the four MCP-only conversational tools (`propose_taste_update`, `confirm_taste_update`, and their notes counterparts) are replaced with direct CLI verbs `apply-taste-update` / `apply-notes-update` because the propose/confirm protocol requires per-process state that doesn't fit the subprocess shape. The CLI's `ExitCode` IntEnum (0 success, 1–10 mapped to `ErrorCode`) plus `--json` NDJSON output give shell scripts and agent loops a stable contract. ADR-069/070/071/072 (closing RFC-020) lock the design — including the thin-wrapper discipline that's lint-enforced via `scripts/audit-cli-imports.py`. The full verb reference is auto-generated at `docs/guides/cli-reference.md`.
 
 The **prompt system** (`chemigram.mcp.prompts`, also v0.3.0) is the agent's pre-loaded operating manual. Templates live as Jinja2 files at `<task>_v<N>.j2`; `MANIFEST.toml` declares which version is active per task. The MCP server renders the active version of `mode_a/system` at session start and provides it to the agent as the system prompt. Versions are append-only — once `system_v1.j2` ships, new iterations land alongside as `system_v2.j2`, `system_v3.j2`, etc., independent of package SemVer. ADR-043/044/045 cover the design; RFC-016 closes with the v0.3.0 implementation.
 

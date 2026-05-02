@@ -2,7 +2,7 @@
 
 # Chemigram
 
-<p class="chem-tagline">Agent-driven photo editing on darktable, via MCP.</p>
+<p class="chem-tagline">Agent-driven photo editing on darktable — conversationally over MCP, or programmatically via the CLI.</p>
 
 [Get started](getting-started.md){ .chem-cta }
 [GitHub →](https://github.com/chipi/chemigram){ .chem-cta .chem-cta--ghost }
@@ -64,13 +64,23 @@ Twenty-five conversational turns. One photo, deeply edited. Five new vocabulary 
                                 snapshots/  exports/  sessions/  masks/
 ```
 
-Five subsystems on the engine side:
+Four engine subsystems plus two adapter layers:
 
 1. **Vocabulary** — manifest-driven `.dtstyle` primitives, layered L1 / L2 / L3 (camera baseline / look / creative).
 2. **Versioning** — content-addressed DAG of XMP snapshots. Branches, tags, the works.
 3. **Masking** — `MaskingProvider` Protocol with a sampling-based default that uses the calling agent's vision; production-grade SAM lives in a sibling project.
 4. **Context** — multi-scope tastes (`_default.md` + genre files), per-image `brief.md` and `notes.md`, JSONL session transcripts, vocabulary gaps.
 5. **MCP server** — 27 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
+6. **CLI** (v1.3.0+) — `chemigram` binary, mirroring the MCP tool surface verb-for-verb. Subprocess-callable for batch processing, custom agent loops, and CI scripts.
+
+## Two planes of control
+
+Chemigram exposes the same engine through two adapters:
+
+- **Conversational (MCP).** Long-lived session with an agent in an MCP-capable client. The agent reads context, proposes moves, you respond, the loop continues for as many turns as the photo needs. Session transcripts record everything. This is the surface PRD-001 (Mode A) is built around. Use this when editing one image deeply with an AI collaborator at the keyboard.
+- **Programmatic (CLI).** Subprocess calls from shell scripts, custom Python loops, batch jobs, watch-folder daemons, CI pipelines. No session lifecycle; each invocation is one operation. Stable exit codes (`0` success, `2` invalid, `3` not found, `5` versioning, `6` darktable, `7` masking…); newline-delimited JSON output via `--json`. Use this when the agent has already decided, or when no agent is involved at all.
+
+Same engine, same vocabulary, same workspace state on disk. The choice between MCP and CLI is about workflow shape — conversational vs. scripted — not capability. PRD-005 / RFC-020 cover the design; `docs/getting-started.md` walks both paths.
 
 ## Why this earns existence
 
