@@ -26,11 +26,6 @@ from chemigram.mcp.tools import register_all
 # land their issues. The audit fails if this list disagrees with reality.
 _KNOWN_PENDING_VERBS: frozenset[str] = frozenset(
     {
-        # #54 — edit/state
-        "apply_primitive",
-        "remove_module",
-        "reset",
-        "get_state",
         # #55 — versioning (snapshot grouped here)
         "branch",
         "tag",
@@ -51,14 +46,13 @@ _KNOWN_PENDING_VERBS: frozenset[str] = frozenset(
         "regenerate_mask",
         "tag_mask",
         "invalidate_mask",
-        # #59 — context + lifecycle
-        "read_context",
+        # MCP-only by design (conversational propose/confirm pattern; the
+        # CLI offers `apply-taste-update` / `apply-notes-update` instead
+        # of mirroring these. RFC-020 amendment in #61).
         "propose_taste_update",
         "confirm_taste_update",
         "propose_notes_update",
         "confirm_notes_update",
-        "log_vocabulary_gap",
-        "ingest",
     }
 )
 
@@ -112,6 +106,31 @@ def test_mcp_tool_has_cli_verb_or_is_pending() -> None:
         "Either implement the verb or add the tool name to the allowlist with the "
         "issue number that will close it."
     )
+
+
+def test_batch_2_verbs_are_implemented() -> None:
+    """Explicit assertion: the seven verbs that landed in v1.3.0 Batch 2
+    (#54 + #59 lifecycle/context split) are still wired.
+
+    Catches accidental removal from main.py during refactors. Each name
+    is the CLI form (with ``_`` → ``-``).
+    """
+    cli_verbs = _walk_typer_verbs(app)
+    flat_verbs = {v.split()[-1] for v in cli_verbs}
+    expected = {
+        "ingest",
+        "apply-primitive",
+        "remove-module",
+        "reset",
+        "get-state",
+        "read-context",
+        "log-vocabulary-gap",
+        # CLI-only direct verbs (no MCP equivalent)
+        "apply-taste-update",
+        "apply-notes-update",
+    }
+    missing = expected - flat_verbs
+    assert not missing, f"Batch 2 verbs missing from CLI: {sorted(missing)}"
 
 
 def test_pending_verbs_are_actually_pending() -> None:
