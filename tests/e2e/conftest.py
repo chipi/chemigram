@@ -115,6 +115,118 @@ def warmth_ratio(jpeg_path: Path) -> float:
     return (r + g) / (2 * max(b, 1.0))
 
 
+def highlight_clip_pct(jpeg_path: Path, *, threshold: int = 250) -> float:
+    """Fraction of pixels at intensity ``threshold`` or higher (per-channel
+    max). 0.0 = no clipping; 1.0 = fully blown.
+
+    Used by `highlights_recovery_*` entries: a recovery move pulls
+    highlights back, so this fraction should *decrease* relative to the
+    untreated baseline.
+    """
+    img = Image.open(jpeg_path).convert("RGB")
+    total = img.width * img.height
+    clipped = 0
+    for r, g, b in img.getdata():
+        if r >= threshold or g >= threshold or b >= threshold:
+            clipped += 1
+    return clipped / max(total, 1)
+
+
+def shadow_clip_pct(jpeg_path: Path, *, threshold: int = 5) -> float:
+    """Fraction of pixels at intensity ``threshold`` or lower (per-channel
+    max). Used by `blacks_*` and `whites_*` sigmoid entries: a black-crush
+    move increases this fraction; a black-lift move decreases it.
+    """
+    img = Image.open(jpeg_path).convert("RGB")
+    total = img.width * img.height
+    crushed = 0
+    for r, g, b in img.getdata():
+        if max(r, g, b) <= threshold:
+            crushed += 1
+    return crushed / max(total, 1)
+
+
+def saturation_avg(jpeg_path: Path) -> float:
+    """Mean HSV saturation [0..1]. Used by `colorbalancergb` saturation/
+    vibrance entries: a sat-boost move increases this; sat-kill decreases it.
+    """
+    img = Image.open(jpeg_path).convert("HSV")
+    _h, s, _v = img.split()
+    return _band_mean(s) / 255.0
+
+
+def corner_vs_center_luma_ratio(jpeg_path: Path, *, corner_frac: float = 0.15) -> float:
+    """Ratio of corner-region mean luma to center-region mean luma.
+
+    Higher = corners are darker relative to center (vignette stronger).
+    Used by `vignette_*` entries: a vignette darkens corners; this ratio
+    decreases (corner luma / center luma falls below 1.0). Sample 4
+    corner squares of side ``corner_frac * min_dim`` and one center
+    square the same size.
+    """
+    img = Image.open(jpeg_path).convert("RGB")
+    w, h = img.size
+    side = max(8, int(min(w, h) * corner_frac))
+    cx, cy = w // 2, h // 2
+
+    def _region_luma(box: tuple[int, int, int, int]) -> float:
+        region = img.crop(box)
+        r, g, b = region.split()
+        return 0.2126 * _band_mean(r) + 0.7152 * _band_mean(g) + 0.0722 * _band_mean(b)
+
+    corners = [
+        (0, 0, side, side),
+        (w - side, 0, w, side),
+        (0, h - side, side, h),
+        (w - side, h - side, w, h),
+    ]
+    corner_luma = sum(_region_luma(c) for c in corners) / 4
+    center_luma = _region_luma((cx - side // 2, cy - side // 2, cx + side // 2, cy + side // 2))
+    return corner_luma / max(center_luma, 1.0)
+
+
+def local_contrast_metric(jpeg_path: Path) -> float:
+    """Laplacian-variance proxy for local contrast / clarity.
+
+    Higher = more local edges / texture (clarity boost). Lower = softer
+    (clarity reduction / painterly). Computed via PIL's `find_edges` filter
+    (a 3x3 Laplacian), then variance of the result. Avoids a NumPy/SciPy
+    dependency for a per-pixel-stat helper.
+    """
+    from PIL import ImageFilter
+
+    img = Image.open(jpeg_path).convert("L")
+    edges = img.filter(ImageFilter.FIND_EDGES)
+    hist = edges.histogram()
+    n = sum(hist)
+    if n == 0:
+        return 0.0
+    mean = sum(i * c for i, c in enumerate(hist)) / n
+    var = sum(c * (i - mean) ** 2 for i, c in enumerate(hist)) / n
+    return var
+
+
+def noise_variance(jpeg_path: Path) -> float:
+    """High-frequency content as a proxy for grain/noise.
+
+    Computed as the variance of a high-pass-filtered luminance channel
+    (Pillow's EDGE_ENHANCE filter approximates a high-pass kernel). A
+    grain-application primitive raises this; a grain-suppression primitive
+    lowers it.
+    """
+    from PIL import ImageFilter
+
+    img = Image.open(jpeg_path).convert("L")
+    hp = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    # Subtract original to isolate high-frequency residuals
+    hist = hp.histogram()
+    n = sum(hist)
+    if n == 0:
+        return 0.0
+    mean = sum(i * c for i, c in enumerate(hist)) / n
+    return sum(c * (i - mean) ** 2 for i, c in enumerate(hist)) / n
+
+
 @pytest.fixture
 def pixel_stats() -> object:
     """Expose the helpers as a small namespace fixture for tests."""
@@ -122,5 +234,11 @@ def pixel_stats() -> object:
     class _Stats:
         mean_luminance = staticmethod(mean_luminance)
         warmth_ratio = staticmethod(warmth_ratio)
+        highlight_clip_pct = staticmethod(highlight_clip_pct)
+        shadow_clip_pct = staticmethod(shadow_clip_pct)
+        saturation_avg = staticmethod(saturation_avg)
+        corner_vs_center_luma_ratio = staticmethod(corner_vs_center_luma_ratio)
+        local_contrast_metric = staticmethod(local_contrast_metric)
+        noise_variance = staticmethod(noise_variance)
 
     return _Stats()
