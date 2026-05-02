@@ -73,13 +73,14 @@ _VALID_LAYERS = ("L1", "L2", "L3")
 class VocabEntry:
     """One vocabulary primitive: manifest metadata plus parsed dtstyle.
 
-    Path B entries (RFC-018) require ``iop_order`` populated from the
-    probe-iop-order workflow at authoring time. Path A entries leave it
-    ``None`` (the synthesizer's SET-replace branch preserves the baseline's
-    iop_order verbatim and never reads the entry's value). The
-    ``iop_order_source`` and ``iop_order_darktable_version`` fields document
-    provenance + the dt version the value was probed against, for RFC-007's
-    drift detection.
+    Note on ``iop_order``: per the empirical evidence in
+    ``tests/fixtures/preflight-evidence/`` (RFC-018 finalization), darktable
+    5.4.1 does not require per-entry ``iop_order`` for Path B (new-instance
+    addition). The synthesizer leaves new entries' ``iop_order`` as ``None``
+    and darktable resolves the pipeline position from the description-level
+    ``iop_order_version`` + its internal iop_list. The ``VocabEntry`` doesn't
+    carry an ``iop_order`` field; the ``HistoryEntry`` it produces has
+    ``iop_order=None`` for new instances.
     """
 
     name: str
@@ -98,9 +99,6 @@ class VocabEntry:
     mask_ref: str | None = None
     global_variant: str | None = None
     applies_to: dict[str, str] = field(default_factory=dict)
-    iop_order: float | None = None
-    iop_order_source: str | None = None
-    iop_order_darktable_version: str | None = None
 
 
 class VocabularyIndex:
@@ -191,9 +189,6 @@ class VocabularyIndex:
         dtstyle_path, dtstyle = self._load_dtstyle(raw, manifest_path, pack_root)
         touches = self._validate_touches(raw, dtstyle, manifest_path)
         applies_to = self._extract_applies_to(raw, layer, manifest_path)
-        iop_order, iop_order_source, iop_order_dt_version = self._extract_iop_order(
-            raw, manifest_path
-        )
 
         return VocabEntry(
             name=str(raw["name"]),
@@ -212,9 +207,6 @@ class VocabularyIndex:
             mask_ref=raw.get("mask_ref"),
             global_variant=raw.get("global_variant"),
             applies_to=applies_to,
-            iop_order=iop_order,
-            iop_order_source=iop_order_source,
-            iop_order_darktable_version=iop_order_dt_version,
         )
 
     def _validate_shape(self, raw: Any, manifest_path: Path) -> None:
@@ -249,43 +241,6 @@ class VocabularyIndex:
                 f"{manifest_path}: entry {raw['name']!r} dtstyle failed to parse: {exc}"
             ) from exc
         return dtstyle_path, dtstyle
-
-    def _extract_iop_order(
-        self, raw: dict[str, Any], manifest_path: Path
-    ) -> tuple[float | None, str | None, str | None]:
-        """Pull RFC-018's iop_order trio from the manifest entry.
-
-        All three fields are optional. If ``iop_order`` is present, the other
-        two should be too (we warn-by-error during validation if missing —
-        provenance is required for RFC-007 drift detection).
-        """
-        iop_order = raw.get("iop_order")
-        if iop_order is not None:
-            try:
-                iop_order = float(iop_order)
-            except (TypeError, ValueError) as exc:
-                raise ManifestError(
-                    f"{manifest_path}: entry {raw['name']!r} iop_order must be a number, "
-                    f"got {iop_order!r}"
-                ) from exc
-        source = raw.get("iop_order_source")
-        if source is not None and not isinstance(source, str):
-            raise ManifestError(
-                f"{manifest_path}: entry {raw['name']!r} iop_order_source must be a string"
-            )
-        dt_version = raw.get("iop_order_darktable_version")
-        if dt_version is not None and not isinstance(dt_version, str):
-            raise ManifestError(
-                f"{manifest_path}: entry {raw['name']!r} iop_order_darktable_version "
-                f"must be a string"
-            )
-        if iop_order is not None and (source is None or dt_version is None):
-            raise ManifestError(
-                f"{manifest_path}: entry {raw['name']!r} declares iop_order but is missing "
-                f"iop_order_source and/or iop_order_darktable_version (required for "
-                f"RFC-007 drift detection)"
-            )
-        return iop_order, source, dt_version
 
     def _validate_touches(
         self, raw: dict[str, Any], dtstyle: DtstyleEntry, manifest_path: Path

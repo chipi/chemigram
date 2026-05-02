@@ -364,65 +364,10 @@ def test_empty_pack_list_raises(tmp_path: Path) -> None:
         VocabularyIndex([])
 
 
-# ---------- iop_order manifest fields (RFC-018) ------------------------
-
-
-def test_iop_order_optional_absent_means_none(tmp_path: Path) -> None:
-    """Path A entries (no Path B) leave iop_order absent."""
-    pack = _make_simple_pack(tmp_path, "no_iop", [{"name": "a"}])
-    idx = VocabularyIndex(pack)
-    entry = idx.lookup_by_name("a")
-    assert entry is not None
-    assert entry.iop_order is None
-    assert entry.iop_order_source is None
-    assert entry.iop_order_darktable_version is None
-
-
-def test_iop_order_present_with_provenance(tmp_path: Path) -> None:
-    """Path B entries declare iop_order + source + dt version."""
-    pack = _make_simple_pack(
-        tmp_path,
-        "with_iop",
-        [
-            {
-                "name": "grain_heavy",
-                "iop_order": 47.4747,
-                "iop_order_source": "xmp_probe",
-                "iop_order_darktable_version": "5.4.1",
-            }
-        ],
-    )
-    idx = VocabularyIndex(pack)
-    entry = idx.lookup_by_name("grain_heavy")
-    assert entry is not None
-    assert entry.iop_order == 47.4747
-    assert entry.iop_order_source == "xmp_probe"
-    assert entry.iop_order_darktable_version == "5.4.1"
-
-
-def test_iop_order_without_source_raises(tmp_path: Path) -> None:
-    """RFC-007 drift detection requires the provenance fields."""
-    pack = _make_simple_pack(
-        tmp_path,
-        "missing_provenance",
-        [{"name": "x", "iop_order": 1.0}],
-    )
-    with pytest.raises(ManifestError, match="iop_order_source"):
-        VocabularyIndex(pack)
-
-
-def test_iop_order_non_numeric_raises(tmp_path: Path) -> None:
-    pack = _make_simple_pack(
-        tmp_path,
-        "bad_iop",
-        [
-            {
-                "name": "x",
-                "iop_order": "not-a-number",
-                "iop_order_source": "xmp_probe",
-                "iop_order_darktable_version": "5.4.1",
-            }
-        ],
-    )
-    with pytest.raises(ManifestError, match="iop_order must be a number"):
-        VocabularyIndex(pack)
+# ---------- iop_order manifest fields ----------------------------------
+#
+# Removed in v1.2.0 prep. The empirical Path-B finding (see
+# tests/fixtures/preflight-evidence/) showed darktable 5.4.1 doesn't
+# require per-entry iop_order; the manifest schema dropped those fields.
+# If a future dt version regresses, restore the field-validation tests
+# alongside the synthesizer changes.

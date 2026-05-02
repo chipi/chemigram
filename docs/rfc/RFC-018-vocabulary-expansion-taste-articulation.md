@@ -1,10 +1,10 @@
 # RFC-018 — Vocabulary expansion for expressive taste articulation
 
-> Status · Draft v0.1
+> Status · Draft v0.2
 > TA anchor ·/components/synthesizer ·/components/mcp-server ·/constraints
 > Related · RFC-001, RFC-007, RFC-012, ADR-001, ADR-009, ADR-051, ADR-008
-> Closes into · ADR-063 (Path B iop_order strategy), ADR-064 (Phase 1.2 vocabulary
->               authoring workflow)
+> Closes into · ADR-063 (Path B unblocking + empirical evidence on iop_order),
+>               ADR-064 (Phase 1.2 vocabulary authoring workflow)
 > Phase · Phase 1.2 — vocabulary expansion. Slice-and-gate work that lands
 >         before Phase 2's use-driven authoring begins. Ships as v1.2.0.
 > Why this is an RFC · The vocabulary currently ships five entries covering
@@ -14,11 +14,32 @@
 >                      requires roughly 20 distinct parameter dimensions.
 >                      Half can be addressed by authoring .dtstyle entries for
 >                      modules already in the baseline (Path A, unblocked).
->                      The other half require Path B new-instance addition, which
->                      currently raises NotImplementedError because iop_order is
->                      absent from darktable 5.4.1 .dtstyle files (RFC-001 open
->                      question). This RFC argues the iop_order strategy and the
->                      full v1.2.0 vocabulary expansion plan across both paths.
+>                      The other half require Path B new-instance addition,
+>                      which previously raised NotImplementedError per ADR-051.
+>                      Empirical evidence (collected during v0.2 of this RFC,
+>                      see ``tests/fixtures/preflight-evidence/``) shows
+>                      darktable 5.4.1 does **not** require per-entry
+>                      ``iop_order`` for Path B — overturning RFC-001's prior
+>                      assumption. This RFC commits to the simplified Path B
+>                      implementation and the v1.2.0 vocabulary expansion plan.
+
+## v0.2 changes
+
+- **Strategy X (probe-iop-order workflow) dropped.** Empirical evidence
+  shows darktable 5.4.1 resolves pipeline order from the description-level
+  ``iop_order_version`` + its internal iop_list; per-entry ``iop_order``
+  is unnecessary for Path B. See "The iop_order question, resolved" below.
+- **ADR-063 simplified.** Was "Path B iop_order strategy"; now closes the
+  RFC-001 iop_order open question with the empirical evidence + commits
+  to the trivial implementation (``iop_order=None`` for new entries).
+- **Probe script + manifest schema fields removed** from the plan.
+  Path B authoring is now: capture .dtstyle in darktable → drop into pack
+  → add manifest entry → done. No probe step.
+- **Pre-flight 1 retained** as a separate question (``colorbalancergb``
+  axis composition under SET-replace) — unrelated to ``iop_order``.
+- **Pre-flight 2 closed.** Empirical evidence covers the ``localcontrast``
+  multi-instance case (``temperature``, ``exposure``, ``channelmixerrgb``
+  all confirmed at ``multi_priority=1``).
 
 ---
 
@@ -120,191 +141,135 @@ to a real photographer's workflow:
 
 ---
 
-## Pre-flight experiments
+## The iop_order question, resolved
 
-Two questions must be resolved by darktable authoring experiment **before** the
-proposed approach can be finalized. These are not "open questions to deliberate";
-they're empirical preconditions that decide the structure of the entry table.
-Authoring 11 entries that turn out to clobber each other is wasted work, so the
-experiments come first.
+RFC-001 / ADR-051 deferred Path B because Phase 0 evidence suggested
+darktable would silently drop new-instance entries that lacked an
+``iop_order`` value. This RFC's v0.1 inherited that assumption and built
+a probe-iop-order workflow + manifest schema fields around it.
 
-### Pre-flight 1: `colorbalancergb` axis independence
+**v0.2 finding:** that assumption is wrong for darktable 5.4.1.
 
-`colorbalancergb` is a single darktable module whose `op_params` is a single
-opaque hex blob encoding *all* its parameters together: master saturation,
-vibrance, per-channel HSL (red/green/blue × hue/sat), 4-way color grading
-(shadows/midtones/highlights × hue/sat), brilliance, contrast — everything. When
-darktable serializes a `colorbalancergb` entry to `.dtstyle`, it captures the
-*full* module state at export time. Per ADR-002 SET semantics, applying two
-`colorbalancergb` entries in sequence means the second's blob replaces the first's
-entirely — including any axes the second entry didn't intend to touch.
+Five Path B scenarios were tested against the Phase 0 raw with
+``iop_order`` *absent* from per-entry metadata (only the description-level
+``darktable:iop_order_version="4"`` set):
 
-**Concrete risk:** apply `sat_boost_strong` (intent: saturation only), then apply
-`grade_highlights_warm` (intent: highlight color only). The second entry's
-captured saturation values overwrite the first's. Photographer believes they
-composed two moves; in reality the second wiped the first.
+| Scenario | Module | Form | Result |
+|-|-|-|-|
+| 1 | ``vignette`` | new operation (not in baseline) | applied ✓ |
+| 2 | ``grain`` | new operation | applied ✓ |
+| 3 | ``exposure`` | new instance at ``multi_priority=1`` | applied ✓ |
+| 4 | ``temperature`` | new instance at ``multi_priority=1`` | applied ✓ |
+| 5 | ``channelmixerrgb`` | new instance at ``multi_priority=1`` | applied ✓ |
 
-**Experiment to run before authoring:** in darktable's style editor, capture two
-`colorbalancergb` entries that touch different axes. Apply both via the synthesizer
-and inspect the resulting blob. If the second entry's non-touched axes default to
-neutral values, axes are *not* independent — entries clobber. If darktable's
-authoring workflow produces blobs that preserve "untouched" axes by some mechanism
-(presets, partial-export flag, copy-style-elements dialog), entries can compose.
+Evidence committed to ``tests/fixtures/preflight-evidence/`` with a
+runnable reproducer script. Each rendered output's bytes differ from the
+baseline render — a silent drop would have produced identical output.
+
+**Conclusion:** darktable 5.4.1 resolves pipeline order from the
+description-level ``iop_order_version`` + its internal iop_list,
+regardless of whether per-entry ``iop_order`` is present. Path B can
+ship with ``iop_order=None`` for all new entries; the ``HistoryEntry``
+field stays Optional in the engine; no probe-iop-order workflow is
+needed; no manifest schema extension is needed.
+
+**Forward risk.** If a future darktable version regresses to "drops
+entries without iop_order," RFC-018 can reopen and re-introduce the
+probe workflow. RFC-007 (modversion drift handling) covers the
+detection path. Until then, the simplification stands.
+
+## Pre-flight experiment (one remaining)
+
+### `colorbalancergb` axis independence
+
+Separate question, unrelated to ``iop_order``. Resolved by darktable
+authoring experiment before authoring the 11 colorbalancergb entries.
+
+`colorbalancergb` is a single darktable module whose `op_params` is a
+single opaque hex blob encoding *all* its parameters together: master
+saturation, vibrance, per-channel HSL (red/green/blue × hue/sat), 4-way
+color grading (shadows/midtones/highlights × hue/sat), brilliance,
+contrast — everything. When darktable serializes a `colorbalancergb`
+entry to `.dtstyle`, it captures the *full* module state at export time.
+Per ADR-002 SET semantics, applying two `colorbalancergb` entries in
+sequence means the second's blob replaces the first's entirely —
+including any axes the second entry didn't intend to touch.
+
+**Concrete risk:** apply `sat_boost_strong` (intent: saturation only),
+then apply `grade_highlights_warm` (intent: highlight color only). The
+second entry's captured saturation values overwrite the first's.
+Photographer believes they composed two moves; in reality the second
+wiped the first.
+
+**Experiment to run before authoring:** in darktable's style editor,
+capture two `colorbalancergb` entries that touch different axes. Apply
+both via the synthesizer and inspect the resulting blob. If the second
+entry's non-touched axes default to neutral values, axes are *not*
+independent — entries clobber. If darktable's authoring workflow
+produces blobs that preserve "untouched" axes by some mechanism
+(presets, partial-export flag, copy-style-elements dialog), entries
+can compose.
 
 **Branching:**
 
-- **If axes compose:** the entry table below stands. Discrete per-axis entries are
-  authored as listed.
-- **If axes clobber:** ~11 of the 19 Path B entries restructure as multi-axis
-  "profiles" — e.g., `cb_vangogh_palette` covering sat + grade + per-channel HSL
-  together. Composition is at the profile level, not the axis level.
+- **If axes compose:** the entry table below stands. Discrete per-axis
+  entries are authored as listed.
+- **If axes clobber:** ~11 of the 19 Path B entries restructure as
+  multi-axis "profiles" — e.g., `cb_vangogh_palette` covering sat +
+  grade + per-channel HSL together. Composition is at the profile
+  level, not the axis level.
 
 Either outcome is shippable; this experiment decides which.
 
-### Pre-flight 2: `localcontrast` instance independence
-
-`localcontrast` is a different shape: it's expected to support *multiple
-simultaneous instances* via `multi_priority`, where each instance carries its own
-parameters. So `clarity_strong` and `clarity_painterly` would coexist as separate
-`(operation="localcontrast", multi_priority=N)` entries rather than clobber.
-
-**Experiment to run before authoring:** capture a `clarity_strong` entry at
-`multi_priority=0`, and a `clarity_painterly` entry at `multi_priority=1`. Verify
-both apply via the synthesizer and the rendered output reflects both. Lower
-priority than Pre-flight 1 because the failure mode is just "same shape as
-colorbalancergb" — covered by Pre-flight 1's branching.
-
 ### Where pre-flight results land
 
-Both experiments are run before any Path B authoring begins. Results are recorded
-in **ADR-063**'s "experiment evidence" section before the ADR is marked Accepted.
-The entry table in this RFC is updated *after* the experiments, with the structure
-the experiments validate.
+The experiment is run before colorbalancergb authoring begins. Result
+recorded in **ADR-063**'s evidence section. The entry table in this
+RFC is updated *after* the experiment, with the structure it validates.
 
 ---
 
 ## Proposed approach
 
-### Part 1: iop_order strategy for Path B
+### Part 1: Path B synthesizer implementation
 
-The fundamental problem: darktable 5.4.1 does not write `<iop_order>` into
-`.dtstyle` files. A `.dtstyle` produced by darktable's style editor contains
-`<plugin>` entries with `op_params`, `blendop_params`, `operation`, `multi_priority`,
-and `multi_name` — but no `iop_order` element. RFC-001 observed this empirically
-in Phase 0.
-
-ADR-009 anticipated this would be solved by "copying from the .dtstyle file's
-`<iop_order>` element" — but that element is absent. Three strategies exist:
-
-**Strategy X — XMP probe (proposed).**
-During vocabulary authoring, run a darktable-cli render with the relevant module
-active and inspect the resulting XMP sidecar. darktable writes the full history
-including `iop_order` values for every module into the sidecar. Extract the
-iop_order for the target operation from this probe XMP. Store it in the vocabulary
-manifest entry alongside the .dtstyle path.
-
-```json
-{
-  "name": "grain_heavy",
-  "layer": "L3",
-  "subtype": "grain",
-  "path": "layers/L3/grain/grain_heavy.dtstyle",
-  "touches": ["grain"],
-  "iop_order": 47.4747,
-  "iop_order_source": "xmp_probe",
-  "iop_order_darktable_version": "5.4.1",
-  ...
-}
-```
-
-The synthesizer reads `iop_order` from the manifest entry (not from the .dtstyle
-file itself) when executing Path B. The authoring script (`scripts/probe-iop-order.sh`)
-automates the probe: given a raw file and a .dtstyle, it renders, parses the sidecar,
-extracts iop_order for the specified operation, and writes it into the manifest.
-
-Stability: iop_order values are determined by darktable's module pipeline order,
-which is stable within a major version and changes only when darktable explicitly
-reorders its pipeline (rare, usually announced). The manifest tracks the darktable
-version at authoring time (`iop_order_darktable_version`). RFC-007 (modversion drift)
-handles the validation/warning path when darktable versions diverge.
-
-**Strategy Y — static lookup table.**
-Maintain a hardcoded dict `{(operation, modversion): iop_order}` in the engine,
-populated by reading darktable's source or iop_order registry. This is accurate but
-brittle: darktable's pipeline order is not part of its public API, the table would
-need manual maintenance per darktable release, and it couples the engine to internal
-darktable implementation details.
-
-**Strategy Z — runtime probe per apply.**
-When Path B is triggered and iop_order is unknown, run a quick darktable-cli probe
-at apply time to extract the value. Correct but adds latency to every first apply
-of a Path B primitive and requires a raw file available at apply time (not always
-guaranteed, especially in test environments).
-
-**Proposed: Strategy X.** The probe happens once at authoring time, not at apply
-time. The result is stored in the manifest alongside the .dtstyle. The synthesizer
-reads it from the manifest. This keeps the hot path (apply_primitive) free of
-darktable invocations and makes iop_order an explicit, inspectable part of the
-vocabulary manifest — not implicit engine knowledge.
-
-Authoring requirement: the `scripts/probe-iop-order.sh` script must be run as part
-of vocabulary authoring for Path B entries. This is a workflow constraint, not a
-code constraint. CONTRIBUTING.md documents it.
-
-### Part 2: Path B synthesizer implementation
-
-Once iop_order is available in the manifest, `synthesize_xmp` can implement Path B.
-The `NotImplementedError` block becomes:
+With the iop_order question resolved (see "The iop_order question, resolved"
+above), Path B becomes a trivial append:
 
 ```python
-# Path B — append new instance
-# iop_order must be present in the entry's manifest metadata.
-# Callers (apply_primitive tool) are responsible for ensuring the
-# VocabEntry was loaded with iop_order from the manifest.
-if entry.iop_order is None:
-    raise VocabEntryMissingIopOrder(
-        f"Path B entry {entry.name!r} has no iop_order; "
-        "re-author using scripts/probe-iop-order.sh"
-    )
+# Path B — append new instance. dt 5.4.1 resolves pipeline order from
+# the description-level iop_order_version + internal iop_list, so
+# per-entry iop_order stays None.
 new_entry = HistoryEntry(
     num=max(e.num for e in baseline_xmp.history) + 1,
     operation=plugin.operation,
     enabled=True,
     modversion=plugin.modversion,
-    multi_name="",
+    multi_name=plugin.multi_name,
     multi_priority=plugin.multi_priority,
     op_params=plugin.op_params,
     blendop_params=plugin.blendop_params,
     blendop_version=plugin.blendop_version,
-    iop_order=entry.iop_order,
+    iop_order=None,
 )
 new_history = baseline_xmp.history + (new_entry,)
 new_history_end = baseline_xmp.history_end + 1
 ```
 
-`VocabEntry` gains an optional `iop_order: float | None` field. `VocabularyIndex`
-loads it from the manifest. No changes to `DtstyleEntry` or the parser (the probe
-result lives in the manifest, not the .dtstyle).
+No new `VocabEntry` field. No probe step. No manifest schema extension.
+The existing `_plugin_to_history` helper already produces a `HistoryEntry`
+with `iop_order=None`; Path B's append branch just uses it.
 
-**Latent type bug to fix as part of Path B work.** The existing
-`HistoryEntry.iop_order` field in `src/chemigram/core/xmp.py` (line 88) is typed
-`int | None`, parsed via `_int_attr` at line 170. darktable's actual `iop_order`
-values are floats (e.g., `47.4747` — the example in this RFC's Strategy X). The
-field is currently dormant-buggy because dt 5.4.1 writes no `iop_order` to
-`.dtstyle` files, so the int parse path is never exercised. Path B wakes it up.
+**Latent type bug** (already shipped, see issue #42): the existing
+`HistoryEntry.iop_order` field was typed `int | None` and parsed via
+`_int_attr`. darktable's `iop_order` values are floats when present
+(though absent in dt 5.4.1's `.dtstyle` files and `<rdf:li>` entries
+when not set). Fixed by changing the field to `float | None` and adding
+a `_float_attr` helper. Independent of this RFC's iop_order resolution
+— sidecars and rendered embedded XMP can still surface floats; the
+parser must handle them.
 
-The fix is part of this RFC's implementation:
-
-- `HistoryEntry.iop_order: int | None` → `float | None`
-- Parser uses `_float_attr` (or equivalent), not `_int_attr`
-- `VocabEntry.iop_order` declared `float | None` from the start
-- `synthesize_xmp`'s Path B branch passes the float through verbatim
-
-Tests for the fix: parser round-trips a sidecar XMP containing float
-`iop_order` values (the probe outputs are exactly such sidecars), and the
-synthesizer's new Path B unit tests cover the float-typed append path.
-
-### Part 3: v1.2.0 vocabulary plan
+### Part 2: v1.2.0 vocabulary plan
 
 The full parameter map from the taste-library research, organized by path and
 priority. All 35 new entries ship in a new pack at
@@ -370,16 +335,21 @@ the rationale.
 
 #### Authoring workflow for Path B entries
 
+Same as Path A — the iop_order resolution removes the probe step:
+
 1. Open darktable. Load a reference raw file (the same one used for vocabulary
    calibration — `tests/fixtures/` includes suitable examples).
 2. Enable the target module (e.g., grain). Dial in the desired parameters.
 3. Export as `.dtstyle` to `vocabulary/packs/expressive-baseline/layers/L3/<subtype>/<name>.dtstyle`.
-4. Run `scripts/probe-iop-order.sh <raw_file> <dtstyle_path> <operation>`.
-   The script outputs the iop_order value and patches it into a manifest stub.
-5. Add the manifest entry to `vocabulary/packs/expressive-baseline/manifest.json`
-   with `iop_order` and `iop_order_source: "xmp_probe"` and
-   `iop_order_darktable_version`.
-6. Run vocabulary CI (`make vocab-check`) to validate.
+4. Add the manifest entry to `vocabulary/packs/expressive-baseline/manifest.json`
+   with the standard fields (`name`, `layer`, `path`, `touches`,
+   `darktable_version`, etc.).
+5. Run vocabulary CI (`make vocab-check`) to validate.
+
+The synthesizer's Path B implementation handles the rest: when the
+agent applies the entry, the synthesizer detects the new
+`(operation, multi_priority)` tuple and appends a `HistoryEntry` with
+`iop_order=None`. darktable resolves pipeline position at render time.
 
 This workflow is documented in full in CONTRIBUTING.md § Vocabulary authoring.
 
@@ -387,17 +357,26 @@ This workflow is documented in full in CONTRIBUTING.md § Vocabulary authoring.
 
 ## Alternatives considered
 
-**Alternative iop_order strategy: parse darktable's C source to build a static
-table.** darktable maintains a `iop_order_version` system with a C-struct iop_list.
-This could be parsed to produce a definitive lookup. Rejected: couples Chemigram to
-darktable internals not exposed as a public API; would require maintenance per
-darktable release; brittle to pipeline reorderings that don't bump iop_order_version.
+**Strategy X — XMP probe at authoring time** (RFC-018 v0.1's proposal).
+During vocabulary authoring, run a darktable-cli render with the
+relevant module active and inspect the resulting XMP sidecar to extract
+`iop_order` for the target operation. Store it in the vocabulary
+manifest. The synthesizer reads it from the manifest at apply time.
+Rejected in v0.2 because the empirical evidence shows darktable 5.4.1
+doesn't require per-entry `iop_order` — Strategy X would ship
+infrastructure (probe script, manifest schema fields, validator rules)
+that solves a non-problem.
 
-**Alternative iop_order strategy: embed iop_order in the .dtstyle file manually.**
-When authoring, manually add an `<iop_order>` element to the .dtstyle XML. Rejected:
-requires vocabulary authors to know the exact float value, which they can't determine
-without running the probe anyway. Storing it in the manifest (alongside the .dtstyle)
-is cleaner separation.
+**Strategy Y — static lookup table** (parse darktable's C source).
+Maintain a hardcoded dict `{(operation, modversion): iop_order}` in the
+engine. Rejected: couples Chemigram to darktable internals not exposed
+as a public API; would require maintenance per darktable release;
+brittle to pipeline reorderings that don't bump iop_order_version.
+
+**Strategy Z — runtime probe per apply.** Run darktable-cli at apply
+time when iop_order is unknown. Rejected: adds latency to every first
+apply of a Path B primitive, requires a raw at apply time (not always
+available, especially in test environments).
 
 **Alternative vocabulary strategy: defer Path B entirely, expand Path A only.**
 The five Path A wins (B&W, sigmoid, highlights) are real and immediately useful. We
@@ -426,23 +405,30 @@ L2 entry alongside the discrete L3 primitives.
 
 ## Trade-offs
 
-**The probe workflow adds a step to Path B authoring.** Authors can't just dial in
-darktable and export — they must also run the probe script. Mitigated by
-automation: the script is one line and produces the manifest stub directly.
+**Trust in the empirical finding.** The simplification rests on five
+empirical scenarios (vignette, grain, exposure mp=1, temperature mp=1,
+channelmixerrgb mp=1) confirming Path B works without per-entry
+`iop_order` in dt 5.4.1. We didn't test every module; if a module
+exists where darktable does silently drop iop_order-less entries, that
+specific module would need Strategy X re-introduced. Mitigation: each
+authored Path B entry's e2e test asserts direction-of-change against
+real bytes — so any silently-dropped entry surfaces as a test failure
+during authoring, not in production.
 
-**iop_order in the manifest is version-pinned to the darktable version at authoring
-time.** If darktable reorders its pipeline in a future version, Path B entries
-authored against the old order will silently apply at the wrong pipeline position.
-The `iop_order_darktable_version` field enables RFC-007's drift detection to catch
-this. Real risk: darktable's pipeline order has been stable across 5.x; this is a
-low-frequency concern.
+**Pipeline-order drift in future darktable versions.** All entries are
+authored against darktable 5.4.1's iop_order_version=4. If a future
+darktable bumps `iop_order_version` and reorders modules in its
+internal iop_list, vocabulary entries may render at a different
+pipeline position than intended. RFC-007 (modversion drift) handles
+the detection + warning path. Real risk: darktable's pipeline order
+has been stable across 5.x; this is a low-frequency concern.
 
-**40 vocabulary entries is a meaningful authoring investment.** The 16 Path A entries
-are straightforward; the 19 Path B entries each require the probe workflow. The
-v1.2.0 plan in IMPLEMENTATION.md should phase the work internally: pre-flight
-experiments first, then ADR-063 implementation + probe script, then Path A authoring
-(immediate wins, no engine dependency), then Path B grouped by module (all grain
-entries together, all colorbalancergb entries together, etc.).
+**40 vocabulary entries is a meaningful authoring investment.** The
+16 Path A entries are straightforward; the 19 Path B entries follow
+the same workflow now (no probe step). The v1.2.0 plan in
+IMPLEMENTATION.md phases the work internally: pre-flight 1 (cb axis
+test) first, then ADR-063 implementation, then Path A authoring
+(immediate wins), then Path B grouped by module.
 
 **colorbalancergb covers many parameter dimensions.** Saturation, vibrance, HSL per
 channel, and color grading all live in the same module. A single `sat_boost_strong`
@@ -454,17 +440,14 @@ entry table restructures as multi-axis profiles before authoring.
 
 ### Costs and risks
 
-This is a v1.2.0 milestone, not a free upgrade. Honest accounting:
+This is a v1.2.0 milestone, not a free upgrade. Updated accounting after
+the v0.2 simplification:
 
 - **35 new e2e render tests.** Per `docs/testing.md`, every shipped primitive
   has an e2e render assertion against real darktable. 35 entries × one assertion
   each = 35 new e2e tests. Wall-clock for the full e2e suite grows from ~90s to
   an estimated 3–4 minutes. Acceptable for `make test-e2e` (gated, not in CI per
   ADR-040), but the suite-time line crosses into "non-trivial."
-
-- **35 probe runs at authoring time.** Each Path B entry requires
-  `scripts/probe-iop-order.sh`. Mitigated by automation but it's still 19
-  authoring sessions × probe step.
 
 - **Mode A prompt rework.** The agent currently sees 5 entries via
   `list_vocabulary`. With 40, the prompt's vocabulary-presentation section needs
@@ -476,17 +459,16 @@ This is a v1.2.0 milestone, not a free upgrade. Honest accounting:
   darktable 5.4.1. If darktable bumps a module's `modversion` or reorders its
   pipeline, all 40 entries are simultaneously vulnerable to re-validation work.
   Spreading authoring over Phase 2 would have spread this risk across time.
-  Mitigation: `iop_order_darktable_version` in each manifest entry, plus RFC-007
-  (modversion drift) handling at load time. RFC-007 is still open; it should
-  close before or alongside RFC-018.
+  Mitigation: each entry's manifest carries `darktable_version: "5.4"`, plus
+  RFC-007 (modversion drift) handling at load time. RFC-007 is still open;
+  it should close before or alongside RFC-018.
 
-- **Time investment.** Realistic estimate: pre-flight experiments (~1 day), engine
-  unblock + probe + ADR-063/064 (~3 days), Path A authoring ×16 (~2–3 days at
-  ~8 entries/day), Path B authoring ×19 (~4–5 days, slower per entry due to
-  probe + per-module calibration), e2e tests for all 35 (~2 days, mostly
-  parallelizable with authoring), Mode A prompt v3 + final polish (~1 day).
-  **Total estimate: ~13–15 working days for v1.2.0.** This is a real milestone,
-  not a side project.
+- **Time investment.** Updated estimate post-simplification: pre-flight 1
+  (colorbalancergb axis test) ~0.5 day, engine unblock (synthesizer Path B
+  + ADR-063) ~1 day, Path A authoring ×16 ~2–3 days, Path B authoring ×19
+  ~3–4 days (no probe step), e2e tests for all 35 ~2 days (parallelizable),
+  Mode A prompt v3 + ADR-064 + polish ~1 day. **Total estimate: ~10–12
+  working days for v1.2.0** (down from 13–15 in v0.1).
 
 ### Pack location
 
@@ -512,25 +494,18 @@ default-on installation.
 
 ## Open questions
 
-(Pre-flight 1 + Pre-flight 2 above are *not* open questions; they're empirical
-preconditions that block the entry table's structure and must be resolved by
-darktable authoring experiment before authoring begins. The questions below are
-real deliberation items that can be settled in the closing ADRs.)
+(Pre-flight 1 above is *not* an open question; it's an empirical
+precondition that blocks the entry table's structure and must be resolved
+by darktable authoring experiment before authoring begins. The questions
+below are real deliberation items that can be settled in the closing ADRs.)
 
-**Q1: Does the probe script need a calibration fixture or can it use any raw?**
-iop_order values should be stable across images (they're module-order, not
-image-dependent), but this should be confirmed. Recommendation: use the same fixture
-raw file (the Phase 0 raw at `~/chemigram-phase0/raws/raw-test.NEF`) for all probes
-to ensure consistency in CI validation, with the script accepting any raw as a
-fallback.
-
-**Q2: Should L2 "artist profile" entries ship alongside the L3 primitives?**
+**Q1: Should L2 "artist profile" entries ship alongside the L3 primitives?**
 A `look_rembrandt.dtstyle` baking all Rembrandt parameters into a single L2 is
 useful for Mode B ("apply a Rembrandt-style edit to this batch"). The primitives are
 needed for Mode A negotiation. Recommendation: ship the L3 primitives first; add L2
 artist profiles as a follow-on if Mode B session evidence shows they're useful.
 
-**Q3: How should `list_vocabulary` and the Mode A prompt present 40+ entries?**
+**Q2: How should `list_vocabulary` and the Mode A prompt present 40+ entries?**
 Currently the prompt receives ~5 entries inline. With 40, options include
 list-by-tag (one section per tag), tier-categorized (L1/L2/L3 with subsections by
 subtype), or compressed (just names + one-line descriptions). Belongs in ADR-064 or
@@ -542,27 +517,29 @@ a Mode A prompt v3 sub-design.
 
 This RFC closes into two ADRs:
 
-**ADR-063 — Path B iop_order strategy.** Commits to Strategy X (manifest-stored,
-probe-derived iop_order). Specifies the manifest schema extension, the synthesizer
-change (removing `NotImplementedError`, implementing the append path with the
-`int → float` type fix on `HistoryEntry.iop_order`), and the
-`VocabEntry.iop_order` field. Includes an "experiment evidence" section recording
-the Pre-flight 1 (colorbalancergb axis independence) and Pre-flight 2
-(`localcontrast` instance independence) outcomes that decided the entry table's
-structure.
+**ADR-063 — Path B unblocking.** Closes RFC-001's iop_order open
+question with the empirical evidence in
+``tests/fixtures/preflight-evidence/``: darktable 5.4.1 doesn't require
+per-entry ``iop_order``. Documents the trivial Path B implementation
+(append `HistoryEntry` with `iop_order=None`; increment `history_end`),
+references the `HistoryEntry.iop_order: float | None` type fix, and
+records the Pre-flight 1 (colorbalancergb axis independence) outcome
+that decided the entry table structure. Supersedes ADR-051's
+"NotImplementedError until iop_order is resolved" stance.
 
-**ADR-064 — Vocabulary authoring workflow for Path B.** Documents the probe script,
-the CONTRIBUTING.md authoring steps, CI validation requirements for Path B manifest
-entries, and the Mode A prompt v3 vocabulary-presentation strategy for 40+ entries.
-Closes the gap between "author a .dtstyle" and "safely ship a Path B entry."
+**ADR-064 — Vocabulary authoring workflow.** Documents the
+CONTRIBUTING.md authoring steps for both Path A and Path B (now the
+same workflow), CI validation requirements, and the Mode A prompt v3
+vocabulary-presentation strategy for 40+ entries.
 
 The specific entries shipped in v1.2.0 are recorded in
-`vocabulary/packs/expressive-baseline/manifest.json` (the source-of-truth) and the
-v1.2.0 CHANGELOG entry. No separate ADR is needed for "what shipped" — that's
-manifest territory, not architectural decision territory.
+`vocabulary/packs/expressive-baseline/manifest.json` (the source-of-truth)
+and the v1.2.0 CHANGELOG entry. No separate ADR is needed for "what
+shipped" — that's manifest territory, not architectural decision territory.
 
-RFC-018 closes when Pre-flight 1 + Pre-flight 2 are run, ADR-063 + ADR-064 land,
-and the v1.2.0 release ships with the full expressive-baseline pack populated.
+RFC-018 closes when Pre-flight 1 (colorbalancergb axes) is run, ADR-063
++ ADR-064 land, and the v1.2.0 release ships with the full
+expressive-baseline pack populated.
 
 ---
 
@@ -579,6 +556,7 @@ and the v1.2.0 release ships with the full expressive-baseline pack populated.
 - ADR-024 — authoring discipline; underpins keeping `/starter` minimal
 - `docs/IMPLEMENTATION.md` — Phase 1.2 row tracks this RFC's milestone
 - `docs/TODO.md` — "Programmatic vocabulary entry generation" and color science items
+- `tests/fixtures/preflight-evidence/` — the empirical evidence that overturned RFC-018 v0.1's iop_order assumption
 - `vocabulary/starter/manifest.json` — minimal starter pack (5 entries, unchanged in v1.2.0)
 - `vocabulary/packs/expressive-baseline/manifest.json` — v1.2.0 expansion (35 new entries)
 - taste-library POC research — the artist profiles driving the parameter map
