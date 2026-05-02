@@ -201,3 +201,21 @@ def ingest_workspace(
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def append_markdown(target: Path, content: str) -> None:
+    """Append a markdown block to ``target``, separated from prior content.
+
+    Used by both adapters to write taste/notes updates. Adds a leading
+    blank line if the file already has content, and a trailing newline
+    if the content doesn't end with one. Creates parent directories
+    as needed. Single-process write — concurrent invocations against
+    the same file may interleave. Adapters that need stronger guarantees
+    take their own locks.
+    """
+    target.parent.mkdir(parents=True, exist_ok=True)
+    suffix = "" if content.endswith("\n") else "\n"
+    with target.open("a", encoding="utf-8") as fh:
+        if target.stat().st_size > 0:
+            fh.write("\n")
+        fh.write(content + suffix)

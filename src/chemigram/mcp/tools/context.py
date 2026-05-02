@@ -21,7 +21,7 @@ from typing import Any
 from uuid import uuid4
 
 from chemigram.core.context import Brief, Notes, RecentGaps, RecentLog, Tastes
-from chemigram.core.workspace import tastes_dir
+from chemigram.core.workspace import append_markdown, tastes_dir
 from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
     ToolResult,
@@ -181,7 +181,7 @@ async def _confirm_taste_update(
     target_dir = tastes_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / (proposal.target_file or "_default.md")
-    _append_markdown(target, proposal.content)
+    append_markdown(target, proposal.content)
     _record_transcript_confirmation(ctx, proposal_id)
     del ctx.proposals[proposal_id]
 
@@ -260,7 +260,7 @@ async def _confirm_notes_update(
         return ToolResult.fail(error_not_found(f"image {proposal.image_id!r}"))
 
     target = workspace.root / "notes.md"
-    _append_markdown(target, proposal.content)
+    append_markdown(target, proposal.content)
     _record_transcript_confirmation(ctx, proposal_id)
     del ctx.proposals[proposal_id]
 
@@ -283,13 +283,3 @@ register_tool(
     },
     handler=_confirm_notes_update,
 )
-
-
-def _append_markdown(target: Any, content: str) -> None:
-    """Append content with a leading separator + trailing newline."""
-    target.parent.mkdir(parents=True, exist_ok=True)
-    suffix = "" if content.endswith("\n") else "\n"
-    with target.open("a", encoding="utf-8") as fh:
-        if target.stat().st_size > 0:
-            fh.write("\n")
-        fh.write(content + suffix)
