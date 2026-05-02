@@ -246,6 +246,35 @@ The index validates eagerly: the dtstyle file must exist relative to `pack_root`
 
 `list_vocabulary` filters `tags` as OR (any match). Document the pack-level expectation if you stack tags meaningfully.
 
+### v1.2.0+ — multi-pack loading
+
+Starting v1.2.0 (RFC-018), `VocabularyIndex` accepts a list of pack roots. The conventional load is:
+
+```python
+from chemigram.core.vocab import load_packs
+vocab = load_packs(["starter", "expressive-baseline"])
+```
+
+`"starter"` resolves to the bundled minimal teaching pack (5 entries). Other names resolve to `~/.chemigram/packs/<name>/` (per-photographer override) or `vocabulary/packs/<name>/` (in-repo, editable installs). Cross-pack name collisions raise `ManifestError` with both pack roots in the message — pack names are namespaces; collisions are authoring bugs.
+
+### v1.2.0+ — Path A and Path B authoring procedure
+
+Per ADR-064, both Path A (modules already in the baseline XMP) and Path B (new modules / new instances) follow the same procedure:
+
+1. Open darktable with a clean, isolated configdir per § "Use an isolated configdir for vocabulary work" above.
+2. Discard history. Enable target module. Dial in the move.
+3. Export as `.dtstyle`, **unchecking non-target modules in the create-style dialog** (the discipline above; produces single-module dtstyles).
+4. Drop the file into the right pack subdirectory (`vocabulary/packs/expressive-baseline/layers/L<n>/<subtype>/<name>.dtstyle` for the shipped expansion pack; `~/.chemigram/packs/personal/layers/...` for personal entries).
+5. Append a manifest entry with the standard fields (`name`, `layer`, `path`, `touches`, `description`, `modversions`, `darktable_version`, `source`, `license`).
+6. Run `make vocab-check` to verify the manifest is well-formed.
+7. Run `make test-e2e` (or just the relevant entry's test) to verify direction-of-change against the Phase 0 raw.
+
+**No probe-iop-order step.** ADR-063 documents the empirical evidence that darktable 5.4.1 doesn't require per-entry `iop_order` for Path B; the synthesizer handles new instances with `iop_order=None` and darktable resolves pipeline position from the description-level `iop_order_version`. Path A and Path B authoring are visually identical.
+
+### v1.2.0+ — pixel-level assertion library
+
+Per ADR-067, `chemigram.core.assertions` provides public sRGB ↔ CIE L\*a\*b\* conversion, Delta E 2000, and assertion helpers. New e2e tests for vocabulary entries can use these against the synthetic CC24 fixtures in `tests/fixtures/reference-targets/` for absolute-color-correctness checks, alongside the existing direction-of-change helpers in `tests/e2e/conftest.py`.
+
 ### Vocabulary PR template
 
 When you open a vocabulary PR, the PR description must include:

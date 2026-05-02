@@ -77,6 +77,11 @@ ADRs come from two streams:
 | ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
 | ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
 | ADR-062 | Reset rewinds the current branch to baseline | Accepted |
+| ADR-063 | Path B unblocking; iop_order resolved as None (closes RFC-001, RFC-018) | Accepted |
+| ADR-064 | Vocabulary authoring workflow (post-v0.2) (closes RFC-018) | Accepted |
+| ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
+| ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
+| ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
 
 ## Conventions
 

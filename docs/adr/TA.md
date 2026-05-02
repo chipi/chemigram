@@ -392,7 +392,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 
 | RFC | Title | Status | Closes into |
 |-|-|-|-|
-| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
+| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes Path A); ADR-063 closes the Path B / iop_order question |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
 | RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
 | RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes) |
@@ -477,6 +477,11 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
 | ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
 | ADR-062 | Reset rewinds the current branch to baseline | Accepted |
+| ADR-063 | Path B unblocking; iop_order resolved as None (closes RFC-001, RFC-018) | Accepted |
+| ADR-064 | Vocabulary authoring workflow (post-v0.2) (closes RFC-018) | Accepted |
+| ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
+| ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
+| ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
 
 ---
 

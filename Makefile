@@ -90,8 +90,9 @@ ci:
 	uv run pytest tests/integration
 	@echo "==> [7/8] verify-prompts.sh"
 	./scripts/verify-prompts.sh
-	@echo "==> [8/8] verify-vocab.sh"
-	./scripts/verify-vocab.sh
+	@echo "==> [8/8] verify-vocab.sh (all packs)"
+	./scripts/verify-vocab.sh vocabulary/starter
+	./scripts/verify-vocab.sh vocabulary/packs/expressive-baseline
 	@echo ""
 	@echo "✅ CI parity check passed (matches ADR-040 / ci.yml)."
 

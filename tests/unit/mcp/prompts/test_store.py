@@ -122,54 +122,116 @@ def test_render_no_required_keys_works(store: PromptStore) -> None:
 
 def test_active_version_now_v2() -> None:
     real_store = PromptStore(SHIPPED_ROOT)
-    assert real_store.active_version("mode_a/system") == "v2"
+    assert real_store.active_version("mode_a/system") == "v3"
 
 
-def test_real_mode_a_v2_renders() -> None:
-    """The shipped mode_a/system_v2.j2 renders against sample context."""
+# ---------- v3 (active) ----------
+
+
+def test_real_mode_a_v3_renders() -> None:
+    """The shipped mode_a/system_v3.j2 renders against sample context."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123"},
+        {
+            "vocabulary_size": 40,
+            "image_id": "abc123",
+            "vocabulary_packs": ["starter", "expressive-baseline"],
+        },
     )
     assert "image `abc123`" in out
-    assert "vocabulary of 30 named moves" in out
-    # v2 references the real masking flow unconditionally
+    assert "vocabulary of 40 named moves" in out
+    # v3 references the real masking flow unconditionally
     assert "generate_mask" in out
     assert "regenerate_mask" in out
 
 
-def test_real_mode_a_v2_drops_masker_conditional() -> None:
-    """v2 doesn't have the v1 'masker provider isn't installed' branch."""
+def test_real_mode_a_v3_lists_loaded_packs() -> None:
+    """v3 enumerates the loaded vocabulary packs."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123"},
+        {
+            "vocabulary_size": 40,
+            "image_id": "x",
+            "vocabulary_packs": ["starter", "expressive-baseline"],
+        },
     )
-    assert "masker provider isn't installed" not in out
+    assert "`starter`" in out
+    assert "`expressive-baseline`" in out
 
 
-def test_real_mode_a_v2_references_propose_taste_categories() -> None:
-    """v2 names the category enum directly."""
+def test_real_mode_a_v3_navigating_section_present() -> None:
+    """v3 adds explicit guidance on filter-first vocabulary navigation."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123"},
+        {
+            "vocabulary_size": 40,
+            "image_id": "x",
+            "vocabulary_packs": ["starter", "expressive-baseline"],
+        },
+    )
+    assert "Navigating the vocabulary" in out
+    assert "filter-first" in out.lower() or "narrow first" in out.lower()
+
+
+def test_real_mode_a_v3_references_propose_taste_categories() -> None:
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {
+            "vocabulary_size": 40,
+            "image_id": "x",
+            "vocabulary_packs": ["starter"],
+        },
     )
     assert "appearance" in out
     assert "process" in out
     assert "value" in out
 
 
-def test_real_mode_a_v2_documents_end_session_orchestration() -> None:
-    """v2 references ADR-061's agent-orchestrated end-of-session pattern."""
+def test_real_mode_a_v3_documents_end_session_orchestration() -> None:
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123"},
+        {
+            "vocabulary_size": 40,
+            "image_id": "x",
+            "vocabulary_packs": ["starter"],
+        },
     )
     assert "`end_session` tool" in out
     assert "you orchestrate" in out or "you use the existing tools" in out
+
+
+# ---------- v2 (explicit; preserved per ADR-045) ----------
+
+
+def test_v2_still_loadable_explicitly() -> None:
+    """v2 stays on disk for eval reproducibility per ADR-045.
+
+    Note: ``context_required`` in MANIFEST.toml applies globally per prompt
+    path (not per version). v2 doesn't *use* ``vocabulary_packs`` but the
+    validator demands it; v2 silently ignores the extra key — Jinja's
+    default behavior. This is tolerable: reproducing an old version
+    explicitly only requires the new context to be passed; the old
+    template's output is unchanged.
+    """
+    real_store = PromptStore(SHIPPED_ROOT)
+    out = real_store.render(
+        "mode_a/system",
+        {
+            "vocabulary_size": 30,
+            "image_id": "abc123",
+            "vocabulary_packs": ["starter"],  # ignored by v2
+        },
+        version="v2",
+    )
+    assert "image `abc123`" in out
+    assert "vocabulary of 30 named moves" in out
+    # v2 doesn't have v3's pack enumeration section
+    assert "Navigating the vocabulary" not in out
 
 
 def test_v1_still_loadable_explicitly() -> None:
@@ -177,7 +239,12 @@ def test_v1_still_loadable_explicitly() -> None:
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
-        {"vocabulary_size": 30, "image_id": "abc123", "masker_available": True},
+        {
+            "vocabulary_size": 30,
+            "image_id": "abc123",
+            "masker_available": True,
+            "vocabulary_packs": ["starter"],  # ignored by v1
+        },
         version="v1",
     )
     assert "image `abc123`" in out

@@ -13,7 +13,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 
 | RFC | Title | Status | Closes into |
 |-|-|-|-|
-| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes); Path B / iop_order question remains open |
+| RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes Path A); ADR-063 closes the Path B / iop_order question |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
 | RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
 | RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes) |
