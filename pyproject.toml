@@ -44,7 +44,8 @@ dependencies = [
     "Pillow>=10.0",
     # Typer for the CLI adapter (RFC-020 / ADR-070; v1.3.0+). Brings Click +
     # Rich transitively. CLI is a thin wrapper over chemigram.core, mirroring
-    # the MCP tool surface verb-for-verb (ADR-071).
+    # the MCP tool surface verb-for-verb (ADR-071). uv.lock pins exact
+    # versions for CI reproducibility — no need for an upper bound here.
     "typer>=0.12",
 ]
 
@@ -147,6 +148,9 @@ ignore = [
 # B008 fires false-positive on every CLI command function.
 "src/chemigram/cli/main.py" = ["B008"]
 "src/chemigram/cli/commands/*.py" = ["B008"]
+# The CLI reference HEADER table contains long markdown rows; line-length
+# rules don't help readability for tabular data.
+"scripts/generate-cli-reference.py" = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"

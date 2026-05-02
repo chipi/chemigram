@@ -58,7 +58,9 @@ masks and snapshots, and learns across sessions. Two modes:
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
-## Quickstart
+## Quickstart — conversational (MCP)
+
+For interactive editing through Claude Desktop, Claude Code, and other MCP clients.
 
 ```bash
 # 1. install
@@ -78,6 +80,31 @@ $EDITOR ~/.chemigram/tastes/_default.md   # what you generally like
 ```
 
 For the full flow — darktable setup, MCP-client matrix (Claude Code / Desktop, Cursor, Continue, Cline, Zed, OpenAI), 10-turn worked session, troubleshooting — read **[`docs/getting-started.md`](docs/getting-started.md)**.
+
+## Quickstart — scripts and agent loops (CLI, v1.3.0+)
+
+For batch processing, shell scripts, and agent loops where MCP's session model is the wrong shape. The CLI mirrors the MCP tool surface verb-for-verb (`chemigram apply-primitive` ↔ MCP `apply_primitive`); see PRD-005 / RFC-020 for the design.
+
+```bash
+# 1. install — same as above
+pip install chemigram   # also lands `chemigram` on $PATH
+
+# 2. inspect the runtime
+chemigram status
+
+# 3. ingest a raw + apply a vocabulary entry
+export CHEMIGRAM_DT_CONFIGDIR=~/chemigram-phase0/dt-config   # see getting-started for setup
+chemigram ingest ~/Pictures/raw/iguana.NEF
+chemigram apply-primitive iguana --entry expo_+0.5
+chemigram render-preview iguana --size 1024
+chemigram export-final iguana --format jpeg
+
+# 4. machine-readable output for scripts and agents (NDJSON)
+chemigram --json apply-primitive iguana --entry wb_warm_subtle
+# {"event":"result","status":"ok","image_id":"iguana","entry":"wb_warm_subtle", ...}
+```
+
+The CLI is stateless per invocation — parallel calls against different images are safe. The image_id derives from the raw filename's stem (case-preserving): `iguana.NEF` → `iguana`, `IMG_2041.ARW` → `IMG_2041`. **Concurrent calls against the same image are not tested**; the engine writes refs without an explicit fcntl lock, so serialize at the caller level if a single image is touched by multiple subprocesses simultaneously. For the full verb surface, see [`docs/guides/cli-reference.md`](docs/guides/cli-reference.md). For driving Chemigram from a custom agent loop, see the "Agent loops" section of [`docs/getting-started.md`](docs/getting-started.md).
 
 ## How it works
 

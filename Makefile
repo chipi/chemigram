@@ -6,7 +6,7 @@
 
 .PHONY: help setup hooks test test-unit test-integration test-e2e \
         lint format typecheck check ci clean build \
-        docs-deps docs-serve docs-build docs-deploy docs-clean
+        docs-deps docs-serve docs-build docs-deploy docs-clean docs-cli
 
 # Default target: print available commands
 help:
@@ -32,6 +32,7 @@ help:
 	@echo "  make docs-serve      Live-reload docs preview at http://127.0.0.1:8000"
 	@echo "  make docs-build      Build static site into site/"
 	@echo "  make docs-deploy     (Local) push site to gh-pages — CI does this on main"
+	@echo "  make docs-cli        Regenerate docs/guides/cli-reference.md from --help"
 	@echo ""
 	@echo "  make clean           Remove caches and build artifacts"
 
@@ -76,25 +77,27 @@ check: lint typecheck test-unit
 # Per ADR-040: unit + integration tests, no E2E (E2E gated to releases
 # via scripts/pre-release-check.sh).
 ci:
-	@echo "==> [1/9] uv sync --all-extras --dev"
+	@echo "==> [1/10] uv sync --all-extras --dev"
 	uv sync --all-extras --dev
-	@echo "==> [2/9] ruff check --no-fix"
+	@echo "==> [2/10] ruff check --no-fix"
 	uv run ruff check --no-fix
-	@echo "==> [3/9] ruff format --check"
+	@echo "==> [3/10] ruff format --check"
 	uv run ruff format --check
-	@echo "==> [4/9] mypy src/chemigram"
+	@echo "==> [4/10] mypy src/chemigram"
 	uv run mypy src/chemigram
-	@echo "==> [5/9] pytest tests/unit"
+	@echo "==> [5/10] pytest tests/unit"
 	uv run pytest tests/unit
-	@echo "==> [6/9] pytest tests/integration"
+	@echo "==> [6/10] pytest tests/integration"
 	uv run pytest tests/integration
-	@echo "==> [7/9] audit-cli-imports.sh (CLI + MCP thin-wrapper discipline, ADR-071)"
+	@echo "==> [7/10] audit-cli-imports.sh (CLI + MCP thin-wrapper discipline, ADR-071)"
 	./scripts/audit-cli-imports.py
-	@echo "==> [8/9] verify-prompts.sh"
+	@echo "==> [8/10] verify-prompts.sh"
 	./scripts/verify-prompts.sh
-	@echo "==> [9/9] verify-vocab.sh (all packs)"
+	@echo "==> [9/10] verify-vocab.sh (all packs)"
 	./scripts/verify-vocab.sh vocabulary/starter
 	./scripts/verify-vocab.sh vocabulary/packs/expressive-baseline
+	@echo "==> [10/10] cli-reference sync check (RFC-020)"
+	uv run scripts/generate-cli-reference.py --check
 	@echo ""
 	@echo "✅ CI parity check passed (matches ADR-040 / ci.yml)."
 
@@ -122,6 +125,11 @@ docs-deploy: docs-deps
 
 docs-clean:
 	rm -rf site/
+
+# Regenerate docs/guides/cli-reference.md from `chemigram --help`.
+# CI runs the same script with `--check` and fails on drift.
+docs-cli:
+	uv run scripts/generate-cli-reference.py
 
 clean:
 	rm -rf dist/ build/ *.egg-info src/*.egg-info

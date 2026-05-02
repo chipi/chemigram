@@ -326,6 +326,97 @@ That's the loop. The agent can branch (`branch experimental`), checkout earlier 
 
 ---
 
+## Driving Chemigram from a script or agent loop (CLI)
+
+The CLI (v1.3.0+) exposes the same operations as the MCP server as subprocess-callable verbs. Same engine, same vocabulary, same workspace state on disk — just a different invocation surface. PRD-005 / RFC-020 cover the design.
+
+This shape is for:
+
+- **Batch processing** — `for f in *.NEF; do chemigram apply-primitive ... ; done`
+- **Agent-loop builders** — LangGraph pipelines, Claude Code scripts, custom Python loops that shell out to subprocesses rather than maintain an MCP session
+- **Watch-folder daemons and CI scripts**
+
+It's *not* for interactive editing — that's MCP's job.
+
+### Setup
+
+The `chemigram` binary lands on your `$PATH` after `pip install chemigram` (alongside `chemigram-mcp`). Point at a pre-bootstrapped darktable configdir for any verb that renders:
+
+```bash
+export CHEMIGRAM_DT_CONFIGDIR=~/chemigram-phase0/dt-config
+chemigram status   # confirms versions, packs, prompt store, output schema
+```
+
+### A minimal session
+
+```bash
+# 1. ingest a raw — creates ~/Pictures/Chemigram/iguana/ with baseline snapshot
+chemigram ingest ~/Pictures/raw/iguana.NEF
+
+# 2. apply primitives — each call snapshots the new state
+chemigram apply-primitive iguana --entry expo_+0.5
+chemigram apply-primitive iguana --entry wb_warm_subtle
+
+# 3. branch + iterate
+chemigram branch iguana --name aggressive
+chemigram apply-primitive iguana --entry expo_+0.5   # second EV bump on the branch
+
+# 4. compare
+chemigram --json get-state iguana       # capture the current hash
+chemigram checkout iguana baseline      # back to the ingest state for diff
+chemigram compare iguana baseline aggressive --size 1024
+
+# 5. final export
+chemigram checkout iguana aggressive
+chemigram export-final iguana --format jpeg
+```
+
+Every verb takes `--json` for newline-delimited JSON output suitable for scripting.
+
+### Agent-loop pattern
+
+The intended Python integration:
+
+```python
+import json
+import subprocess
+
+def chemigram(*args: str) -> dict:
+    """Call chemigram with --json; return the final summary event."""
+    result = subprocess.run(
+        ["chemigram", "--json", *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        # stderr is NDJSON in --json mode; the last line is the error event
+        err = json.loads(result.stderr.strip().splitlines()[-1])
+        raise RuntimeError(f"{err['exit_code_name']}: {err['message']}")
+    # stdout's last line is always the final result event
+    return json.loads(result.stdout.strip().splitlines()[-1])
+
+# Use it in a loop
+for raw in glob("/path/to/raws/*.NEF"):
+    chemigram("ingest", raw)
+    image_id = Path(raw).stem
+    chemigram("apply-primitive", image_id, "--entry", "expo_+0.5")
+    summary = chemigram("export-final", image_id, "--format", "jpeg")
+    print(f"exported {image_id} → {summary['output_path']}")
+```
+
+No MCP session lifecycle. No transport. Just subprocesses + structured exit codes + NDJSON. The CLI's exit codes (`SUCCESS=0`, `INVALID_INPUT=2`, `NOT_FOUND=3`, `STATE_ERROR=4`, `VERSIONING_ERROR=5`, `DARKTABLE_ERROR=6`, `MASKING_ERROR=7`, `SYNTHESIZER_ERROR=8`, `PERMISSION_ERROR=9`, `NOT_IMPLEMENTED=10`) are documented and stable; agents can branch on them without parsing stderr text.
+
+### What CLI doesn't do
+
+- **No `propose-taste-update` / `confirm-taste-update`.** Those are conversational by design — the propose/confirm dance lives between an agent and a human inside an MCP session. The CLI offers `apply-taste-update` / `apply-notes-update` as direct verbs for the agent-loop case (the agent has already decided; the CLI just writes).
+- **No mask generation.** `chemigram masks generate` and `regenerate` exit `MASKING_ERROR (7)` because the subprocess CLI has no provider wiring path today (the MCP server gets one via `build_server(masker=...)`). `masks list / tag / invalidate` work fully without a provider.
+- **No interactive REPL.** Stateless per-invocation. If you want a conversation, MCP is the surface.
+
+For the full verb surface — every command, every flag, every exit code — see [`docs/guides/cli-reference.md`](guides/cli-reference.md).
+
+---
+
 ## Where things live
 
 ```
