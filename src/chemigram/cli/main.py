@@ -12,7 +12,18 @@ from pathlib import Path
 import typer
 
 from chemigram.cli._context import CliContext
-from chemigram.cli.commands import binding, context, edit, lifecycle, status, versioning, vocab
+from chemigram.cli.commands import (
+    binding,
+    context,
+    edit,
+    export,
+    lifecycle,
+    masks,
+    render,
+    status,
+    versioning,
+    vocab,
+)
 from chemigram.cli.output import make_writer
 
 app = typer.Typer(
@@ -65,6 +76,20 @@ app.command(name="bind-layers", help="Apply L1/L2 vocabulary templates onto the 
     binding.bind_layers
 )
 
+# Render / export
+app.command(name="render-preview", help="Render a snapshot to a JPEG preview.")(
+    render.render_preview
+)
+app.command(name="compare", help="Render two snapshots and stitch them side-by-side.")(
+    render.compare
+)
+app.command(name="export-final", help="High-quality export to the workspace's exports/ dir.")(
+    export.export_final
+)
+
+# Masks (sub-app)
+app.add_typer(masks.app, name="masks", help="Inspect / tag / invalidate raster masks.")
+
 # Context
 app.command(name="read-context", help="Print the agent's first-turn context (RFC-011).")(
     context.read_context
@@ -99,6 +124,13 @@ def _global_options(
         help="Workspace root (defaults to ~/Pictures/Chemigram).",
         envvar="CHEMIGRAM_WORKSPACE",
     ),
+    configdir: Path | None = typer.Option(
+        None,
+        "--configdir",
+        help="darktable-cli configdir for renders (must be pre-bootstrapped per ADR-005). "
+        "When omitted, a temp dir is created per render — only useful for non-render verbs.",
+        envvar="CHEMIGRAM_DT_CONFIGDIR",
+    ),
     quiet: bool = typer.Option(
         False, "--quiet", "-q", help="Suppress informational events; errors still surface."
     ),
@@ -117,6 +149,7 @@ def _global_options(
     obj: CliContext = {
         "json": json,
         "workspace": workspace,
+        "configdir": configdir,
         "quiet": quiet,
         "verbose": verbose,
         "dry_run": dry_run,

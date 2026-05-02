@@ -26,16 +26,6 @@ from chemigram.mcp.tools import register_all
 # land their issues. The audit fails if this list disagrees with reality.
 _KNOWN_PENDING_VERBS: frozenset[str] = frozenset(
     {
-        # #57 — render / export
-        "render_preview",
-        "compare",
-        "export_final",
-        # #58 — masks
-        "list_masks",
-        "generate_mask",
-        "regenerate_mask",
-        "tag_mask",
-        "invalidate_mask",
         # MCP-only by design (conversational propose/confirm pattern; the
         # CLI offers `apply-taste-update` / `apply-notes-update` instead
         # of mirroring these. RFC-020 amendment in #61).

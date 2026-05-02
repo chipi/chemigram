@@ -18,6 +18,7 @@ class CliContext(TypedDict):
 
     json: bool
     workspace: Path | None
+    configdir: Path | None
     quiet: bool
     verbose: int
     dry_run: bool

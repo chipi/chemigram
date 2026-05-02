@@ -66,7 +66,8 @@ def resolve_workspace_or_fail(ctx: typer.Context, image_id: str) -> Workspace:
 
     Shared helper for every CLI verb that takes an ``image_id``. Pulls
     the workspace root from the global ``--workspace`` flag (default
-    ``~/Pictures/Chemigram``).
+    ``~/Pictures/Chemigram``) and the darktable configdir from the
+    global ``--configdir`` flag / ``CHEMIGRAM_DT_CONFIGDIR`` env var.
     """
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
@@ -80,4 +81,8 @@ def resolve_workspace_or_fail(ctx: typer.Context, image_id: str) -> Workspace:
             workspace_root=str(workspace_root),
         )
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
+    # Inject the global --configdir into the workspace so render verbs
+    # (and any future verbs that need it) pick it up via workspace.configdir.
+    if obj["configdir"] is not None:
+        workspace.configdir = obj["configdir"]
     return workspace
