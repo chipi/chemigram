@@ -42,6 +42,10 @@ dependencies = [
     # violate BYOA (ADR-007) or dt-orchestration-only (ADR-014). When Slice 4
     # adds the masking pipeline, Pillow gets reused for raster mask handling.
     "Pillow>=10.0",
+    # Typer for the CLI adapter (RFC-020 / ADR-070; v1.3.0+). Brings Click +
+    # Rich transitively. CLI is a thin wrapper over chemigram.core, mirroring
+    # the MCP tool surface verb-for-verb (ADR-071).
+    "typer>=0.12",
 ]
 
 [project.optional-dependencies]
@@ -73,6 +77,7 @@ docs = [
 
 [project.scripts]
 chemigram-mcp = "chemigram.mcp.server:main"
+chemigram = "chemigram.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/chipi/chemigram"
@@ -137,6 +142,11 @@ ignore = [
 "tests/fixtures/reference-targets/generate_synthetic.py" = ["N802", "N803", "N806"]
 "tests/integration/test_reference_synthetic.py" = ["N802", "N803", "N806"]
 "tests/unit/core/test_assertions.py" = ["N802", "N803", "N806"]
+# Typer's API is built on `typer.Option(...)` and `typer.Argument(...)` as
+# argument defaults — that's the canonical idiom (RFC-020 / ADR-070).
+# B008 fires false-positive on every CLI command function.
+"src/chemigram/cli/main.py" = ["B008"]
+"src/chemigram/cli/commands/*.py" = ["B008"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -163,6 +173,15 @@ module = ["chemigram.mcp.*", "tests.*"]
 strict = false
 warn_return_any = false
 disallow_untyped_defs = false
+
+# CLI is a thin wrapper using Typer; Typer's decorators are untyped at
+# the wrapped-function level, so disallow_untyped_decorators must be off.
+[[tool.mypy.overrides]]
+module = "chemigram.cli.*"
+strict = false
+warn_return_any = false
+disallow_untyped_defs = false
+disallow_untyped_decorators = false
 
 # Third-party libraries that may not have stubs
 [[tool.mypy.overrides]]

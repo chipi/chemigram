@@ -76,21 +76,23 @@ check: lint typecheck test-unit
 # Per ADR-040: unit + integration tests, no E2E (E2E gated to releases
 # via scripts/pre-release-check.sh).
 ci:
-	@echo "==> [1/8] uv sync --all-extras --dev"
+	@echo "==> [1/9] uv sync --all-extras --dev"
 	uv sync --all-extras --dev
-	@echo "==> [2/8] ruff check --no-fix"
+	@echo "==> [2/9] ruff check --no-fix"
 	uv run ruff check --no-fix
-	@echo "==> [3/8] ruff format --check"
+	@echo "==> [3/9] ruff format --check"
 	uv run ruff format --check
-	@echo "==> [4/8] mypy src/chemigram"
+	@echo "==> [4/9] mypy src/chemigram"
 	uv run mypy src/chemigram
-	@echo "==> [5/8] pytest tests/unit"
+	@echo "==> [5/9] pytest tests/unit"
 	uv run pytest tests/unit
-	@echo "==> [6/8] pytest tests/integration"
+	@echo "==> [6/9] pytest tests/integration"
 	uv run pytest tests/integration
-	@echo "==> [7/8] verify-prompts.sh"
+	@echo "==> [7/9] audit-cli-imports.sh (CLI + MCP thin-wrapper discipline, ADR-071)"
+	./scripts/audit-cli-imports.py
+	@echo "==> [8/9] verify-prompts.sh"
 	./scripts/verify-prompts.sh
-	@echo "==> [8/8] verify-vocab.sh (all packs)"
+	@echo "==> [9/9] verify-vocab.sh (all packs)"
 	./scripts/verify-vocab.sh vocabulary/starter
 	./scripts/verify-vocab.sh vocabulary/packs/expressive-baseline
 	@echo ""
