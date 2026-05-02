@@ -482,10 +482,15 @@ def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
     internal iop_list, not per-``<rdf:li>`` metadata.
 
     Path B (new-instance addition at a previously-unused
-    ``multi_priority``) is NOT IMPLEMENTED in Slice 1: darktable 5.4.1
-    writes no ``iop_order`` to ``.dtstyle`` or XMP, leaving Path B
-    without a source of truth for the field. Path B raises
-    :class:`NotImplementedError` until RFC-001 resolves iop_order origin.
+    ``(operation, multi_priority)``) appends a fresh ``HistoryEntry``
+    at ``num = max(existing) + 1`` with ``iop_order=None``. Per
+    RFC-018 v0.2's empirical evidence
+    (``tests/fixtures/preflight-evidence/``), darktable 5.4.1 resolves
+    pipeline order from the description-level ``iop_order_version`` +
+    internal iop_list, so per-entry ``iop_order`` is unnecessary.
+    ``history_end`` increments to match. Closes RFC-001's iop_order
+    open question (deferred under ADR-051) and supersedes that ADR's
+    NotImplementedError stance.
 
     Among multiple input plugins targeting the same
     ``(operation, multi_priority)``, the last one wins (input order).
@@ -500,13 +505,10 @@ def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
     Returns:
         A new frozen :class:`Xmp` with synthesized history. Top-level
         metadata (``rating``, ``label``, ``auto_presets_applied``,
-        ``history_end``, ``iop_order_version``, ``raw_extra_fields``)
-        is preserved verbatim.
-
-    Raises:
-        NotImplementedError: any input plugin targets an
-            ``(operation, multi_priority)`` not present in the baseline
-            (Path B). Message includes the offending tuple.
+        ``iop_order_version``, ``raw_extra_fields``) is preserved
+        verbatim. ``history_end`` is recomputed as ``len(history)``
+        — typically equal to the baseline value for Path A, larger
+        for Path B.
     """
     current: list[HistoryEntry] = list(baseline.history)
 
@@ -522,12 +524,20 @@ def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
                     break
 
             if target_idx is None:
-                raise NotImplementedError(
-                    f"Path B (new-instance add) for "
-                    f"({plugin.operation!r}, multi_priority={plugin.multi_priority}) "
-                    "is not implemented in Slice 1: iop_order source is unresolved "
-                    "in darktable 5.4.1; tracked in RFC-001."
+                # Path B — new-instance addition. Per RFC-018 v0.2's
+                # empirical evidence (tests/fixtures/preflight-evidence/),
+                # darktable 5.4.1 resolves pipeline order from the
+                # description-level iop_order_version + internal iop_list,
+                # so per-entry iop_order stays None. Append a fresh
+                # HistoryEntry at num = max(existing) + 1.
+                new_num = max((e.num for e in current), default=-1) + 1
+                appended = dataclasses.replace(
+                    _plugin_to_history(plugin),
+                    num=new_num,
+                    iop_order=None,
                 )
+                current.append(appended)
+                continue
 
             replacement = dataclasses.replace(
                 _plugin_to_history(plugin),
@@ -536,4 +546,8 @@ def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
             )
             current[target_idx] = replacement
 
-    return dataclasses.replace(baseline, history=tuple(current))
+    return dataclasses.replace(
+        baseline,
+        history=tuple(current),
+        history_end=len(current),
+    )

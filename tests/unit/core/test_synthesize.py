@@ -169,13 +169,70 @@ def test_last_writer_wins_among_entries() -> None:
     assert result.history[0].params == "cccc"
 
 
-def test_different_multi_priority_path_b_raises() -> None:
+def test_different_multi_priority_path_b_appends() -> None:
+    """RFC-018 v0.2: Path B (new instance at unused multi_priority)
+    appends a new HistoryEntry with iop_order=None. darktable 5.4.1
+    resolves pipeline order from iop_order_version + internal iop_list.
+    """
+    baseline = _make_history_entry(num=8, multi_priority=0, params="aaaa")
+    baseline_xmp = _make_xmp(history=(baseline,), history_end=1)
+    plugin = _make_plugin(multi_priority=1, op_params="bbbb")
+    result = synthesize_xmp(baseline_xmp, [_entry(plugin)])
+    assert len(result.history) == 2
+    # Original entry preserved
+    assert result.history[0].num == 8
+    assert result.history[0].multi_priority == 0
+    assert result.history[0].params == "aaaa"
+    # New entry appended at next num
+    assert result.history[1].num == 9
+    assert result.history[1].multi_priority == 1
+    assert result.history[1].params == "bbbb"
+    assert result.history[1].iop_order is None
+    # history_end recomputed
+    assert result.history_end == 2
+
+
+def test_path_b_new_operation_appends() -> None:
+    """Path B for a module not in baseline (e.g., grain absent from a
+    minimal exposure-only baseline)."""
+    baseline = _make_history_entry(num=0, operation="exposure", multi_priority=0)
+    baseline_xmp = _make_xmp(history=(baseline,), history_end=1)
+    plugin = _make_plugin(operation="grain", multi_priority=0, op_params="cafe")
+    result = synthesize_xmp(baseline_xmp, [_entry(plugin)])
+    assert len(result.history) == 2
+    assert result.history[1].operation == "grain"
+    assert result.history[1].iop_order is None
+    assert result.history_end == 2
+
+
+def test_path_a_and_path_b_mixed_in_one_synthesize() -> None:
+    """Multiple entries — some replace, some append — work in one call."""
     baseline = _make_xmp(
-        history=(_make_history_entry(multi_priority=0),),
+        history=(
+            _make_history_entry(num=0, operation="exposure", multi_priority=0, params="0000"),
+            _make_history_entry(num=1, operation="temperature", multi_priority=0, params="1111"),
+        ),
+        history_end=2,
     )
-    plugin = _make_plugin(multi_priority=1)
-    with pytest.raises(NotImplementedError, match="Path B"):
-        synthesize_xmp(baseline, [_entry(plugin)])
+    replace_plugin = _make_plugin(operation="exposure", multi_priority=0, op_params="2222")
+    append_plugin = _make_plugin(operation="grain", multi_priority=0, op_params="3333")
+    result = synthesize_xmp(
+        baseline,
+        [_entry(replace_plugin), _entry(append_plugin)],
+    )
+    assert len(result.history) == 3
+    # Path A replacement preserved num
+    expo = next(e for e in result.history if e.operation == "exposure")
+    assert expo.num == 0
+    assert expo.params == "2222"
+    # temperature untouched
+    temp = next(e for e in result.history if e.operation == "temperature")
+    assert temp.params == "1111"
+    # Path B append
+    grain = next(e for e in result.history if e.operation == "grain")
+    assert grain.num == 2  # max(existing) + 1
+    assert grain.iop_order is None
+    assert result.history_end == 3
 
 
 def test_baseline_not_mutated() -> None:
