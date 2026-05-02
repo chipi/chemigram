@@ -8,6 +8,77 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-05-02
+
+**Engine unblock + reference-image validation infrastructure.** Closes
+the synthesizer's Path B gap (RFC-018 v0.2) and ships a CI-safe
+colorimetric assertion library (RFC-019 v0.2) — the two pieces that
+gate the future 35-entry `expressive-baseline` vocabulary authoring
+work (now scoped to v1.4.0). The CLI work (RFC-020 / PRD-005) ships
+next as v1.3.0.
+
+**Engine — Path B unblocked:**
+
+- `synthesize_xmp` now appends new-instance history entries for
+  vocabulary primitives whose `(operation, multi_priority)` tuple
+  isn't in the baseline (closes RFC-001's open Path B question;
+  ADR-063). Empirical evidence
+  (`tests/fixtures/preflight-evidence/`) showed darktable 5.4.1
+  resolves pipeline order from `iop_order_version` + the internal
+  `iop_list` regardless of per-entry `iop_order`, so appended entries
+  ship with `iop_order=None` — no probe script, no manifest schema
+  fields. Supersedes ADR-051's "Path B deferred" stance.
+- `HistoryEntry.iop_order` type widened from `int | None` to
+  `float | None` so rendered XMP sidecars (which can carry float
+  values) round-trip cleanly.
+- `VocabularyIndex` now accepts `Path | list[Path]` and ships
+  `load_packs(["starter", "expressive-baseline"])` for multi-pack
+  loading. Cross-pack name collisions raise a clear error naming
+  both pack roots.
+
+**Reference-image validation (RFC-019 v0.2 → ADR-066/067/068):**
+
+- `chemigram.core.assertions` — hand-rolled CIE DE2000, sRGB ↔ Lab
+  D50 (Lindbloom Bradford adaptation), patch extraction, and
+  high-level helpers (`assert_color_accuracy`, `assert_tonal_response`,
+  `assert_exposure_shift`, `assert_wb_shift`). Validated against the
+  Sharma/Wu/Dalal 2005 reference test pair (DE2000 = 2.0425).
+- `tests/fixtures/reference-targets/` — synthetic CC24 + grayscale
+  ramp PNGs paired with X-Rite published L\*a\*b\* D50 ground truth.
+  CI-safe (no darktable, no real RAW). Tier B (real-RAW reference
+  shooting) is deferred per ADR-068.
+
+**Prompts:**
+
+- Mode A `system_v3.j2` is now active. Filter-first vocabulary
+  navigation guidance, multi-pack enumeration, and explicit
+  `end_session` orchestration. Adds `vocabulary_packs` to required
+  context. v1 + v2 stay loadable for eval reproducibility (ADR-045).
+
+**Vocabulary scaffolding:**
+
+- `vocabulary/packs/expressive-baseline/` skeleton (empty manifest,
+  README, L3 module subdirectories). Authoring of the 35 entries
+  is hands-on darktable work and lives in v1.4.0.
+
+**Closing ADRs:** 063 (Path B unblocking, closes RFC-001 + RFC-018),
+064 (vocabulary authoring workflow, closes RFC-018), 066
+(synthetic-only reference fixture policy, closes RFC-019), 067
+(pixel-level assertion protocol, closes RFC-019), 068 (darktable
+version gate, deferred — closes RFC-019). ADR-065 is deliberately
+gapped — see `docs/adr/index.md` Conventions.
+
+**Tests:** 556 unit + integration pass. New: 34 unit tests for the
+assertion library, 9 integration tests for the synthetic CC24
+round-trip, 16 e2e scaffolds for `expressive-baseline` (auto-skip
+until entries are authored).
+
+**Phase plan reshaped (2026-05-02):** Phase 1.2 originally bundled
+engine + 35-entry authoring under v1.2.0. Authoring is hands-on
+darktable work and was decoupled from the engine slice; engine +
+assertion library ship as v1.2.0; CLI ships as v1.3.0; the 35-entry
+authoring sprint ships as v1.4.0. Phase 2 now begins post-v1.4.0.
+
 ## [1.1.0] — 2026-04-30
 
 **Comprehensive validation milestone.** A from-first-principles testing
