@@ -57,7 +57,7 @@ def _make_history_entry(
     num: int = 0,
     modversion: int = 7,
     params: str = "00000040",
-    iop_order: int | None = None,
+    iop_order: float | None = None,
     multi_name: str = "",
     blendop_params: str = "gz_baseline",
     blendop_version: int = 14,

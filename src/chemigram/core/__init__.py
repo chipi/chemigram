@@ -16,6 +16,13 @@ Slices 2+ add: ``versioning``, ``masking``, ``context``, ``sessions``,
 ``vocab``. See ``docs/IMPLEMENTATION.md`` for the phase plan and
 ``docs/adr/TA.md`` for component anchors.
 
+Reference-target validation (RFC-019, v1.2.0+):
+    - :mod:`chemigram.core.assertions` — DE2000, sRGB↔Lab D50,
+      patch extraction, and high-level assertion helpers
+      (``assert_color_accuracy``, ``assert_tonal_response``,
+      ``assert_exposure_shift``, ``assert_wb_shift``). Pure math; no
+      AI deps. See ADR-067.
+
 Three foundational disciplines (see ADR-003):
     1. **Agent is the only writer.** This package never silently
        mutates state; every change is a tool call.

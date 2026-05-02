@@ -471,7 +471,7 @@ def _plugin_to_history(plugin: PluginEntry) -> HistoryEntry:
 
 
 def synthesize_xmp(baseline: Xmp, entries: list[DtstyleEntry]) -> Xmp:
-    """Compose vocabulary entries onto a baseline XMP (Path A only).
+    """Compose vocabulary entries onto a baseline XMP (Path A and Path B).
 
     SET semantics (ADR-002, RFC-006 closure / ADR-051): a plugin entry
     whose ``(operation, multi_priority)`` tuple matches a baseline
