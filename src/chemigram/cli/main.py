@@ -12,7 +12,7 @@ from pathlib import Path
 import typer
 
 from chemigram.cli._context import CliContext
-from chemigram.cli.commands import context, edit, lifecycle, status, vocab
+from chemigram.cli.commands import binding, context, edit, lifecycle, status, versioning, vocab
 from chemigram.cli.output import make_writer
 
 app = typer.Typer(
@@ -46,6 +46,23 @@ app.command(name="remove-module", help="Strip all history entries for an operati
 app.command(name="reset", help="Rewind the current branch to baseline (ADR-062).")(edit.reset)
 app.command(name="get-state", help="Print a summary of the workspace's current XMP.")(
     edit.get_state
+)
+
+# Versioning
+app.command(name="snapshot", help="Snapshot the current XMP; return the new content hash.")(
+    versioning.snapshot
+)
+app.command(name="branch", help="Create a branch at HEAD (or --from <ref>).")(versioning.branch)
+app.command(name="tag", help="Create an immutable tag at HEAD (or --hash <h>).")(versioning.tag)
+app.command(name="checkout", help="Move HEAD to a ref or hash.")(versioning.checkout)
+app.command(name="log", help="Print the operation log (newest first).")(versioning.log)
+app.command(name="diff", help="Diff two snapshots — added/removed/changed primitives.")(
+    versioning.diff
+)
+
+# Layer binding (no unbind — MCP doesn't have one either)
+app.command(name="bind-layers", help="Apply L1/L2 vocabulary templates onto the current XMP.")(
+    binding.bind_layers
 )
 
 # Context

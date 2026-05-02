@@ -26,16 +26,6 @@ from chemigram.mcp.tools import register_all
 # land their issues. The audit fails if this list disagrees with reality.
 _KNOWN_PENDING_VERBS: frozenset[str] = frozenset(
     {
-        # #55 — versioning (snapshot grouped here)
-        "branch",
-        "tag",
-        "checkout",
-        "log",
-        "diff",
-        "snapshot",
-        # #56 — layer binding
-        "bind_layers",
-        "unbind_layers",
         # #57 — render / export
         "render_preview",
         "compare",

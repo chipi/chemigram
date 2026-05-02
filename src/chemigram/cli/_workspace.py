@@ -3,7 +3,8 @@
 The MCP server keeps a per-session ``ToolContext.workspaces`` dict of
 loaded workspaces — that doesn't fit the subprocess-per-invocation
 shape of the CLI. This module provides equivalent lookup against the
-filesystem instead.
+filesystem instead, plus a shared "resolve or NOT_FOUND" helper used
+by every CLI verb that takes an ``image_id``.
 
 If/when the engine grows a ``Workspace.from_disk`` factory this module
 goes away.
@@ -12,7 +13,12 @@ goes away.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
+import typer
+
+from chemigram.cli._context import CliContext
+from chemigram.cli.exit_codes import ExitCode
 from chemigram.core.versioning import ImageRepo
 from chemigram.core.workspace import Workspace
 
@@ -53,3 +59,25 @@ def load_workspace(workspace_root: Path, image_id: str) -> Workspace | None:
         repo=repo,
         raw_path=raw_path,
     )
+
+
+def resolve_workspace_or_fail(ctx: typer.Context, image_id: str) -> Workspace:
+    """Load workspace by image_id; emit a NOT_FOUND error and ``typer.Exit`` if absent.
+
+    Shared helper for every CLI verb that takes an ``image_id``. Pulls
+    the workspace root from the global ``--workspace`` flag (default
+    ``~/Pictures/Chemigram``).
+    """
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    workspace_root = obj["workspace"] or default_workspace_root()
+    workspace = load_workspace(workspace_root, image_id)
+    if workspace is None:
+        writer.error(
+            f"workspace not found: {image_id}",
+            ExitCode.NOT_FOUND,
+            image_id=image_id,
+            workspace_root=str(workspace_root),
+        )
+        raise typer.Exit(code=ExitCode.NOT_FOUND.value)
+    return workspace

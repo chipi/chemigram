@@ -16,12 +16,12 @@ shared infrastructure (a future refactor lifts it to core).
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Any, cast
+from typing import cast
 
 import typer
 
 from chemigram.cli._context import CliContext
-from chemigram.cli._workspace import default_workspace_root, load_workspace
+from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
 from chemigram.core.versioning import (
     MaskNotFoundError,
@@ -38,24 +38,6 @@ from chemigram.core.xmp import synthesize_xmp
 # until they move to core.
 from chemigram.mcp._state import current_xmp, summarize_state
 
-
-def _resolve_workspace_or_fail(ctx: typer.Context, image_id: str) -> Any:
-    """Helper: load workspace or emit error + exit NOT_FOUND."""
-    obj = cast(CliContext, ctx.obj)
-    writer = obj["writer"]
-    workspace_root = obj["workspace"] or default_workspace_root()
-    workspace = load_workspace(workspace_root, image_id)
-    if workspace is None:
-        writer.error(
-            f"workspace not found: {image_id}",
-            ExitCode.NOT_FOUND,
-            image_id=image_id,
-            workspace_root=str(workspace_root),
-        )
-        raise typer.Exit(code=ExitCode.NOT_FOUND.value)
-    return workspace
-
-
 # ---------------------------------------------------------------------------
 # get-state (read-only)
 # ---------------------------------------------------------------------------
@@ -69,7 +51,7 @@ def get_state(
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
 
-    workspace = _resolve_workspace_or_fail(ctx, image_id)
+    workspace = resolve_workspace_or_fail(ctx, image_id)
     xmp = current_xmp(workspace)
     if xmp is None:
         writer.result(
@@ -133,7 +115,7 @@ def apply_primitive(
         )
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 
-    workspace = _resolve_workspace_or_fail(ctx, image_id)
+    workspace = resolve_workspace_or_fail(ctx, image_id)
 
     if vocab_entry.mask_kind == "raster":
         target_name = mask_override or vocab_entry.mask_ref
@@ -211,7 +193,7 @@ def remove_module(
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
 
-    workspace = _resolve_workspace_or_fail(ctx, image_id)
+    workspace = resolve_workspace_or_fail(ctx, image_id)
     baseline_xmp = current_xmp(workspace)
     if baseline_xmp is None:
         writer.error(
@@ -259,7 +241,7 @@ def reset(
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
 
-    workspace = _resolve_workspace_or_fail(ctx, image_id)
+    workspace = resolve_workspace_or_fail(ctx, image_id)
     try:
         baseline_xmp = reset_to(workspace.repo, workspace.baseline_ref)
     except (VersioningError, RefNotFoundError, RepoError) as exc:
