@@ -27,7 +27,6 @@ from typing import Any, cast
 import typer
 
 from chemigram.cli._context import CliContext
-from chemigram.cli.exit_codes import ExitCode
 from chemigram.cli.output import OUTPUT_SCHEMA_VERSION
 from chemigram.core.vocab import load_packs
 from chemigram.mcp.prompts import PromptStore
@@ -105,25 +104,30 @@ def status(ctx: typer.Context) -> None:
         writer.event("warning", message=f"pack discovery failed: {exc}")
     prompt_version = _prompt_active_version()
 
+    warnings: list[str] = []
+    if dt_path is None:
+        warnings.append(
+            "darktable-cli not found — install darktable, or set DARKTABLE_CLI to the absolute path"
+        )
+
     fields: dict[str, Any] = {
         "chemigram_version": chemigram_version,
-        "darktable_cli_path": dt_path or "(not found)",
-        "darktable_cli_version": _darktable_version(dt_path) if dt_path else "(not found)",
+        "darktable_cli_path": dt_path,
+        "darktable_cli_version": _darktable_version(dt_path) if dt_path else None,
         "workspace_root": str(workspace_root),
         "configured_packs": pack_names,
         "configured_pack_roots": pack_roots,
         "vocabulary_entries": entry_count,
         "prompt_store_active": {"mode_a/system": prompt_version},
         "output_schema_version": OUTPUT_SCHEMA_VERSION,
+        "warnings": warnings,
     }
 
-    if dt_path is None:
-        writer.error(
-            "darktable-cli not found",
-            ExitCode.DARKTABLE_ERROR,
-            hint="install darktable, or set DARKTABLE_CLI to the absolute path",
-            **fields,
-        )
-        raise typer.Exit(code=ExitCode.DARKTABLE_ERROR.value)
-
+    # `status` is a diagnostic — it always exits 0 and reports missing
+    # components as fields/warnings. Scripts that need a hard check
+    # for darktable can branch on `darktable_cli_path is None` in the
+    # JSON output. Erroring out would defeat the discoverability use
+    # case (you'd need darktable installed to ask whether it's installed).
+    for w in warnings:
+        writer.event("warning", message=w)
     writer.result(message="status", **fields)

@@ -267,15 +267,13 @@ def test_cli_session_compare(test_raw: Path, configdir: Path, workspace_root: Pa
 
 
 def test_cli_status_runs_as_subprocess() -> None:
-    """``chemigram status`` exits 0 in a real subprocess (proves the entry point
-    works post-install — the integration-level ``CliRunner`` test doesn't
-    catch entry-point regressions).
+    """``chemigram status`` always exits 0 — it's a diagnostic that reports
+    missing components in fields/warnings rather than failing on them.
+    Proves the entry point works post-install (the integration-level
+    ``CliRunner`` test doesn't catch entry-point regressions).
     """
     proc = _run_cli("status")
-    # Exit 0 if darktable-cli is available; exit 6 if not (DARKTABLE_ERROR).
-    # Both are valid here — we're testing the entry point, not the
-    # darktable presence.
-    assert proc.returncode in (0, 6), (
+    assert proc.returncode == 0, (
         f"status returned unexpected code {proc.returncode}\n"
         f"stdout={proc.stdout}\nstderr={proc.stderr}"
     )
