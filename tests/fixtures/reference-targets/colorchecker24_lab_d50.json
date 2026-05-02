@@ -1,0 +1,43 @@
+{
+  "version": "reference_v1",
+  "description": "X-Rite ColorChecker24 published L*a*b* D50 reference values, post-Nov 2014 formulation. Source: docs/guides/standardized-testing.md (mirrors X-Rite CGATS 'After November 2014' file). Illuminant D50, 2° observer.",
+  "illuminant": "D50",
+  "observer": "CIE 1931 2 Degree Standard Observer",
+  "formulation": "post-2014",
+  "patches": [
+    {"index":  1, "name": "Dark Skin",       "L": 37.54, "a":  14.37, "b":  14.92, "category": "color"},
+    {"index":  2, "name": "Light Skin",      "L": 65.71, "a":  17.64, "b":  17.67, "category": "color"},
+    {"index":  3, "name": "Blue Sky",        "L": 49.59, "a":  -3.82, "b": -22.54, "category": "color"},
+    {"index":  4, "name": "Foliage",         "L": 43.72, "a": -13.39, "b":  22.18, "category": "color"},
+    {"index":  5, "name": "Blue Flower",     "L": 55.47, "a":   9.75, "b": -24.79, "category": "color"},
+    {"index":  6, "name": "Bluish Green",    "L": 71.77, "a": -33.13, "b":   0.68, "category": "color"},
+    {"index":  7, "name": "Orange",          "L": 62.66, "a":  35.83, "b":  56.50, "category": "color"},
+    {"index":  8, "name": "Purplish Blue",   "L": 40.56, "a":  10.09, "b": -45.17, "category": "color"},
+    {"index":  9, "name": "Moderate Red",    "L": 52.10, "a":  48.24, "b":  16.23, "category": "color"},
+    {"index": 10, "name": "Purple",          "L": 30.67, "a":  21.19, "b": -20.81, "category": "color"},
+    {"index": 11, "name": "Yellow Green",    "L": 72.53, "a": -23.71, "b":  57.26, "category": "color"},
+    {"index": 12, "name": "Orange Yellow",   "L": 71.94, "a":  19.36, "b":  67.86, "category": "color"},
+    {"index": 13, "name": "Blue",            "L": 28.78, "a":  15.42, "b": -49.80, "category": "color"},
+    {"index": 14, "name": "Green",           "L": 55.26, "a": -38.34, "b":  31.37, "category": "color"},
+    {"index": 15, "name": "Red",             "L": 42.43, "a":  51.05, "b":  28.62, "category": "color"},
+    {"index": 16, "name": "Yellow",          "L": 82.45, "a":   2.41, "b":  80.25, "category": "color"},
+    {"index": 17, "name": "Magenta",         "L": 51.98, "a":  49.99, "b": -14.57, "category": "color"},
+    {"index": 18, "name": "Cyan",            "L": 50.98, "a": -28.78, "b": -28.35, "category": "color", "out_of_gamut": true},
+    {"index": 19, "name": "White",           "L": 96.54, "a":  -0.43, "b":   1.19, "category": "neutral"},
+    {"index": 20, "name": "Neutral 8",       "L": 81.26, "a":  -0.64, "b":  -0.34, "category": "neutral"},
+    {"index": 21, "name": "Neutral 6.5",     "L": 66.77, "a":  -0.73, "b":  -0.50, "category": "neutral"},
+    {"index": 22, "name": "Neutral 5",       "L": 50.87, "a":  -0.15, "b":  -0.27, "category": "neutral"},
+    {"index": 23, "name": "Neutral 3.5",     "L": 35.66, "a":  -0.42, "b":  -1.23, "category": "neutral"},
+    {"index": 24, "name": "Black",           "L": 20.46, "a":  -0.08, "b":  -0.97, "category": "neutral"}
+  ],
+  "neutral_indices": [19, 20, 21, 22, 23, 24],
+  "out_of_gamut_indices": [18],
+  "synthetic_grid": {
+    "rows": 4,
+    "cols": 6,
+    "patch_pixels": 100,
+    "image_width": 600,
+    "image_height": 400,
+    "comment": "Patch 1 starts at (col=0, row=0); index increases left-to-right then top-to-bottom."
+  }
+}

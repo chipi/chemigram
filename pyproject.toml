@@ -130,6 +130,13 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "S105", "S106"]
+# Color-math conventions follow CIE notation: uppercase L (lightness), C
+# (chroma), T (term), S (lightness factor), G/R/RT (gain/rotation terms).
+# Renaming would obscure the algorithm.
+"src/chemigram/core/assertions.py" = ["N802", "N803", "N806"]
+"tests/fixtures/reference-targets/generate_synthetic.py" = ["N802", "N803", "N806"]
+"tests/integration/test_reference_synthetic.py" = ["N802", "N803", "N806"]
+"tests/unit/core/test_assertions.py" = ["N802", "N803", "N806"]
 
 [tool.ruff.format]
 quote-style = "double"

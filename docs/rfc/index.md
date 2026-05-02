@@ -31,6 +31,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 | RFC-017 | Evaluation harness and auto-research workflow | Accepted (design); built Phase 5 | ADR-046, ADR-047 |
 | RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 | ADR-063, ADR-064 |
+| RFC-019 | Reference-image validation baseline | Draft v0.2 | ADR-066, ADR-067, ADR-068 |
 
 ## Maturity legend
 
