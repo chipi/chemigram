@@ -6,18 +6,20 @@ on:
   pull_request:
     branches: [main]
 
-# CI policy per ADR-040:
+# CI policy per ADR-040 (amended in v1.4.0 by ADR-075):
 # - Python 3.11/3.12/3.13 matrix
-# - macOS-only for v1 (Linux deferred to Phase 2)
-# - Unit + integration tests run in CI; E2E tests require darktable and run locally
-#   before releases via scripts/pre-release-check.sh
+# - OS matrix: macOS + Ubuntu (CI tier doesn't invoke real darktable;
+#   darktable-required E2E tests run locally before releases via
+#   scripts/pre-release-check.sh)
+# - Unit + integration tests run in CI; E2E tests require darktable
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [macos-latest, ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:

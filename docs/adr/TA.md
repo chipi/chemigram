@@ -507,6 +507,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
 | ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
+| ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
 
 ---
 
