@@ -364,6 +364,53 @@ def test_empty_pack_list_raises(tmp_path: Path) -> None:
         VocabularyIndex([])
 
 
+# ---------- mask_spec field (v1.4.0, ADR-074) --------------------------
+
+
+def test_entry_without_mask_spec_defaults_to_none(loaded_pack: VocabularyIndex) -> None:
+    """Entries that don't declare mask_spec keep it as None."""
+    entry = loaded_pack.lookup_by_name("expo_+0.5")
+    assert entry is not None
+    assert entry.mask_spec is None
+
+
+def test_entry_with_mask_spec_round_trips(tmp_path: Path) -> None:
+    """A manifest entry's mask_spec is loaded into VocabEntry.mask_spec verbatim."""
+    src = TEST_PACK_ROOT.parents[1] / "dtstyles" / "expo_plus_0p5.dtstyle"
+    pack = tmp_path / "pack"
+    (pack / "layers" / "L3" / "exposure").mkdir(parents=True)
+    shutil.copy(src, pack / "layers" / "L3" / "exposure" / "x.dtstyle")
+    spec = {"provider": "gradient", "config": {"angle_degrees": 90, "end_offset": 0.5}}
+    (pack / "manifest.json").write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "name": "gradient_top_dampen",
+                        "layer": "L3",
+                        "subtype": "exposure",
+                        "path": "layers/L3/exposure/x.dtstyle",
+                        "touches": ["exposure"],
+                        "tags": ["mask", "gradient"],
+                        "description": "Gradient top dampen.",
+                        "modversions": {"exposure": 6},
+                        "darktable_version": "5.4",
+                        "source": "test",
+                        "license": "MIT",
+                        "mask_kind": "raster",
+                        "mask_ref": "current_sky_mask",
+                        "mask_spec": spec,
+                    }
+                ]
+            }
+        )
+    )
+    index = VocabularyIndex(pack)
+    entry = index.lookup_by_name("gradient_top_dampen")
+    assert entry is not None
+    assert entry.mask_spec == spec
+
+
 # ---------- iop_order manifest fields ----------------------------------
 #
 # Removed in v1.2.0 prep. The empirical Path-B finding (see

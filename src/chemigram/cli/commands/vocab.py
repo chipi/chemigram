@@ -121,4 +121,5 @@ def show(
         subtype=entry.subtype,
         mask_kind=entry.mask_kind,
         mask_ref=entry.mask_ref,
+        mask_spec=entry.mask_spec,
     )

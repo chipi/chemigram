@@ -44,6 +44,7 @@ def _serialize_entry(e: VocabEntry) -> dict[str, Any]:
         "touches": list(e.touches),
         "mask_kind": e.mask_kind,
         "mask_ref": e.mask_ref,
+        "mask_spec": e.mask_spec,
         "global_variant": e.global_variant,
     }
 

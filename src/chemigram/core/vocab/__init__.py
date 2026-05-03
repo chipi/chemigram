@@ -99,6 +99,13 @@ class VocabEntry:
     mask_ref: str | None = None
     global_variant: str | None = None
     applies_to: dict[str, str] = field(default_factory=dict)
+    # mask_spec (added v1.4.0): when mask_kind=raster and the registry
+    # doesn't yet have an entry under mask_ref, a future apply path can
+    # synthesize the mask via a built-in geometric provider (ADR-074).
+    # Shape: {"provider": "gradient" | "radial" | "rectangle",
+    #         "config": {<provider kwargs>}}.
+    # v1.4.0 stores the field; the auto-generation hook lands in v1.5.x.
+    mask_spec: dict[str, Any] | None = None
 
 
 class VocabularyIndex:
@@ -207,6 +214,7 @@ class VocabularyIndex:
             mask_ref=raw.get("mask_ref"),
             global_variant=raw.get("global_variant"),
             applies_to=applies_to,
+            mask_spec=raw.get("mask_spec"),
         )
 
     def _validate_shape(self, raw: Any, manifest_path: Path) -> None:
