@@ -32,7 +32,9 @@ app = typer.Typer(
     "mirroring the MCP tool surface (RFC-020).",
     no_args_is_help=True,
     pretty_exceptions_enable=False,
-    add_completion=False,
+    # add_completion=True surfaces Typer's --install-completion /
+    # --show-completion (bash/zsh/fish/PowerShell). Closes RFC-020 §Q1.
+    add_completion=True,
 )
 
 app.add_typer(vocab.app, name="vocab", help="Inspect installed vocabulary.")
