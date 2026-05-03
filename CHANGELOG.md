@@ -8,6 +8,93 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-05-02
+
+**Vocabulary expansion + masks + CLI ergonomics + infra cleanup.**
+
+The "ambitious 1.4" milestone: closes the v1.4.0 extension plan with
+2 new ADRs, 1 amended ADR, 3 RFC closures, 11 GH issues. Total: 23
+new tests (700 → 723), 14 commits across 7 batches.
+
+**New capabilities:**
+
+- **Built-in geometric mask providers (ADR-074).** Three deterministic,
+  parameter-driven mask providers — `GradientMaskProvider`,
+  `RadialMaskProvider`, `RectangleMaskProvider` — under
+  `chemigram.core.masking.geometric`. Each implements the existing
+  `MaskingProvider` Protocol unchanged (ADR-057). Adds `numpy>=1.26`
+  to runtime deps for per-pixel field math; defended in ADR-074 as
+  pure infrastructure (same tier as Pillow, not a BYOA-007 violation).
+- **CLI mask integration (#73).** `chemigram masks generate` and
+  `regenerate` accept `--provider {gradient|radial|rectangle}` plus
+  `--config <JSON>`. Without `--provider`, the v1.3.0 MASKING_ERROR
+  surface is preserved.
+- **Vocabulary mask_spec field.** `VocabEntry.mask_spec` (optional)
+  declares which built-in provider + config should generate a
+  raster mask if it isn't already in the registry. v1.4.0 stores
+  the field; the auto-generation hook in `apply_primitive` lands
+  in v1.5.x. Both adapters (CLI vocab show, MCP list_vocabulary)
+  surface the field.
+
+**Vocabulary completion:**
+
+- 31 expressive-baseline entries authored programmatically across 9
+  darktable iop modules using reverse-engineered C struct layouts.
+  22 e2e direction-of-change tests passing against real darktable
+  5.4.1. Authoring guide at `docs/guides/expressive-baseline-authoring.md`.
+- **ADR-073** formalizes Path C (programmatic vocabulary authoring
+  via reverse-engineered structs) as an accepted complement to
+  hand-authoring. Closes RFC-012.
+- 4 entries pending user darktable seeds (#62 starter pack
+  tone_lifted_shadows_subject content bug; #63 channelmixerrgb B&W
+  ×3) — both blocked on hand-authored darktable sessions and
+  deferred to v1.4.x.
+
+**CLI ergonomics:**
+
+- **Shell completion (#67).** Typer's `--install-completion` and
+  `--show-completion` flags surface in root help. Bash, zsh, fish,
+  and PowerShell all supported. Closes RFC-020 §Q1.
+- **Workspace auto-discovery (#69).** New
+  `discover_workspace_from_cwd` helper walks up from cwd looking
+  for an image root. Wired via the `image_id == "."` shortcut:
+  `cd ~/Pictures/Chemigram/iguana && chemigram get-state .`
+  works without flags. Closes RFC-020 §Q3.
+- Stdin support (#68) deferred — needs verb-signature changes
+  across 8+ files, lower priority than the wins shipped here.
+
+**Infrastructure:**
+
+- **Linux CI matrix (#70).** `.github/workflows/ci.yml` adds
+  `ubuntu-latest` alongside `macos-latest`. ADR-075 amends ADR-040
+  with the rationale: CI tier doesn't invoke darktable, so Linux
+  runners exercise identical Python paths as macOS.
+- **Manifest↔dtstyle audit (#71).** New integration test asserts
+  every entry's dtstyle plugin `<operation>` set equals its
+  manifest `touches[]` set, across starter + expressive-baseline
+  packs. Would have caught #62 at CI time.
+- **Helpers refactor (#66).** 6 MCP-private helpers
+  (`summarize_state`, `current_xmp`, `parse_xmp_at`,
+  `materialize_mask_for_dt`, `stitch_side_by_side`,
+  `serialize_mask_entry`) lifted to `chemigram.core.helpers`.
+  Closes the "future cleanup" promise in ADR-071. The CLI no
+  longer cross-imports MCP private internals.
+- **Preview render lift.** `ensure_preview_render` lifted to
+  `chemigram.core.helpers` for shared use by both adapters'
+  mask generation paths.
+
+**RFC closures:**
+
+- **RFC-012** (programmatic vocabulary generation / Path C) →
+  Decided. Closes via ADR-073.
+- **RFC-018** (vocabulary expansion for expressive taste) →
+  Decided. Closes via ADR-063, ADR-064, ADR-073.
+- **RFC-019** (reference-image validation baseline) → Decided.
+  Closes via ADR-066, ADR-067, ADR-068.
+
+**No PyPI** — distribution stays GitHub-only per the user's
+explicit v1.4.0 statement.
+
 ## [1.3.0] — 2026-05-03
 
 **chemigram CLI (RFC-020 / PRD-005).**
