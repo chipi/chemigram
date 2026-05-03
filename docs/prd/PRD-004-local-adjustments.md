@@ -1,13 +1,13 @@
-# PRD-004 — Local adjustments through AI masking
+# PRD-004 — Local adjustments through drawn-form and content-aware masking
 
-> Status · Draft v0.1 · 2026-04-27
-> Sources · 01/The work, 02/Local adjustments, 04/Masks, ADR-021, ADR-022
+> Status · Partially shipped at v1.5.0 (drawn-form geometric masks); content-aware masking deferred to Phase 4
+> Sources · 01/The work, 02/Local adjustments, 04/Masks, ADR-076
 > Audiences · photographer (PA/audiences/photographer) — specifically the expedition photographer and the exploratory editor sub-shapes
 > Promises · agent-as-apprentice, the-loop-is-fast, byoa-extensibility, inspectable-state (PA/promises)
 > Principles · byoa, darktable-does-the-photography, restraint-before-push, honest-about-limits, compounding-over-throughput (PA/principles)
-> Why this is a PRD · Local adjustments are the single highest-friction part of conventional photo editing and the single highest-leverage place an agent can help. They are also where AI masking — a fundamentally novel capability — meets the rest of the system. The user-value argument for *how* this integration shows up in the loop is distinct enough from PRD-001 (Mode A) that it deserves its own treatment. Mode A is *that* there's a session; this is what becomes possible inside it.
+> Why this is a PRD · Local adjustments are the single highest-friction part of conventional photo editing and the single highest-leverage place an agent can help. This PRD argues *what* the local-adjustment experience should be in Chemigram. v1.5.0 ships the substrate (drawn-form geometric masks bound to vocabulary entries). The full content-aware experience this PRD describes — "lift the shadows on the manta" with AI-generated subject masking — is Phase 4 work via a sibling project; ADR-076 retired the v0.4.0 PNG-mask infrastructure when it turned out darktable didn't read external PNG masks at all.
 
-A manta ray glides through water that's gone slightly too cold and slightly too blue, the way water always does at depth. The shot is good — the angle is right, the eye is in focus, the whole creature is in the frame. But the underbelly is sunk in shadow. The water column has a faint shimmering of suspended particulate near the surface that pulls the eye upward, away from the subject. The manta's eye, the one the photographer waited two dives to catch, sits two stops too dark relative to where it should land. In darktable today, fixing these things is a forty-minute exercise: a parametric mask on luminance to lift the shadows, then a drawn mask to constrain it to the manta only because the parametric leaks into the water; a separate drawn mask on the eye, feathered carefully, then a localized contrast adjustment; a luminance-and-color parametric for the particles, then trial-and-error on the falloff. By the time the photographer gets the four adjustments to coexist, they've forgotten the original feeling that prompted them. In a Chemigram session, this is four turns. *Lift the shadows on the manta. A bit more contrast on the eye, just a touch. Warm the water column slightly. Knock back those particles up top.* Each turn is a render, a glance, a snapshot. The photographer's attention stays on the photograph.
+A manta ray glides through water that's gone slightly too cold and slightly too blue, the way water always does at depth. The shot is good — the angle is right, the eye is in focus, the whole creature is in the frame. But the underbelly is sunk in shadow. The water column has a faint shimmering of suspended particulate near the surface that pulls the eye upward, away from the subject. The manta's eye, the one the photographer waited two dives to catch, sits two stops too dark relative to where it should land. In darktable today, fixing these things is a forty-minute exercise: a parametric mask on luminance to lift the shadows, then a drawn mask to constrain it to the manta only because the parametric leaks into the water; a separate drawn mask on the eye, feathered carefully, then a localized contrast adjustment; a luminance-and-color parametric for the particles, then trial-and-error on the falloff. By the time the photographer gets the four adjustments to coexist, they've forgotten the original feeling that prompted them. In a Chemigram session, the ambition is four turns. *Lift the shadows on the manta. A bit more contrast on the eye, just a touch. Warm the water column slightly. Knock back those particles up top.* Each turn is a render, a glance, a snapshot. The photographer's attention stays on the photograph.
 
 ## The problem
 
@@ -15,78 +15,78 @@ Local adjustments in conventional editing are where the cost of editing detaches
 
 This isn't a niche frustration. The expedition photographer's most common shot — a subject against a difficult background — is the exact case where local adjustments matter most. The marine animal in colored water. The bird against a blown-out sky. The wildlife in dappled forest light. In each, the right edit is local and the cost of executing it locally is what limits how often it gets done.
 
-The leverage from AI masking specifically (as opposed to faster mask-drawing tools, smarter parametric masks, etc.) is that *the agent identifies where the adjustment goes* in addition to applying it. "Lift the shadows on the manta" is two operations turned into one: localize the manta, then lift shadows there. The conversational interface lets the photographer skip the "localize" step entirely — the mask is generated from a description, not a drawn boundary. That's the user-value case being argued.
+Two flavors of "local" matter, and they have different leverage:
 
-The risk is that this only works if the masks are good enough. A sloppy AI mask — bleeding into the water around the manta's silhouette, missing a wing tip — turns "lift shadows on the manta" into a fight. The photographer ends up correcting the mask, which is the cost they were trying to avoid. The masking quality is therefore *the gating constraint* on this feature being useful at all. PRD-004 has to address that honestly.
+**Placement-driven** (gradients, areas of the frame): "dampen the highlights in the top half," "lift the shadows in the bottom third," "warm the central radial area where the subject is," "dim a horizontal band where the horizon distracts." These are *about composition* — the photographer knows where the region is by frame coordinates. AI is unnecessary; geometric forms (gradient / ellipse / rectangle) cover them.
 
-## The experience
+**Subject-driven** (silhouettes, organic shapes): "lift the shadows on the manta," "warm the eye," "knock back the particles in the water column." These require identifying *what* a region is, not where it is. This is where AI masking has the leverage — the agent identifies and the photographer doesn't draw.
 
-The photographer is in a session in Mode A, image opened, baseline applied, talking through the photograph. They say *the manta's underbelly is too dark.* The agent reads this as a local adjustment request — the modifier *the manta's* localizes it. It calls `generate_mask` with target `"the manta"` and a prompt-shaped description. The masking provider returns a mask: a PNG, 8-bit grayscale, the manta's silhouette feathered slightly at the edges. The mask gets registered in the per-image mask registry under the symbolic name `current_subject_mask`. The agent then applies a vocabulary primitive — `tone_lifted_shadows_subject`, an L3 entry whose `mask_ref` field points to `current_subject_mask` — and renders. Two seconds later, a preview returns. The photographer judges it. *Yes. Bit more on the deepest shadows.* The agent applies a second primitive, also bound to the subject mask. Another snapshot, another preview.
+v1.5.0 ships the placement-driven path. The subject-driven path is Phase 4 work.
 
-The photographer says *the eye, just a hair more contrast.* The agent calls `generate_mask` again with target `"the manta's eye"`. The mask is small, oval, registered as `current_eye_mask`. The agent applies `contrast_eye_punch`, a small L3 primitive whose `mask_ref` is the temporary mask just registered. Another preview. *Perfect.* The agent has now done two local adjustments using two different masks, both registered and reusable.
+## The experience — v1.5.0 (placement-driven)
 
-When the photographer says *and warm the water column*, the agent generates a *negative* mask — everything outside the manta. It registers this as `current_background_mask`. The vocabulary primitive `wb_warming_pelagic_subtle` gets applied with that mask. Each move was: identify the region, apply the primitive, render, judge. The mechanical work — drawing, feathering, refining boundaries — is gone.
+The photographer is in a session in Mode A, image opened, baseline applied, talking through the photograph. The image has a bright sky competing with the foreground. They say *dampen the top half a touch.* The agent recognizes this as a placement local adjustment and reaches for `gradient_top_dampen_highlights` — an L3 vocabulary entry whose `mask_spec` declares a top-bright gradient bound to a -0.5 EV exposure. It calls `apply_primitive(image_id, "gradient_top_dampen_highlights")`. The engine encodes the gradient form directly into the XMP's `masks_history` and patches the exposure plugin's `blendop_params` to bind it. Two seconds later, a render. The photographer judges. *Yes. And lift the bottom a hair.* The agent reaches for `gradient_bottom_lift_shadows`. Another preview. *Perfect.*
 
-The masks themselves remain inspectable. The photographer can ask *show me the manta mask* and the agent renders the mask as an overlay on the preview. If the mask is wrong — missing a wing tip, leaking into the water — the photographer says *the mask is missing the right wing tip*, and the agent calls `regenerate_mask` with a refinement prompt. The mask is replaced (versioned via the registry), the dependent adjustments rerender automatically. This refinement loop is a few seconds, not a few minutes.
+The four shipped mask-bound entries — `gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows`, `radial_subject_lift`, `rectangle_subject_band_dim` — cover the most common placement cases. Each binds an exposure adjustment to a geometric form with sensible defaults. New mask-bound entries get authored the same way: declare `mask_spec` in the manifest, bind to the desired plugin operation, ship.
 
-Across the session, the mask registry compounds. The manta has been masked once and is now reachable as `current_subject_mask` for any further adjustment. The eye has been masked and stays available. The photographer never sees the masks unless they ask. The agent keeps the registry as part of the per-image state, surfacing it through `list_masks` when the photographer wants to see what's there.
+The masks themselves are darktable-native. Once the apply lands, the mask shows up in darktable's UI as a regular drawn mask — the photographer can open the image in darktable and see exactly what was bound, edit it manually if they want, and the change persists in the XMP.
 
-The masking provider is configured at the MCP level. The default — `CoarseAgentProvider` — is vision-only; it uses the agent's own multimodal capability to identify regions, no extra dependency. Quality is reasonable for clear subjects, weaker for fine detail. The production path is `chemigram-masker-sam`, a sibling project that wraps Segment Anything Model. Photographers who care about mask quality (most expedition photographers, eventually) install it and configure it as their masker. The engine doesn't care which masker is in use; the protocol is the same. A future masker provider — better, faster, optimized for marine animals — slots in identically.
+This is honest about its limits. "Dampen the top half" works. "Lift the shadows on the manta" doesn't — there's no manta-shaped form. When a photographer reaches for a region effect that no geometric primitive covers, the agent logs a vocabulary gap describing the region they wanted and falls back to the global version of the adjustment, telling them where the approximation is.
 
-## Why now
+## The experience — Phase 4 (subject-driven)
 
-Three things converge to make this the right time:
+When `chemigram-masker-sam` (or an equivalent sibling project) ships, the experience above extends naturally. The photographer says *the manta's underbelly is too dark.* The agent recognizes "the manta's" as a subject reference, calls into the sibling project, gets back a polygon (or whatever drawn-form geometry the masker produces — the wire format is darktable's drawn-form schema, not PNG bytes), and binds it to the same drawn-mask apply path that the geometric primitives use today. The photographer judges, refines, snapshots — the same loop, just with a richer set of available shapes.
 
-The masking technology is good enough. SAM has matured to where mask quality on natural subjects (animals, people, objects against backgrounds) is consistently usable. Coarse agentic masking — using the multimodal capabilities of the agent itself to identify regions — is also viable as a default, even if not as sharp as SAM. Two years ago, neither existed at production quality.
+The architectural seam is already cut at the right place: `apply_with_drawn_mask` accepts a `mask_spec` regardless of who produced it. A future provider that emits darktable-compatible drawn-form geometry (gradient, ellipse, path-with-N-corners, brush, etc.) plugs in. A provider that emits PNG bytes does not — that's the lesson ADR-076 documents.
 
-The local-adjustment friction has not improved on the tool side. darktable's local adjustment surface is roughly what it was three years ago. Drawn masks, parametric masks, raster masks — the same primitives, the same UX. The opportunity to compress this with AI masking has been sitting there.
+## Why now (still)
 
-The vocabulary architecture (PRD-003) makes local adjustments composable in a way that requires no new editing capability — only mask binding. The L3 layer in the three-layer model is already designed for masked primitives. Mask-bound vocabulary entries are a darktable-native feature; the only thing we add is the mask itself.
+The local-adjustment friction has not improved on the tool side. darktable's local adjustment surface is roughly what it was three years ago. The opportunity to compress this in Chemigram has been sitting there.
 
-If we waited, the architectural cost of *retrofitting* local adjustments into a Chemigram already in use would be higher than building it in from v1. And without local adjustments, the Mode A experience (PRD-001) is missing its highest-impact use case.
+The vocabulary architecture (PRD-003) makes local adjustments composable in a way that requires no new editing capability — only mask binding. v1.5.0 ships that binding for geometric forms; Phase 4 extends it to content-aware shapes.
+
+If we waited until Phase 4 to ship any masking, the Mode A experience would be missing its highest-impact compositional use cases (gradients, vignettes, area emphasis) for no reason — those don't need AI. Shipping the placement-driven path now lets photographers do real work in a real loop while the content-aware path matures separately.
 
 ## Success looks like
 
-A photographer with a hard image (marine animal, difficult water, fine details to refine) does four to seven local adjustments in a single session, in five to ten minutes total session time including the masking. None of those adjustments require them to draw a mask manually. At least 80% of generated masks are accepted as-is on first generation; the remaining 20% are refined with a single refinement prompt. The mask registry persists across the session — the same `current_subject_mask` gets used by three different vocabulary primitives without regeneration.
+**v1.5.0:** A photographer with a hard image (sky too bright, horizon distracting, foreground needs lift) does three to five placement local adjustments in a session. None require drawing. The vocabulary has a placement-mask entry for each common case; new ones get authored when gaps surface. The drawn-mask apply path is fast (apply + render in 2–3 seconds) and the result matches darktable's native drawn-mask behavior exactly.
 
-The provider abstraction works as designed: a photographer can switch from `CoarseAgentProvider` to `SAMProvider` (or a future provider) with a config change, and the session experience is identical except for mask quality. No code change in the engine. No vocabulary changes. The mask file format (PNG, 8-bit grayscale) accepts any provider's output.
+**Phase 4 ship:** A photographer with a marine animal shot does four to seven local adjustments — placement and subject mixed — in 5 to 10 minutes. The subject masks come from `chemigram-masker-sam` and are accepted as-is on first generation at least 80% of the time. Refinement, when needed, takes one prompt. The mask geometry persists in the XMP, openable in darktable, identical wire format to a hand-drawn mask.
 
-A new local adjustment vocabulary entry (`tone_lifted_shadows_subject_subtle`, say) authored once gets reused in dozens of subsequent sessions across many images. Photographers report that local adjustments — formerly a thing they avoided — become a thing they reach for casually. The center of gravity of edits shifts from global to local.
+**Steady state:** The mask-bound vocabulary grows over time — gradient/ellipse/rectangle shipped today, brushed/path/freehand later, subject-aware later still. Each addition is a vocabulary entry plus the drawn-form encoder; no engine architecture change.
 
 ## Out of scope
 
-**Custom mask-drawing within Chemigram.** The agent doesn't draw masks. If the AI masking provider can't produce a usable mask for some target, the photographer falls back to darktable's drawn mask tools directly, then exports as a `.dtstyle` and registers via tagging (see `tag_mask`). Building drawing UI inside Chemigram would violate `darktable-does-the-photography` and add scope we don't need.
+**Custom mask-drawing within Chemigram.** The agent doesn't draw masks pixel-by-pixel. The geometric primitives parameterize known shapes; content-aware masking comes from a sibling project. Building a drawing UI inside Chemigram would violate `darktable-does-the-photography`.
 
-**Mask versioning beyond the registry.** Masks are content-addressed in the per-image objects store (RFC-003), but they don't get their own DAG. When a mask is regenerated, the old version is replaced in the registry but stays in objects/ for snapshots that referenced it. There's no "mask history" UI, no merge of mask edits, no diff between mask versions. The simplification stays.
+**PNG-bytes mask interchange.** Retired in v1.5.0 (ADR-076). darktable doesn't read external PNGs for raster masks; the wire format is drawn-form geometry encoded into XMP `masks_history`. Future maskers must emit that, not pixels.
 
-**Mask-time prompting beyond a single string.** "Make a mask of the manta" is the interaction. We do not introduce structured inputs (segmentation classes, polygon hints, point prompts at the photographer level). Some providers (SAM) accept point prompts internally — the masker abstraction can pass them through if the agent generates them — but the photographer-facing interface is natural language only.
+**Mask versioning beyond the per-snapshot binding.** Masks are part of the XMP they're bound to; a snapshot captures both the dtstyle and the mask geometry. There's no separate mask history, no mask diff UI, no merge of mask edits.
 
-**Multi-image masks (catalog-wide subject identification).** Each mask is per-image. We do not propagate masks across an image series, even when subjects recur. That's bulk-edit territory; outside scope (`gracefully-bounded`).
+**Mask-time prompting beyond a single string.** "Make a mask of the manta" is the photographer-facing interface. Structured inputs (segmentation classes, polygon hints, point prompts) are an internal concern of the masker if it accepts them; the photographer-facing surface stays natural language.
 
-**Provider quality benchmarking inside Chemigram.** We document mask quality expectations for each provider in CONTRIBUTING.md and in the masker repo's README. We don't ship in-engine benchmarking, mask-quality metrics, or provider comparison tools. Photographers evaluate by using.
+**Multi-image masks (catalog-wide subject identification).** Each mask is per-image. No propagation across image series. Bulk-edit territory; outside scope (`gracefully-bounded`).
 
 ## The sharpest threat
 
-**Mask quality on the default provider may be insufficient for the work the project's primary audience does.** The expedition photographer's subjects — marine animals in colored water, animals partially occluded by foliage, birds against bright skies — are exactly the cases where mask quality matters most and where coarse agentic masking is weakest. SAM is dramatically better but adds a setup step (Python environment, model download, ~2.5GB). If photographers try the default, find it insufficient, and don't follow through to install SAM, they conclude *local adjustments don't work* and leave.
+**The placement-driven vocabulary may not match how photographers actually frame their requests.** A photographer who says "warm the water" doesn't necessarily mean "warm the bottom two-thirds via a gradient." They might mean "warm everywhere except the manta," which v1.5.0 can't do. If the placement primitives feel like rigid stand-ins for what the photographer actually wanted, the gap shows up as friction — they get told "the closest available is `radial_subject_lift`; want me to apply it as an approximation?" too often.
 
-This isn't a build-risk; we can ship it. It's an impact-risk. The default user experience determines whether this feature succeeds.
+This isn't fatal. The vocabulary-gap log captures every such mismatch; the gaps directly motivate Phase 4 priorities (which subject masks matter most) and inform new geometric primitives if the gap is structural (e.g., "everywhere except a central region" → an inverted-radial primitive).
 
-Mitigations under consideration:
-- **Make the default honest.** Don't pretend coarse agentic masking is good. The first time a session uses a generated mask, the agent flags the masker in use and what its limits are: *"Using the default masker (vision-only). For sharper masks on fine detail, install chemigram-masker-sam."* Sets expectations.
-- **One-command SAM install.** A bundled installer script that handles the Python environment + model download + MCP config in one step. Removes the install friction without bundling the dependency in the engine.
-- **Quality-aware mask refinement.** If the agent can detect (or be told) that a mask is poor, it can offer to regenerate with the alternative provider if available. The photographer says *the mask isn't great* and the agent responds *want me to try SAM if you have it installed?*
-- **Document the SAM path heavily.** README, CONTRIBUTING, the post-install message, the first-session welcome — all point toward SAM as the production path. Coarse agentic is the *zero-friction try-it-out* path, not the *production* path.
+Mitigations:
 
-If mask quality with SAM proves insufficient even for the work, then the answer becomes a better masker — likely a domain-specialized one (marine animals, wildlife) as a sibling project. The architecture allows this without engine changes, but the lead time is real. This is the threat to monitor.
+- **Be honest about the placement framing.** When the photographer says "warm the water" and the available primitive is `radial_subject_lift` inverted, the agent doesn't pretend that's what was asked. It says: *the closest I have is a radial inversion — it'll warm everything outside a center oval; want me to try, or hold for a real water mask?*
+- **Log every miss.** A gap with a region description is the cleanest possible Phase 4 spec. Aggregated across sessions, it tells us which subject masks matter and how to prioritize the sibling project's work.
+- **Don't over-author the geometric pack.** Resist authoring a `radial_inverted_water_warm` to paper over a missing subject mask — that's vocabulary bloat that confuses both photographer and agent. Better to leave the gap visible.
+
+If the placement primitives aren't useful enough on their own to make v1.5.0 worth shipping, the answer is clearer Phase 4 prioritization, not more shape primitives. Phase 4 is where the leverage is for the work this project's primary audience does.
 
 ## Open threads
 
-- **RFC-004 (default masking provider — coarse vs SAM)** — the deliberation that closes into the v1 default choice. Currently leaning toward `CoarseAgentProvider` as default with SAM as documented production path, on `byoa` and friction grounds. Awaiting evidence from real session use.
-- **RFC-009 (mask provider protocol shape)** — the protocol contract that lets providers slot in. Affects this PRD because the protocol determines what kinds of providers are admissible.
-- **`chemigram-masker-sam` repo scaffolding.** The sibling project doesn't exist yet. Needs to be created, MIT-licensed, with the same MCP-server pattern as the engine itself.
-- **Mask refinement UX in the agent prompt template.** When a photographer says *the mask is wrong*, what's the standard agent response shape? Currently informal. Worth codifying so refinement feels predictable.
-- **The "first-session masker disclosure."** Should the agent warn about masker capabilities on first use, on every session, or only when masks fail? Behavioral choice that affects how users form expectations. Recorded in TODO.
-- **Cross-session mask reuse** — if a photographer comes back to the same image two days later, can `current_subject_mask` be regenerated identically, or is it a fresh mask? Answer: fresh, because masking provider quality may have changed. But documented.
+- **`chemigram-masker-sam` repo scaffolding (Phase 4).** The sibling project doesn't exist yet. When it ships, it must produce darktable drawn-form geometry, not PNG bytes — that's the ADR-076 lesson.
+- **What drawn forms beyond gradient/ellipse/rectangle should ship before content-aware masking?** Path-with-N-corners (already in dt_serialize.py) is plausibly authorable today. A vocabulary-gap survey across the next set of real sessions decides priority.
+- **Cross-session mask reuse.** v1.5.0 binds the mask geometry into the XMP per snapshot; when a photographer returns to the same image, the masks come back exactly because the XMP did. No registry lookup, no regeneration.
+- **The "first-session masker disclosure"** is moot in v1.5.0 — there is no masker. When Phase 4 lands, the question reopens.
 
 ## Links
 
@@ -99,9 +99,5 @@ If mask quality with SAM proves insufficient even for the work, then the answer 
 - 02/Local adjustments
 - 04/Masks
 - ADR-007 (BYOA — no bundled AI)
-- ADR-021 (three-layer mask pattern)
-- ADR-022 (mask registry per image with symbolic refs)
-- ADR-033 (MCP tool surface — masking tools)
-- RFC-004 (default masking provider)
-- RFC-009 (mask provider protocol)
+- ADR-076 (drawn-mask-only architecture; supersedes ADR-021/022/055/057/058/074)
 - Related: PRD-001 (Mode A — the editing surface this lives in), PRD-003 (Vocabulary as voice — the L3 primitives that get mask-bound)

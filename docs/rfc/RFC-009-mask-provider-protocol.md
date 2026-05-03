@@ -1,9 +1,9 @@
 # RFC-009 — Mask provider protocol shape
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-057 at v0.4.0, 2026-04-29); superseded by ADR-076 at v1.5.0, 2026-05-03 — masking-provider Protocol retired in favor of drawn-mask-only architecture.
 > TA anchor ·/components/ai-providers ·/contracts/mcp-tools
 > Related · ADR-007, ADR-021, ADR-022, RFC-004
-> Closes into · ADR (pending) — locks the Protocol shape
+> Closed by · ADR-057 (MaskingProvider Protocol shape); superseded by ADR-076.
 > Why this is an RFC · ADR-007 commits to BYOA via pluggable providers. RFC-004 chooses the v1 default. But the actual `MaskingProvider` Protocol shape — the parameters, return types, error contracts — is open. This shape will be the hardest thing to change later: every provider implementation is bound to it. Getting it close-to-right now matters; the alternative is a v2 break that disrupts every external provider.
 
 ## The question

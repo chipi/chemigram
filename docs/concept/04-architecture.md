@@ -43,7 +43,7 @@ Concrete implications:
 
 - **No PyTorch in Chemigram core.** No model weights bundled. No GPU/MPS configuration in the engine.
 - **Every AI capability is one MCP call away.** Even when the implementation is a local model, it's wrapped behind an MCP boundary so it's pluggable.
-- **Default providers are minimal.** v1 ships a coarse default masker (rectangular and gradient masks via the agent's vision capability). Production-quality masking comes from sibling projects the photographer opts into.
+- **Default providers are minimal.** v1.5.0 ships drawn-form geometric masks (gradient/ellipse/rectangle) bound directly into the XMP — no AI involved. Content-aware (subject-precise) masking comes from a Phase 4 sibling project that produces darktable drawn-form geometry.
 - **Provider configuration is the photographer's domain.** Quality, speed, and cost tradeoffs are explicit choices in `config.toml`, not engine decisions.
 
 This makes Chemigram consistently a substrate that orchestrates AI capabilities chosen by the photographer, not a project that ships its own AI.
@@ -59,7 +59,7 @@ Chemigram has four engine subsystems plus two adapter layers, all with stable bo
 | 1 | **XMP composition engine** | Read/write `.dtstyle` files, parse/synthesize XMPs, enforce SET semantics, partition by layer. Pure file operations. |
 | 2 | **Render pipeline** | Sequence of stages producing a JPEG from an XMP. v1 has one stage (darktable-cli). See/8. |
 | 3 | **Versioning** | Content-addressed DAG of XMP snapshots, refs, HEAD. The "mini git for photos." See/7. |
-| 4 | **AI provider layer** | Pluggable maskers (and later: evaluators, generators) behind protocol-based interfaces. Per BYOA. |
+| 4 | **Masking** | Drawn-form geometry encoded into XMP `masks_history`. Phase 4 adds a sibling project producing darktable-compatible geometry; future evaluators/generators reuse the same per-image scope. |
 | 5 | **MCP server** | Adapts subsystems 1-4 as agent-callable tools (the conversational adapter). |
 | 6 | **CLI** (v1.3.0+) | Adapts subsystems 1-4 as subprocess-callable verbs (the programmatic adapter). |
 
@@ -75,11 +75,11 @@ The same engine surfaces through two adapters because it serves two distinct wor
 
 Both adapters mirror the engine's tool surface verb-for-verb (with `_` → `-` for shell ergonomics on the CLI side), call `chemigram.core` directly per ADR-071, and produce the same workspace state on disk. The choice between MCP and CLI is about workflow shape — conversational vs. scripted — not capability. A photographer can move between them freely; the workspace is the shared state.
 
-The **masking component** (subsystem 4 — AI provider layer) shipped in v0.4.0 (`chemigram.core.masking`). The `MaskingProvider` Protocol (ADR-057) is the contract every masker implements. The bundled default is `CoarseAgentProvider` (ADR-058): it asks the calling agent (e.g., Claude with vision) for a region descriptor via MCP sampling, then rasterizes the descriptor to a grayscale PNG via Pillow. No PyTorch in core. Production-quality masking lives in the sibling `chemigram-masker-sam` project (Phase 4) and implements the same Protocol — substituting providers is a one-line `build_server(masker=...)` change.
+The **masking component** (subsystem 4) is `chemigram.core.masking.dt_serialize` plus the `apply_with_drawn_mask` helper in `chemigram.core.helpers`. v1.4.0 introduced drawn-form serialization (path 4a); v1.5.0 retired the earlier PNG-based architecture entirely (ADR-076 supersedes ADR-021/022/055/057/058/074). The wire format is darktable's drawn-mask schema — geometric forms encoded into `<darktable:masks_history>`, bound to plugins via patched `blendop_params`. No PNG, no provider, no per-image registry. Phase 4 will add a sibling project producing darktable-compatible drawn-form geometry for content-aware regions; the apply path stays unchanged when it lands.
 
 The **context component** (`chemigram.core.context`, shipped in v0.5.0) loads the agent's first-turn information per RFC-011 → ADR-059: tastes (multi-scope per ADR-048 — `~/.chemigram/tastes/_default.md` plus brief-declared genre files), `brief.md` (with `Tastes:` declaration), `notes.md` (with line-truncation summarization for long files), recent log entries, recent vocabulary gaps. All loaders tolerate missing files. Conflicts (same line in two genre files) surface to the agent for mediation, not auto-resolved by the engine. The companion **session component** (`chemigram.core.session`) writes JSONL transcripts per ADR-029 — one record per tool call, proposal, and confirmation; closed with a footer summary. The MCP server's tool dispatch auto-records when `build_server(transcript=...)` is configured. Vocabulary-gap records follow the full RFC-013 → ADR-060 schema (session_id and snapshot_hash auto-populate). End-of-session synthesis is agent-orchestrated per ADR-061 (no engine `end_session` tool); the agent uses existing tools (`propose_*`, `log_vocabulary_gap`, `tag`, `snapshot`) to wrap up.
 
-The **MCP component** (subsystem 5) is implemented in `chemigram.mcp` and shipped in v0.3.0. It boots the official `mcp` SDK over stdio, loads vocabulary + prompts at startup, and dispatches every tool through a small registry (`chemigram.mcp.registry`). Tools return structured `ToolResult` payloads — `{success, data, error}` with a closed `ErrorCode` enum — so agents can branch on category without parsing messages. Tool implementations live under `chemigram.mcp.tools.*` (vocab/edit, versioning, rendering, ingest, masks, context stubs); they're thin wrappers around `chemigram.core` plus the workspace registry. ADR-056 (closing RFC-010) locks the parameter shapes and error contract.
+The **MCP component** (subsystem 5) is implemented in `chemigram.mcp` and shipped in v0.3.0. It boots the official `mcp` SDK over stdio, loads vocabulary + prompts at startup, and dispatches every tool through a small registry (`chemigram.mcp.registry`). Tools return structured `ToolResult` payloads — `{success, data, error}` with a closed `ErrorCode` enum — so agents can branch on category without parsing messages. Tool implementations live under `chemigram.mcp.tools.*` (vocab/edit, versioning, rendering, ingest, context); they're thin wrappers around `chemigram.core` plus the workspace registry. ADR-056 (closing RFC-010) locks the parameter shapes and error contract.
 
 The **CLI component** (subsystem 6, shipped in v1.3.0) is implemented in `chemigram.cli`. Entry point `chemigram = "chemigram.cli.main:app"` lands the binary on `$PATH` alongside `chemigram-mcp`. The 22 verbs mirror the MCP tool surface verb-for-verb (with `_` → `-`); the four MCP-only conversational tools (`propose_taste_update`, `confirm_taste_update`, and their notes counterparts) are replaced with direct CLI verbs `apply-taste-update` / `apply-notes-update` because the propose/confirm protocol requires per-process state that doesn't fit the subprocess shape. The CLI's `ExitCode` IntEnum (0 success, 1–10 mapped to `ErrorCode`) plus `--json` NDJSON output give shell scripts and agent loops a stable contract. ADR-069/070/071/072 (closing RFC-020) lock the design — including the thin-wrapper discipline that's lint-enforced via `scripts/audit-cli-imports.py`. The full verb reference is auto-generated at `docs/guides/cli-reference.md`.
 
@@ -316,95 +316,50 @@ Local adjustments — masked, spatial, content-aware — are where Chemigram's v
 
 ### 6.1 Two kinds of "local"
 
-- **Spatially local** (masked) — effect applies in a bounded region. Uses parametric, drawn, or external raster masks. This section.
+- **Spatially local** (masked) — effect applies in a bounded region. Uses parametric masks (built into `blendop_params`) or drawn-form masks (geometric primitives encoded into `masks_history`). This section.
 - **Parametrically local** (zone/frequency/hue-based) — effect applies everywhere differently. Tone equalizer (zones), contrast equalizer (frequencies), color equalizer (hues). Lives in regular L3 vocabulary alongside global moves.
 
-### 6.2 Three-layer mask pattern
+### 6.2 Drawn-mask vocabulary entries
 
-| Layer | Mechanism | When |
+A vocabulary entry shapes part of the frame by declaring a `mask_spec` in its manifest. At apply time, the engine encodes the geometry directly into darktable's `<darktable:masks_history>` element and patches each plugin's `blendop_params` to bind it via `mask_id`. The mask is darktable-native — the photographer can open the image in darktable and see the same drawn form they'd get from the GUI's mask tools.
+
+Three drawn forms ship in v1.5.0 (per ADR-076):
+
+| Form | Use | Example entry |
 |-|-|-|
-| **1** | Pre-baked mask in `.dtstyle` (parametric or drawn) | Most masked vocabulary. Photographer authored once in GUI; frozen. |
-| **2** | AI raster mask + symbolic reference | Content-aware isolation. Agent generates mask via provider, registers, vocabulary entry references it symbolically. |
-| **3** | Agent-described composite masks | *Not in v1.* Compositional mask operations (intersect, dilate, refine). |
+| `gradient` | Top/bottom/side falloffs over the frame | `gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows` |
+| `ellipse` | Centered or off-center oval/circular regions | `radial_subject_lift` |
+| `rectangle` | Horizontal/vertical bands or boxes | `rectangle_subject_band_dim` |
 
-Layer 1 examples: `gradient_top_dampen_highlights`, `vignette_subtle`, `parametric_warm_only_highlights`.
-
-Layer 2 examples: `tone_lifted_shadows_subject`, `warm_highlights_subject`, `dampen_sky`, `sharpening_subject`.
-
-### 6.3 Mask registry subsystem
-
-```
-~/Pictures/Chemigram/<image_id>/
-  masks/
-    current_subject_mask.png       # most recent subject mask
-    current_sky_mask.png
-    fish_2024_pelagic.png          # named persistent mask
-    registry.json                  # metadata
-```
-
-Registry entry:
+A mask-bound vocabulary entry is no different from a global one apart from its `mask_spec` field:
 
 ```json
 {
-  "name": "current_subject_mask",
-  "path": "masks/current_subject_mask.png",
-  "target": "subject",
-  "prompt": null,
-  "generator": "sam-mcp",
-  "generator_config": { "model": "sam2_hiera_b" },
-  "generated_from_render_hash": "a3f291...",
-  "created_at": "2026-04-27T15:23:11Z"
+  "name": "gradient_top_dampen_highlights",
+  "layer": "L3", "subtype": "exposure",
+  "touches": ["exposure"],
+  "mask_spec": {
+    "dt_form": "gradient",
+    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 0.0, "compression": 0.5}
+  }
 }
 ```
 
-Lifecycle:
+Apply paths route automatically: `apply_primitive(image_id, name)` calls `apply_with_drawn_mask` when `mask_spec` is set, plain `synthesize_xmp` otherwise. There is no separate masker step.
 
-- **Generation**: agent calls `generate_mask(image, target, prompt?)`. Engine runs configured provider over current preview render, saves PNG, registers under name.
-- **Reference**: vocabulary entries with `mask_kind: "raster"` declare `mask_ref: "current_subject_mask"`. Engine resolves to actual PNG path at XMP synthesis time.
-- **Reuse**: same mask referenced by multiple vocabulary applications. Generate once, apply many.
-- **Invalidation**: photographer regenerates, or new mask of same target overwrites `current_<target>`, or persistent custom-named masks survive.
-- **Persistence**: masks are part of edit state — versioned with snapshots (/7).
+### 6.3 Why drawn-mask only
 
-### 6.4 Masking providers (BYOA)
+Earlier architectures envisioned a per-image PNG mask registry plus a `MaskingProvider` Protocol producing PNG bytes. ADR-076 retired that path: darktable's raster-mask system only consumes in-pipeline module masks; external PNG files are never read. Verified against darktable 5.4.1 source — `src/develop/blend.c` resolves raster masks from `self->raster_mask.sink.source` (a pipeline pointer), not the filesystem.
 
-```python
-class MaskingProvider(Protocol):
-    name: str
+The drawn-form path actually wires: each form serialized into `masks_history` is registered in the pipeline's forms list, and a module's `blendop_params.mask_id` references it via `dt_masks_get_from_id_ext`. Validated end-to-end: B vs B' max=0 (deterministic), B vs C max=38 with std=2.95 (real spatial shaping).
 
-    def generate(
-        self,
-        image_path: str,
-        target: str,                    # "subject" | "sky" | "background" | "custom"
-        prompt: str | None = None,
-        hints: dict | None = None,
-    ) -> MaskResult:
-        ...
+### 6.4 Content-aware masking (Phase 4)
 
-class MaskResult:
-    mask_png_path: str
-    confidence: float
-    description: str
-    refinement_options: list[str]
-```
+The drawn forms cover placement-driven local adjustments — gradients, vignettes, area emphasis. Subject-driven adjustments ("lift the shadows on the manta") need pixel-precise organic shapes that gradient/ellipse/rectangle can't produce.
 
-Provider categories:
+Phase 4 introduces a sibling project (working name `chemigram-masker-sam`) that produces *darktable-compatible drawn-form geometry* — not PNG bytes. The wire format is the same one the geometric primitives use today; the apply path stays unchanged. When that ships, mask-bound vocabulary entries with subject targets become authorable, and the content-aware story PRD-004 describes becomes real.
 
-- **Coarse agentic provider (bundled default)** — uses the photo agent's vision capability. Bbox/gradient/color-region masks. No PyTorch dependency. Sufficient for many cases, especially Layer 1 vocabulary that uses pre-baked masks.
-- **`chemigram-masker-sam` sibling project** — standalone MCP server wrapping SAM/MobileSAM. Local install with PyTorch + MPS. Pixel-precise. **Recommended for production-quality.**
-- **Hosted services** — Replicate, Modal, etc. via MCP. Pay per call.
-- **Custom photographer-trained specialists** — fine-tuned models exposed as MCP. Real path for advanced users.
-
-Per-target overrides in `config.toml`:
-
-```toml
-[masking]
-default_provider = "sam-mcp"
-
-[masking.targets]
-subject = "sam-mcp"
-iguana_eyes = "replicate-sam"        # higher quality for fine work
-sky = "coarse-agent"                 # gradient is fine for sky
-```
+The architectural seam is already correct. v1.5.0 ships the drawn-form encoder and apply helper; Phase 4 adds the geometry-producing provider behind it.
 
 ---
 
@@ -467,21 +422,9 @@ MCP-exposed subset (the agent-visible tools): `snapshot`, `checkout`, `branch`, 
 
 ### 7.4 Mask integration
 
-When a snapshot is committed, masks referenced by the XMP are versioned with it. Two storage options under consideration:
+Masks ride inside the XMP they belong to. Drawn-form geometry sits in `<darktable:masks_history>`; each plugin's `blendop_params` carries the `mask_id` reference. When a snapshot captures the XMP, it captures the mask too — the canonical bytes hash to the same content address whether or not a mask is bound.
 
-**Option A:** Mask PNGs stored alongside XMP in object store, both content-addressed:
-
-```
-objects/
-  a3/f291...xmp                    # snapshot XMP
-  d8/12fa....png                   # content-addressed mask PNG
-```
-
-XMP at this snapshot symbolically references `current_subject_mask`; snapshot metadata maps that symbol to `d812fa...png`.
-
-**Option B:** Masks stored under per-snapshot subdirectories.
-
-Option A wins on dedup (identical masks share storage); Option B simpler. Open question/12.4.
+There is no separate mask object store, no symbolic registry, no per-snapshot mask resolution. The simplification came with ADR-076; the prior architecture (PNG bytes in `objects/` + `masks/registry.json` mapping symbolic names) was retired alongside the PNG-mask path it served.
 
 ### 7.5 What we're NOT building
 

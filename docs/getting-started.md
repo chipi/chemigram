@@ -272,29 +272,23 @@ Agent:  [calls apply_primitive("wb_warm_subtle"), then render_preview]
         Applied wb_warm_subtle (snapshot abc123). Render here. The blue
         is closer to slate now, less pure cyan.
 
-You:    Better. The manta's belly is dark — lift the shadows on it.
-        Use the subject mask.
+You:    Better. The sky's blown out at the top. Dampen it.
 
-Agent:  [calls generate_mask(target="manta belly")]
-        Generated current_manta_belly_mask. The coarse_agent masker
-        produced a polygon roughly covering the belly region. Want me
-        to refine, or apply tone_lifted_shadows_subject through it?
+Agent:  [calls apply_primitive("gradient_top_dampen_highlights"),
+         then render_preview]
+        Applied gradient_top_dampen_highlights (snapshot def456). The
+        entry binds a -0.5 EV exposure through a top-bright gradient
+        directly into the XMP — darktable does the masking. Top 40%
+        is dampened; the rest is untouched.
 
-You:    Apply it. We'll see.
+You:    Good. Lift the bottom of the frame a touch where the manta sits.
 
-Agent:  [calls apply_primitive("tone_lifted_shadows_subject",
-         mask_override="current_manta_belly_mask"), then render_preview]
-        Applied. Snapshot def456. The belly reads warmer now — too
-        bright? The transition at the mask edge is visible.
+Agent:  [calls apply_primitive("gradient_bottom_lift_shadows"),
+         then render_preview]
+        Applied. The bottom half lifted +0.4 EV. The manta reads with
+        more presence now without affecting the water column above.
 
-You:    Yeah, the edge is too sharp. Regenerate the mask with feathered
-        edges.
-
-Agent:  [calls regenerate_mask("current_manta_belly_mask",
-         prompt="softer feathered edge")]
-        Regenerated. The new mask has softer falloff. Re-applying...
-
-[... session continues ...]
+[... session continues with radial_subject_lift, snapshots, branches ...]
 
 You:    OK, this is good. Save it as v1-export. Take a final snapshot.
 
@@ -307,14 +301,15 @@ Agent:  [calls export_final, then proposes a notes update + a taste
          addition + confirms vocabulary gaps if any]
         Exported to ~/Pictures/Chemigram/manta/exports/.
 
-        I noticed you preferred warm water tones (slate over cyan) and
-        belly-lift over global shadows. Two propose-and-confirms:
+        I noticed you preferred slate-blue water over cyan-pop and
+        leaned on the gradient pair (top dampen + bottom lift) for
+        the wide shape. Two propose-and-confirms:
 
         1. Add to underwater.md: "For pelagic shots, slate-blue water
            reads better than cyan-pop." Confirm?
-        2. Notes for this image: "Manta belly via mask + lifted shadows
-           with feathered edges; took 2 mask regenerations to get the
-           transition right." Confirm?
+        2. Notes for this image: "Top-dampen + bottom-lift gradient
+           pair carried the wide composition; subject lift added
+           presence without going local." Confirm?
 
 You:    Confirm 1. Skip 2.
 
@@ -322,7 +317,9 @@ Agent:  [calls confirm_taste_update]
         Done. Underwater.md updated. Session wrap.
 ```
 
-That's the loop. The agent can branch (`branch experimental`), checkout earlier states, diff snapshots, log gaps when the vocabulary doesn't have what you want — all 27 tools are available; you don't need to know them by name, the agent reaches for what it needs.
+That's the loop. The agent can branch (`branch experimental`), checkout earlier states, diff snapshots, log gaps when the vocabulary doesn't have what you want — the 22 tools are available; you don't need to know them by name, the agent reaches for what it needs.
+
+> **Note on local adjustments.** v1.5.0 ships drawn-form geometric masks (gradient / ellipse / rectangle) baked into vocabulary entries' `mask_spec`. Subject-precise content-aware masking ("lift the shadows on the manta's belly") arrives in Phase 4 via a sibling project. Per ADR-076, the earlier PNG-based masker path was retired — darktable doesn't read external PNG masks at all.
 
 ---
 
@@ -410,7 +407,6 @@ No MCP session lifecycle. No transport. Just subprocesses + structured exit code
 ### What CLI doesn't do
 
 - **No `propose-taste-update` / `confirm-taste-update`.** Those are conversational by design — the propose/confirm dance lives between an agent and a human inside an MCP session. The CLI offers `apply-taste-update` / `apply-notes-update` as direct verbs for the agent-loop case (the agent has already decided; the CLI just writes).
-- **No mask generation.** `chemigram masks generate` and `regenerate` exit `MASKING_ERROR (7)` because the subprocess CLI has no provider wiring path today (the MCP server gets one via `build_server(masker=...)`). `masks list / tag / invalidate` work fully without a provider.
 - **No interactive REPL.** Stateless per-invocation. If you want a conversation, MCP is the surface.
 
 For the full verb surface — every command, every flag, every exit code — see [`docs/guides/cli-reference.md`](guides/cli-reference.md).
@@ -443,7 +439,6 @@ For the full verb surface — every command, every flag, every exit code — see
   sessions/<id>.jsonl    ← per-session transcripts
   previews/              ← render cache
   exports/               ← final outputs
-  masks/                 ← registered masks + registry.json
   vocabulary_gaps.jsonl  ← gaps surfaced this image
 ```
 
@@ -484,7 +479,7 @@ Markers of growth: ~30–60 personal entries after 3 months of regular use; ~80�
 
 **"can't init develop system" from darktable** — your configdir isn't initialized. Open the darktable GUI once and quit. If the error persists, set `CHEMIGRAM_DT_CONFIGDIR` to a writable directory you've initialized.
 
-**`MASKING_ERROR: no masker configured`** — your MCP client doesn't support the sampling capability that the bundled `CoarseAgentProvider` needs. As of v1.0.0 this means: Claude Code, Claude Desktop, Cursor (with sampling enabled), and others. If your client doesn't support sampling, either install [`chemigram-masker-sam`](https://github.com/chipi/chemigram-masker-sam) (Phase 4 sibling project) or skip mask-bound primitives.
+**`MASKING_ERROR` from `apply_primitive`** — the entry's `mask_spec` is malformed (unknown `dt_form`, missing/wrong `dt_params`). Inspect the entry with `chemigram vocab show <name>`; valid forms are `gradient`, `ellipse`, `rectangle` per ADR-076. (Subject-precise content-aware masking is Phase 4 work; v1.5.0 has no AI-driven masker — the earlier PNG path was retired because darktable doesn't read external PNGs for raster masks.)
 
 **`STATE_ERROR: workspace has no current XMP`** — the workspace's HEAD doesn't resolve to a snapshot. This usually means the `ingest` step didn't complete cleanly. Try ingesting under a different `image_id` or delete the half-built workspace and start over.
 

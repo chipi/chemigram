@@ -13,12 +13,12 @@ Auto-generated from the docstrings in `src/chemigram/core/`. Calibrated to **Sli
 | [`chemigram.core.exif`](exif.md) | EXIF read for L1 vocabulary binding | `read_exif`, `ExifData`, `ExifReadError` |
 | [`chemigram.core.binding`](binding.md) | Exact-match L1 vocabulary lookup | `bind_l1`, `VocabularyIndex` |
 
-## Coming in later slices
+## Subsequent slices (shipped)
 
-- **Slice 2:** `chemigram.core.versioning` (content-addressed XMP DAG), `chemigram.core.masks`
-- **Slice 3:** `chemigram.mcp.server` (MCP tool surface), `chemigram.mcp.prompts` (versioned templates)
-- **Slice 4:** `chemigram.core.masking` (`MaskingProvider` Protocol, `CoarseAgentProvider`)
-- **Slice 5:** `chemigram.core.context`, `chemigram.core.sessions`
+- **Slice 2:** `chemigram.core.versioning` — content-addressed XMP DAG (`canonical`, `repo`, `ops`).
+- **Slice 3:** `chemigram.mcp.server` (MCP tool surface), `chemigram.mcp.prompts` (versioned templates).
+- **Slice 4 (revised in v1.5.0):** `chemigram.core.masking.dt_serialize` — drawn-form encoders for darktable's `masks_history`. (The earlier `MaskingProvider` Protocol + `CoarseAgentProvider` + PNG mask registry were retired in v1.5.0 per ADR-076 — darktable doesn't read external PNGs for raster masks.)
+- **Slice 5:** `chemigram.core.context`, `chemigram.core.session`.
 
 See the [implementation plan](../IMPLEMENTATION.md) for the full slicing.
 

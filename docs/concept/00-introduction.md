@@ -93,7 +93,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **Chemigram** — the project itself. Named after the cameraless photographic process where an image emerges from chemical reaction on light-sensitive paper, guided but not fully controlled. The name fits because each edit emerges from a loop between photographer's intent, agent's moves, and tool's response.
 
-**Engine** — the Python code that does the orchestration. Includes XMP composition, vocabulary loading, render pipeline, versioning, mask registry, and MCP server. See `04`/2.
+**Engine** — the Python code that does the orchestration. Includes XMP composition, vocabulary loading, render pipeline, versioning, drawn-mask serialization, and MCP server. See `04`/2.
 
 **Agent** — the AI capability that drives Mode A or Mode B sessions. Per the BYOA principle, the agent is photographer-configured (Claude, GPT, etc.), not bundled with Chemigram.
 
@@ -117,7 +117,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **`.dtstyle`** — the file format of a vocabulary primitive. XML, captures one module's parameters and blend operation. Authored by photographer (or community) in darktable's GUI; loaded by Chemigram at session start.
 
-**Manifest** — the JSON metadata accompanying vocabulary entries. Contains layer assignment, modules touched, tags, description, mask kind, and other engine-relevant metadata.
+**Manifest** — the JSON metadata accompanying vocabulary entries. Contains layer assignment, modules touched, tags, description, optional `mask_spec` (drawn-form geometry for mask-bound entries), and other engine-relevant metadata.
 
 **Vocabulary gap** — when the agent needs a primitive that doesn't exist. Worked around by composing existing primitives, then logged to `vocabulary_gaps.jsonl` for later authoring. Gaps are content, not failure.
 
@@ -155,19 +155,15 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 ### Masks
 
-**Mask** — a spatial selection that restricts an effect to part of the frame. Three kinds in Chemigram: parametric, drawn, raster.
+**Mask** — a spatial selection that restricts an effect to part of the frame. Two kinds in Chemigram (per ADR-076): parametric and drawn. (The earlier raster-PNG path was retired in v1.5.0 — darktable doesn't read external PNGs for raster masks.)
 
 **Parametric mask** — a mask defined by pixel-value conditions (luminance range, hue range, etc.) in `blendop_params`. Content-agnostic.
 
-**Drawn mask** — a mask defined by geometric primitives (gradient, circle, ellipse, path) in `blendop_params`. Pre-authored by photographer in GUI.
+**Drawn mask** — a mask defined by geometric primitives (gradient, ellipse, rectangle, path) encoded into `<darktable:masks_history>` and bound to plugins via `blendop_params.mask_id`. Either pre-authored by the photographer in darktable's GUI, or declared in a vocabulary entry's `mask_spec` and serialized at apply time.
 
-**Raster mask** — a PNG mask file referenced by darktable. The path for AI-generated subject masks. Resolved symbolically at XMP synthesis time.
+**`mask_spec`** — a vocabulary-entry field declaring drawn-form geometry. Shape: `{"dt_form": "gradient" | "ellipse" | "rectangle", "dt_params": {...}}`. Presence triggers the drawn-mask apply path. See `04`/6.2.
 
-**Mask registry** — Chemigram's per-image record of generated masks. Tracks names, generators, prompts, freshness. See `04`/6.3.
-
-**Symbolic mask reference** — a placeholder name like `current_subject_mask` that vocabulary entries use. The engine resolves the symbol to an actual PNG path at synthesis time. Lets multiple primitives reuse the same mask.
-
-**Masking provider** — a pluggable implementation that generates masks. v1 ships a coarse agentic default; production-quality masking via `chemigram-masker-sam` sibling project. Configurable per target type. See `04`/6.4.
+**Content-aware masking (Phase 4)** — pixel-precise organic masks (e.g., subject silhouettes) come from a future sibling project that produces darktable drawn-form geometry. Not available in v1.5.0; the `apply_with_drawn_mask` seam is ready when it ships. See `04`/6.4.
 
 ### Context files
 
@@ -177,7 +173,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **`notes.md`** — what we've learned about a specific image. Lives at `<image_id>/notes.md`. Accumulates across sessions on the same image.
 
-**`config.toml`** — user configuration. Vocabulary sources, masking providers, L1/L2 binding rules, storage paths.
+**`config.toml`** — user configuration. Vocabulary sources, L1/L2 binding rules, storage paths.
 
 ### Disciplines
 
@@ -185,7 +181,7 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 **darktable does the photography, Chemigram does the loop** — every image-processing capability comes from darktable. Chemigram contributes orchestration, vocabulary, agent loop, versioning, session capture. See `04`/1.2.
 
-**BYOA (Bring Your Own AI)** — Chemigram doesn't ship AI capabilities; it integrates them via MCP. Maskers, evaluators, the photo agent itself are all photographer-configured. See `04`/1.3.
+**BYOA (Bring Your Own AI)** — Chemigram doesn't ship AI capabilities; it integrates them via MCP. The photo agent itself is photographer-configured (Claude, GPT, etc.); future evaluators and content-aware maskers are sibling projects, not bundled in core. See `04`/1.3.
 
 ### Engineering terms
 

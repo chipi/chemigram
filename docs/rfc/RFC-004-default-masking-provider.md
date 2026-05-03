@@ -1,9 +1,9 @@
 # RFC-004 — Default masking provider — coarse vs SAM
 
-> Status · Draft v0.1
+> Status · Decided (closed by ADR-058 at v0.4.0, 2026-04-29); superseded by ADR-076 at v1.5.0, 2026-05-03 — masking-provider system retired in favor of drawn-mask-only architecture.
 > TA anchor ·/components/ai-providers ·/constraints/byoa
 > Related · ADR-007, ADR-021
-> Closes into · ADR (pending) — settles the v1 default
+> Closed by · ADR-058 (CoarseAgentProvider as bundled default); superseded by ADR-076.
 > Why this is an RFC · ADR-007 commits to BYOA (no bundled AI), but the v1 release needs *some* default masking capability or first-time users hit a wall. Two viable defaults exist with different trade-offs around quality, dependencies, setup friction, and user expectations. The choice shapes onboarding and what "out of the box Chemigram" feels like.
 
 ## The question

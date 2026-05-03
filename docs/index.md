@@ -31,9 +31,9 @@ Modern agents can hold language richly. They can read intent. They can look at i
 
 ## What it looks like
 
-A photographer drops a raw into a workspace. Writes a brief — *"underwater shot of an iguana in the Galápagos. Adjust for underwater and color correct to get nice blues, but keep the iguana in natural colors. Remove the highlight at the top from the sun. Sharpen the eyes a bit."*
+A photographer drops a raw into a workspace. Writes a brief — *"underwater shot of an iguana in the Galápagos. Adjust for underwater and color correct to get nice blues, but keep the iguana in natural colors. Dampen the bright sun-glare at the top. Lift the foreground a touch."*
 
-The agent reads the photographer's accumulated taste from `~/.chemigram/tastes/_default.md`. Reads the brief. Looks at the image. Generates masks for the subject and the eyes. Applies vocabulary primitives — `colorcal_underwater_recover_blue`, `gradient_top_dampen_highlights`, `structure_subject_subtle`. Renders previews. Surfaces uncertainty when masking is imprecise. Catches composition tensions the brief glossed over. Snapshots at every meaningful state. Proposes additions to the photographer's taste files at session end.
+The agent reads the photographer's accumulated taste from `~/.chemigram/tastes/_default.md`. Reads the brief. Looks at the image. Applies vocabulary primitives — `colorcal_underwater_recover_blue`, `gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows`, `radial_subject_lift`. Renders previews. Surfaces composition tensions the brief glossed over. Snapshots at every meaningful state. Proposes additions to the photographer's taste files at session end.
 
 The photographer reads previews. Says yes or no. Branches when curious. Tags the result. Exports.
 
@@ -47,8 +47,8 @@ Twenty-five conversational turns. One photo, deeply edited. Five new vocabulary 
        │  Claude Code, etc. │◄───────►│                              │
        └────────────────────┘ stdio   │   ┌─────────────────────┐    │
                   ▲                   │   │ chemigram.core      │    │
-                  │ vision + sampling │   │   vocab │ versioning │    │
-                  │ (for masks)       │   │   masking│ context    │    │
+                  │ vision             │   │   vocab │ versioning │    │
+                  │ (for review)       │   │   masking│ context    │    │
                   ▼                   │   │   pipeline │ session  │    │
        ┌────────────────────┐         │   └──────────┬──────────┘    │
        │  ~/.chemigram/     │         │              │               │
@@ -61,16 +61,16 @@ Twenty-five conversational turns. One photo, deeply edited. Five new vocabulary 
                                                      │ writes
                                                      ▼
                               ~/Pictures/Chemigram/<image_id>/
-                                snapshots/  exports/  sessions/  masks/
+                                snapshots/  exports/  sessions/
 ```
 
 Four engine subsystems plus two adapter layers:
 
-1. **Vocabulary** — manifest-driven `.dtstyle` primitives, layered L1 / L2 / L3 (camera baseline / look / creative).
+1. **Vocabulary** — manifest-driven `.dtstyle` primitives, layered L1 / L2 / L3 (camera baseline / look / creative); mask-bound entries declare drawn-form geometry in `mask_spec`.
 2. **Versioning** — content-addressed DAG of XMP snapshots. Branches, tags, the works.
-3. **Masking** — `MaskingProvider` Protocol with a sampling-based default that uses the calling agent's vision; production-grade SAM lives in a sibling project.
+3. **Masking** — drawn-form geometry (gradient/ellipse/rectangle) encoded directly into darktable's XMP `masks_history`. Per ADR-076 (v1.5.0) there is no PNG-based masker; content-aware masking arrives in Phase 4 as a sibling project producing the same drawn-form wire format.
 4. **Context** — multi-scope tastes (`_default.md` + genre files), per-image `brief.md` and `notes.md`, JSONL session transcripts, vocabulary gaps.
-5. **MCP server** — 27 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
+5. **MCP server** — 22 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
 6. **CLI** (v1.3.0+) — `chemigram` binary, mirroring the MCP tool surface verb-for-verb. Subprocess-callable for batch processing, custom agent loops, and CI scripts.
 
 ## Two planes of control
@@ -78,17 +78,17 @@ Four engine subsystems plus two adapter layers:
 Chemigram exposes the same engine through two adapters:
 
 - **Conversational (MCP).** Long-lived session with an agent in an MCP-capable client. The agent reads context, proposes moves, you respond, the loop continues for as many turns as the photo needs. Session transcripts record everything. This is the surface PRD-001 (Mode A) is built around. Use this when editing one image deeply with an AI collaborator at the keyboard.
-- **Programmatic (CLI).** Subprocess calls from shell scripts, custom Python loops, batch jobs, watch-folder daemons, CI pipelines. No session lifecycle; each invocation is one operation. Stable exit codes (`0` success, `2` invalid, `3` not found, `5` versioning, `6` darktable, `7` masking…); newline-delimited JSON output via `--json`. Use this when the agent has already decided, or when no agent is involved at all.
+- **Programmatic (CLI).** Subprocess calls from shell scripts, custom Python loops, batch jobs, watch-folder daemons, CI pipelines. No session lifecycle; each invocation is one operation. Stable exit codes (`0` success, `2` invalid, `3` not found, `5` versioning, `6` darktable, `7` mask binding…); newline-delimited JSON output via `--json`. Use this when the agent has already decided, or when no agent is involved at all.
 
 Same engine, same vocabulary, same workspace state on disk. The choice between MCP and CLI is about workflow shape — conversational vs. scripted — not capability. PRD-005 / RFC-020 cover the design; `docs/getting-started.md` walks both paths.
 
 ## Why this earns existence
 
-**Photography editing is actually agent-shaped.** Most creative work isn't — it requires too much continuous human judgment to delegate. But raw-to-final development is iterative, parameter-rich, well-suited to vocabulary, well-suited to AI subject masking, and (crucially) has previews — every move is checkable in a few seconds. The loop is tight; the agent has tools; the photographer judges. This is a domain where the apprenticeship model fits.
+**Photography editing is actually agent-shaped.** Most creative work isn't — it requires too much continuous human judgment to delegate. But raw-to-final development is iterative, parameter-rich, well-suited to vocabulary, and (crucially) has previews — every move is checkable in a few seconds. The loop is tight; the agent has tools; the photographer judges. This is a domain where the apprenticeship model fits.
 
 **The Claude Code analogy is real, not metaphorical.** Coding assistants found a working shape: project context, agent loop, accumulated state, version control, iterative tools, propose-and-confirm. Chemigram applies that exact shape to photo work. A photo is a project. `tastes/_default.md` is `CLAUDE.md`. Vocabulary primitives are filesystem tools. Snapshots are commits. The shape transfers.
 
-**The substrate exists.** darktable provides the rendering, color science, masks, modules — already mature, already OSS. MCP provides the agent protocol. SAM provides AI segmentation. Every piece needed is available. The novel contribution is the integration layer and the agent's behavioral patterns — bounded engineering, not research uncertainty.
+**The substrate exists.** darktable provides the rendering, color science, masks, modules — already mature, already OSS. MCP provides the agent protocol. SAM (and successors) provide AI segmentation when content-aware masking lands as a sibling project. Every piece needed is available. The novel contribution is the integration layer and the agent's behavioral patterns — bounded engineering, not research uncertainty.
 
 ## What success looks like
 

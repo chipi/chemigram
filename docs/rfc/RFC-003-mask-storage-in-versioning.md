@@ -1,6 +1,6 @@
 # RFC-003 — Mask storage in versioning
 
-> Status · Decided (closed by ADR-055 at the v0.2.0 milestone, 2026-04-29)
+> Status · Decided (closed by ADR-055 at v0.2.0, 2026-04-29); superseded by ADR-076 at v1.5.0, 2026-05-03 — the PNG-mask path was a silent no-op and the registry was retired.
 > TA anchor ·/components/versioning ·/components/ai-providers
 > Related · ADR-018, ADR-021, ADR-022
 > Closed by · ADR-055 (raster masks share the per-image objects/ store; masks/registry.json maps symbolic names to hashes plus provenance). PNG validation is byte-magic only in v0.2.0; full format validation lands when a masking provider needing Pillow ships.
