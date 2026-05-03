@@ -21,6 +21,9 @@ Contents:
 - :func:`serialize_mask_entry` — :class:`MaskEntry` → JSON-friendly dict
 - :func:`ensure_preview_render` — render a current-state preview JPEG
   for the masking pipeline (hash-cached)
+- :func:`apply_with_drawn_mask` — synthesize an XMP with one vocab
+  entry + a drawn mask binding (path 4a per the v1.4.0 finding that
+  external PNG raster masks aren't a thing in darktable)
 
 What stays in ``chemigram.mcp._state``:
 
@@ -253,3 +256,95 @@ def ensure_preview_render(workspace: Workspace) -> Path:
             f"render failed for masking preview: {result.error_message or 'unknown'}"
         )
     return cache_path
+
+
+# ---------------------------------------------------------------------------
+# Apply with drawn-mask binding (path 4a — RFC follow-up to ADR-074)
+# ---------------------------------------------------------------------------
+
+
+def apply_with_drawn_mask(
+    baseline: Xmp,
+    dtstyle: Any,  # DtstyleEntry — unannotated to avoid circular import
+    mask_spec: dict[str, Any],
+    *,
+    mask_id_seed: int | None = None,
+    opacity: float = 100.0,
+) -> Xmp:
+    """Synthesize a new XMP applying ``dtstyle`` with a drawn mask bound.
+
+    Replaces the failing PNG-file path: instead of writing a PNG to
+    ``<workspace>/masks/`` (which darktable never reads), this encodes
+    the mask directly as a darktable drawn form in the XMP's
+    ``masks_history`` and modifies the entry's ``blendop_params`` to
+    bind the form via ``mask_id``.
+
+    Args:
+        baseline: The current XMP to apply onto.
+        dtstyle: A ``DtstyleEntry`` (typically ``vocab_entry.dtstyle``);
+            its plugins' ``blendop_params`` are patched to bind the mask.
+        mask_spec: ``{"dt_form": "gradient"|"ellipse"|"rectangle",
+            "dt_params": {<form-kwargs>}}``.
+        mask_id_seed: Optional explicit mask_id; default is a hash of the
+            spec + content for determinism within a session.
+        opacity: 0..100; default 100.
+
+    Returns:
+        A new :class:`Xmp` with: (a) every plugin's ``blendop_params``
+        patched to bind the mask, (b) ``masks_history`` injected into
+        ``raw_extra_fields`` with the form encoded.
+
+    Raises:
+        ValueError: ``mask_spec`` is malformed or names an unknown form.
+    """
+    import dataclasses
+
+    from chemigram.core.dtstyle import DtstyleEntry
+    from chemigram.core.masking.dt_serialize import (
+        build_form_from_spec,
+        build_masks_history_xml,
+        patch_blendop_params_string,
+    )
+    from chemigram.core.xmp import synthesize_xmp
+
+    if not isinstance(dtstyle, DtstyleEntry):
+        raise TypeError(f"dtstyle must be a DtstyleEntry, got {type(dtstyle).__name__}")
+
+    if mask_id_seed is None:
+        # Deterministic per spec — high range to avoid colliding with any
+        # ids darktable would naturally allocate (those start at 1).
+        from hashlib import blake2b
+
+        h = blake2b(repr(sorted(mask_spec.items())).encode(), digest_size=4).digest()
+        mask_id_seed = 0x10000000 | int.from_bytes(h, "big")
+
+    form = build_form_from_spec(mask_id_seed, mask_spec)
+    masks_history_xml = build_masks_history_xml([form])
+
+    # Patch every plugin's blendop_params to bind this mask
+    patched_plugins = tuple(
+        dataclasses.replace(
+            p,
+            blendop_params=patch_blendop_params_string(
+                p.blendop_params, mask_id=mask_id_seed, opacity=opacity
+            ),
+        )
+        for p in dtstyle.plugins
+    )
+    patched_dtstyle = dataclasses.replace(dtstyle, plugins=patched_plugins)
+
+    new_xmp = synthesize_xmp(baseline, [patched_dtstyle])
+
+    # Replace any existing masks_history elem; otherwise append it.
+    new_extra: list[tuple[str, str, str]] = []
+    replaced = False
+    for kind, qname, value in new_xmp.raw_extra_fields:
+        if kind == "elem" and qname == "darktable:masks_history":
+            new_extra.append((kind, qname, masks_history_xml))
+            replaced = True
+        else:
+            new_extra.append((kind, qname, value))
+    if not replaced:
+        new_extra.append(("elem", "darktable:masks_history", masks_history_xml))
+
+    return dataclasses.replace(new_xmp, raw_extra_fields=tuple(new_extra))
