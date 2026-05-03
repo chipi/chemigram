@@ -34,7 +34,6 @@ class ToolContext:
     vocabulary: Any  # VocabularyIndex; Any to avoid circular import for stubs
     prompts: Any  # PromptStore
     workspaces: dict[str, Any] = field(default_factory=dict)
-    masker: Any = None  # MaskingProvider | None (Slice 4)
     transcript: Any = None  # SessionTranscript | None (Slice 5)
     proposals: dict[str, Proposal] = field(default_factory=dict)
 

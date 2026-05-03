@@ -83,19 +83,15 @@ def _is_structured_error(payload: dict, expected_code: str) -> bool:
 
 
 def test_invalid_input_envelope_shape(server_and_ctx: Any) -> None:
-    """apply_primitive with mask_override on a non-mask primitive."""
+    """log_vocabulary_gap with whitespace-only description → invalid_input."""
     server, _ = server_and_ctx
 
     async def _go() -> dict:
         async with in_memory_session(server) as session:
             return _decode(
                 await session.call_tool(
-                    "apply_primitive",
-                    arguments={
-                        "image_id": "img-1",
-                        "primitive_name": "expo_+0.5",
-                        "mask_override": "subject",
-                    },
+                    "log_vocabulary_gap",
+                    arguments={"image_id": "img-1", "description": "   "},
                 )
             )
 
@@ -194,38 +190,6 @@ def test_versioning_error_envelope_shape(server_and_ctx: Any) -> None:
 
     payload = anyio.run(_go)
     assert _is_structured_error(payload, "versioning_error")
-
-
-# ---------- masking_error ----------------------------------------------
-
-
-def test_masking_error_no_masker_envelope(tmp_path: Path) -> None:
-    clear_registry()
-    vocab = VocabularyIndex(VOCAB_TEST_PACK)
-    prompts = PromptStore(SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=vocab, prompts=prompts)  # no masker
-
-    root = tmp_path / "ws"
-    init_workspace_root(root)
-    repo = ImageRepo.init(root)
-    raw_path = root / "raw" / "input.NEF"
-    raw_path.touch()
-    h = snapshot(repo, parse_xmp(BASELINE_XMP), label="baseline")
-    tag(repo, "baseline", h)
-    ctx.workspaces["img-1"] = Workspace(image_id="img-1", root=root, repo=repo, raw_path=raw_path)
-
-    async def _go() -> dict:
-        async with in_memory_session(server) as session:
-            return _decode(
-                await session.call_tool(
-                    "generate_mask",
-                    arguments={"image_id": "img-1", "target": "subject"},
-                )
-            )
-
-    payload = anyio.run(_go)
-    clear_registry()
-    assert _is_structured_error(payload, "masking_error")
 
 
 # ---------- darktable_error --------------------------------------------

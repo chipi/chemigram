@@ -1,6 +1,6 @@
 # ADR-057 — MaskingProvider Protocol shape
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-04-29
 > TA anchor · /components/masking, /contracts/masking-provider
 > Related RFC · RFC-009 (closes)

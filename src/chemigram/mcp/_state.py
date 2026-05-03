@@ -3,9 +3,8 @@ against the per-session ``ToolContext.workspaces`` registry.
 
 Other helpers that previously lived here (``summarize_state``,
 ``current_xmp``) and the cross-adapter helpers from
-``chemigram.mcp.tools.*`` (``parse_xmp_at``, ``materialize_mask_for_dt``,
-``stitch_side_by_side``, ``serialize_mask_entry``) lifted to
-:mod:`chemigram.core.helpers` in v1.4.0 (closes ADR-071's
+``chemigram.mcp.tools.*`` (``parse_xmp_at``, ``stitch_side_by_side``)
+lifted to :mod:`chemigram.core.helpers` in v1.4.0 (closes ADR-071's
 "future cleanup" note). Import from there directly.
 """
 

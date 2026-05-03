@@ -52,22 +52,6 @@
       "darktable_version": "5.4",
       "source": "starter",
       "license": "MIT"
-    },
-    {
-      "name": "tone_lifted_shadows_subject",
-      "layer": "L3",
-      "subtype": "tone",
-      "path": "layers/L3/tone/tone_lifted_shadows_subject.dtstyle",
-      "touches": ["exposure"],
-      "tags": ["tone", "shadows", "local", "subject"],
-      "description": "Lift shadow zones, restricted to the subject mask.",
-      "mask_kind": "raster",
-      "mask_ref": "current_subject_mask",
-      "global_variant": "tone_lifted_shadows",
-      "modversions": {"exposure": 6},
-      "darktable_version": "5.4",
-      "source": "starter",
-      "license": "MIT"
     }
   ]
 }

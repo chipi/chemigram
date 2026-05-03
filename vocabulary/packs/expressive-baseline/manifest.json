@@ -251,8 +251,7 @@
       "description": "Dampen top-half highlights via -0.5 EV through a top-bright gradient.",
       "modversions": {"exposure": 7}, "darktable_version": "5.4",
       "source": "expressive-baseline", "license": "MIT",
-      "mask_kind": "drawn",
-      "mask_spec": {"dt_form": "gradient",
+      "mask_spec":{"dt_form": "gradient",
                     "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 0.0, "compression": 0.5}}},
 
     {"name": "gradient_bottom_lift_shadows", "layer": "L3", "subtype": "exposure",
@@ -261,8 +260,7 @@
       "description": "Lift bottom-half shadows via +0.4 EV through a bottom-bright gradient.",
       "modversions": {"exposure": 7}, "darktable_version": "5.4",
       "source": "expressive-baseline", "license": "MIT",
-      "mask_kind": "drawn",
-      "mask_spec": {"dt_form": "gradient",
+      "mask_spec":{"dt_form": "gradient",
                     "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 180.0, "compression": 0.5}}},
 
     {"name": "radial_subject_lift", "layer": "L3", "subtype": "exposure",
@@ -271,8 +269,7 @@
       "description": "Lift +0.6 EV in a centered radial mask region (subject emphasis).",
       "modversions": {"exposure": 7}, "darktable_version": "5.4",
       "source": "expressive-baseline", "license": "MIT",
-      "mask_kind": "drawn",
-      "mask_spec": {"dt_form": "ellipse",
+      "mask_spec":{"dt_form": "ellipse",
                     "dt_params": {"center_x": 0.5, "center_y": 0.5, "radius_x": 0.2, "radius_y": 0.2, "border": 0.1}}},
 
     {"name": "rectangle_subject_band_dim", "layer": "L3", "subtype": "exposure",
@@ -281,8 +278,7 @@
       "description": "Dim -0.3 EV in a horizontal mid-band rectangle (de-emphasize a horizon line).",
       "modversions": {"exposure": 7}, "darktable_version": "5.4",
       "source": "expressive-baseline", "license": "MIT",
-      "mask_kind": "drawn",
-      "mask_spec": {"dt_form": "rectangle",
+      "mask_spec":{"dt_form": "rectangle",
                     "dt_params": {"x0": 0.0, "y0": 0.4, "x1": 1.0, "y1": 0.6, "border": 0.05}}}
   ]
 }

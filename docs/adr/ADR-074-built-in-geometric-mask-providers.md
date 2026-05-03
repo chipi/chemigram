@@ -1,6 +1,6 @@
 # ADR-074 — Built-in geometric mask providers
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-05-02
 > TA anchor · /components/masking, /contracts/masking-provider
 > Related ADRs · ADR-007 (BYOA), ADR-021 (mask format), ADR-057 (provider Protocol), ADR-058 (default agent provider)

@@ -4,7 +4,7 @@ rendered effect under real darktable. Closes #74 + #75 (path 4a).
 For each entry:
   1. Load the entry from the expressive-baseline pack.
   2. Apply via apply_with_drawn_mask (the same path apply_primitive uses
-     when entry.mask_kind=='drawn' and mask_spec is set).
+     when the entry's mask_spec is set).
   3. Render. Compare to a uniform render (same dtstyle, no mask).
   4. Assert spatial variance vs uniform — the mask must shape the effect.
 
@@ -107,7 +107,6 @@ def test_entry_mask_shapes_effect(
     baseline_xmp = parse_xmp(_BASELINE_XMP)
     entry = expressive_index.lookup_by_name(entry_name)
     assert entry is not None
-    assert entry.mask_kind == "drawn"
     assert entry.mask_spec is not None
 
     # Uniform: synthesize without the mask

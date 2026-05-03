@@ -122,13 +122,13 @@ def test_render_no_required_keys_works(store: PromptStore) -> None:
 
 def test_active_version_now_v2() -> None:
     real_store = PromptStore(SHIPPED_ROOT)
-    assert real_store.active_version("mode_a/system") == "v3"
+    assert real_store.active_version("mode_a/system") == "v4"
 
 
-# ---------- v3 (active) ----------
+# ---------- v4 (active) ----------
 
 
-def test_real_mode_a_v3_missing_vocabulary_packs_raises() -> None:
+def test_real_mode_a_v4_missing_vocabulary_packs_raises() -> None:
     """vocabulary_packs is in MANIFEST.context_required as of v3 — render
     must surface a PromptContextError when callers omit it.
     """
@@ -140,8 +140,8 @@ def test_real_mode_a_v3_missing_vocabulary_packs_raises() -> None:
         )
 
 
-def test_real_mode_a_v3_renders() -> None:
-    """The shipped mode_a/system_v3.j2 renders against sample context."""
+def test_real_mode_a_v4_renders() -> None:
+    """The shipped mode_a/system_v4.j2 renders against sample context."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",
@@ -153,13 +153,15 @@ def test_real_mode_a_v3_renders() -> None:
     )
     assert "image `abc123`" in out
     assert "vocabulary of 40 named moves" in out
-    # v3 references the real masking flow unconditionally
-    assert "generate_mask" in out
-    assert "regenerate_mask" in out
+    # v4 frames mask-bound primitives without referencing the removed
+    # generate_mask / regenerate_mask tools.
+    assert "generate_mask" not in out
+    assert "regenerate_mask" not in out
+    assert "Local adjustments" in out
 
 
-def test_real_mode_a_v3_lists_loaded_packs() -> None:
-    """v3 enumerates the loaded vocabulary packs."""
+def test_real_mode_a_v4_lists_loaded_packs() -> None:
+    """v4 enumerates the loaded vocabulary packs."""
     real_store = PromptStore(SHIPPED_ROOT)
     out = real_store.render(
         "mode_a/system",

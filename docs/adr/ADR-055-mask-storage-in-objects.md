@@ -1,6 +1,6 @@
 # ADR-055 — Raster masks share the per-image objects/ store; registry maps symbolic names to hashes
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-04-29
 > TA anchor ·/components/versioning ·/contracts/per-image-repo
 > Related RFC · RFC-003 (closes here)

@@ -25,7 +25,7 @@ def test_vocab_list_returns_starter_entries(runner: CliRunner) -> None:
     out = result.stdout
     assert "expo_+0.5" in out
     assert "wb_warm_subtle" in out
-    assert "5 entries" in out  # starter pack ships 5
+    assert "4 entries" in out  # starter pack ships 4 (post-#62 retirement)
 
 
 def test_vocab_list_json_emits_one_line_per_entry_plus_summary(runner: CliRunner) -> None:
@@ -35,9 +35,9 @@ def test_vocab_list_json_emits_one_line_per_entry_plus_summary(runner: CliRunner
     payloads = [json.loads(line) for line in lines]
     events = [p for p in payloads if p["event"] == "vocabulary_entry"]
     summaries = [p for p in payloads if p["event"] == "result"]
-    assert len(events) == 5
+    assert len(events) == 4
     assert len(summaries) == 1
-    assert summaries[0]["count"] == 5
+    assert summaries[0]["count"] == 4
     assert summaries[0]["status"] == "ok"
     # Summary is the last line (per RFC-020 §C convention).
     assert payloads[-1]["event"] == "result"

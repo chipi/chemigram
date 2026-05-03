@@ -19,7 +19,6 @@ from typing import Any
 
 from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import RefNotFoundError, RepoError
-from chemigram.core.versioning.masks import MaskNotFoundError
 from chemigram.core.versioning.ops import VersioningError, reset_to, snapshot
 from chemigram.core.vocab import VocabEntry
 from chemigram.core.xmp import synthesize_xmp
@@ -42,8 +41,6 @@ def _serialize_entry(e: VocabEntry) -> dict[str, Any]:
         "description": e.description,
         "tags": list(e.tags),
         "touches": list(e.touches),
-        "mask_kind": e.mask_kind,
-        "mask_ref": e.mask_ref,
         "mask_spec": e.mask_spec,
         "global_variant": e.global_variant,
     }
@@ -125,7 +122,6 @@ register_tool(
 async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     image_id = args["image_id"]
     primitive_name = args["primitive_name"]
-    mask_override = args.get("mask_override")
 
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
@@ -134,31 +130,6 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     entry = ctx.vocabulary.lookup_by_name(primitive_name)
     if entry is None:
         return ToolResult.fail(error_not_found(f"primitive {primitive_name!r}"))
-
-    use_drawn_mask = entry.mask_kind == "drawn" and entry.mask_spec is not None
-
-    if entry.mask_kind == "raster":
-        target_name = mask_override or entry.mask_ref
-        if target_name is None:
-            return ToolResult.fail(
-                error_invalid_input(
-                    f"primitive {primitive_name!r} is raster-mask-bound "
-                    "but neither entry.mask_ref nor mask_override is set"
-                )
-            )
-        try:
-            from chemigram.core.helpers import materialize_mask_for_dt
-
-            materialize_mask_for_dt(workspace, target_name)
-        except MaskNotFoundError as exc:
-            return ToolResult.fail(error_not_found(str(exc)))
-    elif mask_override is not None:
-        return ToolResult.fail(
-            error_invalid_input(
-                f"primitive {primitive_name!r} (mask_kind={entry.mask_kind!r}) "
-                "doesn't accept mask_override"
-            )
-        )
 
     baseline_xmp = current_xmp(workspace)
     if baseline_xmp is None:
@@ -170,7 +141,7 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
             )
         )
 
-    if use_drawn_mask:
+    if entry.mask_spec is not None:
         from chemigram.core.helpers import apply_with_drawn_mask
 
         try:
@@ -196,15 +167,14 @@ register_tool(
     name="apply_primitive",
     description=(
         "Apply a vocabulary primitive to the current XMP and snapshot the "
-        "result. For mask-bound primitives (mask_kind=raster), pass "
-        "mask_override to use a registered mask name other than entry.mask_ref."
+        "result. Mask-bound entries (mask_spec set) route through the "
+        "drawn-mask apply path automatically."
     ),
     input_schema={
         "type": "object",
         "properties": {
             "image_id": {"type": "string"},
             "primitive_name": {"type": "string"},
-            "mask_override": {"type": "string"},
         },
         "required": ["image_id", "primitive_name"],
         "additionalProperties": False,

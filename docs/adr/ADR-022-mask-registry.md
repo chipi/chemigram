@@ -1,6 +1,6 @@
 # ADR-022 — Mask registry per image with symbolic references
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-04-27
 > TA anchor ·/components/synthesizer ·/contracts/per-image-repo
 > Related RFC · RFC-003

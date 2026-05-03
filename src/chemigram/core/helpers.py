@@ -14,16 +14,11 @@ Contents:
 - :func:`current_xmp` — read-only HEAD → :class:`Xmp` resolution
 - :func:`load_xmp_bytes_at`, :func:`parse_xmp_at` — read XMP bytes / parse
   at a ref or hash without moving HEAD
-- :func:`materialize_mask_for_dt` — write a registered mask PNG to
-  ``<workspace>/masks/<name>.png`` for darktable to read
 - :func:`stitch_side_by_side` — Pillow-based two-up image composition
   (used by the ``compare`` verb in both adapters)
-- :func:`serialize_mask_entry` — :class:`MaskEntry` → JSON-friendly dict
-- :func:`ensure_preview_render` — render a current-state preview JPEG
-  for the masking pipeline (hash-cached)
 - :func:`apply_with_drawn_mask` — synthesize an XMP with one vocab
-  entry + a drawn mask binding (path 4a per the v1.4.0 finding that
-  external PNG raster masks aren't a thing in darktable)
+  entry + a drawn mask binding (the only mask path that actually wires
+  to darktable; the earlier PNG-file path was a silent no-op)
 
 What stays in ``chemigram.mcp._state``:
 
@@ -35,7 +30,6 @@ What stays in ``chemigram.mcp._state``:
 
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -48,7 +42,6 @@ from chemigram.core.versioning import (
     RepoError,
     xmp_hash,
 )
-from chemigram.core.versioning.masks import get_mask
 from chemigram.core.workspace import Workspace
 from chemigram.core.xmp import Xmp, parse_xmp_from_bytes
 
@@ -130,31 +123,6 @@ def parse_xmp_at(workspace_repo: ImageRepo, ref_or_hash: str) -> Xmp:
 
 
 # ---------------------------------------------------------------------------
-# Mask materialization (PNG → disk for darktable)
-# ---------------------------------------------------------------------------
-
-
-def materialize_mask_for_dt(workspace: Workspace, mask_name: str) -> Path:
-    """Write the registered PNG to ``<workspace>/masks/<mask_name>.png``.
-
-    darktable-cli reads raster masks from disk by filename; we write the
-    registered PNG bytes (content-addressed in ``objects/``) to the
-    expected path. Idempotent — skips the write if the existing file
-    matches the registered hash.
-
-    Raises:
-        MaskNotFoundError: ``mask_name`` not in the registry.
-    """
-    _entry, png = get_mask(workspace.repo, mask_name)
-    target = workspace.masks_dir / f"{mask_name}.png"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if target.exists() and target.read_bytes() == png:
-        return target
-    target.write_bytes(png)
-    return target
-
-
-# ---------------------------------------------------------------------------
 # Image composition
 # ---------------------------------------------------------------------------
 
@@ -190,76 +158,7 @@ def stitch_side_by_side(
 
 
 # ---------------------------------------------------------------------------
-# Mask entry serialization
-# ---------------------------------------------------------------------------
-
-
-def serialize_mask_entry(entry: Any) -> dict[str, Any]:
-    """:class:`MaskEntry` → JSON-friendly dict.
-
-    Just :func:`dataclasses.asdict` plus ISO-formatting the timestamp.
-    Used by both adapters when emitting mask info to the agent or NDJSON.
-    """
-    raw = asdict(entry)
-    if "timestamp" in raw and raw["timestamp"] is not None:
-        raw["timestamp"] = raw["timestamp"].isoformat()
-    return raw
-
-
-# ---------------------------------------------------------------------------
-# Preview render for masking pipeline
-# ---------------------------------------------------------------------------
-
-
-def ensure_preview_render(workspace: Workspace) -> Path:
-    """Return a path to a current-state preview JPEG; render if absent.
-
-    Hash-keyed so two consecutive mask generations against the same XMP
-    reuse the file. Auto-rendering uses the workspace's configdir via
-    :func:`chemigram.core.pipeline.render`. If no current XMP exists
-    (fresh workspace, no baseline yet), raises :class:`RuntimeError`.
-
-    Used by both the MCP and CLI mask-generation paths so the preview
-    cache key (`_for_mask_<hash[:8]>.jpg`) is shared between adapters.
-    """
-    from uuid import uuid4
-
-    from chemigram.core.pipeline import render
-    from chemigram.core.xmp import write_xmp
-
-    xmp = current_xmp(workspace)
-    if xmp is None:
-        raise RuntimeError("workspace has no current XMP; cannot render preview for masking")
-
-    cache_path = workspace.previews_dir / f"_for_mask_{xmp_hash(xmp)[:8]}.jpg"
-    if cache_path.exists():
-        return cache_path
-
-    workspace.previews_dir.mkdir(parents=True, exist_ok=True)
-    xmp_path = workspace.previews_dir / f"_render_{uuid4().hex}.xmp"
-    write_xmp(xmp, xmp_path)
-    try:
-        result = render(
-            raw_path=workspace.raw_path,
-            xmp_path=xmp_path,
-            output_path=cache_path,
-            width=1024,
-            height=1024,
-            high_quality=False,
-            configdir=workspace.configdir,
-        )
-    finally:
-        xmp_path.unlink(missing_ok=True)
-
-    if not result.success:
-        raise RuntimeError(
-            f"render failed for masking preview: {result.error_message or 'unknown'}"
-        )
-    return cache_path
-
-
-# ---------------------------------------------------------------------------
-# Apply with drawn-mask binding (path 4a — RFC follow-up to ADR-074)
+# Apply with drawn-mask binding
 # ---------------------------------------------------------------------------
 
 

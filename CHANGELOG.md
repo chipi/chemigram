@@ -8,6 +8,72 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-05-03
+
+**Mask architecture cleanup — drawn-mask only.**
+
+While shipping path 4a in v1.4.0 we discovered the previous PNG-mask
+path was a silent no-op: darktable never reads external PNG files for
+raster masks (verified against darktable 5.4.1 source — `src/develop/blend.c`
+resolves raster masks from in-pipeline pointers, not the filesystem).
+The bundled `MaskingProvider` Protocol, `CoarseAgentProvider`, geometric
+providers, mask registry, `materialize_mask_for_dt` helper, and the
+`generate_mask`/`regenerate_mask`/`list_masks`/`tag_mask`/`invalidate_mask`
+tools were all infrastructure for a path that never connected to pixels.
+
+This release rips that dead infrastructure entirely. **Breaking changes.**
+
+**ADR-076** (supersedes ADR-021/022/055/057/058/074): drawn-mask only.
+Mask-bound vocabulary entries declare `mask_spec` and route through
+`apply_with_drawn_mask` automatically — no providers, no registry, no
+PNG.
+
+**Removed:**
+
+- **Production code:** `chemigram.core.masking.MaskingProvider` Protocol,
+  `MaskResult`, `MaskingError`, `MaskGenerationError`, `MaskFormatError`;
+  `chemigram.core.masking.coarse_agent` (CoarseAgentProvider);
+  `chemigram.core.masking.geometric` (Gradient/Radial/RectangleMaskProvider);
+  `chemigram.core.versioning.masks` (mask registry, MaskEntry,
+  register_mask, get_mask, list_masks, tag_mask, invalidate_mask);
+  `chemigram.core.helpers.materialize_mask_for_dt`,
+  `serialize_mask_entry`, `ensure_preview_render`.
+- **MCP tools:** `generate_mask`, `regenerate_mask`, `list_masks`,
+  `tag_mask`, `invalidate_mask`.
+- **CLI sub-app:** `chemigram masks ...` (list / generate / regenerate /
+  tag / invalidate).
+- **Vocabulary schema:** `mask_kind`, `mask_ref` fields. `mask_spec` is
+  now the only mask declaration.
+- **Tool surface:** `apply_primitive`'s `mask_override` argument (CLI
+  flag and MCP arg).
+- **Server wiring:** `build_server(masker=...)`, `ToolContext.masker`.
+- **Workspace layout:** `Workspace.masks_dir` property and the
+  `masks/` subdir creation. `numpy>=1.26` runtime dep dropped.
+
+**Vocabulary changes:**
+
+- `tone_lifted_shadows_subject` (#62) retired from the starter pack —
+  was doubly broken (wrong dtstyle content awaiting a real darktable
+  session AND the raster path it depended on never worked). Starter
+  drops 5 → 4 entries. Future "lift shadows on subject" can be
+  re-authored as a drawn-mask entry when there's evidence to support it.
+- The four expressive-baseline mask-bound entries (gradient_top_dampen_highlights,
+  gradient_bottom_lift_shadows, radial_subject_lift, rectangle_subject_band_dim)
+  are unchanged — their `mask_spec` was already the load-bearing field;
+  the now-redundant `mask_kind: "drawn"` marker was stripped.
+
+**Prompt template:** `mode_a/system_v4.j2` is the new active version
+per ADR-043 (append-only). Drops references to the removed tools and
+the `mask_kind: "raster"` schema; rewrites the "Local adjustments"
+section around the built-in geometric mask types.
+
+**Tests:** ~2200 lines of dead test code removed (10 files); the
+3 e2e tests that survived prove drawn-mask shapes effect end-to-end
+against real darktable. `tests/integration/cli/test_stdin_batch.py`
+fixed (pre-existing `from tests.* import` that couldn't resolve).
+
+**No PyPI** (deferred per the v1.4.0 ship direction).
+
 ## [1.4.0] — 2026-05-02
 
 **Vocabulary expansion + masks + CLI ergonomics + infra cleanup.**

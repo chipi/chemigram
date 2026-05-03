@@ -385,37 +385,3 @@ def test_log_gap_empty_description_invalid_input(empty_server, tmp_path: Path) -
     payload = anyio.run(_exercise)
     assert payload["success"] is False
     assert payload["error"]["code"] == "invalid_input"
-
-
-def test_mask_no_masker_via_mcp(empty_server, tmp_path: Path) -> None:
-    """build_server without masker → MASKING_ERROR (was slice=4 NOT_IMPLEMENTED in v0.3.0)."""
-    server = empty_server
-    raw = tmp_path / "p.NEF"
-    raw.write_bytes(b"raw")
-    ws_root = tmp_path / "ws"
-
-    async def _exercise() -> dict:
-        async with in_memory_session(server) as session:
-            ingest_r = _decode(
-                await session.call_tool(
-                    "ingest",
-                    arguments={
-                        "raw_path": str(raw),
-                        "workspace_root": str(ws_root),
-                    },
-                )
-            )
-            return _decode(
-                await session.call_tool(
-                    "generate_mask",
-                    arguments={
-                        "image_id": ingest_r["data"]["image_id"],
-                        "target": "subject",
-                    },
-                )
-            )
-
-    payload = anyio.run(_exercise)
-    assert payload["success"] is False
-    assert payload["error"]["code"] == "masking_error"
-    assert "no masker configured" in payload["error"]["message"]

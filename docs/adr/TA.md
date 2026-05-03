@@ -58,22 +58,22 @@ Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 - `log(repo, *, ref?, limit?) → list[LogEntry]`
 - `diff(repo, hash_a, hash_b) → list[PrimitiveDiff]`
 - `tag(repo, name, hash_?) → ref_name`
-- `register_mask`, `get_mask`, `list_masks`, `invalidate_mask`, `tag_mask` — mask registry
 
-**Anchored from:** RFC-002 (→ ADR-054), RFC-003 (→ ADR-055), ADR-017, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022
 
-### components/ai-providers
+**Anchored from:** RFC-002 (→ ADR-054), ADR-017, ADR-018, ADR-019, ADR-020. (Mask-registry surface — RFC-003 / ADR-055 / ADR-021 / ADR-022 — removed in v1.5.0 per ADR-076; the PNG path was a silent no-op.)
 
-Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
+### components/masking
 
-**Files (shipped v0.4.0):** `src/chemigram/core/masking/__init__.py` (Protocol + result + errors), `src/chemigram/core/masking/coarse_agent.py` (`CoarseAgentProvider`, `AgentRequest`, rasterizer). v1.4.0 added `src/chemigram/core/masking/geometric.py` (built-in geometric providers — ADR-074). MCP wiring lives in `src/chemigram/mcp/tools/masks.py` and `src/chemigram/mcp/server.build_server(masker=...)`.
+Drawn-mask serialization for vocabulary entries that shape only part of the frame. Encodes geometric forms (gradient / ellipse / rectangle) directly into darktable's `<darktable:masks_history>` XMP element, and patches each plugin's `blendop_params` to bind the form via `mask_id`.
+
+**Files (shipped v1.4.0, simplified v1.5.0):** `src/chemigram/core/masking/dt_serialize.py` — encoders for `dt_masks_point_gradient_t`, `dt_masks_point_ellipse_t`, 4-corner `dt_masks_point_path_t`, plus the 420-byte `dt_develop_blend_params_t` patch. High-level apply helper at `chemigram.core.helpers.apply_with_drawn_mask`.
 
 **Public API:**
-- `class MaskingProvider(Protocol)` — generate/refine contract (ADR-057)
-- `CoarseAgentProvider(MaskingProvider)` — bundled sampling-based default (ADR-058)
-- `GradientMaskProvider`, `RadialMaskProvider`, `RectangleMaskProvider` — built-in geometric providers (ADR-074)
+- `apply_with_drawn_mask(baseline, dtstyle, mask_spec, *, opacity=100.0) → Xmp` — apply a vocabulary entry's dtstyle bound to a drawn form. Used by `apply_primitive` automatically when the entry's `mask_spec` is set.
 
-**Anchored from:** RFC-004 (→ ADR-058), RFC-009 (→ ADR-057), ADR-007, ADR-021, ADR-022, ADR-032, ADR-074
+**Schema:** `mask_spec: {"dt_form": "gradient"|"ellipse"|"rectangle", "dt_params": {...}}` on the vocabulary entry. No PNG, no provider, no registry — see ADR-076.
+
+**Anchored from:** ADR-076 (closes the prior PNG-mask path retroactively; supersedes ADR-021/022/055/057/058/074)
 
 ### components/mcp-server
 
@@ -379,13 +379,13 @@ Locked technology choices. Each entry has a corresponding ADR.
 | Versioning storage | Filesystem, content-addressed by SHA-256 | ADR-018 |
 | Configuration | TOML (`config.toml`) | ADR-028 |
 | Manifest format | JSON (`manifest.json`) | ADR-028 |
-| Mask format | PNG (raster, 8-bit grayscale) | ADR-021 |
+| Mask format | Drawn forms encoded into XMP `masks_history` (gradient/ellipse/rectangle) | ADR-076 |
 | Prompt template engine | Jinja2 | ADR-043 |
 | Active prompt version registry | TOML (`MANIFEST.toml`) | ADR-044 |
 | Eval run manifests | JSON + JSONL history | ADR-047 |
 | Golden eval datasets | Versioned directories (`golden_v1`, `golden_v2`, ...) | ADR-046 |
 | Session transcripts | JSONL | ADR-029 |
-| Default masking provider (v1) | Coarse agentic (vision-only, no PyTorch) | RFC-004 |
+| Default mask path | Drawn-form geometry only (no PNG, no provider) | ADR-076 |
 | Lens correction | Lensfun (via darktable) + embedded EXIF metadata | ADR-014 |
 | Noise model | darktable profiled denoise | ADR-014 |
 | Color science | darktable scene-referred pipeline | ADR-014 |
@@ -413,13 +413,13 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 |-|-|-|-|
 | RFC-001 | XMP synthesizer architecture | Decided | ADR-050 (closes Path A); ADR-063 closes the Path B / iop_order question |
 | RFC-002 | Canonical XMP serialization for stable hashing | Decided | ADR-054 (closes) |
-| RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes) |
-| RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes) |
+| RFC-003 | Mask storage in versioning | Decided | ADR-055 (closes); superseded by ADR-076 (path retired) |
+| RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes); superseded by ADR-076 (path retired) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
 | RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
-| RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes) |
+| RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes); superseded by ADR-076 (path retired) |
 | RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
 | RFC-011 | Agent context loading order and format | Decided | ADR-059 (closes) |
 | RFC-012 | Programmatic vocabulary generation (Path C) | Decided | ADR-073 (closes) |
@@ -455,8 +455,8 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-018 | Per-image content-addressed DAG | Accepted |
 | ADR-019 | Git-like ref structure (objects/, refs/heads, refs/tags, HEAD) | Accepted |
 | ADR-020 | No remote, no three-way merge, no reflog | Accepted |
-| ADR-021 | Three-layer mask pattern (pre-baked, AI-raster, agent-described) | Accepted |
-| ADR-022 | Mask registry per image with symbolic refs | Accepted |
+| ADR-021 | Three-layer mask pattern (pre-baked, AI-raster, agent-described) | Superseded by ADR-076 |
+| ADR-022 | Mask registry per image with symbolic refs | Superseded by ADR-076 |
 | ADR-023 | Vocabulary primitives are `.dtstyle` + manifest entries | Accepted |
 | ADR-024 | Authoring discipline: uncheck non-target modules in dialog | Accepted |
 | ADR-025 | WB and color calibration coupling — author with both or decouple | Accepted |
@@ -489,10 +489,10 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 | ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
-| ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
+| ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Superseded by ADR-076 |
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
-| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
-| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
+| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Superseded by ADR-076 |
+| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Superseded by ADR-076 |
 | ADR-059 | Agent context loading order and format (closes RFC-011) | Accepted |
 | ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
 | ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
@@ -507,8 +507,9 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
 | ADR-073 | Programmatic vocabulary authoring via reverse-engineered structs (closes RFC-012) | Accepted |
-| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
+| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Superseded by ADR-076 |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
+| ADR-076 | Drawn-mask-only mask architecture (supersedes 021/022/055/057/058/074) | Accepted |
 
 ---
 

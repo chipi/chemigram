@@ -52,7 +52,7 @@ class Workspace:
         configdir: Optional dedicated darktable configdir per ADR-005.
             ``None`` means "use the global one".
 
-    The previews/exports/sessions/masks/vocabulary_gaps subpaths follow
+    The previews/exports/sessions/vocabulary_gaps subpaths follow
     ``contracts/per-image-repo`` and are surfaced as properties so callers
     don't restate the layout.
     """
@@ -79,10 +79,6 @@ class Workspace:
         return self.root / "sessions"
 
     @property
-    def masks_dir(self) -> Path:
-        return self.root / "masks"
-
-    @property
     def vocabulary_gaps_path(self) -> Path:
         return self.root / "vocabulary_gaps.jsonl"
 
@@ -95,7 +91,7 @@ def init_workspace_root(root: Path) -> None:
     :meth:`ImageRepo.init`, called separately by callers that need them.
     """
     root.mkdir(parents=True, exist_ok=True)
-    for sub in ("raw", "previews", "exports", "sessions", "masks"):
+    for sub in ("raw", "previews", "exports", "sessions"):
         (root / sub).mkdir(exist_ok=True)
 
 

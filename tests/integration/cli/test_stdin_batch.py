@@ -28,11 +28,14 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_BASELINE_XMP = _REPO_ROOT / "tests" / "fixtures" / "xmps" / "synthesized_v3_reference.xmp"
+_TEST_RAW_NAME = "input.NEF"
+
+
 @pytest.fixture
 def two_image_workspace_root(tmp_path: Path) -> Path:
     """Workspace root with two image_ids, both with baseline snapshots."""
-    from tests.integration.cli.conftest import BASELINE_XMP, TEST_RAW_NAME
-
     root = tmp_path / "ws_root"
     for image_id in ("img-a", "img-b"):
         image_root = root / image_id
@@ -40,8 +43,8 @@ def two_image_workspace_root(tmp_path: Path) -> Path:
         repo = ImageRepo.init(image_root)
         raw_dir = image_root / "raw"
         raw_dir.mkdir(exist_ok=True)
-        (raw_dir / TEST_RAW_NAME).touch()
-        baseline_xmp = parse_xmp(BASELINE_XMP)
+        (raw_dir / _TEST_RAW_NAME).touch()
+        baseline_xmp = parse_xmp(_BASELINE_XMP)
         baseline_hash = snapshot(repo, baseline_xmp, label="baseline")
         tag(repo, "baseline", baseline_hash)
     return root

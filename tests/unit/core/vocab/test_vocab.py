@@ -26,7 +26,7 @@ def _write_pack(tmp_path: Path, entries: list[dict]) -> Path:
 
 
 def test_load_test_pack_succeeds(loaded_pack: VocabularyIndex) -> None:
-    assert len(loaded_pack.list_all()) == 6
+    assert len(loaded_pack.list_all()) == 5
 
 
 def test_lookup_by_name_returns_vocab_entry(loaded_pack: VocabularyIndex) -> None:
@@ -49,7 +49,6 @@ def test_list_all_unfiltered(loaded_pack: VocabularyIndex) -> None:
         "expo_+0.5",
         "expo_-0.5",
         "wb_warm_subtle",
-        "tone_lifted_shadows_subject",
     }
 
 
@@ -59,7 +58,6 @@ def test_list_all_by_layer(loaded_pack: VocabularyIndex) -> None:
         "expo_+0.5",
         "expo_-0.5",
         "wb_warm_subtle",
-        "tone_lifted_shadows_subject",
     }
     assert all(e.layer == "L3" for e in l3)
 
@@ -397,8 +395,6 @@ def test_entry_with_mask_spec_round_trips(tmp_path: Path) -> None:
                         "darktable_version": "5.4",
                         "source": "test",
                         "license": "MIT",
-                        "mask_kind": "raster",
-                        "mask_ref": "current_sky_mask",
                         "mask_spec": spec,
                     }
                 ]

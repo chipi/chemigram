@@ -35,8 +35,8 @@ ADRs come from two streams:
 | ADR-018 | Per-image content-addressed DAG | Accepted |
 | ADR-019 | Git-like ref structure | Accepted |
 | ADR-020 | No remote, no three-way merge, no reflog | Accepted |
-| ADR-021 | Three-layer mask pattern | Accepted |
-| ADR-022 | Mask registry per image with symbolic refs | Accepted |
+| ADR-021 | Three-layer mask pattern | Superseded by ADR-076 |
+| ADR-022 | Mask registry per image with symbolic refs | Superseded by ADR-076 |
 | ADR-023 | Vocabulary primitives are `.dtstyle` + manifest entries | Accepted |
 | ADR-024 | Authoring discipline: uncheck non-target modules | Accepted |
 | ADR-025 | WB and color calibration coupling | Accepted |
@@ -69,10 +69,10 @@ ADRs come from two streams:
 | ADR-052 | PipelineStage Protocol with single v1 stage / DarktableCliStage (closes RFC-005) | Accepted |
 | ADR-053 | EXIF auto-binding by exact-match identity (closes RFC-015) | Accepted |
 | ADR-054 | Canonical XMP serialization for stable content hashing (closes RFC-002) | Accepted |
-| ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Accepted |
+| ADR-055 | Raster masks share objects/ store; masks/registry.json maps names (closes RFC-003) | Superseded by ADR-076 |
 | ADR-056 | MCP tool surface: parameter shapes + error contract (closes RFC-010) | Accepted |
-| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Accepted |
-| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Accepted |
+| ADR-057 | MaskingProvider Protocol shape (closes RFC-009) | Superseded by ADR-076 |
+| ADR-058 | Default masking provider: CoarseAgentProvider (closes RFC-004) | Superseded by ADR-076 |
 | ADR-059 | Agent context loading order and format (closes RFC-011) | Accepted |
 | ADR-060 | Vocabulary gap JSONL schema (closes RFC-013) | Accepted |
 | ADR-061 | End-of-session synthesis is agent-orchestrated (closes RFC-014) | Accepted |
@@ -88,8 +88,9 @@ ADRs come from two streams:
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
 | ADR-073 | Programmatic vocabulary authoring via reverse-engineered structs (closes RFC-012) | Accepted |
-| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
+| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Superseded by ADR-076 |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
+| ADR-076 | Drawn-mask-only mask architecture (supersedes 021/022/055/057/058/074) | Accepted |
 
 ## Conventions
 

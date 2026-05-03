@@ -62,10 +62,9 @@ def test_mcp_tool_has_cli_verb_or_is_pending() -> None:
     mcp_tools = {spec.name for spec in list_registered()}
 
     cli_verbs = _walk_typer_verbs(app)
-    # CLI verbs come back space-separated for sub-apps; flatten the rightmost
-    # token (``masks list`` → ``masks-list`` doesn't apply — tools that
-    # group via sub-apps in the CLI map to flat-named MCP tools, e.g.
-    # ``masks list`` ↔ ``list_masks``).
+    # CLI verbs come back space-separated for sub-apps; flatten to the
+    # rightmost token so a top-level verb and its sub-app commands all
+    # match by their shortest form.
     flat_verbs = {v.split()[-1] for v in cli_verbs}
 
     missing: set[str] = set()
@@ -74,8 +73,6 @@ def test_mcp_tool_has_cli_verb_or_is_pending() -> None:
             continue
         if tool in _KNOWN_PENDING_VERBS:
             continue
-        # Try the rev-mapping for tools whose CLI form drops a prefix
-        # (e.g., MCP ``list_masks`` ↔ CLI ``masks list``).
         synth = tool.split("_")[0]
         if synth in flat_verbs:
             continue

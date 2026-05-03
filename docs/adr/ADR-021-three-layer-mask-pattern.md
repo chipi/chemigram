@@ -1,6 +1,6 @@
 # ADR-021 — Three-layer mask pattern
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-04-27
 > TA anchor ·/components/synthesizer ·/components/ai-providers
 > Related RFC · RFC-009 (mask provider protocol)

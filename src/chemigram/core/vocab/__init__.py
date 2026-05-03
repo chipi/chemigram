@@ -95,16 +95,14 @@ class VocabEntry:
     license: str
     dtstyle: DtstyleEntry
     subtype: str | None = None
-    mask_kind: str | None = None
-    mask_ref: str | None = None
     global_variant: str | None = None
     applies_to: dict[str, str] = field(default_factory=dict)
-    # mask_spec (added v1.4.0): when mask_kind=raster and the registry
-    # doesn't yet have an entry under mask_ref, a future apply path can
-    # synthesize the mask via a built-in geometric provider (ADR-074).
-    # Shape: {"provider": "gradient" | "radial" | "rectangle",
-    #         "config": {<provider kwargs>}}.
-    # v1.4.0 stores the field; the auto-generation hook lands in v1.5.x.
+    # mask_spec: presence triggers the drawn-mask apply path
+    # (chemigram.core.helpers.apply_with_drawn_mask). Shape:
+    # ``{"dt_form": "gradient" | "ellipse" | "rectangle",
+    #   "dt_params": {<form-kwargs>}}``. The earlier raster-PNG path
+    # (mask_kind/mask_ref + MaskingProvider) was removed in v1.5.0 —
+    # darktable never reads external PNGs.
     mask_spec: dict[str, Any] | None = None
 
 
@@ -210,8 +208,6 @@ class VocabularyIndex:
             license=str(raw["license"]),
             dtstyle=dtstyle,
             subtype=raw.get("subtype"),
-            mask_kind=raw.get("mask_kind"),
-            mask_ref=raw.get("mask_ref"),
             global_variant=raw.get("global_variant"),
             applies_to=applies_to,
             mask_spec=raw.get("mask_spec"),

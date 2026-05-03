@@ -1,6 +1,6 @@
 # ADR-058 — Default masking provider: CoarseAgentProvider
 
-> Status · Accepted
+> Status · Superseded by ADR-076 (2026-05-03)
 > Date · 2026-04-29
 > TA anchor · /components/masking
 > Related RFC · RFC-004 (closes); ADR-057 (Protocol)

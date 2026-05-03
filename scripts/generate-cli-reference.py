@@ -160,11 +160,6 @@ _VERBS: tuple[tuple[str, list[str]], ...] = (
     ("apply-notes-update", ["apply-notes-update"]),
     ("vocab list", ["vocab", "list"]),
     ("vocab show", ["vocab", "show"]),
-    ("masks list", ["masks", "list"]),
-    ("masks generate", ["masks", "generate"]),
-    ("masks regenerate", ["masks", "regenerate"]),
-    ("masks tag", ["masks", "tag"]),
-    ("masks invalidate", ["masks", "invalidate"]),
 )
 
 

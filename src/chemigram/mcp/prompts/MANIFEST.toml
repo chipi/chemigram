@@ -10,9 +10,8 @@
 # to an on-disk <task>_v<N>.j2 file.
 
 [prompts."mode_a/system"]
-active = "v3"
+active = "v4"
 context_required = ["vocabulary_size", "image_id", "vocabulary_packs"]
-context_optional = ["masker_available"]  # kept for v1 backwards-compat; v2/v3 ignore
 
 # Mode B prompts ship in Phase 5 (eval harness; RFC-002 follow-up).
 # Helper prompts (taste consistency, gap framing) ship in Phase 2+.

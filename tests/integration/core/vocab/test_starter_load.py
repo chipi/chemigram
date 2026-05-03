@@ -25,7 +25,6 @@ def test_starter_pack_has_expected_entries() -> None:
         "expo_-0.5",
         "wb_warm_subtle",
         "look_neutral",
-        "tone_lifted_shadows_subject",
     }
     assert expected.issubset(names), f"missing: {expected - names}"
 
@@ -37,15 +36,6 @@ def test_starter_pack_layers_present() -> None:
     assert "L2" in layers
     assert "L3" in layers
     assert "L1" not in layers
-
-
-def test_starter_pack_mask_bound_entry_lookups() -> None:
-    """tone_lifted_shadows_subject ships as a mask-bound L3 entry."""
-    index = load_starter()
-    entry = index.lookup_by_name("tone_lifted_shadows_subject")
-    assert entry is not None
-    assert entry.mask_kind == "raster"
-    assert entry.mask_ref == "current_subject_mask"
 
 
 def test_load_packs_starter_only_equivalent_to_load_starter() -> None:

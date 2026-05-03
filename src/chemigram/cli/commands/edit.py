@@ -5,10 +5,10 @@ Mirrors MCP ``apply_primitive``, ``remove_module``, ``reset``,
 :mod:`chemigram.core` API directly (per ADR-071); none of them go
 through ``chemigram.mcp.tools.*``.
 
-Mask-override semantics for raster-mask-bound primitives are honored
-(materialization runs through the masking provider). Raster-mask paths
-route via :func:`chemigram.core.helpers.materialize_mask_for_dt` (lifted
-from ``mcp.tools._masks_apply`` in v1.4.0).
+Mask-bound primitives (``mask_spec`` set on the vocabulary entry) route
+through :func:`chemigram.core.helpers.apply_with_drawn_mask`, which
+encodes the form into the XMP's ``masks_history`` and patches each
+plugin's ``blendop_params`` to bind it.
 """
 
 from __future__ import annotations
@@ -25,11 +25,9 @@ from chemigram.cli.exit_codes import ExitCode
 from chemigram.core.helpers import (
     apply_with_drawn_mask,
     current_xmp,
-    materialize_mask_for_dt,
     summarize_state,
 )
 from chemigram.core.versioning import (
-    MaskNotFoundError,
     RefNotFoundError,
     RepoError,
     VersioningError,
@@ -94,7 +92,6 @@ def _do_apply_primitive(
     image_id: str,
     *,
     vocab_entry: object,
-    mask_override: str | None,
     entry_name: str,
 ) -> int:
     """Per-image core for apply-primitive; returns exit code."""
@@ -108,41 +105,6 @@ def _do_apply_primitive(
     except typer.Exit as exc:
         return int(exc.exit_code)
 
-    use_drawn_mask = vocab_entry.mask_kind == "drawn" and vocab_entry.mask_spec is not None
-
-    if vocab_entry.mask_kind == "raster":
-        target_name = mask_override or vocab_entry.mask_ref
-        if target_name is None:
-            writer.error(
-                f"primitive {entry_name!r} is raster-mask-bound but "
-                "no mask_ref or --mask-override set",
-                ExitCode.INVALID_INPUT,
-                entry=entry_name,
-                image_id=image_id,
-            )
-            return ExitCode.INVALID_INPUT.value
-        try:
-            materialize_mask_for_dt(workspace, target_name)
-        except MaskNotFoundError as exc:
-            writer.error(str(exc), ExitCode.NOT_FOUND, mask=target_name, image_id=image_id)
-            return ExitCode.NOT_FOUND.value
-        except Exception as exc:
-            writer.error(
-                f"mask materialization failed: {exc}",
-                ExitCode.MASKING_ERROR,
-                mask=target_name,
-                image_id=image_id,
-            )
-            return ExitCode.MASKING_ERROR.value
-    elif mask_override is not None:
-        writer.error(
-            f"primitive {entry_name!r} (mask_kind={vocab_entry.mask_kind!r}) "
-            "doesn't accept --mask-override",
-            ExitCode.INVALID_INPUT,
-            image_id=image_id,
-        )
-        return ExitCode.INVALID_INPUT.value
-
     baseline_xmp = current_xmp(workspace)
     if baseline_xmp is None:
         writer.error(
@@ -152,8 +114,7 @@ def _do_apply_primitive(
         )
         return ExitCode.STATE_ERROR.value
 
-    if use_drawn_mask:
-        assert vocab_entry.mask_spec is not None  # narrowed by use_drawn_mask
+    if vocab_entry.mask_spec is not None:
         try:
             new_xmp = apply_with_drawn_mask(
                 baseline_xmp, vocab_entry.dtstyle, vocab_entry.mask_spec
@@ -183,11 +144,6 @@ def apply_primitive(
     ctx: typer.Context,
     image_id: str = typer.Argument(None, help="Image ID (or '-' with --stdin for batch)."),
     entry: str = typer.Option(..., "--entry", help="Vocabulary entry name."),
-    mask_override: str | None = typer.Option(
-        None,
-        "--mask-override",
-        help="Raster-mask-bound primitives: registered mask name to use instead of entry.mask_ref.",
-    ),
     pack: list[str] = typer.Option(
         None,
         "--pack",
@@ -230,7 +186,6 @@ def apply_primitive(
             ctx,
             img,
             vocab_entry=vocab_entry,
-            mask_override=mask_override,
             entry_name=entry,
         )
         for img in iter_image_ids(stdin, image_id)

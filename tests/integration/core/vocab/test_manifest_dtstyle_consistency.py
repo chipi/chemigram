@@ -5,10 +5,6 @@ Would have caught the starter ``tone_lifted_shadows_subject`` bug
 entry. Runs against every loaded pack at import time so adding an
 entry whose dtstyle plugin operations don't match its manifest
 ``touches[]`` fails CI loudly.
-
-Skips raster-mask-bound entries — those carry blend-op-driven mask
-references that don't appear as plugin ``<operation>`` elements but
-DO add operations to the effective ``touches[]`` set.
 """
 
 from __future__ import annotations
@@ -38,11 +34,6 @@ def _packs_to_audit() -> list[VocabularyIndex]:
 def test_every_entry_dtstyle_operations_match_manifest_touches(index: VocabularyIndex) -> None:
     failures = []
     for entry in index.list_all():
-        if entry.mask_kind == "raster":
-            # Mask-bound entries have additional touches via blendop_params
-            # that don't surface as plugin <operation> elements; this audit
-            # would false-positive on them.
-            continue
         plugin_ops = {p.operation for p in entry.dtstyle.plugins}
         manifest_touches = set(entry.touches)
         if plugin_ops != manifest_touches:
@@ -58,8 +49,6 @@ def test_starter_pack_via_load_packs_helper_consistent() -> None:
     index = load_packs(["starter"])
     failures = []
     for entry in index.list_all():
-        if entry.mask_kind == "raster":
-            continue
         plugin_ops = {p.operation for p in entry.dtstyle.plugins}
         if plugin_ops != set(entry.touches):
             failures.append(entry.name)

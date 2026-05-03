@@ -27,7 +27,6 @@ def test_list_vocabulary_unfiltered(context: ToolContext) -> None:
         "expo_+0.5",
         "expo_-0.5",
         "wb_warm_subtle",
-        "tone_lifted_shadows_subject",
     }
 
 
@@ -38,7 +37,6 @@ def test_list_vocabulary_by_layer(context: ToolContext) -> None:
         "expo_+0.5",
         "expo_-0.5",
         "wb_warm_subtle",
-        "tone_lifted_shadows_subject",
     }
 
 
@@ -111,116 +109,6 @@ def test_apply_primitive_unknown_primitive_returns_not_found(
     )
     assert result.success is False
     assert result.error.code == ErrorCode.NOT_FOUND
-
-
-def test_apply_primitive_mask_override_on_global_entry_rejected(context: ToolContext) -> None:
-    """Passing mask_override on a non-mask-bound L3 entry → INVALID_INPUT
-    (was slice=4 NOT_IMPLEMENTED in v0.3.0)."""
-    result = _call(
-        "apply_primitive",
-        {
-            "image_id": "test-image",
-            "primitive_name": "expo_+0.5",
-            "mask_override": "subject_mask",
-        },
-        context,
-    )
-    assert result.success is False
-    assert result.error.code == ErrorCode.INVALID_INPUT
-    assert "mask_override" in result.error.message
-
-
-def test_apply_mask_bound_primitive_no_ref_no_override_rejected(
-    context: ToolContext,
-) -> None:
-    """Mask-bound entry with empty mask_ref and no override → INVALID_INPUT."""
-    # Patch the entry to clear mask_ref (mimicking a manifest with mask_kind
-    # but no mask_ref — which our validator allows; we test the apply guard).
-    from dataclasses import replace as dc_replace
-
-    real_entry = context.vocabulary.lookup_by_name("tone_lifted_shadows_subject")
-    bad_entry = dc_replace(real_entry, mask_ref=None)
-    context.vocabulary._by_name["tone_lifted_shadows_subject"] = bad_entry
-
-    result = _call(
-        "apply_primitive",
-        {"image_id": "test-image", "primitive_name": "tone_lifted_shadows_subject"},
-        context,
-    )
-    assert result.success is False
-    assert result.error.code == ErrorCode.INVALID_INPUT
-
-
-def test_apply_mask_bound_primitive_unregistered_mask_returns_not_found(
-    context: ToolContext,
-) -> None:
-    """Mask-bound entry but no registered mask under the ref → NOT_FOUND."""
-    result = _call(
-        "apply_primitive",
-        {"image_id": "test-image", "primitive_name": "tone_lifted_shadows_subject"},
-        context,
-    )
-    assert result.success is False
-    assert result.error.code == ErrorCode.NOT_FOUND
-
-
-def test_apply_mask_bound_primitive_materializes_mask(context: ToolContext) -> None:
-    """Mask-bound entry + registered mask → mask file appears at workspace/masks/<name>.png."""
-    import io
-
-    from PIL import Image
-
-    from chemigram.core.versioning.masks import register_mask
-
-    img = Image.new("L", (8, 8), 200)
-    buf = io.BytesIO()
-    img.save(buf, "PNG")
-    register_mask(
-        context.workspaces["test-image"].repo,
-        "current_subject_mask",
-        buf.getvalue(),
-        generator="manual",
-    )
-
-    result = _call(
-        "apply_primitive",
-        {"image_id": "test-image", "primitive_name": "tone_lifted_shadows_subject"},
-        context,
-    )
-    assert result.success is True
-    mask_path = context.workspaces["test-image"].masks_dir / "current_subject_mask.png"
-    assert mask_path.exists()
-
-
-def test_apply_mask_bound_with_override_picks_override(context: ToolContext) -> None:
-    import io
-
-    from PIL import Image
-
-    from chemigram.core.versioning.masks import register_mask
-
-    img = Image.new("L", (8, 8), 200)
-    buf = io.BytesIO()
-    img.save(buf, "PNG")
-    register_mask(
-        context.workspaces["test-image"].repo,
-        "current_manta_mask",
-        buf.getvalue(),
-        generator="manual",
-    )
-
-    result = _call(
-        "apply_primitive",
-        {
-            "image_id": "test-image",
-            "primitive_name": "tone_lifted_shadows_subject",
-            "mask_override": "current_manta_mask",
-        },
-        context,
-    )
-    assert result.success is True
-    override_path = context.workspaces["test-image"].masks_dir / "current_manta_mask.png"
-    assert override_path.exists()
 
 
 # --- remove_module ------------------------------------------------------

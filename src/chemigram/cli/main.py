@@ -1,8 +1,8 @@
 """Chemigram CLI entry point (RFC-020).
 
 Typer root app + global-options callback. Registers individual command
-modules from :mod:`chemigram.cli.commands`. Sub-apps for grouped verbs
-(``vocab``, ``masks``).
+modules from :mod:`chemigram.cli.commands`. Sub-app for grouped verbs
+(``vocab``).
 """
 
 from __future__ import annotations
@@ -18,7 +18,6 @@ from chemigram.cli.commands import (
     edit,
     export,
     lifecycle,
-    masks,
     render,
     status,
     versioning,
@@ -88,9 +87,6 @@ app.command(name="compare", help="Render two snapshots and stitch them side-by-s
 app.command(name="export-final", help="High-quality export to the workspace's exports/ dir.")(
     export.export_final
 )
-
-# Masks (sub-app)
-app.add_typer(masks.app, name="masks", help="Inspect / tag / invalidate raster masks.")
 
 # Context
 app.command(name="read-context", help="Print the agent's first-turn context (RFC-011).")(

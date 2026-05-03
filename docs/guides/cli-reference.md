@@ -74,18 +74,16 @@ Usage: chemigram ingest [OPTIONS] RAW_PATH
 ### `chemigram apply-primitive`
 
 ```
-Usage: chemigram apply-primitive [OPTIONS] IMAGE_ID
+Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
 
  Apply a vocabulary entry; snapshot the result.
 
- *    image_id      TEXT  Image ID. [required]
- *  --entry                  TEXT  Vocabulary entry name. [required]
-    --mask-override          TEXT  Raster-mask-bound primitives: registered
-                                   mask name to use instead of
-                                   entry.mask_ref.
-    --pack           -p      TEXT  Vocabulary pack(s). Defaults to
-                                   ['starter'].
-    --help                         Show this message and exit.
+   image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
+ *  --entry          TEXT  Vocabulary entry name. [required]
+    --pack   -p      TEXT  Vocabulary pack(s). Defaults to ['starter'].
+    --stdin                Read image_ids from stdin (one per line); same
+                           entry applied to each.
+    --help                 Show this message and exit.
 ```
 
 ### `chemigram remove-module`
@@ -116,12 +114,14 @@ Usage: chemigram reset [OPTIONS] IMAGE_ID
 ### `chemigram get-state`
 
 ```
-Usage: chemigram get-state [OPTIONS] IMAGE_ID
+Usage: chemigram get-state [OPTIONS] [IMAGE_ID]
 
  Print a summary of the workspace's current XMP.
 
- *    image_id      TEXT  Image ID. [required]
- --help          Show this message and exit.
+   image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
+ --stdin          Read image_ids from stdin (one per line); aggregate exit
+                  code.
+ --help           Show this message and exit.
 ```
 
 ### `chemigram snapshot`
@@ -221,17 +221,19 @@ Usage: chemigram bind-layers [OPTIONS] IMAGE_ID
 ### `chemigram render-preview`
 
 ```
-Usage: chemigram render-preview [OPTIONS] IMAGE_ID
+Usage: chemigram render-preview [OPTIONS] [IMAGE_ID]
 
  Render a snapshot to a JPEG preview.
 
- *    image_id      TEXT  Image ID. [required]
- --size        INTEGER RANGE [64<=x<=8192]  Max width/height in pixels.
-                                            [default: 1024]
- --ref         TEXT                         Ref name or content hash to
-                                            render (defaults to HEAD).
-                                            [default: HEAD]
- --help                                     Show this message and exit.
+   image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
+ --size         INTEGER RANGE [64<=x<=8192]  Max width/height in pixels.
+                                             [default: 1024]
+ --ref          TEXT                         Ref name or content hash to
+                                             render (defaults to HEAD).
+                                             [default: HEAD]
+ --stdin                                     Read image_ids from stdin (one
+                                             per line); render each.
+ --help                                      Show this message and exit.
 ```
 
 ### `chemigram compare`
@@ -252,11 +254,11 @@ Usage: chemigram compare [OPTIONS] IMAGE_ID HASH_A HASH_B
 ### `chemigram export-final`
 
 ```
-Usage: chemigram export-final [OPTIONS] IMAGE_ID
+Usage: chemigram export-final [OPTIONS] [IMAGE_ID]
 
  High-quality export to the workspace's exports/ dir.
 
- *    image_id      TEXT  Image ID. [required]
+   image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
  --ref           TEXT                          Ref name or hash to export.
                                                Defaults to HEAD.
                                                [default: HEAD]
@@ -264,6 +266,8 @@ Usage: chemigram export-final [OPTIONS] IMAGE_ID
                                                [default: jpeg]
  --size          INTEGER RANGE [64<=x<=16384]  Max width/height in pixels.
                                                Omit for full resolution.
+ --stdin                                       Read image_ids from stdin (one
+                                               per line); export each.
  --help                                        Show this message and exit.
 ```
 
@@ -358,75 +362,4 @@ Usage: chemigram vocab show [OPTIONS] NAME
  *    name      TEXT  Vocabulary entry name (e.g. expo_+0.5). [required]
  --pack  -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
  --help                Show this message and exit.
-```
-
-### `chemigram masks list`
-
-```
-Usage: chemigram masks list [OPTIONS] IMAGE_ID
-
- List registered masks (newest first).
-
- *    image_id      TEXT  Image ID. [required]
- --help          Show this message and exit.
-```
-
-### `chemigram masks generate`
-
-```
-Usage: chemigram masks generate [OPTIONS] IMAGE_ID
-
- Generate a raster mask via the configured provider.
-
- The CLI has no provider wiring today (see module docstring). Both
- generate and regenerate exit ``MASKING_ERROR`` (7) with a clear hint.
-
- *    image_id      TEXT  Image ID. [required]
- *  --target        TEXT  Subject for the masker (e.g. 'manta'). [required]
-    --prompt        TEXT  Free-form refinement prompt for the provider.
-    --name          TEXT  Mask registry name (defaults to
-                          current_<target>_mask).
-    --help                Show this message and exit.
-```
-
-### `chemigram masks regenerate`
-
-```
-Usage: chemigram masks regenerate [OPTIONS] IMAGE_ID
-
- Refine an existing mask via the configured provider. (Same MASKING_ERROR
- constraint as ``generate`` — see module docstring.)
-
- *    image_id      TEXT  Image ID. [required]
- *  --name          TEXT  Existing mask name to refine. [required]
-    --target        TEXT  Override the target (defaults to inferred from
-                          name).
-    --prompt        TEXT  Refinement prompt.
-    --help                Show this message and exit.
-```
-
-### `chemigram masks tag`
-
-```
-Usage: chemigram masks tag [OPTIONS] IMAGE_ID
-
- Copy a mask registry entry under a new name (snapshot-before-regenerate
- pattern).
-
- *    image_id      TEXT  Image ID. [required]
- *  --source          TEXT  Existing mask name. [required]
- *  --new-name        TEXT  New name (must be non-empty). [required]
-    --help                  Show this message and exit.
-```
-
-### `chemigram masks invalidate`
-
-```
-Usage: chemigram masks invalidate [OPTIONS] IMAGE_ID
-
- Drop a mask from the registry (PNG bytes remain content-addressed).
-
- *    image_id      TEXT  Image ID. [required]
- *  --name        TEXT  Mask registry name to drop. [required]
-    --help              Show this message and exit.
 ```
