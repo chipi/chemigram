@@ -1,7 +1,7 @@
 # Closing the v1.4.0 carry — issues #62 and #63
 
 > A step-by-step you can follow tomorrow without re-reading the threads.
-> Both issues are on milestone **v1.5.1** (see https://github.com/chipi/chemigram/milestone/11).
+> Both issues are on milestone **v1.6.0** (see https://github.com/chipi/chemigram/milestone/11).
 
 ## What's in front of you
 
@@ -11,7 +11,7 @@
 | **#63 part A** | darktable session: configure channelmixerrgb for B&W → export `.dtstyle` to `_seeds/` | ~10–15 min | darktable GUI |
 | **#63 part B** | New Claude session decodes the seed + authors 3 variants + closes the issue | ~30 min wall, you sip coffee | Claude Code |
 
-After both: open issues drops 2 → 0, v1.5.1 closes, Phase 1.4 fully done.
+After both: open issues drops 2 → 0, v1.6.0 closes, Phase 1.4 fully done.
 
 ---
 
@@ -100,7 +100,7 @@ If `grep` returns `0`, the style didn't capture channelmixerrgb. Go back to step
 Start a new Claude Code session in this repo. Paste this prompt:
 
 ```
-Pick up GH issue #63 (milestone v1.5.1). The seed dtstyle is at
+Pick up GH issue #63 (milestone v1.6.0). The seed dtstyle is at
 vocabulary/packs/expressive-baseline/_seeds/bw_convert_seed.dtstyle.
 
 Decode the channelmixerrgb v3 struct against scripts/author-dtstyle.py
@@ -118,7 +118,7 @@ vocabulary/packs/expressive-baseline/layers/L3/channelmixerrgb/<name>.dtstyle.
 
 Run tests/e2e/expressive/test_path_a_bw.py until all three variants pass
 the channel_spread direction-of-change assertion. Then close #63 in the
-closing commit and update CHANGELOG.md with a v1.5.1 entry.
+closing commit and update CHANGELOG.md with a v1.6.0 entry.
 ```
 
 That session needs real darktable on the path (for the e2e tests). You don't need to babysit it — it'll either succeed or come back with a clear blocker.
@@ -135,30 +135,30 @@ uv run pytest tests/e2e/expressive/test_path_a_bw.py -v
 gh issue view 63 --json state -q .state
 # expect: CLOSED
 
-gh issue list --milestone "v1.5.1"
+gh issue list --milestone "v1.6.0"
 # expect: empty (both #62 and #63 closed)
 ```
 
-### Step 6 — close v1.5.1 milestone + tag + release
+### Step 6 — close v1.6.0 milestone + tag + release
 
-If everything passes, close the milestone and ship v1.5.1:
+If everything passes, close the milestone and ship v1.6.0:
 
 ```bash
 # Close the milestone (replace 11 if the URL above showed a different number)
 gh api -X PATCH repos/chipi/chemigram/milestones/11 -f state=closed
 
 # Tag and push
-git tag v1.5.1 -m "v1.5.1 — channelmixerrgb B&W trio + #62 close-as-retired"
-git push origin v1.5.1
+git tag v1.6.0 -m "v1.6.0 — channelmixerrgb B&W trio + #62 close-as-retired"
+git push origin v1.6.0
 
 # GH release
-gh release create v1.5.1 --title "v1.5.1 — channelmixerrgb B&W trio" \
+gh release create v1.6.0 --title "v1.6.0 — channelmixerrgb B&W trio" \
   --notes-from-tag
 # (or paste a longer notes body — the Claude session that ships #63 will
 # already have updated CHANGELOG.md with the right summary)
 ```
 
-You can also let the Claude session do these — just say "tag and release v1.5.1 when the trio passes" in the handoff prompt.
+You can also let the Claude session do these — just say "tag and release v1.6.0 when the trio passes" in the handoff prompt.
 
 ---
 
@@ -168,10 +168,10 @@ You can also let the Claude session do these — just say "tag and release v1.5.
 
 **`darktable` not on path.** It's installed but not symlinked. On macOS the binary is usually inside the app bundle: `/Applications/darktable.app/Contents/MacOS/darktable`. You can either symlink it (`ln -s ... /usr/local/bin/darktable`) or just open the .app from Finder for the GUI part — only step 5 needs the binary on path, and you can set `CHEMIGRAM_DT_CONFIGDIR` + `PATH` for that step alone.
 
-**The Claude session's struct decode fails.** The seed is your insurance. The session can show you the hex bytes and you can use darktable to verify the layout against known-good values. Worst case: log it as a follow-up and ship v1.5.1 with #62 closed only.
+**The Claude session's struct decode fails.** The seed is your insurance. The session can show you the hex bytes and you can use darktable to verify the layout against known-good values. Worst case: log it as a follow-up and ship v1.6.0 with #62 closed only.
 
 **Tests pass but the visuals look wrong.** That's vocabulary judgment, not architecture. The test asserts direction-of-change; the *aesthetic* result is yours to judge. If `bw_sky_drama` doesn't actually darken the sky enough, tweak the grey[blue] float and re-run.
 
 ---
 
-*This guide ships in the repo at `docs/guides/closing-62-and-63.md` so you can re-read it anytime. Once v1.5.1 is shipped it can be deleted.*
+*This guide ships in the repo at `docs/guides/closing-62-and-63.md` so you can re-read it anytime. Once v1.6.0 is shipped it can be deleted.*
