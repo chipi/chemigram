@@ -169,9 +169,11 @@ Phase 1 is decomposed into six slices. Slices roughly follow dependency order �
 
 ---
 
-### Slice 4 — Coarse masking + local adjustments ✅ shipped (v0.4.0)
+### Slice 4 — Coarse masking + local adjustments ✅ shipped (v0.4.0); architecturally superseded (v1.5.0)
 
-**Scope (shipped):**
+> **Status note (2026-05-03):** the substance of this slice — the `MaskingProvider` Protocol, `CoarseAgentProvider`, the PNG mask registry, the five mask MCP tools, the `mask_kind`/`mask_ref` schema, the `mask_override` apply argument — was all retired in v1.5.0 (ADR-076) when we discovered darktable doesn't read external PNG raster masks. The drawn-mask path (path 4a, v1.4.0) replaced it, validated end-to-end against real darktable. The historical scope below is preserved as build-record; for current architecture see ADR-076 and `concept/04-architecture.md` § 6.
+
+**Scope (shipped in v0.4.0; later superseded):**
 
 - `chemigram.core.masking` — `MaskingProvider` Protocol + `MaskResult` (ADR-057, #17).
 - `chemigram.core.masking.coarse_agent.CoarseAgentProvider` — sampling-based bundled default per ADR-058. Pillow rasterizer for bbox + polygon descriptors (#17).

@@ -103,7 +103,7 @@ Tests live in three directories, codified in ADR-036, refined here with concrete
 - Every render code path: preview, export, with/without masks, different sizes.
 - Full MCP session shapes: ingest → bind → apply → render → export → snapshot.
 - Reset / branch / checkout semantics: each followed by a render to confirm the workspace state is intact.
-- Mask-bound primitives: real mask materialization → real render → assert the masked region differs from the unmasked region.
+- Mask-bound primitives: real `apply_with_drawn_mask` synthesis → real render → assert the masked region differs *spatially* from a same-dtstyle uniform render (path 4a; v1.4.0+).
 
 **Doesn't belong:**
 - Anything that doesn't ultimately validate pixels or filesystem state from a real darktable invocation.
@@ -119,7 +119,7 @@ These are the rules a PR must satisfy before it lands.
 - One unit test per input-validation path (schema rejects malformed input).
 - One integration test per error code the tool can return (`recoverable=True` errors all need at least one test).
 - One integration test for the happy path through `in_memory_session`.
-- If the tool produces side-effects on the filesystem (snapshot, mask, transcript): one integration test that asserts the post-state.
+- If the tool produces side-effects on the filesystem (snapshot, transcript): one integration test that asserts the post-state.
 - If the tool drives a render: one e2e test that asserts on the rendered pixels.
 
 ### When you add a vocabulary primitive
@@ -165,11 +165,11 @@ Every shipped primitive needs end-to-end pixel validation. The 5 starter entries
 | `expo_-0.5` | L3 | luma < `expo_+0.5` (relative ordering) |
 | `wb_warm_subtle` | L3 | warmth ratio (R+G)/(2B) increases |
 | `look_neutral` | L2 | composite renders without errors; specific channel asserts TBD |
-| `tone_lifted_shadows_subject` | L3 raster-mask-bound | masked region's shadow tones lifted vs unmasked baseline |
+| `gradient_top_dampen_highlights` | L3 drawn-mask-bound | masked region (top half) reads dimmer than uniform application |
 
 ### MCP tool surface
 
-All 27 shipped tools need:
+All 22 shipped tools need:
 - Unit input-validation coverage
 - Integration round-trip coverage through `in_memory_session`
 - E2e coverage for any tool that drives a render or mutates filesystem state
@@ -180,7 +180,7 @@ Categories:
 - **Layer binding:** `bind_layers`, `unbind_layers`
 - **Rendering:** `render_preview`, `compare`
 - **Export:** `export`
-- **Masks:** `generate_mask`, `regenerate_mask`, `list_masks`, `tag_mask`, `apply_primitive(mask_override=...)`
+- **Drawn-mask apply:** `apply_primitive` for entries with `mask_spec` set (routes through `apply_with_drawn_mask`; e2e proves the binding shapes the rendered effect). Standalone mask MCP tools were removed in v1.5.0 per ADR-076.
 - **Context:** `read_context`, `propose_taste_update`, `confirm_taste_update`, `propose_notes_update`, `confirm_notes_update`, `log_vocabulary_gap`
 - **Lifecycle:** `ingest_workspace`
 
@@ -194,13 +194,12 @@ Beyond per-tool coverage, the *combinations* matter:
 - snapshot → tag → reset → snapshot (the ADR-062 case)
 - branch → checkout → snapshot → checkout main → diff
 - tag (immutable) → re-tag (must fail)
-- snapshot → invalidate-mask → snapshot (mask reachability)
 
 ### Render paths
 
 - Preview at multiple sizes (256, 1024, 4096)
 - Export at full resolution (`--hq true`)
-- Render with `apply_primitive(mask_override)` — masked region differs from unmasked
+- Render after `apply_primitive` with a `mask_spec`-bearing entry — masked region differs spatially from a same-dtstyle uniform render
 - Render after corrupt XMP — surfaced as `darktable_error`, not stack trace
 
 ### Context + session

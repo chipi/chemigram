@@ -94,6 +94,44 @@ def test_apply_primitive_json_emits_snapshot_hash(
     assert "state_after" in payload
 
 
+def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """An expressive-baseline mask-bound entry routes through the drawn-mask
+    apply path; the resulting XMP carries masks_history. Coverage gate for
+    the ``vocab_entry.mask_spec is not None`` branch in cli/commands/edit.py
+    (the e2e suite proves the binding actually shapes pixels under real
+    darktable; this proves the dispatch logic works without darktable).
+    """
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "gradient_top_dampen_highlights",
+            "--pack",
+            "expressive-baseline",
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["status"] == "ok"
+    snapshot_hash = payload["snapshot_hash"]
+
+    from chemigram.core.versioning import ImageRepo
+
+    repo = ImageRepo(cli_workspace_root / "test-image")
+    raw = repo.read_object(snapshot_hash)
+    assert b"masks_history" in raw, (
+        "drawn-mask path should inject darktable:masks_history into the XMP "
+        "for entries with mask_spec (ADR-076)"
+    )
+
+
 def test_apply_primitive_unknown_entry(runner: CliRunner, cli_workspace_root: Path) -> None:
     result = runner.invoke(
         app,

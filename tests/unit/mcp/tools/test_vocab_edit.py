@@ -111,6 +111,73 @@ def test_apply_primitive_unknown_primitive_returns_not_found(
     assert result.error.code == ErrorCode.NOT_FOUND
 
 
+def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
+    context: ToolContext,
+) -> None:
+    """When entry.mask_spec is set, apply_primitive routes through
+    apply_with_drawn_mask which injects masks_history into the XMP.
+
+    Coverage gate for the mask_spec branch in
+    chemigram.mcp.tools.vocab_edit._apply_primitive — without this, only
+    the e2e suite (requires real darktable) exercises that branch.
+    """
+    from dataclasses import replace as dc_replace
+
+    base = context.vocabulary.lookup_by_name("expo_+0.5")
+    assert base is not None
+    masked = dc_replace(
+        base,
+        name="expo_top_gradient_test",
+        mask_spec={
+            "dt_form": "gradient",
+            "dt_params": {
+                "anchor_x": 0.5,
+                "anchor_y": 0.5,
+                "rotation": 0.0,
+                "compression": 0.5,
+            },
+        },
+    )
+    context.vocabulary._by_name["expo_top_gradient_test"] = masked
+
+    result = _call(
+        "apply_primitive",
+        {"image_id": "test-image", "primitive_name": "expo_top_gradient_test"},
+        context,
+    )
+    assert result.success is True, result.error
+    snapshot_hash = result.data["snapshot_hash"]
+    raw = context.workspaces["test-image"].repo.read_object(snapshot_hash)
+    assert b"masks_history" in raw, (
+        "drawn-mask path should inject darktable:masks_history into the XMP "
+        "when mask_spec is set on the vocab entry (ADR-076)"
+    )
+
+
+def test_apply_primitive_with_invalid_mask_spec_returns_masking_error(
+    context: ToolContext,
+) -> None:
+    """Malformed mask_spec → MASKING_ERROR (not a stack trace through MCP)."""
+    from dataclasses import replace as dc_replace
+
+    base = context.vocabulary.lookup_by_name("expo_+0.5")
+    assert base is not None
+    bad = dc_replace(
+        base,
+        name="expo_bad_mask_test",
+        mask_spec={"dt_form": "not_a_real_form", "dt_params": {}},
+    )
+    context.vocabulary._by_name["expo_bad_mask_test"] = bad
+
+    result = _call(
+        "apply_primitive",
+        {"image_id": "test-image", "primitive_name": "expo_bad_mask_test"},
+        context,
+    )
+    assert result.success is False
+    assert result.error.code == ErrorCode.MASKING_ERROR
+
+
 # --- remove_module ------------------------------------------------------
 
 

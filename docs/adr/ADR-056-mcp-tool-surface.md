@@ -1,6 +1,6 @@
 # ADR-056 — MCP tool surface: parameter shapes and error contract
 
-> Status · Accepted
+> Status · Accepted; partially superseded by ADR-076 (2026-05-03) — the 5 mask tools (`generate_mask`, `regenerate_mask`, `list_masks`, `tag_mask`, `invalidate_mask`) and the `apply_primitive(mask_override=…)` parameter were removed in v1.5.0; the surface is now 22 tools, not 27. The error-contract and parameter-shape rules in this ADR remain in force for the surviving tools.
 > Date · 2026-04-29
 > TA anchor · /components/mcp-server, /contracts/mcp-tools
 > Related RFC · RFC-010 (closes); supersedes the implementation note in ADR-033

@@ -79,7 +79,7 @@ Drawn-mask serialization for vocabulary entries that shape only part of the fram
 
 Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
-**Files (shipped v0.3.0):** `src/chemigram/mcp/server.py` (bootstrap + stdio), `src/chemigram/mcp/registry.py` (tool registry + `ToolContext`), `src/chemigram/mcp/errors.py` (`ToolResult` / `ToolError` / `ErrorCode`), `src/chemigram/mcp/_test_harness.py` (in-memory client/server harness), `src/chemigram/mcp/tools/*` (27 tools across vocab/edit, versioning, rendering, ingest, masks, plus context stubs).
+**Files:** `src/chemigram/mcp/server.py` (bootstrap + stdio), `src/chemigram/mcp/registry.py` (tool registry + `ToolContext`), `src/chemigram/mcp/errors.py` (`ToolResult` / `ToolError` / `ErrorCode`), `src/chemigram/mcp/_test_harness.py` (in-memory client/server harness), `src/chemigram/mcp/tools/*` — 22 tools as of v1.5.0 across vocab/edit (5), versioning (6), rendering (3), ingest (3), context (5). The 5 mask tools (`generate_mask`/`regenerate_mask`/`list_masks`/`tag_mask`/`invalidate_mask`) shipped in v0.3.0–v0.4.0 and were removed in v1.5.0 per ADR-076 — see CHANGELOG.
 
 **Tool surface:** see TA/contracts/mcp-tools.
 

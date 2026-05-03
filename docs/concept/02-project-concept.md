@@ -437,7 +437,7 @@ Putting it all together — what a photographer experiences from first install t
 
 Install Chemigram. Initial setup creates `~/.chemigram/` with empty `taste.md`, default `config.toml`, isolated darktable configdir. Photographer spends an hour writing initial `taste.md` — what they can articulate about their preferences. Imperfect; fine.
 
-Optionally configure a masking provider beyond the bundled coarse default. For production-quality work on subjects, install `chemigram-masker-sam` sibling project.
+Note that v1.5.0 ships drawn-form geometric masks (gradient / ellipse / rectangle) baked into vocabulary entries' `mask_spec`. There is no AI-driven masker today; subject-precise content-aware masking is Phase 4 work via a sibling project (working name `chemigram-masker-sam`) that will produce darktable drawn-form geometry, not PNG bytes. ADR-076 documents the architecture and supersedes the v1.4-and-earlier PNG-mask path.
 
 ### 10.2 First session — Mode A on a single image
 

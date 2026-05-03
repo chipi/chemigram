@@ -1,6 +1,6 @@
 # Starter Vocabulary
 
-The vocabulary pack that ships with `pip install chemigram`. **Deliberately small** — five entries, generic by design — so the agent loop works out of the box. Phase 2 grows the vocabulary from real session evidence, not from imagined upfront completeness; the gaps surfaced via `log_vocabulary_gap` are the seed for new entries.
+The vocabulary pack that ships with `pip install chemigram`. **Deliberately small** — four entries, generic by design — so the agent loop works out of the box. Phase 2 grows the vocabulary from real session evidence, not from imagined upfront completeness; the gaps surfaced via `log_vocabulary_gap` are the seed for new entries.
 
 See `docs/concept/04-architecture.md` § 5 (layer model) for the L1/L2/L3 architecture, and `docs/prd/PRD-003-vocabulary-as-voice.md` for the design rationale.
 
@@ -12,9 +12,8 @@ See `docs/concept/04-architecture.md` § 5 (layer model) for the L1/L2/L3 archit
 | `expo_-0.5` | L3 | exposure | — | Lower exposure -0.5 EV (global) |
 | `wb_warm_subtle` | L3 | temperature | — | Subtle warm white balance shift |
 | `look_neutral` | L2 | exposure + temperature | — | Neutral L2 baseline (exposure + warm-subtle WB) |
-| `tone_lifted_shadows_subject` | L3 | exposure | raster (subject) | Shadow lift restricted to the subject mask |
 
-The mask-bound entry references `current_subject_mask` — the agent generates this via `generate_mask(image_id, target="subject")` before applying.
+Mask-bound starter entries are out for now: the original `tone_lifted_shadows_subject` was retired in v1.5.0 alongside the PNG-mask architecture (ADR-076). Drawn-form mask-bound entries (gradient / ellipse / rectangle) live in the `expressive-baseline` pack; the starter pack stays minimal until evidence motivates a starter-level mask-bound primitive.
 
 ## What's not shipped
 

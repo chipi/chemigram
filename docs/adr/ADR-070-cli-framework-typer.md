@@ -1,6 +1,6 @@
 # ADR-070 — CLI framework: Typer
 
-> Status · Accepted
+> Status · Accepted; partially superseded by ADR-076 (2026-05-03) — the `masks` sub-command group (list/generate/regenerate/tag/invalidate) was removed in v1.5.0; the CLI now has 1 sub-command group (`vocab`), not 2. Typer remains the framework choice and the rest of this ADR's reasoning stands.
 > Date · 2026-05-03
 > TA anchor ·/components/cli
 > Related RFC · RFC-020 (closes here)
