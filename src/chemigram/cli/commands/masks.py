@@ -21,6 +21,7 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
+from chemigram.core.helpers import serialize_mask_entry
 from chemigram.core.versioning.masks import (
     MaskError,
     MaskNotFoundError,
@@ -34,7 +35,6 @@ from chemigram.core.versioning.masks import (
 from chemigram.core.versioning.masks import (
     tag_mask as core_tag_mask,
 )
-from chemigram.mcp.tools.masks import _serialize_entry
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -61,7 +61,7 @@ def list_(
 
     workspace = resolve_workspace_or_fail(ctx, image_id)
     entries = core_list_masks(workspace.repo)
-    payload = [_serialize_entry(e) for e in entries]
+    payload = [serialize_mask_entry(e) for e in entries]
     writer.result(
         message=f"{len(payload)} mask(s) for {image_id}",
         image_id=image_id,
@@ -171,7 +171,7 @@ def tag(
     writer.result(
         message=f"tagged mask {source} as {new_name}",
         image_id=image_id,
-        **_serialize_entry(entry),
+        **serialize_mask_entry(entry),
     )
 
 

@@ -15,6 +15,7 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
+from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import (
     ObjectNotFoundError,
     RefNotFoundError,
@@ -39,7 +40,6 @@ from chemigram.core.versioning.ops import (
 from chemigram.core.versioning.ops import (
     tag as core_tag,
 )
-from chemigram.mcp._state import current_xmp, summarize_state
 
 # ---------------------------------------------------------------------------
 # snapshot

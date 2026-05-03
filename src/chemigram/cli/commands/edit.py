@@ -6,11 +6,9 @@ Mirrors MCP ``apply_primitive``, ``remove_module``, ``reset``,
 through ``chemigram.mcp.tools.*``.
 
 Mask-override semantics for raster-mask-bound primitives are honored
-(materialization runs through the masking provider). For v1.3.0
-foundation, raster-mask paths route via the same
-``chemigram.mcp.tools._masks_apply.materialize_mask_for_dt`` helper
-the MCP server uses; that helper lives in mcp/ today and is genuine
-shared infrastructure (a future refactor lifts it to core).
+(materialization runs through the masking provider). Raster-mask paths
+route via :func:`chemigram.core.helpers.materialize_mask_for_dt` (lifted
+from ``mcp.tools._masks_apply`` in v1.4.0).
 """
 
 from __future__ import annotations
@@ -23,6 +21,7 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
+from chemigram.core.helpers import current_xmp, materialize_mask_for_dt, summarize_state
 from chemigram.core.versioning import (
     MaskNotFoundError,
     RefNotFoundError,
@@ -33,10 +32,6 @@ from chemigram.core.versioning import (
 from chemigram.core.versioning.ops import reset_to
 from chemigram.core.vocab import load_packs
 from chemigram.core.xmp import synthesize_xmp
-
-# Pure helpers — same shape both adapters need; pragmatic shared import
-# until they move to core.
-from chemigram.mcp._state import current_xmp, summarize_state
 
 # ---------------------------------------------------------------------------
 # get-state (read-only)
@@ -127,8 +122,6 @@ def apply_primitive(
             )
             raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
         try:
-            from chemigram.mcp.tools._masks_apply import materialize_mask_for_dt
-
             materialize_mask_for_dt(workspace, target_name)
         except MaskNotFoundError as exc:
             # Mirror the MCP tool: a missing mask is NOT_FOUND, not

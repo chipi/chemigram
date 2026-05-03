@@ -4,9 +4,10 @@ Wraps :func:`chemigram.core.pipeline.render` plus XMP resolution for an
 arbitrary ref-or-hash. Output paths are deterministic (hash-based) so a
 re-render of the same state hits the cache.
 
-``compare`` uses Pillow to stitch two single-state renders into one
-side-by-side JPEG; the dependency rationale is in ``pyproject.toml`` — pure
-infrastructure, no AI / no image processing logic, just composition.
+``compare`` delegates the side-by-side stitch to
+:func:`chemigram.core.helpers.stitch_side_by_side` (Pillow); the
+dependency rationale is in ``pyproject.toml`` — pure infrastructure,
+no AI / no image processing logic, just composition.
 """
 
 from __future__ import annotations
@@ -15,8 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from PIL import Image, ImageDraw, ImageFont
-
+from chemigram.core.helpers import parse_xmp_at, stitch_side_by_side
 from chemigram.core.pipeline import render
 from chemigram.core.versioning import (
     ObjectNotFoundError,
@@ -35,7 +35,6 @@ from chemigram.mcp.errors import (
     error_not_found,
 )
 from chemigram.mcp.registry import ToolContext, register_tool
-from chemigram.mcp.tools.versioning import parse_xmp_at
 
 _VALID_FORMATS = {"jpeg", "png"}
 
@@ -144,26 +143,6 @@ register_tool(
 # --- compare ------------------------------------------------------------
 
 
-def _stitch_side_by_side(
-    left: Path, right: Path, output: Path, *, label_left: str, label_right: str
-) -> None:
-    img_a = Image.open(left).convert("RGB")
-    img_b = Image.open(right).convert("RGB")
-    h = max(img_a.height, img_b.height)
-    sep = 8
-    canvas = Image.new("RGB", (img_a.width + sep + img_b.width, h + 24), "white")
-    canvas.paste(img_a, (0, 24))
-    canvas.paste(img_b, (img_a.width + sep, 24))
-    draw = ImageDraw.Draw(canvas)
-    try:
-        font = ImageFont.load_default()
-    except OSError:  # pragma: no cover — load_default() is robust
-        font = None
-    draw.text((4, 4), label_left, fill="black", font=font)
-    draw.text((img_a.width + sep + 4, 4), label_right, fill="black", font=font)
-    canvas.save(output, "JPEG", quality=92)
-
-
 async def _compare(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     image_id = args["image_id"]
     hash_a = args["hash_a"]
@@ -184,7 +163,7 @@ async def _compare(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[st
         return b_res
 
     output = workspace.previews_dir / f"compare_{hash_a[:8]}_{hash_b[:8]}_{size}.jpg"
-    _stitch_side_by_side(a_out, b_out, output, label_left=hash_a[:8], label_right=hash_b[:8])
+    stitch_side_by_side(a_out, b_out, output, label_left=hash_a[:8], label_right=hash_b[:8])
     return ToolResult.ok({"jpeg_path": str(output)})
 
 

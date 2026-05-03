@@ -17,12 +17,13 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any
 
+from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import RefNotFoundError, RepoError
 from chemigram.core.versioning.masks import MaskNotFoundError
 from chemigram.core.versioning.ops import VersioningError, reset_to, snapshot
 from chemigram.core.vocab import VocabEntry
 from chemigram.core.xmp import synthesize_xmp
-from chemigram.mcp._state import current_xmp, resolve_workspace, summarize_state
+from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
     ErrorCode,
     ToolError,
@@ -143,7 +144,7 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
                 )
             )
         try:
-            from chemigram.mcp.tools._masks_apply import materialize_mask_for_dt
+            from chemigram.core.helpers import materialize_mask_for_dt
 
             materialize_mask_for_dt(workspace, target_name)
         except MaskNotFoundError as exc:

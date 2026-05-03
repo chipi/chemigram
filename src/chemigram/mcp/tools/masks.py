@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from chemigram.core.helpers import current_xmp
 from chemigram.core.masking import MaskingError
 from chemigram.core.pipeline import render
 from chemigram.core.versioning.masks import (
@@ -29,7 +30,7 @@ from chemigram.core.versioning.masks import (
 )
 from chemigram.core.workspace import Workspace
 from chemigram.core.xmp import write_xmp
-from chemigram.mcp._state import current_xmp, resolve_workspace
+from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
     ErrorCode,
     ToolError,

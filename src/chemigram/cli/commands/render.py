@@ -4,10 +4,9 @@ Mirrors MCP ``render_preview`` and ``compare`` (per ADR-033/056). Both
 call :func:`chemigram.core.pipeline.render` directly (per ADR-071);
 subprocess invocation lives inside core.
 
-The MCP server stores ``compare``'s side-by-side stitch logic in
-``chemigram.mcp.tools.rendering._stitch_side_by_side``. Pillow-based,
-pure infrastructure — pragmatic shared import (a future refactor lifts
-it to core alongside ``summarize_state`` / ``current_xmp``).
+``compare``'s side-by-side stitch logic lives in
+:func:`chemigram.core.helpers.stitch_side_by_side` (Pillow); both the
+MCP and CLI adapters import from there.
 """
 
 from __future__ import annotations
@@ -21,6 +20,7 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
+from chemigram.core.helpers import parse_xmp_at, stitch_side_by_side
 from chemigram.core.pipeline import render as core_render
 from chemigram.core.versioning import (
     ObjectNotFoundError,
@@ -30,8 +30,6 @@ from chemigram.core.versioning import (
 from chemigram.core.versioning.ops import VersioningError
 from chemigram.core.workspace import Workspace
 from chemigram.core.xmp import write_xmp
-from chemigram.mcp.tools.rendering import _stitch_side_by_side
-from chemigram.mcp.tools.versioning import parse_xmp_at
 
 
 def _render_to(
@@ -170,7 +168,7 @@ def compare(
             raise typer.Exit(code=ExitCode.DARKTABLE_ERROR.value)
 
     output = workspace.previews_dir / f"compare_{hash_a[:8]}_{hash_b[:8]}_{size}.jpg"
-    _stitch_side_by_side(a_out, b_out, output, label_left=hash_a[:8], label_right=hash_b[:8])
+    stitch_side_by_side(a_out, b_out, output, label_left=hash_a[:8], label_right=hash_b[:8])
 
     writer.result(
         message=f"compared {hash_a[:8]} vs {hash_b[:8]}",

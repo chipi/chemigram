@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any
 
+from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import (
     ImageRepo,
     ObjectNotFoundError,
@@ -26,7 +27,7 @@ from chemigram.core.versioning.ops import (
     tag,
 )
 from chemigram.core.xmp import Xmp, parse_xmp_from_bytes
-from chemigram.mcp._state import current_xmp, resolve_workspace, summarize_state
+from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
     ErrorCode,
     ToolError,

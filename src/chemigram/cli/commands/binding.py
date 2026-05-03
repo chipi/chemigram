@@ -15,10 +15,10 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import default_workspace_root, load_workspace
 from chemigram.cli.exit_codes import ExitCode
+from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import VersioningError, snapshot
 from chemigram.core.vocab import load_packs
 from chemigram.core.xmp import synthesize_xmp
-from chemigram.mcp._state import current_xmp, summarize_state
 
 
 def bind_layers(

@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+from chemigram.core.helpers import materialize_mask_for_dt
 from chemigram.core.versioning import ImageRepo
 from chemigram.core.versioning.masks import MaskNotFoundError, register_mask
 from chemigram.core.workspace import Workspace, init_workspace_root
-from chemigram.mcp.tools._masks_apply import materialize_mask_for_dt
 
 
 def _png_bytes(value: int = 200) -> bytes:
