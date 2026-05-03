@@ -243,6 +243,46 @@
       "tags": ["chroma", "highlights", "boost"],
       "description": "Boost highlight chroma +0.3.",
       "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"}
+      "source": "expressive-baseline", "license": "MIT"},
+
+    {"name": "gradient_top_dampen_highlights", "layer": "L3", "subtype": "exposure",
+      "path": "layers/L3/masked/gradient_top_dampen_highlights.dtstyle", "touches": ["exposure"],
+      "tags": ["mask", "gradient", "highlights", "dampen"],
+      "description": "Dampen top-half highlights via -0.5 EV through a top-bright gradient.",
+      "modversions": {"exposure": 7}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "mask_kind": "drawn",
+      "mask_spec": {"dt_form": "gradient",
+                    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 0.0, "compression": 0.5}}},
+
+    {"name": "gradient_bottom_lift_shadows", "layer": "L3", "subtype": "exposure",
+      "path": "layers/L3/masked/gradient_bottom_lift_shadows.dtstyle", "touches": ["exposure"],
+      "tags": ["mask", "gradient", "shadows", "lift"],
+      "description": "Lift bottom-half shadows via +0.4 EV through a bottom-bright gradient.",
+      "modversions": {"exposure": 7}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "mask_kind": "drawn",
+      "mask_spec": {"dt_form": "gradient",
+                    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 180.0, "compression": 0.5}}},
+
+    {"name": "radial_subject_lift", "layer": "L3", "subtype": "exposure",
+      "path": "layers/L3/masked/radial_subject_lift.dtstyle", "touches": ["exposure"],
+      "tags": ["mask", "radial", "subject", "lift"],
+      "description": "Lift +0.6 EV in a centered radial mask region (subject emphasis).",
+      "modversions": {"exposure": 7}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "mask_kind": "drawn",
+      "mask_spec": {"dt_form": "ellipse",
+                    "dt_params": {"center_x": 0.5, "center_y": 0.5, "radius_x": 0.2, "radius_y": 0.2, "border": 0.1}}},
+
+    {"name": "rectangle_subject_band_dim", "layer": "L3", "subtype": "exposure",
+      "path": "layers/L3/masked/rectangle_subject_band_dim.dtstyle", "touches": ["exposure"],
+      "tags": ["mask", "rectangle", "band", "dim"],
+      "description": "Dim -0.3 EV in a horizontal mid-band rectangle (de-emphasize a horizon line).",
+      "modversions": {"exposure": 7}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "mask_kind": "drawn",
+      "mask_spec": {"dt_form": "rectangle",
+                    "dt_params": {"x0": 0.0, "y0": 0.4, "x1": 1.0, "y1": 0.6, "border": 0.05}}}
   ]
 }

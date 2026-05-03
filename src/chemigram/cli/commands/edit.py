@@ -22,7 +22,12 @@ from chemigram.cli._batch import aggregate_exit_code, iter_image_ids
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
-from chemigram.core.helpers import current_xmp, materialize_mask_for_dt, summarize_state
+from chemigram.core.helpers import (
+    apply_with_drawn_mask,
+    current_xmp,
+    materialize_mask_for_dt,
+    summarize_state,
+)
 from chemigram.core.versioning import (
     MaskNotFoundError,
     RefNotFoundError,
@@ -103,6 +108,8 @@ def _do_apply_primitive(
     except typer.Exit as exc:
         return int(exc.exit_code)
 
+    use_drawn_mask = vocab_entry.mask_kind == "drawn" and vocab_entry.mask_spec is not None
+
     if vocab_entry.mask_kind == "raster":
         target_name = mask_override or vocab_entry.mask_ref
         if target_name is None:
@@ -145,7 +152,17 @@ def _do_apply_primitive(
         )
         return ExitCode.STATE_ERROR.value
 
-    new_xmp = synthesize_xmp(baseline_xmp, [vocab_entry.dtstyle])
+    if use_drawn_mask:
+        assert vocab_entry.mask_spec is not None  # narrowed by use_drawn_mask
+        try:
+            new_xmp = apply_with_drawn_mask(
+                baseline_xmp, vocab_entry.dtstyle, vocab_entry.mask_spec
+            )
+        except (ValueError, TypeError) as exc:
+            writer.error(str(exc), ExitCode.MASKING_ERROR, entry=entry_name)
+            return ExitCode.MASKING_ERROR.value
+    else:
+        new_xmp = synthesize_xmp(baseline_xmp, [vocab_entry.dtstyle])
     try:
         new_hash = snapshot(workspace.repo, new_xmp, label=f"apply: {entry_name}")
     except VersioningError as exc:

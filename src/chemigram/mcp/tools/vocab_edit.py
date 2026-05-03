@@ -135,6 +135,8 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     if entry is None:
         return ToolResult.fail(error_not_found(f"primitive {primitive_name!r}"))
 
+    use_drawn_mask = entry.mask_kind == "drawn" and entry.mask_spec is not None
+
     if entry.mask_kind == "raster":
         target_name = mask_override or entry.mask_ref
         if target_name is None:
@@ -168,7 +170,15 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
             )
         )
 
-    new_xmp = synthesize_xmp(baseline_xmp, [entry.dtstyle])
+    if use_drawn_mask:
+        from chemigram.core.helpers import apply_with_drawn_mask
+
+        try:
+            new_xmp = apply_with_drawn_mask(baseline_xmp, entry.dtstyle, entry.mask_spec)
+        except (ValueError, TypeError) as exc:
+            return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
+    else:
+        new_xmp = synthesize_xmp(baseline_xmp, [entry.dtstyle])
     try:
         new_hash = snapshot(workspace.repo, new_xmp, label=f"apply: {primitive_name}")
     except VersioningError as exc:

@@ -146,6 +146,12 @@ ignore = [
 # Renaming would obscure the algorithm.
 "src/chemigram/core/assertions.py" = ["N802", "N803", "N806"]
 "tests/fixtures/reference-targets/generate_synthetic.py" = ["N802", "N803", "N806"]
+# apply_primitive routes 4 distinct mask paths (raster+ref, drawn+spec,
+# mask_override-rejected, no-mask) plus error mapping per path. The
+# branches are flat and named; splitting hurts readability more than it
+# helps. v1.4.0 follow-up: ADR-074 / drawn-mask binding.
+"src/chemigram/cli/commands/edit.py" = ["C901"]
+"src/chemigram/mcp/tools/vocab_edit.py" = ["C901"]
 "tests/integration/test_reference_synthetic.py" = ["N802", "N803", "N806"]
 "tests/unit/core/test_assertions.py" = ["N802", "N803", "N806"]
 # Typer's API is built on `typer.Option(...)` and `typer.Argument(...)` as
