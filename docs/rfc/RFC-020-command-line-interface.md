@@ -1,6 +1,6 @@
 # RFC-020 — Command-line interface for Chemigram
 
-> Status · Draft v0.1 · 2026-05-02
+> Status · Decided · 2026-05-03 (closes via ADR-069/070/071/072 at v1.3.0 ship)
 > Closes into · ADR-069 (CLI alongside MCP, won't replace), ADR-070 (CLI framework: Typer), ADR-071 (CLI–MCP–core thin-wrapper discipline), ADR-072 (CLI output format: human default, NDJSON via `--json`)
 > PRD · PRD-005
 > Anchors · TA/components/cli (new), TA/components/mcp-server, TA/components/render-pipeline, TA/components/synthesizer
@@ -345,4 +345,4 @@ These will become amendments to this RFC or follow-up RFCs based on implementati
 
 ---
 
-*RFC-020 · Draft v0.1 · 2026-05-02*
+*RFC-020 · Decided · 2026-05-03*

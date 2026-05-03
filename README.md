@@ -51,7 +51,7 @@ masks and snapshots, and learns across sessions. Two modes:
 | 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped (ADR-050..061). |
 | 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 519 tests; 3 engine bugs fixed (ADR-062). |
 | 1.2 | Engine unblock + reference-image validation infrastructure | ✅ Closing (v1.2.0) — Path B synthesizer + assertion library + Mode A v3 (ADR-063..068). |
-| 1.3 | Command-line interface | In flight (v1.3.0) — RFC-020 + PRD-005; mirrors MCP tool surface. |
+| 1.3 | Command-line interface | ✅ Closed (v1.3.0) — 22 verbs mirroring MCP; ADR-069..072 closed RFC-020. |
 | 1.4 | `expressive-baseline` vocabulary authoring (35 entries) | Planned (v1.4.0) — hands-on darktable work; engine already unblocked. |
 | 2 | Vocabulary maturation — grow vocab from session evidence | Begins post-v1.4.0 (use-driven; intermittent). |
 | 3+ | AI masks, continuous control | Conditional |

@@ -8,7 +8,9 @@ per ADR-041.
 
 ## [Unreleased]
 
-**v1.3.0 work in progress — chemigram CLI (RFC-020 / PRD-005).**
+## [1.3.0] — 2026-05-03
+
+**chemigram CLI (RFC-020 / PRD-005).**
 
 A subprocess-callable adapter alongside the existing MCP server, mirroring
 the tool surface verb-for-verb (with `_` → `-` for shell ergonomics). For

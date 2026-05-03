@@ -428,7 +428,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
 | RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 (engine + scaffold in v1.2.0; authoring deferred to v1.4.0) | ADR-063, ADR-064 |
 | RFC-019 | Reference-image validation baseline | Draft v0.2 | ADR-066, ADR-067, ADR-068 |
-| RFC-020 | Command-line interface for Chemigram | Draft v0.1 | ADR-069, ADR-070, ADR-071, ADR-072 (pending v1.3.0 closure) |
+| RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
 
 ### ADRs
 
@@ -501,10 +501,10 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
 | ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
 | ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
-| ADR-069 | CLI alongside MCP, won't replace it (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-070 | CLI framework: Typer (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Reserved — closure at v1.3.0 ship |
+| ADR-069 | CLI alongside MCP, won't replace it (closes RFC-020) | Accepted |
+| ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
+| ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
+| ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
 
 ---
 

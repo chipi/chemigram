@@ -83,10 +83,10 @@ ADRs come from two streams:
 | ADR-066 | Reference fixture policy (synthetic-only) (closes RFC-019) | Accepted |
 | ADR-067 | Pixel-level assertion protocol (closes RFC-019) | Accepted |
 | ADR-068 | darktable version gate (deferred) (closes RFC-019) | Accepted (deferred) |
-| ADR-069 | CLI alongside MCP, won't replace it (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-070 | CLI framework: Typer (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Reserved — closure at v1.3.0 ship |
-| ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Reserved — closure at v1.3.0 ship |
+| ADR-069 | CLI alongside MCP, won't replace it (closes RFC-020) | Accepted |
+| ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
+| ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
+| ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
 
 ## Conventions
 
