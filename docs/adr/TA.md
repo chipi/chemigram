@@ -66,13 +66,14 @@ Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
 Pluggable AI capabilities behind protocol-based interfaces. v1: masking only.
 
-**Files (shipped v0.4.0):** `src/chemigram/core/masking/__init__.py` (Protocol + result + errors), `src/chemigram/core/masking/coarse_agent.py` (`CoarseAgentProvider`, `AgentRequest`, rasterizer). MCP wiring lives in `src/chemigram/mcp/tools/masks.py` and `src/chemigram/mcp/server.build_server(masker=...)`.
+**Files (shipped v0.4.0):** `src/chemigram/core/masking/__init__.py` (Protocol + result + errors), `src/chemigram/core/masking/coarse_agent.py` (`CoarseAgentProvider`, `AgentRequest`, rasterizer). v1.4.0 added `src/chemigram/core/masking/geometric.py` (built-in geometric providers — ADR-074). MCP wiring lives in `src/chemigram/mcp/tools/masks.py` and `src/chemigram/mcp/server.build_server(masker=...)`.
 
 **Public API:**
 - `class MaskingProvider(Protocol)` — generate/refine contract (ADR-057)
 - `CoarseAgentProvider(MaskingProvider)` — bundled sampling-based default (ADR-058)
+- `GradientMaskProvider`, `RadialMaskProvider`, `RectangleMaskProvider` — built-in geometric providers (ADR-074)
 
-**Anchored from:** RFC-004 (→ ADR-058), RFC-009 (→ ADR-057), ADR-007, ADR-021, ADR-022, ADR-032
+**Anchored from:** RFC-004 (→ ADR-058), RFC-009 (→ ADR-057), ADR-007, ADR-021, ADR-022, ADR-032, ADR-074
 
 ### components/mcp-server
 
@@ -505,6 +506,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
+| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
 
 ---
 

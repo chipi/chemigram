@@ -87,6 +87,7 @@ ADRs come from two streams:
 | ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
+| ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
 
 ## Conventions
 

@@ -42,6 +42,11 @@ dependencies = [
     # violate BYOA (ADR-007) or dt-orchestration-only (ADR-014). When Slice 4
     # adds the masking pipeline, Pillow gets reused for raster mask handling.
     "Pillow>=10.0",
+    # NumPy lands in v1.4.0 with the built-in geometric mask providers
+    # (ADR-074). Pure numerical infrastructure for per-pixel mask fields
+    # (gradient/radial/rectangle distance computations); the alternative is
+    # error-prone Pillow gymnastics. Not AI per ADR-007 — same tier as Pillow.
+    "numpy>=1.26",
     # Typer for the CLI adapter (RFC-020 / ADR-070; v1.3.0+). Brings Click +
     # Rich transitively. CLI is a thin wrapper over chemigram.core, mirroring
     # the MCP tool surface verb-for-verb (ADR-071). uv.lock pins exact
