@@ -18,6 +18,7 @@ from typing import cast
 
 import typer
 
+from chemigram.cli._batch import aggregate_exit_code, iter_image_ids
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
@@ -38,15 +39,15 @@ from chemigram.core.xmp import synthesize_xmp
 # ---------------------------------------------------------------------------
 
 
-def get_state(
-    ctx: typer.Context,
-    image_id: str = typer.Argument(..., help="Image ID."),
-) -> None:
-    """Read-only: summarize the current HEAD XMP."""
+def _do_get_state(ctx: typer.Context, image_id: str) -> int:
+    """Per-image core; returns exit code rather than raising. Used both
+    by the single-image and ``--stdin`` batch paths."""
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
-
-    workspace = resolve_workspace_or_fail(ctx, image_id)
+    try:
+        workspace = resolve_workspace_or_fail(ctx, image_id)
+    except typer.Exit as exc:
+        return int(exc.exit_code)
     xmp = current_xmp(workspace)
     if xmp is None:
         writer.result(
@@ -58,10 +59,24 @@ def get_state(
             layers_present={"L1": False, "L2": False, "L3": False},
             note="no snapshot yet on this workspace",
         )
-        return
-
+        return ExitCode.SUCCESS.value
     summary = summarize_state(xmp)
     writer.result(message=f"state for {image_id}", image_id=image_id, **summary)
+    return ExitCode.SUCCESS.value
+
+
+def get_state(
+    ctx: typer.Context,
+    image_id: str = typer.Argument(None, help="Image ID (or '-' with --stdin for batch)."),
+    stdin: bool = typer.Option(
+        False, "--stdin", help="Read image_ids from stdin (one per line); aggregate exit code."
+    ),
+) -> None:
+    """Read-only: summarize the current HEAD XMP."""
+    codes = [_do_get_state(ctx, img) for img in iter_image_ids(stdin, image_id)]
+    final = aggregate_exit_code(codes)
+    if final != ExitCode.SUCCESS.value:
+        raise typer.Exit(code=final)
 
 
 # ---------------------------------------------------------------------------
@@ -69,9 +84,87 @@ def get_state(
 # ---------------------------------------------------------------------------
 
 
+def _do_apply_primitive(
+    ctx: typer.Context,
+    image_id: str,
+    *,
+    vocab_entry: object,
+    mask_override: str | None,
+    entry_name: str,
+) -> int:
+    """Per-image core for apply-primitive; returns exit code."""
+    from chemigram.core.vocab import VocabEntry
+
+    assert isinstance(vocab_entry, VocabEntry)
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    try:
+        workspace = resolve_workspace_or_fail(ctx, image_id)
+    except typer.Exit as exc:
+        return int(exc.exit_code)
+
+    if vocab_entry.mask_kind == "raster":
+        target_name = mask_override or vocab_entry.mask_ref
+        if target_name is None:
+            writer.error(
+                f"primitive {entry_name!r} is raster-mask-bound but "
+                "no mask_ref or --mask-override set",
+                ExitCode.INVALID_INPUT,
+                entry=entry_name,
+                image_id=image_id,
+            )
+            return ExitCode.INVALID_INPUT.value
+        try:
+            materialize_mask_for_dt(workspace, target_name)
+        except MaskNotFoundError as exc:
+            writer.error(str(exc), ExitCode.NOT_FOUND, mask=target_name, image_id=image_id)
+            return ExitCode.NOT_FOUND.value
+        except Exception as exc:
+            writer.error(
+                f"mask materialization failed: {exc}",
+                ExitCode.MASKING_ERROR,
+                mask=target_name,
+                image_id=image_id,
+            )
+            return ExitCode.MASKING_ERROR.value
+    elif mask_override is not None:
+        writer.error(
+            f"primitive {entry_name!r} (mask_kind={vocab_entry.mask_kind!r}) "
+            "doesn't accept --mask-override",
+            ExitCode.INVALID_INPUT,
+            image_id=image_id,
+        )
+        return ExitCode.INVALID_INPUT.value
+
+    baseline_xmp = current_xmp(workspace)
+    if baseline_xmp is None:
+        writer.error(
+            "workspace has no baseline snapshot to apply onto",
+            ExitCode.STATE_ERROR,
+            image_id=image_id,
+        )
+        return ExitCode.STATE_ERROR.value
+
+    new_xmp = synthesize_xmp(baseline_xmp, [vocab_entry.dtstyle])
+    try:
+        new_hash = snapshot(workspace.repo, new_xmp, label=f"apply: {entry_name}")
+    except VersioningError as exc:
+        writer.error(str(exc), ExitCode.VERSIONING_ERROR, image_id=image_id)
+        return ExitCode.VERSIONING_ERROR.value
+
+    writer.result(
+        message=f"applied {entry_name} to {image_id}",
+        image_id=image_id,
+        entry=entry_name,
+        snapshot_hash=new_hash,
+        state_after=summarize_state(new_xmp),
+    )
+    return ExitCode.SUCCESS.value
+
+
 def apply_primitive(
     ctx: typer.Context,
-    image_id: str = typer.Argument(..., help="Image ID."),
+    image_id: str = typer.Argument(None, help="Image ID (or '-' with --stdin for batch)."),
     entry: str = typer.Option(..., "--entry", help="Vocabulary entry name."),
     mask_override: str | None = typer.Option(
         None,
@@ -83,6 +176,11 @@ def apply_primitive(
         "--pack",
         "-p",
         help="Vocabulary pack(s). Defaults to ['starter'].",
+    ),
+    stdin: bool = typer.Option(
+        False,
+        "--stdin",
+        help="Read image_ids from stdin (one per line); same entry applied to each.",
     ),
 ) -> None:
     """Apply a vocabulary entry; snapshot the result."""
@@ -110,62 +208,19 @@ def apply_primitive(
         )
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 
-    workspace = resolve_workspace_or_fail(ctx, image_id)
-
-    if vocab_entry.mask_kind == "raster":
-        target_name = mask_override or vocab_entry.mask_ref
-        if target_name is None:
-            writer.error(
-                f"primitive {entry!r} is raster-mask-bound but no mask_ref or --mask-override set",
-                ExitCode.INVALID_INPUT,
-                entry=entry,
-            )
-            raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
-        try:
-            materialize_mask_for_dt(workspace, target_name)
-        except MaskNotFoundError as exc:
-            # Mirror the MCP tool: a missing mask is NOT_FOUND, not
-            # MASKING_ERROR (which is reserved for provider failures).
-            writer.error(str(exc), ExitCode.NOT_FOUND, mask=target_name)
-            raise typer.Exit(code=ExitCode.NOT_FOUND.value) from exc
-        except Exception as exc:
-            writer.error(
-                f"mask materialization failed: {exc}",
-                ExitCode.MASKING_ERROR,
-                mask=target_name,
-            )
-            raise typer.Exit(code=ExitCode.MASKING_ERROR.value) from exc
-    elif mask_override is not None:
-        writer.error(
-            f"primitive {entry!r} (mask_kind={vocab_entry.mask_kind!r}) "
-            "doesn't accept --mask-override",
-            ExitCode.INVALID_INPUT,
+    codes = [
+        _do_apply_primitive(
+            ctx,
+            img,
+            vocab_entry=vocab_entry,
+            mask_override=mask_override,
+            entry_name=entry,
         )
-        raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
-
-    baseline_xmp = current_xmp(workspace)
-    if baseline_xmp is None:
-        writer.error(
-            "workspace has no baseline snapshot to apply onto",
-            ExitCode.STATE_ERROR,
-            image_id=image_id,
-        )
-        raise typer.Exit(code=ExitCode.STATE_ERROR.value)
-
-    new_xmp = synthesize_xmp(baseline_xmp, [vocab_entry.dtstyle])
-    try:
-        new_hash = snapshot(workspace.repo, new_xmp, label=f"apply: {entry}")
-    except VersioningError as exc:
-        writer.error(str(exc), ExitCode.VERSIONING_ERROR, image_id=image_id)
-        raise typer.Exit(code=ExitCode.VERSIONING_ERROR.value) from exc
-
-    writer.result(
-        message=f"applied {entry} to {image_id}",
-        image_id=image_id,
-        entry=entry,
-        snapshot_hash=new_hash,
-        state_after=summarize_state(new_xmp),
-    )
+        for img in iter_image_ids(stdin, image_id)
+    ]
+    final = aggregate_exit_code(codes)
+    if final != ExitCode.SUCCESS.value:
+        raise typer.Exit(code=final)
 
 
 # ---------------------------------------------------------------------------

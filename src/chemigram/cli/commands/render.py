@@ -17,6 +17,7 @@ from uuid import uuid4
 
 import typer
 
+from chemigram.cli._batch import aggregate_exit_code, iter_image_ids
 from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
@@ -83,23 +84,14 @@ def _render_to(
     )
 
 
-def render_preview(
-    ctx: typer.Context,
-    image_id: str = typer.Argument(..., help="Image ID."),
-    size: int = typer.Option(1024, "--size", min=64, max=8192, help="Max width/height in pixels."),
-    ref_or_hash: str = typer.Option(
-        "HEAD",
-        "--ref",
-        help="Ref name or content hash to render (defaults to HEAD).",
-    ),
-) -> None:
-    """Render one snapshot to a JPEG preview in the workspace's previews/."""
+def _do_render_preview(ctx: typer.Context, image_id: str, *, size: int, ref_or_hash: str) -> int:
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
-
-    workspace = resolve_workspace_or_fail(ctx, image_id)
+    try:
+        workspace = resolve_workspace_or_fail(ctx, image_id)
+    except typer.Exit as exc:
+        return int(exc.exit_code)
     output_path = workspace.previews_dir / f"preview_{ref_or_hash[:16]}_{size}.jpg"
-
     ok, err, details = _render_to(
         workspace, ref_or_hash, output_path, width=size, height=size, high_quality=False
     )
@@ -112,15 +104,14 @@ def render_preview(
                 image_id=image_id,
                 ref_or_hash=ref_or_hash,
             )
-            raise typer.Exit(code=ExitCode.VERSIONING_ERROR.value)
+            return ExitCode.VERSIONING_ERROR.value
         writer.error(
             err or "render failed",
             ExitCode.DARKTABLE_ERROR,
             image_id=image_id,
             **details,
         )
-        raise typer.Exit(code=ExitCode.DARKTABLE_ERROR.value)
-
+        return ExitCode.DARKTABLE_ERROR.value
     writer.result(
         message=f"rendered {ref_or_hash[:8]}",
         image_id=image_id,
@@ -128,6 +119,30 @@ def render_preview(
         jpeg_path=details["output_path"],
         duration_seconds=details["duration_seconds"],
     )
+    return ExitCode.SUCCESS.value
+
+
+def render_preview(
+    ctx: typer.Context,
+    image_id: str = typer.Argument(None, help="Image ID (or '-' with --stdin for batch)."),
+    size: int = typer.Option(1024, "--size", min=64, max=8192, help="Max width/height in pixels."),
+    ref_or_hash: str = typer.Option(
+        "HEAD",
+        "--ref",
+        help="Ref name or content hash to render (defaults to HEAD).",
+    ),
+    stdin: bool = typer.Option(
+        False, "--stdin", help="Read image_ids from stdin (one per line); render each."
+    ),
+) -> None:
+    """Render one snapshot to a JPEG preview in the workspace's previews/."""
+    codes = [
+        _do_render_preview(ctx, img, size=size, ref_or_hash=ref_or_hash)
+        for img in iter_image_ids(stdin, image_id)
+    ]
+    final = aggregate_exit_code(codes)
+    if final != ExitCode.SUCCESS.value:
+        raise typer.Exit(code=final)
 
 
 def compare(
