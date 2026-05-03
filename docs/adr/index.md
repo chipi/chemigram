@@ -87,6 +87,7 @@ ADRs come from two streams:
 | ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
+| ADR-073 | Programmatic vocabulary authoring via reverse-engineered structs (closes RFC-012) | Accepted |
 | ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
 

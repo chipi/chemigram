@@ -1,7 +1,7 @@
 # RFC-019 — Reference-image validation baseline
 
-> Status · Draft v0.2
-> Date · 2026-05-02
+> Status · Decided (v1.4.0; Tier A synthetic shipped in v1.2.0; Tier B real-RAW deferred per ADR-068)
+> Date · 2026-05-02 (decided); originally drafted 2026-04-29
 > TA anchor · /components/pipeline · /components/eval
 > Related · RFC-017 (eval harness, Mode B), RFC-018 (vocabulary expansion), ADR-036 (test tiers), ADR-062 (v1.1.0 validation)
 > Closes into · ADR-066 (reference fixture policy), ADR-067 (pixel-level assertions), ADR-068 (darktable version gate)

@@ -422,13 +422,13 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes) |
 | RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
 | RFC-011 | Agent context loading order and format | Decided | ADR-059 (closes) |
-| RFC-012 | Programmatic vocabulary generation (Path C) | Draft v0.1 (deferred) | — |
+| RFC-012 | Programmatic vocabulary generation (Path C) | Decided | ADR-073 (closes) |
 | RFC-013 | Vocabulary gap surfacing format | Decided | ADR-060 (closes) |
 | RFC-014 | End-of-session synthesis flow | Decided | ADR-061 (closes) |
 | RFC-015 | EXIF auto-binding rules | Decided | ADR-053 (closes) |
 | RFC-016 | Versioned prompt system | Decided | ADR-043, ADR-044, ADR-045 |
-| RFC-018 | Vocabulary expansion for expressive taste articulation | Draft v0.2 (engine + scaffold in v1.2.0; authoring deferred to v1.4.0) | ADR-063, ADR-064 |
-| RFC-019 | Reference-image validation baseline | Draft v0.2 | ADR-066, ADR-067, ADR-068 |
+| RFC-018 | Vocabulary expansion for expressive taste articulation | Decided | ADR-063, ADR-064, ADR-073 |
+| RFC-019 | Reference-image validation baseline | Decided | ADR-066, ADR-067, ADR-068 |
 | RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
 
 ### ADRs
@@ -506,6 +506,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-070 | CLI framework: Typer (closes RFC-020) | Accepted |
 | ADR-071 | CLI–MCP–core thin-wrapper discipline (closes RFC-020) | Accepted |
 | ADR-072 | CLI output format: human default, NDJSON via `--json` (closes RFC-020) | Accepted |
+| ADR-073 | Programmatic vocabulary authoring via reverse-engineered structs (closes RFC-012) | Accepted |
 | ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Accepted |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
 

@@ -1,10 +1,11 @@
 # RFC-012 — Programmatic vocabulary generation (Path C)
 
-> Status · Draft v0.1 (deferred)
+> Status · Decided (v1.4.0)
+> Date · 2026-05-02
 > TA anchor ·/components/synthesizer ·/constraints/opaque-hex-blobs
 > Related · ADR-001, ADR-008, RFC-001
-> Closes into · — (deferred until v1 evidence accumulates)
-> Why this is an RFC · ADR-008 commits to opaque-blob handling. ADR-001's "Architecture A" (hex param manipulation) was rejected for v1, but Phase 0 testing surfaced that it's feasible for high-value modules — exposure specifically. The TODO entry on Path C captures this. This RFC formalizes the question and outlines what programmatic generation looks like when v1 evidence shows it's needed.
+> Closes into · ADR-073 (programmatic vocabulary authoring via reverse-engineered structs)
+> Why this is an RFC · ADR-008 commits to opaque-blob handling. ADR-001's "Architecture A" (hex param manipulation) was rejected for v1, but Phase 0 testing surfaced that it's feasible for high-value modules — exposure specifically. The TODO entry on Path C captured this. v1.4.0 supplied the missing evidence: 31 entries authored programmatically across 9 darktable iop modules with 22 e2e direction-of-change tests passing. ADR-073 formalizes the technique as an accepted complement to hand-authoring.
 
 ## The question
 

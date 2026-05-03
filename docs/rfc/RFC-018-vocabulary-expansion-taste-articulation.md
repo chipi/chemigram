@@ -1,16 +1,16 @@
 # RFC-018 — Vocabulary expansion for expressive taste articulation
 
-> Status · Draft v0.2 (engine + assertion library + scaffold ship in v1.2.0; authoring deferred to v1.4.0)
+> Status · Decided (v1.4.0; #62 + #63 carry residual user darktable-seed work)
+> Date · 2026-05-02
 > TA anchor ·/components/synthesizer ·/components/mcp-server ·/constraints
 > Related · RFC-001, RFC-007, RFC-012, ADR-001, ADR-009, ADR-051, ADR-008
 > Closes into · ADR-063 (Path B unblocking + empirical evidence on iop_order),
->               ADR-064 (Phase 1.2 vocabulary authoring workflow)
-> Phase · Phase 1.2 — engine unblock + scaffold (ships as v1.2.0).
->         Phase 1.4 — actual 35-entry authoring (ships as v1.4.0,
->         post-v1.3.0 CLI). The split was made on 2026-05-02 because
->         authoring is hands-on darktable work that doesn't gate the
->         engine work; engine and assertion library land first so the
->         authoring phase can use them.
+>               ADR-064 (Phase 1.2 vocabulary authoring workflow),
+>               ADR-073 (programmatic authoring via reverse-engineered structs)
+> Phase · Phase 1.2 — engine unblock + scaffold (shipped as v1.2.0).
+>         Phase 1.4 — 35-entry authoring (shipped 31 entries programmatically
+>         in v1.4.0; the remaining 4 — channelmixerrgb B&W and a mask-bound
+>         tone entry — track at #62/#63 pending a user darktable session).
 > Why this is an RFC · The vocabulary currently ships five entries covering
 >                      exposure and white balance only. Expressive taste
 >                      articulation — including every parameter in the six
