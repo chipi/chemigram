@@ -113,7 +113,7 @@ def test_generate_then_regenerate_via_mcp(server_and_workspace: Any) -> None:
             return _decode(gen), _decode(list_r), _decode(regen)
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         gen, list_r, regen = anyio.run(_exercise)
@@ -179,7 +179,7 @@ def test_regenerate_mask_unknown_name_returns_not_found(server_and_workspace: An
             return _decode(r)
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         payload = anyio.run(_exercise)
@@ -222,7 +222,7 @@ def test_generate_mask_provider_raise_returns_masking_error(tmp_path: Path) -> N
             return _decode(r)
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         payload = anyio.run(_exercise)
@@ -286,7 +286,7 @@ def test_tag_mask_happy_path(server_and_workspace: Any) -> None:
             return gen, tagged, listed
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         gen, tagged, listed = anyio.run(_exercise)
@@ -327,7 +327,7 @@ def test_tag_mask_already_exists_rejects(server_and_workspace: Any) -> None:
             )
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         payload = anyio.run(_exercise)

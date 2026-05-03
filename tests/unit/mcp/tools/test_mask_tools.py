@@ -180,7 +180,7 @@ def test_generate_mask_round_trip_with_fake_provider(context: ToolContext) -> No
     masker = _FakeMasker(_png_bytes())
     _ctx_with_masker(context, masker)
     with patch(
-        "chemigram.mcp.tools.masks.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
+        "chemigram.core.pipeline.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
     ):
         result = _call(
             "generate_mask",
@@ -198,7 +198,7 @@ def test_generate_mask_default_name_derives_from_target(context: ToolContext) ->
     masker = _FakeMasker(_png_bytes())
     _ctx_with_masker(context, masker)
     with patch(
-        "chemigram.mcp.tools.masks.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
+        "chemigram.core.pipeline.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
     ):
         result = _call(
             "generate_mask",
@@ -213,7 +213,7 @@ def test_generate_mask_explicit_name_used(context: ToolContext) -> None:
     masker = _FakeMasker(_png_bytes())
     _ctx_with_masker(context, masker)
     with patch(
-        "chemigram.mcp.tools.masks.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
+        "chemigram.core.pipeline.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
     ):
         result = _call(
             "generate_mask",
@@ -233,7 +233,7 @@ def test_generate_mask_provider_failure_returns_masking_error(
 
     _ctx_with_masker(context, FailingMasker(_png_bytes()))
     with patch(
-        "chemigram.mcp.tools.masks.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
+        "chemigram.core.pipeline.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
     ):
         result = _call(
             "generate_mask",
@@ -265,7 +265,7 @@ def test_regenerate_mask_passes_prior_bytes(context: ToolContext) -> None:
         generator="manual",
     )
     with patch(
-        "chemigram.mcp.tools.masks.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
+        "chemigram.core.pipeline.render", side_effect=lambda **kw: _stub_render(kw["output_path"])
     ):
         result = _call(
             "regenerate_mask",

@@ -1,8 +1,11 @@
-"""Integration tests for ``chemigram masks ...`` (#58).
+"""Integration tests for ``chemigram masks ...`` (#58, #73).
 
-generate / regenerate are tested at the "no masker configured" surface
-(MASKING_ERROR with hint). list / tag / invalidate are full integration
-tests against a mask registered directly via the core API.
+list / tag / invalidate are full integration tests against a mask
+registered directly via the core API. generate / regenerate cover both
+the v1.3.0 "no provider" MASKING_ERROR surface and the v1.4.0
+``--provider {gradient|radial|rectangle}`` flow (ADR-074); the preview
+render is monkey-patched away so darktable doesn't have to run for the
+CLI plumbing tests.
 """
 
 from __future__ import annotations
@@ -112,6 +115,213 @@ def test_masks_regenerate_no_masker_returns_masking_error(
         ],
     )
     assert result.exit_code == ExitCode.MASKING_ERROR.value
+
+
+# ----- masks generate / regenerate (built-in provider — ADR-074) --------
+
+
+@pytest.fixture
+def stub_preview(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Skip the darktable render in ``ensure_preview_render`` and return a
+    real JPEG of known size that the geometric provider can read."""
+    from PIL import Image
+
+    preview_path = tmp_path / "preview_for_masking.jpg"
+    Image.new("RGB", (256, 128), (180, 180, 180)).save(preview_path, "JPEG")
+
+    def _fake_ensure(_workspace: object) -> Path:
+        return preview_path
+
+    # Patch where the symbol is *looked up*, not where it's defined.
+    monkeypatch.setattr("chemigram.cli.commands.masks.ensure_preview_render", _fake_ensure)
+    return preview_path
+
+
+def test_masks_generate_with_gradient_provider_registers_mask(
+    runner: CliRunner, cli_workspace_root: Path, stub_preview: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "sky",
+            "--provider",
+            "gradient",
+            "--config",
+            '{"angle_degrees": 90, "peak": 1.0}',
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["name"] == "current_sky_mask"
+    assert payload["generator"] == "gradient"
+
+
+def test_masks_generate_with_radial_provider_default_config(
+    runner: CliRunner, cli_workspace_root: Path, stub_preview: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "subject",
+            "--provider",
+            "radial",
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["generator"] == "radial"
+
+
+def test_masks_generate_with_rectangle_provider(
+    runner: CliRunner, cli_workspace_root: Path, stub_preview: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "lower-third",
+            "--provider",
+            "rectangle",
+            "--config",
+            '{"x0": 0.0, "y0": 0.66, "x1": 1.0, "y1": 1.0, "feather": 0.05}',
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["generator"] == "rectangle"
+
+
+def test_masks_generate_unknown_provider_returns_masking_error(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "x",
+            "--provider",
+            "wat",
+        ],
+    )
+    assert result.exit_code == ExitCode.MASKING_ERROR.value
+    assert "unknown provider" in result.stderr.lower()
+
+
+def test_masks_generate_invalid_config_json_returns_masking_error(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "x",
+            "--provider",
+            "gradient",
+            "--config",
+            "{not json",
+        ],
+    )
+    assert result.exit_code == ExitCode.MASKING_ERROR.value
+
+
+def test_masks_generate_provider_validation_error_returns_masking_error(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """Out-of-range provider params should surface as MASKING_ERROR, not
+    a stack trace (geometric providers raise MaskGenerationError)."""
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "generate",
+            "test-image",
+            "--target",
+            "x",
+            "--provider",
+            "gradient",
+            "--config",
+            '{"peak": 5.0}',
+        ],
+    )
+    assert result.exit_code == ExitCode.MASKING_ERROR.value
+
+
+def test_masks_regenerate_with_provider_overwrites_registered_mask(
+    runner: CliRunner, cli_workspace_root: Path, stub_preview: Path
+) -> None:
+    _register_a_mask(cli_workspace_root, name="current_sky_mask")
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "regenerate",
+            "test-image",
+            "--name",
+            "current_sky_mask",
+            "--provider",
+            "gradient",
+            "--config",
+            '{"angle_degrees": 270}',
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["generator"] == "gradient"
+
+
+def test_masks_regenerate_unknown_mask_returns_not_found(
+    runner: CliRunner, cli_workspace_root: Path, stub_preview: Path
+) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "masks",
+            "regenerate",
+            "test-image",
+            "--name",
+            "ghost",
+            "--provider",
+            "gradient",
+        ],
+    )
+    assert result.exit_code == ExitCode.NOT_FOUND.value
 
 
 # ----- masks tag --------------------------------------------------------

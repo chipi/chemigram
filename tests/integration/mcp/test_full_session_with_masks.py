@@ -159,7 +159,7 @@ def test_masking_gate_full_session(server, tmp_path: Path) -> None:
             }
 
     with patch(
-        "chemigram.mcp.tools.masks.render",
+        "chemigram.core.pipeline.render",
         side_effect=lambda **kw: _stub_render(kw["output_path"]),
     ):
         out = anyio.run(_exercise)

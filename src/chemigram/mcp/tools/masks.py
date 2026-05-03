@@ -11,14 +11,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from pathlib import Path
 from typing import Any
-from uuid import uuid4
 
-from chemigram.core.helpers import current_xmp
+from chemigram.core.helpers import ensure_preview_render, serialize_mask_entry
 from chemigram.core.masking import MaskingError
-from chemigram.core.pipeline import render
 from chemigram.core.versioning.masks import (
     MaskError,
     MaskNotFoundError,
@@ -28,8 +24,6 @@ from chemigram.core.versioning.masks import (
     register_mask,
     tag_mask,
 )
-from chemigram.core.workspace import Workspace
-from chemigram.core.xmp import write_xmp
 from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
     ErrorCode,
@@ -45,47 +39,6 @@ def _default_mask_name(target: str) -> str:
     """``target='manta' → 'current_manta_mask'`` for default-name convention."""
     safe = target.strip().replace(" ", "_") or "subject"
     return f"current_{safe}_mask"
-
-
-def _ensure_preview(workspace: Workspace) -> Path:
-    """Return a path to a current-state preview JPEG; render if absent.
-
-    Hash-based cache key so two consecutive mask generations against the
-    same XMP reuse the file. Auto-rendering uses the workspace's configdir
-    via :func:`chemigram.core.pipeline.render`. If no current XMP exists
-    (fresh workspace, no baseline yet), raises :class:`RuntimeError`.
-    """
-    xmp = current_xmp(workspace)
-    if xmp is None:
-        raise RuntimeError("workspace has no current XMP; cannot render preview for masking")
-
-    from chemigram.core.versioning import xmp_hash
-
-    cache_path = workspace.previews_dir / f"_for_mask_{xmp_hash(xmp)[:8]}.jpg"
-    if cache_path.exists():
-        return cache_path
-
-    workspace.previews_dir.mkdir(parents=True, exist_ok=True)
-    xmp_path = workspace.previews_dir / f"_render_{uuid4().hex}.xmp"
-    write_xmp(xmp, xmp_path)
-    try:
-        result = render(
-            raw_path=workspace.raw_path,
-            xmp_path=xmp_path,
-            output_path=cache_path,
-            width=1024,
-            height=1024,
-            high_quality=False,
-            configdir=workspace.configdir,
-        )
-    finally:
-        xmp_path.unlink(missing_ok=True)
-
-    if not result.success:
-        raise RuntimeError(
-            f"render failed for masking preview: {result.error_message or 'unknown'}"
-        )
-    return cache_path
 
 
 def _no_masker_error() -> ToolError:
@@ -115,7 +68,7 @@ async def _generate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult[d
         return ToolResult.fail(_no_masker_error())
 
     try:
-        preview = _ensure_preview(workspace)
+        preview = ensure_preview_render(workspace)
     except RuntimeError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.STATE_ERROR, message=str(exc)))
 
@@ -142,7 +95,7 @@ async def _generate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult[d
         generator=result.generator,
         prompt=result.prompt,
     )
-    return ToolResult.ok(_serialize_entry(entry))
+    return ToolResult.ok(serialize_mask_entry(entry))
 
 
 register_tool(
@@ -196,7 +149,7 @@ async def _regenerate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult
         )
 
     try:
-        preview = _ensure_preview(workspace)
+        preview = ensure_preview_render(workspace)
     except RuntimeError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.STATE_ERROR, message=str(exc)))
 
@@ -226,7 +179,7 @@ async def _regenerate_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult
         generator=result.generator,
         prompt=result.prompt,
     )
-    return ToolResult.ok(_serialize_entry(entry))
+    return ToolResult.ok(serialize_mask_entry(entry))
 
 
 register_tool(
@@ -266,20 +219,13 @@ def _target_from_name(name: str) -> str:
 # --- list_masks (real) --------------------------------------------------
 
 
-def _serialize_entry(e: Any) -> dict[str, Any]:
-    raw = asdict(e)
-    if "timestamp" in raw and raw["timestamp"] is not None:
-        raw["timestamp"] = raw["timestamp"].isoformat()
-    return raw
-
-
 async def _list_masks(args: dict[str, Any], ctx: ToolContext) -> ToolResult[list[dict[str, Any]]]:
     image_id = args["image_id"]
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
         return ToolResult.fail(error_not_found(f"image {image_id!r}"))
     entries = list_masks(workspace.repo)
-    return ToolResult.ok([_serialize_entry(e) for e in entries])
+    return ToolResult.ok([serialize_mask_entry(e) for e in entries])
 
 
 register_tool(
@@ -313,7 +259,7 @@ async def _tag_mask(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[s
         return ToolResult.fail(error_not_found(str(exc)))
     except MaskError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
-    return ToolResult.ok(_serialize_entry(entry))
+    return ToolResult.ok(serialize_mask_entry(entry))
 
 
 register_tool(
