@@ -44,6 +44,22 @@ _GRAYSCALE_BRIGHT_INDICES = list(range(18, 24))  # 18-23 top of ramp
 _CC_GRAY_RAMP_INDICES = list(range(18, 24))  # bottom row, white -> black
 _CC_COLOR_INDICES = list(range(0, 18))  # top three rows, color patches
 
+# ColorChecker spatial zones — for mask-bound primitives whose effect varies
+# by patch position. Layout is 6 cols x 4 rows; positions normalised to
+# rendered frame (which preserves aspect; patches are at the same
+# proportional locations regardless of render size).
+#
+#   row 0:  0  1  2  3  4  5      (frame y ~0.00-0.25)
+#   row 1:  6  7  8  9  10 11     (frame y ~0.25-0.50)
+#   row 2:  12 13 14 15 16 17     (frame y ~0.50-0.75)
+#   row 3:  18 19 20 21 22 23     (frame y ~0.75-1.00; gray ramp)
+_CC_TOP_HALF = list(range(0, 12))  # rows 0 + 1
+_CC_BOTTOM_HALF = list(range(12, 24))  # rows 2 + 3
+_CC_MIDDLE_ROWS = list(range(6, 18))  # rows 1 + 2 (covers mask y=0.4-0.6 region partially)
+_CC_OUTER_ROWS = list(range(0, 6)) + list(range(18, 24))  # rows 0 + 3
+_CC_CENTER_4 = [8, 9, 14, 15]  # center 2x2 patches (around frame center)
+_CC_CORNER_4 = [0, 5, 18, 23]  # four corner patches
+
 
 @dataclass(frozen=True)
 class AssertionResult:
@@ -306,6 +322,71 @@ def _check_chroma_increase(min_delta: float = 1.0, indices: list[int] | None = N
     return check
 
 
+# ---------------------------------------------------------------------------
+# Spatial checks (mask-bound primitives — effect varies by patch position)
+# ---------------------------------------------------------------------------
+
+
+def _check_zone_dampen(
+    zone: list[int], complement: list[int], min_zone_delta: float = -0.005
+) -> LabCheck:
+    """Patches in ``zone`` should dampen (luma decrease) more than ``complement``.
+
+    Asserts both that the zone shows the expected darkening AND that the
+    complement is less affected — proving the mask is *localising* rather
+    than the primitive applying globally.
+    """
+
+    def check(before: list[PatchSample], after: list[PatchSample]) -> AssertionResult:
+        zone_delta = _zone_avg_luma_delta(before, after, zone)
+        comp_delta = _zone_avg_luma_delta(before, after, complement)
+        failures: list[str] = []
+        if zone_delta > min_zone_delta:
+            failures.append(
+                f"zone delta {zone_delta:+.4f}, expected < {min_zone_delta:+.4f} (should dampen)"
+            )
+        # Mask must localise: zone must dampen *more* than complement.
+        if zone_delta >= comp_delta:
+            failures.append(
+                f"zone delta {zone_delta:+.4f} not stronger than complement {comp_delta:+.4f} "
+                f"(mask not localising)"
+            )
+        return AssertionResult(
+            passed=not failures,
+            failures=failures,
+            measurements={"zone_delta": zone_delta, "complement_delta": comp_delta},
+        )
+
+    return check
+
+
+def _check_zone_lift(
+    zone: list[int], complement: list[int], min_zone_delta: float = 0.005
+) -> LabCheck:
+    """Patches in ``zone`` should lift (luma increase) more than ``complement``."""
+
+    def check(before: list[PatchSample], after: list[PatchSample]) -> AssertionResult:
+        zone_delta = _zone_avg_luma_delta(before, after, zone)
+        comp_delta = _zone_avg_luma_delta(before, after, complement)
+        failures: list[str] = []
+        if zone_delta < min_zone_delta:
+            failures.append(
+                f"zone delta {zone_delta:+.4f}, expected > +{min_zone_delta:.4f} (should lift)"
+            )
+        if zone_delta <= comp_delta:
+            failures.append(
+                f"zone delta {zone_delta:+.4f} not stronger than complement {comp_delta:+.4f} "
+                f"(mask not localising)"
+            )
+        return AssertionResult(
+            passed=not failures,
+            failures=failures,
+            measurements={"zone_delta": zone_delta, "complement_delta": comp_delta},
+        )
+
+    return check
+
+
 def _check_lab_a_shift(direction: Sign, min_magnitude: float = 1.0) -> LabCheck:
     """Average a* channel (gray ramp) should shift in the expected direction.
 
@@ -408,6 +489,27 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
     "grade_shadows_cool": ("grayscale", _check_lab_b_shift("negative", min_magnitude=0.5)),
     "grade_highlights_warm": ("grayscale", _check_lab_b_shift("positive", min_magnitude=0.3)),
     "grade_highlights_cool": ("grayscale", _check_lab_b_shift("negative", min_magnitude=0.3)),
+    # --- Spatial: mask-bound (gradient/ellipse/rectangle drawn forms per ADR-076) ---
+    # The mask must localise: assert the affected zone's delta exceeds the
+    # complement's delta. This catches both "mask doesn't fire" (zone delta
+    # too small) and "primitive applies globally instead" (zone delta similar
+    # to complement). Visual confirmation in docs/guides/visual-proofs.md.
+    "gradient_top_dampen_highlights": (
+        "colorchecker",
+        _check_zone_dampen(zone=_CC_TOP_HALF, complement=_CC_BOTTOM_HALF),
+    ),
+    "gradient_bottom_lift_shadows": (
+        "colorchecker",
+        _check_zone_lift(zone=_CC_BOTTOM_HALF, complement=_CC_TOP_HALF),
+    ),
+    "radial_subject_lift": (
+        "colorchecker",
+        _check_zone_lift(zone=_CC_CENTER_4, complement=_CC_CORNER_4),
+    ),
+    "rectangle_subject_band_dim": (
+        "colorchecker",
+        _check_zone_dampen(zone=_CC_MIDDLE_ROWS, complement=_CC_OUTER_ROWS),
+    ),
 }
 
 
@@ -430,10 +532,6 @@ SKIP_REASONS: dict[str, str] = {
     "shadows_global_+": "Exposure black-level offset; effectively a no-op on display-referred chart input. Covered by direction-of-change e2e against real raws.",  # noqa: E501
     "shadows_global_-": "Same as shadows_global_+.",
     "wb_cool_subtle": "Empirical: rendered a* shift is opposite-sign on the empty-baseline chart pipeline (a*+ instead of a*-). Likely a chromatic-adaptation interaction in the display-referred path; behavior on real raws is correct. Tracked for follow-up.",  # noqa: E501
-    "gradient_top_dampen_highlights": "Spatial mask-bound; effect varies by patch row position. Future work: spatial-aware delta check.",  # noqa: E501
-    "gradient_bottom_lift_shadows": "Same as gradient_top_dampen_highlights.",
-    "radial_subject_lift": "Spatial mask-bound; centered ellipse affects center patches only.",
-    "rectangle_subject_band_dim": "Spatial mask-bound; horizontal mid-band only.",
 }
 # fmt: on
 
