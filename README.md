@@ -1,5 +1,12 @@
 # Chemigram
 
+[![CI](https://github.com/chipi/chemigram/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/chipi/chemigram/actions/workflows/ci.yml)
+[![docs](https://github.com/chipi/chemigram/actions/workflows/docs.yml/badge.svg?branch=main)](https://chipi.github.io/chemigram/)
+[![release](https://img.shields.io/github/v/release/chipi/chemigram?display_name=tag&sort=semver&color=blue)](https://github.com/chipi/chemigram/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](docs/LICENSING.md)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+
 > Chemigram is to photos what Claude Code is to code.
 
 A craft-research project for agent-driven photo editing. The agent reads
