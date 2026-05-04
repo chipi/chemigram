@@ -28,7 +28,7 @@ Twenty-five conversational turns. One photo, deeply edited. Five new vocabulary 
 
 Three reasons that, together, make this worth doing now.
 
-**Photography editing is actually agent-shaped.** Most creative work isn't — it requires too much continuous human judgment to delegate. But raw-to-final photo development is iterative, parameter-rich, well-suited to vocabulary, well-suited to AI subject masking, and (crucially) has previews — meaning every move is checkable in a few seconds. The loop is tight; the agent has tools; the photographer judges. This is a domain where the apprenticeship model fits.
+**Photography editing is actually agent-shaped.** Most creative work isn't — it requires too much continuous human judgment to delegate. But raw-to-final photo development is iterative, parameter-rich, well-suited to vocabulary, well-suited to drawn-form and parametric masking (with content-aware AI masking arriving in Phase 4 via a sibling project), and (crucially) has previews — meaning every move is checkable in a few seconds. The loop is tight; the agent has tools; the photographer judges. This is a domain where the apprenticeship model fits.
 
 **The Claude Code analogy is real, not metaphorical.** Coding assistants found a working shape: project context, agent loop, accumulated state, version control, iterative tools, propose-and-confirm. Chemigram applies that exact shape to photo work. A photo is a project. `taste.md` is `CLAUDE.md`. Vocabulary primitives are filesystem tools. Snapshots are commits. The shape transfers.
 

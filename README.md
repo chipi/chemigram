@@ -7,11 +7,13 @@ your taste, you describe intent, the agent edits via a vocabulary of
 named moves on top of darktable. Sessions accumulate; the project gets
 richer over time.
 
-**Status:** v1.1.0 shipped April 2026 — Phase 1 closed; comprehensive
-validation milestone shipped (519 tests, real-darktable e2e suite, three
-engine bugs fixed); Phase 2 (use-driven vocabulary maturation) in progress. Not a Lightroom replacement. Not a
-digital asset manager. A probe into where photographic taste lives and
-how it transmits through language and feedback.
+**Status:** v1.5.0 shipped May 2026 — Phase 1 closed (minimum viable
+loop, comprehensive validation, CLI, expressive-baseline vocabulary,
+drawn-mask-only architecture per ADR-076). 692 tests, real-darktable
+e2e suite. Phase 2 (use-driven vocabulary maturation) in progress. Not
+a Lightroom replacement. Not a digital asset manager. A probe into
+where photographic taste lives and how it transmits through language
+and feedback.
 
 ## What this is
 
@@ -50,11 +52,15 @@ masks and snapshots, and learns across sessions. Two modes:
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
 | 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped (ADR-050..061). |
 | 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 519 tests; 3 engine bugs fixed (ADR-062). |
-| 1.2 | Engine unblock + reference-image validation infrastructure | ✅ Closing (v1.2.0) — Path B synthesizer + assertion library + Mode A v3 (ADR-063..068). |
+| 1.2 | Engine unblock + reference-image validation infrastructure | ✅ Closed (v1.2.0) — Path B synthesizer + assertion library + Mode A v3 (ADR-063..068). |
 | 1.3 | Command-line interface | ✅ Closed (v1.3.0) — 22 verbs mirroring MCP; ADR-069..072 closed RFC-020. |
-| 1.4 | `expressive-baseline` vocabulary authoring (35 entries) | Planned (v1.4.0) — hands-on darktable work; engine already unblocked. |
-| 2 | Vocabulary maturation — grow vocab from session evidence | Begins post-v1.4.0 (use-driven; intermittent). |
-| 3+ | AI masks, continuous control | Conditional |
+| 1.4 | `expressive-baseline` vocabulary authoring | ✅ Closed (v1.4.0) — 35 entries authored programmatically (Path C) + 4 drawn-mask-bound entries via path 4a (XMP `masks_history` serialization). |
+| 1.5 | Mask architecture cleanup | ✅ Closed (v1.5.0) — drawn-mask-only (ADR-076 supersedes ADR-021/022/055/057/058/074). Removed PNG-based mask infrastructure that turned out to be a silent no-op. |
+| 1.6 | `channelmixerrgb` B&W vocabulary trio | In progress (v1.6.0) — #63: hand-authored darktable seed + 3 programmatic variants. |
+| 2 | Vocabulary maturation — grow vocab from session evidence | Begins post-v1.6.0 (use-driven; intermittent). |
+| 3 | Additional drawn-form mask geometries (path/brush) | Conditional — when Phase 2 surfaces gaps. |
+| 4 | Content-aware masking via sibling project producing drawn-form geometry | Conditional — `chemigram-masker-sam` follow-on. |
+| 5 | Continuous parametric control via hex encoders (Path C extension) | Conditional. |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
@@ -114,8 +120,8 @@ The CLI is stateless per invocation — parallel calls against different images 
        │  Claude Code, etc. │◄───────►│                              │
        └────────────────────┘ stdio   │   ┌─────────────────────┐    │
                   ▲                   │   │ chemigram.core      │    │
-                  │ vision + sampling │   │   vocab │ versioning │    │
-                  │ (for masks)       │   │   masking│ context    │    │
+                  │ vision              │   │   vocab │ versioning │    │
+                  │ (preview review)    │   │   masking│ context    │    │
                   ▼                   │   │   pipeline │ session  │    │
        ┌────────────────────┐         │   └──────────┬──────────┘    │
        │  ~/.chemigram/     │         │              │               │
@@ -128,10 +134,10 @@ The CLI is stateless per invocation — parallel calls against different images 
                                                      │ writes
                                                      ▼
                               ~/Pictures/Chemigram/<image_id>/
-                                snapshots/  exports/  sessions/  masks/
+                                objects/  exports/  sessions/  previews/
 ```
 
-The agent reads your context and the brief, drives darktable through a vocabulary of named moves, manages snapshots and masks, and proposes updates to your taste files at session end. Every tool call is recorded to a JSONL transcript so sessions are auditable and replayable.
+The agent reads your context and the brief, drives darktable through a vocabulary of named moves, manages snapshots, binds drawn-form masks where the vocabulary calls for them, and proposes updates to your taste files at session end. Every tool call is recorded to a JSONL transcript so sessions are auditable and replayable.
 
 A typical 6-turn opening:
 
@@ -142,26 +148,31 @@ Agent:  Ingested as image_id "manta".  Tastes loaded:
         natural tone curves, lifted shadows, restrained colors.
         EOS R5, no L1 templates yet.  Notes empty.
 
-You:    Render preview.  The water feels too cyan.
+You:    Render preview.  The water feels too cyan and the top
+        of the frame is blown by sun glare.
 
 Agent:  [render → wb_warm_subtle → render]  Slate-blue now.
+        For the glare, I'd reach for gradient_top_dampen_highlights —
+        binds a -0.5 EV exposure through a top-bright drawn gradient.
+        Try it?
 
-You:    Lift the shadows on the manta belly.  Use a subject mask.
+You:    Yes.  And lift the foreground where the manta sits.
 
-Agent:  [generate_mask → apply tone_lifted_shadows_subject]  Edge
-        too sharp?  I can regenerate with softer feathering.
+Agent:  [apply gradient_top_dampen_highlights →
+         apply gradient_bottom_lift_shadows → render]  Top dampened,
+        foreground lifted +0.4 EV.  Manta reads with more presence.
 
-You:    Yes.  Then export at full res.  Tag this v1-export.
+You:    Tag v1-export and run a full-res JPEG.
 
-Agent:  [regenerate_mask → re-apply → tag → export_final]  Done.
-        Two propose-and-confirms before we wrap?
+Agent:  [tag → export_final]  Done.  Two propose-and-confirms before
+        we wrap?
 ```
 
 See **[`docs/getting-started.md`](docs/getting-started.md#your-first-session)** for a full 10-turn walkthrough.
 
 ## Growing your vocabulary
 
-The starter vocabulary that ships with `chemigram` is deliberately small — five entries. Phase 2 grows it from real session evidence: the agent logs gaps when it reaches for moves you don't have; once a month or so, you open darktable, capture the missing primitives as `.dtstyle` files, and drop them into `~/.chemigram/vocabulary/personal/`. After 3 months of regular use most photographers reach 30–60 personal entries; after 6 months, 80–120. The vocabulary becomes an articulation of *your* craft.
+The starter vocabulary that ships with `chemigram` is deliberately small — four entries (two exposure deltas, a warm-WB nudge, an L2 neutral look). The companion `expressive-baseline` pack adds 35 more programmatically-authored entries, including four drawn-mask-bound primitives (gradient × 2, ellipse, rectangle). Phase 2 grows the vocabulary from real session evidence: the agent logs gaps when it reaches for moves you don't have; once a month or so, you open darktable, capture the missing primitives as `.dtstyle` files, and drop them into `~/.chemigram/vocabulary/personal/`. After 3 months of regular use most photographers reach 30–60 personal entries; after 6 months, 80–120. The vocabulary becomes an articulation of *your* craft.
 
 Full procedure in **[`docs/getting-started.md`](docs/getting-started.md#growing-your-vocabulary)** and **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)**.
 

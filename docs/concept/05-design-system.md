@@ -41,7 +41,7 @@ The agent's voice should be:
 - **Specific, not generic.** "Marine iguanas are typically dark gray to black" not "iguanas have various colorations."
 - **Honest about uncertainty.** "The eye mask caught one eye well but the other is partially obscured" not "Done." (See `02`/6.2.)
 - **Concise in routine, expansive when reasoning matters.** A simple apply doesn't need narration. A composition tension surfaced before applying needs a couple of sentences.
-- **Present-tense, declarative.** "I'm generating the subject mask now" not "I will now proceed to generate the subject mask."
+- **Present-tense, declarative.** "I'm applying gradient_top_dampen_highlights now" not "I will now proceed to apply gradient_top_dampen_highlights."
 
 ### 2.2 Standard response shapes
 
@@ -137,10 +137,10 @@ Scope suffixes indicate spatial restriction:
 | Suffix | Meaning |
 |-|-|
 | (no suffix) | Global — applies to whole frame |
-| `_subject` | Restricted to current subject mask (raster, AI-generated) |
-| `_sky` | Restricted to current sky mask |
-| `_background` | Restricted to inverse subject |
-| `_only` | Parametric restriction integral to the move (e.g. `warm_highlights_only` = warm restricted to luminance highlights via parametric mask) |
+| `_subject` | Restricted to a subject-area drawn-form mask (typically a centered ellipse via `mask_spec`); content-aware subject masking arrives in Phase 4 |
+| `_sky` | Restricted to a sky-area mask (top-bright gradient via `mask_spec`) |
+| `_background` | Restricted to outside the subject area |
+| `_only` | Parametric restriction integral to the move (e.g. `warm_highlights_only` = warm restricted to luminance highlights via parametric mask in `blendop_params`) |
 
 When a vocabulary entry exists in both global and subject-masked variants, the suffix tells the agent which is which. Pattern recognition is reliable enough that the agent can navigate by name alone.
 

@@ -1,6 +1,6 @@
 # ADR-033 — MCP tool surface (initial)
 
-> Status · Accepted
+> Status · Accepted; partially superseded by ADR-076 (2026-05-03) — the 5 mask tools (`generate_mask`, `regenerate_mask`, `list_masks`, `tag_mask`, `invalidate_mask`) and the `mask_kind` field referenced in alternatives-rejected were removed in v1.5.0. The grouping rationale and tool-naming conventions in this ADR remain in force for the surviving 22 tools.
 > Date · 2026-04-27
 > TA anchor ·/components/mcp-server ·/contracts/mcp-tools
 > Related RFC · RFC-010
