@@ -84,6 +84,50 @@ def test_apply_primitive_via_mcp(server_and_ctx: Any) -> None:
     assert state_payload["data"]["head_hash"] == apply_payload["data"]["snapshot_hash"]
 
 
+def test_apply_primitive_with_ad_hoc_mask_spec_via_mcp(server_and_ctx: Any) -> None:
+    """Closes #78: any-primitive ad-hoc masking through the MCP tool surface.
+
+    Pass an explicit mask_spec alongside a global primitive (expo_+0.5);
+    verify the snapshot's XMP carries masks_history (proof the apply path
+    routed through apply_with_drawn_mask).
+    """
+    server, ctx = server_and_ctx
+    mask_spec = {
+        "dt_form": "ellipse",
+        "dt_params": {
+            "center_x": 0.5,
+            "center_y": 0.5,
+            "radius_x": 0.3,
+            "radius_y": 0.3,
+            "border": 0.05,
+        },
+    }
+
+    async def _exercise() -> dict:
+        async with in_memory_session(server) as session:
+            return _decode(
+                await session.call_tool(
+                    "apply_primitive",
+                    arguments={
+                        "image_id": "img-1",
+                        "primitive_name": "expo_+0.5",
+                        "mask_spec": mask_spec,
+                    },
+                )
+            )
+
+    payload = anyio.run(_exercise)
+    assert payload["success"] is True
+    snapshot_hash = payload["data"]["snapshot_hash"]
+
+    # Verify the snapshot XMP carries masks_history (= drawn-mask path ran).
+    workspace = ctx.workspaces["img-1"]
+    raw = workspace.repo.read_object(snapshot_hash)
+    assert b"masks_history" in raw, (
+        "ad-hoc mask_spec via MCP should inject darktable:masks_history via apply_with_drawn_mask"
+    )
+
+
 def test_reset_via_mcp(server_and_ctx: Any) -> None:
     server, _ = server_and_ctx
 

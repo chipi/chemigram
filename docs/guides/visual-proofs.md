@@ -72,13 +72,19 @@ _Subtle film-grain texture; strength 8/100._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker.jpg" alt="grain_fine ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale.jpg" alt="grain_fine grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker-masked.jpg" alt="grain_fine ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale-masked.jpg" alt="grain_fine grayscale masked" width="180"> |
 
-_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md)):
+
+| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/grain_fine-clipped.jpg" alt="grain_fine clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-clipped-masked.jpg" alt="grain_fine clipped-gradient masked" width="180"> |
 
 ### `grain_medium`
 
@@ -88,11 +94,17 @@ _Visible film-grain texture; strength 25/100._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker.jpg" alt="grain_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale.jpg" alt="grain_medium grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker-masked.jpg" alt="grain_medium ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale-masked.jpg" alt="grain_medium grayscale masked" width="180"> |
 
-_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md)):
+
+| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/grain_medium-clipped.jpg" alt="grain_medium clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-clipped-masked.jpg" alt="grain_medium clipped-gradient masked" width="180"> |
 
 ### `grain_heavy`
 
@@ -102,9 +114,15 @@ _Heavy film-grain texture; strength 50/100, coarser scale._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker.jpg" alt="grain_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale.jpg" alt="grain_heavy grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker-masked.jpg" alt="grain_heavy ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale-masked.jpg" alt="grain_heavy grayscale masked" width="180"> |
 
-_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md)):
+
+| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped.jpg" alt="grain_heavy clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped-masked.jpg" alt="grain_heavy clipped-gradient masked" width="180"> |
 
 ### `vignette_subtle`
 
@@ -148,13 +166,17 @@ _Subtle highlight reconstruction; clip 0.95._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker.jpg" alt="highlights_recovery_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale.jpg" alt="highlights_recovery_subtle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker-masked.jpg" alt="highlights_recovery_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale-masked.jpg" alt="highlights_recovery_subtle grayscale masked" width="180"> |
 
-_(near-baseline diff in ColorChecker (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in ColorChecker (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
-_(near-baseline diff in grayscale (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in grayscale (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
-_(near-baseline diff in ColorChecker (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in ColorChecker (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
-_(near-baseline diff in grayscale (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md)):
+
+| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-clipped.jpg" alt="highlights_recovery_subtle clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-clipped-masked.jpg" alt="highlights_recovery_subtle clipped-gradient masked" width="180"> |
 
 ### `highlights_recovery_strong`
 
@@ -164,9 +186,15 @@ _Strong highlight reconstruction; clip 0.85._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker.jpg" alt="highlights_recovery_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale.jpg" alt="highlights_recovery_strong grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker-masked.jpg" alt="highlights_recovery_strong ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale-masked.jpg" alt="highlights_recovery_strong grayscale masked" width="180"> |
 
-_(near-baseline diff in ColorChecker (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in ColorChecker (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
-_(near-baseline diff in ColorChecker (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in ColorChecker (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md)):
+
+| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-clipped.jpg" alt="highlights_recovery_strong clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-clipped-masked.jpg" alt="highlights_recovery_strong clipped-gradient masked" width="180"> |
 
 ### `contrast_low`
 

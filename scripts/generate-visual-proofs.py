@@ -67,6 +67,7 @@ from chemigram.core.xmp import parse_xmp, synthesize_xmp, write_xmp  # noqa: E40
 _BASELINE_TEMPLATE_XMP = REPO / "src/chemigram/core/_baseline_v1.xmp"
 COLORCHECKER = REPO / "tests/fixtures/reference-targets/colorchecker_synthetic_srgb.png"
 GRAYSCALE = REPO / "tests/fixtures/reference-targets/grayscale_synthetic_linear.png"
+CLIPPED_GRADIENT = REPO / "tests/fixtures/reference-targets/clipped_gradient_synthetic.png"
 PROOFS_DIR = REPO / "docs/visual-proofs"
 GALLERY_PAGE = REPO / "docs/guides/visual-proofs.md"
 
@@ -118,6 +119,15 @@ _SUPPRESS_MASKED_SUBTYPES: dict[str, str] = {
 # these tags.
 _SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
 
+# Subtypes that render against the **clipped-gradient** fixture in
+# addition to the default cc + grayscale targets. The colorchecker24
+# and grayscale-ramp fixtures don't carry the signal these modules
+# operate on (no blown highlights to recover; no continuous tone for
+# grain texture to ride on). The clipped fixture has both: a vertical
+# 0..255 gradient in the top half + a 60% clipped band on the bottom.
+# See tests/fixtures/reference-targets/README.md for the layout.
+_EXTRA_CLIPPED_FIXTURE_SUBTYPES: set[str] = {"highlights", "grain"}
+
 # Subtypes / contexts where the engine renders correctly but the chart
 # is a poor signal medium. We render but annotate inline. Keys are
 # `entry.subtype` first, then the special key `_masked_sigmoid` for
@@ -125,12 +135,14 @@ _SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
 # delta, expected behavior).
 _NEAR_BASELINE_NOTES: dict[str, str] = {
     "highlights": (
-        "chart input has no blown highlights to recover — "
-        "see [mask-applicable-controls](mask-applicable-controls.md#highlights)"
+        "this chart has no blown highlights to recover — "
+        "see the **clipped-gradient row below** for the visible effect, "
+        "or [mask-applicable-controls](mask-applicable-controls.md#highlights)"
     ),
     "grain": (
         "grain texture is hard to see on flat chart patches — "
-        "see [mask-applicable-controls](mask-applicable-controls.md#grain)"
+        "see the **clipped-gradient row below** for visible texture, "
+        "or [mask-applicable-controls](mask-applicable-controls.md#grain)"
     ),
     "vignette": (
         "subtle vignette is small at the modest gallery render size; "
@@ -317,6 +329,56 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     xmp_path.unlink(missing_ok=True)
 
     _render_masked_variant(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
+    _render_clipped_fixture(entry, baseline, entry_dir, configdir, rendered)
+
+
+def _render_clipped_fixture(
+    entry, baseline, entry_dir: Path, configdir: Path, rendered: dict
+) -> None:
+    """Render the clipped-gradient fixture for entries whose subtype
+    benefits from continuous-tone or blown-highlights signal that the
+    colorchecker / grayscale-ramp fixtures don't carry.
+
+    Writes a baseline render of the clipped fixture (once per script run)
+    plus per-entry global + demo-masked variants. Stored under the slugs
+    ``clipped``, ``clipped_masked``, and ``clipped_baseline`` so the
+    markdown emit can render an extra row beneath the main 4-column block.
+    """
+    if entry.subtype not in _EXTRA_CLIPPED_FIXTURE_SUBTYPES:
+        return
+
+    # Render the clipped fixture's baseline once per script run.
+    baseline_clipped = PROOFS_DIR / "baseline-clipped.jpg"
+    if not baseline_clipped.exists():
+        baseline_xmp_path = PROOFS_DIR / "_baseline_clipped.xmp"
+        write_xmp(baseline, baseline_xmp_path)
+        if not _render_one(CLIPPED_GRADIENT, baseline_xmp_path, baseline_clipped, configdir):
+            print("  x baseline-clipped render failed; skipping clipped fixture", file=sys.stderr)
+            baseline_xmp_path.unlink(missing_ok=True)
+            return
+        baseline_xmp_path.unlink(missing_ok=True)
+    rendered["baseline"]["clipped"] = baseline_clipped
+
+    # Global render against the clipped fixture.
+    global_xmp_path = entry_dir / f"_{entry.name}_clipped.xmp"
+    write_xmp(_synthesize_for_entry(baseline, entry), global_xmp_path)
+    out = entry_dir / f"{entry.name}-clipped.jpg"
+    if _render_one(CLIPPED_GRADIENT, global_xmp_path, out, configdir):
+        rendered[entry.name]["clipped"] = out
+        rendered[entry.name]["clipped_diff"] = _mean_pixel_diff(out, baseline_clipped)
+    global_xmp_path.unlink(missing_ok=True)
+
+    # Demo-masked variant against the clipped fixture (same ellipse as
+    # the cc/grayscale demo masks).
+    if entry.mask_spec is not None:
+        return  # mask-bound entries don't get a demo-mask variant
+    masked_xmp_path = entry_dir / f"_{entry.name}_clipped_masked.xmp"
+    write_xmp(_synthesize_for_entry_demo_masked(baseline, entry), masked_xmp_path)
+    out = entry_dir / f"{entry.name}-clipped-masked.jpg"
+    if _render_one(CLIPPED_GRADIENT, masked_xmp_path, out, configdir):
+        rendered[entry.name]["clipped_masked"] = out
+        rendered[entry.name]["clipped_masked_diff"] = _mean_pixel_diff(out, baseline_clipped)
+    masked_xmp_path.unlink(missing_ok=True)
 
 
 def _render_masked_variant(
@@ -512,6 +574,31 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
     for note in _diff_annotations(entry, outs):
         out.append("")
         out.append(note)
+
+    # Extra row: clipped-gradient fixture for highlights / grain entries.
+    clipped = outs.get("clipped")
+    clipped_masked = outs.get("clipped_masked")
+    if clipped not in (None, "skipped"):
+        out.append("")
+        out.append(
+            "**On the clipped-gradient fixture** (continuous tone + blown "
+            "highlights — chart designed to show this module's effect; "
+            "see [`reference-targets/README.md`]"
+            "(../../tests/fixtures/reference-targets/README.md)):"
+        )
+        if is_mask_bound or clipped_masked in (None, "skipped"):
+            out.append("")
+            out.append("| Clipped gradient (global) |")
+            out.append("|-|")
+            out.append(f"| {_img_md(clipped, f'{entry.name} clipped-gradient global')} |")
+        else:
+            out.append("")
+            out.append("| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |")
+            out.append("|-|-|")
+            out.append(
+                f"| {_img_md(clipped, f'{entry.name} clipped-gradient global')} "
+                f"| {_img_md(clipped_masked, f'{entry.name} clipped-gradient masked')} |"
+            )
 
     out.append("")
     return out

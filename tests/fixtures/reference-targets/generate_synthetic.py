@@ -32,6 +32,7 @@ _HERE = Path(__file__).resolve().parent
 _CC24_JSON = _HERE / "colorchecker24_lab_d50.json"
 _CC24_PNG = _HERE / "colorchecker_synthetic_srgb.png"
 _GRAYSCALE_PNG = _HERE / "grayscale_synthetic_linear.png"
+_CLIPPED_PNG = _HERE / "clipped_gradient_synthetic.png"
 
 
 def _generate_cc24() -> None:
@@ -86,9 +87,54 @@ def _generate_grayscale() -> None:
     print(f"wrote {_GRAYSCALE_PNG.relative_to(_HERE.parents[2])}")
 
 
+def _generate_clipped_gradient() -> None:
+    """Continuous-tone gradient with a clipped band — the fixture for
+    ``highlights_recovery_*`` and ``grain_*`` direction-of-change tests.
+
+    Layout (600x400):
+
+    - Top half (rows 0..199): a vertical sRGB gradient from 0,0,0 (top) to
+      255,255,255 (bottom). Continuous tone, no clipping. Useful for
+      grain primitives (texture has uniform tone to ride on) and as
+      reference for tone-curve moves on midtones.
+    - Bottom half (rows 200..399): a 60% region pinned at 255,255,255
+      (clipped highlights), then a 40% smooth ramp from 200..255. Useful
+      for highlights_recovery primitives — the clipped band is what the
+      module actually has to work on.
+
+    sRGB 8-bit. Fixture is intentionally synthetic (per RFC-019 / ADR-067:
+    no physical-chart dependency); chart-pipeline path treats this as a
+    display-referred PNG just like the CC24 and grayscale-ramp fixtures.
+    """
+    width, height = 600, 400
+    img = Image.new("RGB", (width, height), (0, 0, 0))
+
+    # Top half: vertical 0..255 gradient (continuous tone).
+    half_h = height // 2
+    for y in range(half_h):
+        v = round(y * 255 / max(half_h - 1, 1))
+        for x in range(width):
+            img.putpixel((x, y), (v, v, v))
+
+    # Bottom half: clipped band on the left 60%, ramp 200..255 on right 40%.
+    clipped_w = int(width * 0.6)
+    for y in range(half_h, height):
+        for x in range(clipped_w):
+            img.putpixel((x, y), (255, 255, 255))  # blown
+        ramp_w = width - clipped_w
+        for x in range(clipped_w, width):
+            t = (x - clipped_w) / max(ramp_w - 1, 1)
+            v = round(200 + t * 55)  # 200..255 linear
+            img.putpixel((x, y), (v, v, v))
+
+    img.save(_CLIPPED_PNG, format="PNG", optimize=True)
+    print(f"wrote {_CLIPPED_PNG.relative_to(_HERE.parents[2])}")
+
+
 def main() -> int:
     _generate_cc24()
     _generate_grayscale()
+    _generate_clipped_gradient()
     return 0
 
 

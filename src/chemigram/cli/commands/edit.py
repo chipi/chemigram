@@ -5,16 +5,27 @@ Mirrors MCP ``apply_primitive``, ``remove_module``, ``reset``,
 :mod:`chemigram.core` API directly (per ADR-071); none of them go
 through ``chemigram.mcp.tools.*``.
 
-Mask-bound primitives (``mask_spec`` set on the vocabulary entry) route
-through :func:`chemigram.core.helpers.apply_with_drawn_mask`, which
-encodes the form into the XMP's ``masks_history`` and patches each
-plugin's ``blendop_params`` to bind it.
+Mask binding paths (closes #78):
+
+- An entry with ``mask_spec`` in its manifest auto-routes through
+  :func:`chemigram.core.helpers.apply_with_drawn_mask`. This is the
+  v1.5.0 behavior — used by the 4 shipped masked entries.
+- ``--mask-spec '<json>'`` on ``apply-primitive`` overrides at apply
+  time (or supplies a mask for an entry that doesn't have one).
+  This is the v1.6.0 addition — lets a photographer mask any
+  primitive ad-hoc without authoring a vocabulary entry.
+
+The JSON shape matches the manifest's ``mask_spec`` field
+(``{"dt_form": "gradient"|"ellipse"|"rectangle", "dt_params": {...}}``);
+schema reference and parameter semantics live in
+``docs/guides/mask-applicable-controls.md``.
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
-from typing import cast
+from typing import Any, cast
 
 import typer
 
@@ -87,12 +98,28 @@ def get_state(
 # ---------------------------------------------------------------------------
 
 
+def _resolve_effective_mask(
+    vocab_entry: Any, mask_spec_override: dict[str, Any] | None
+) -> dict[str, Any] | None:
+    """Pick the mask_spec to apply, preferring the CLI override.
+
+    Returns the dict that should be passed to ``apply_with_drawn_mask``,
+    or None if the entry should be applied globally. The CLI override
+    takes precedence over the manifest's ``mask_spec`` so a photographer
+    can re-mask a shipped masked entry on the fly.
+    """
+    if mask_spec_override is not None:
+        return mask_spec_override
+    return vocab_entry.mask_spec
+
+
 def _do_apply_primitive(
     ctx: typer.Context,
     image_id: str,
     *,
     vocab_entry: object,
     entry_name: str,
+    mask_spec_override: dict[str, Any] | None = None,
 ) -> int:
     """Per-image core for apply-primitive; returns exit code."""
     from chemigram.core.vocab import VocabEntry
@@ -114,11 +141,10 @@ def _do_apply_primitive(
         )
         return ExitCode.STATE_ERROR.value
 
-    if vocab_entry.mask_spec is not None:
+    effective_mask = _resolve_effective_mask(vocab_entry, mask_spec_override)
+    if effective_mask is not None:
         try:
-            new_xmp = apply_with_drawn_mask(
-                baseline_xmp, vocab_entry.dtstyle, vocab_entry.mask_spec
-            )
+            new_xmp = apply_with_drawn_mask(baseline_xmp, vocab_entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
             writer.error(str(exc), ExitCode.MASKING_ERROR, entry=entry_name)
             return ExitCode.MASKING_ERROR.value
@@ -140,6 +166,33 @@ def _do_apply_primitive(
     return ExitCode.SUCCESS.value
 
 
+def _parse_mask_spec_flag(value: str | None) -> dict[str, Any] | None:
+    """Parse the ``--mask-spec`` flag value (JSON string) into a dict.
+
+    Empty / unset returns None. Raises ``typer.BadParameter`` with a
+    helpful message on invalid JSON or wrong shape.
+    """
+    if value is None or value == "":
+        return None
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(
+            f"--mask-spec must be valid JSON (got {exc.msg} at pos {exc.pos}). "
+            f'Example: \'{{"dt_form":"ellipse","dt_params":{{"center_x":0.5,'
+            f'"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.05}}}}\''
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise typer.BadParameter(f"--mask-spec must be a JSON object, got {type(parsed).__name__}")
+    if "dt_form" not in parsed:
+        raise typer.BadParameter(
+            "--mask-spec missing required key 'dt_form' "
+            "(one of: gradient, ellipse, rectangle). "
+            "See docs/guides/mask-applicable-controls.md for the schema."
+        )
+    return parsed
+
+
 def apply_primitive(
     ctx: typer.Context,
     image_id: str = typer.Argument(None, help="Image ID (or '-' with --stdin for batch)."),
@@ -149,6 +202,18 @@ def apply_primitive(
         "--pack",
         "-p",
         help="Vocabulary pack(s). Defaults to ['starter'].",
+    ),
+    mask_spec: str = typer.Option(
+        None,
+        "--mask-spec",
+        help=(
+            "Optional JSON mask spec to apply this primitive through a drawn "
+            "mask region. Schema: "
+            '\'{"dt_form":"gradient|ellipse|rectangle","dt_params":{...}}\'. '
+            "Overrides the entry's manifest mask_spec when both are present. "
+            "See docs/guides/mask-applicable-controls.md for parameter "
+            "semantics and the per-module compatibility matrix."
+        ),
     ),
     stdin: bool = typer.Option(
         False,
@@ -160,6 +225,8 @@ def apply_primitive(
     obj = cast(CliContext, ctx.obj)
     writer = obj["writer"]
     pack_names = pack if pack else ["starter"]
+
+    mask_spec_override = _parse_mask_spec_flag(mask_spec)
 
     try:
         vocabulary = load_packs(pack_names)
@@ -187,6 +254,7 @@ def apply_primitive(
             img,
             vocab_entry=vocab_entry,
             entry_name=entry,
+            mask_spec_override=mask_spec_override,
         )
         for img in iter_image_ids(stdin, image_id)
     ]

@@ -93,6 +93,20 @@ chemigram vocab show gradient_top_dampen_highlights --json | jq
 
 Shows the entry's manifest fields (subtype, touches, tags, description, modversions, optional `mask_spec`).
 
+### Apply any primitive through an ad-hoc drawn mask
+
+You want to mask a global primitive (e.g., `sat_kill`) for a specific photograph without authoring a new vocabulary entry. Use `--mask-spec`:
+
+```bash
+chemigram apply-primitive <image_id> --entry sat_kill \
+  --pack expressive-baseline \
+  --mask-spec '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.1}}'
+```
+
+The JSON shape matches the manifest's `mask_spec` field — see [`mask-applicable-controls.md`](mask-applicable-controls.md) for the per-form parameter list and the per-module compatibility matrix (some module + mask combinations are documented as ineffective, e.g., `temperature` × any mask).
+
+When the entry already has a manifest `mask_spec`, `--mask-spec` overrides it.
+
 ### Find entries that touch a specific darktable module
 
 ```bash

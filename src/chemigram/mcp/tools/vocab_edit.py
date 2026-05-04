@@ -122,6 +122,7 @@ register_tool(
 async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     image_id = args["image_id"]
     primitive_name = args["primitive_name"]
+    mask_spec_override = args.get("mask_spec")
 
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
@@ -141,11 +142,15 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
             )
         )
 
-    if entry.mask_spec is not None:
+    # Mask resolution: caller-supplied mask_spec override > manifest mask_spec.
+    # Lets an agent ad-hoc-mask any global primitive without authoring a
+    # vocabulary entry (closes #78).
+    effective_mask = mask_spec_override if mask_spec_override is not None else entry.mask_spec
+    if effective_mask is not None:
         from chemigram.core.helpers import apply_with_drawn_mask
 
         try:
-            new_xmp = apply_with_drawn_mask(baseline_xmp, entry.dtstyle, entry.mask_spec)
+            new_xmp = apply_with_drawn_mask(baseline_xmp, entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
             return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
     else:
@@ -163,18 +168,52 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     )
 
 
+_MASK_SPEC_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "dt_form": {
+            "type": "string",
+            "enum": ["gradient", "ellipse", "rectangle"],
+            "description": "Drawn-form kind. See docs/guides/mask-applicable-controls.md.",
+        },
+        "dt_params": {
+            "type": "object",
+            "description": (
+                "Form-specific parameters. Coordinates are normalized "
+                "image coords [0, 1]. See chemigram.core.masking.dt_serialize "
+                "for the per-form parameter list."
+            ),
+        },
+    },
+    "required": ["dt_form", "dt_params"],
+    "additionalProperties": False,
+}
+
+
 register_tool(
     name="apply_primitive",
     description=(
         "Apply a vocabulary primitive to the current XMP and snapshot the "
-        "result. Mask-bound entries (mask_spec set) route through the "
-        "drawn-mask apply path automatically."
+        "result. Mask binding: the entry's manifest mask_spec (if any) is "
+        "honored by default; pass an explicit mask_spec to override and "
+        "apply ANY primitive through an ad-hoc drawn mask (per ADR-076)."
     ),
     input_schema={
         "type": "object",
         "properties": {
             "image_id": {"type": "string"},
             "primitive_name": {"type": "string"},
+            "mask_spec": {
+                **_MASK_SPEC_SCHEMA,
+                "description": (
+                    "Optional drawn-mask spec applied at apply time. "
+                    "Overrides the entry's manifest mask_spec when both "
+                    "are present. Schema matches the manifest mask_spec "
+                    "field; see docs/guides/mask-applicable-controls.md "
+                    "for the per-module compatibility matrix and parameter "
+                    "semantics."
+                ),
+            },
         },
         "required": ["image_id", "primitive_name"],
         "additionalProperties": False,

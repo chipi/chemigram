@@ -79,11 +79,19 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
  Apply a vocabulary entry; snapshot the result.
 
    image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
- *  --entry          TEXT  Vocabulary entry name. [required]
-    --pack   -p      TEXT  Vocabulary pack(s). Defaults to ['starter'].
-    --stdin                Read image_ids from stdin (one per line); same
-                           entry applied to each.
-    --help                 Show this message and exit.
+ *  --entry              TEXT  Vocabulary entry name. [required]
+    --pack       -p      TEXT  Vocabulary pack(s). Defaults to ['starter'].
+    --mask-spec          TEXT  Optional JSON mask spec to apply this
+                               primitive through a drawn mask region. Schema:
+                               '{"dt_form":"gradient|ellipse|rectangle","dt_…
+                               Overrides the entry's manifest mask_spec when
+                               both are present. See
+                               docs/guides/mask-applicable-controls.md for
+                               parameter semantics and the per-module
+                               compatibility matrix.
+    --stdin                    Read image_ids from stdin (one per line); same
+                               entry applied to each.
+    --help                     Show this message and exit.
 ```
 
 ### `chemigram remove-module`

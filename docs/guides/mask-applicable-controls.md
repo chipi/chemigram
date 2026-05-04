@@ -79,13 +79,17 @@ Three paths: direct CLI, vocabulary authoring, and Python.
 
 ### From the CLI (one-off, ad hoc masking)
 
-The CLI doesn't yet expose `--mask-spec` on `apply-primitive`. To mask an arbitrary primitive in v1.5.x, either:
+`chemigram apply-primitive` accepts `--mask-spec '<json>'` to apply any primitive through an ad-hoc drawn mask:
 
-1. Reach for one of the 4 shipped mask-bound primitives if its geometry fits.
-2. Author a new vocabulary entry that encodes the mask + the primitive together (see below).
-3. Use the Python API directly.
+```bash
+chemigram apply-primitive <image_id> --entry sat_kill \
+  --pack expressive-baseline \
+  --mask-spec '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.1}}'
+```
 
-Adding `--mask-spec` to `apply-primitive` is tracked in [#TBD] (open if you need it).
+The JSON shape matches the manifest's `mask_spec` field (gradient / ellipse / rectangle with their `dt_params` — schema reference below). When both `--mask-spec` and the entry's manifest `mask_spec` are present, the CLI flag overrides — useful for re-shaping a shipped masked entry on a specific photograph.
+
+For repeatable moves, prefer authoring a vocabulary entry that bakes the mask in (next section); the CLI flag is for ad-hoc work.
 
 ### Authoring a mask-bound vocabulary entry
 
@@ -118,6 +122,30 @@ The 4 shipped masked entries are good templates. A masked `.dtstyle` is just a r
 ```
 
 When the engine applies this entry, `apply_with_drawn_mask` automatically routes through the masked path because `mask_spec is not None`. The `.dtstyle` file itself is the global version of the move; the manifest's `mask_spec` overlays the geometry at apply time. See [`authoring-vocabulary-entries.md`](authoring-vocabulary-entries.md) for the full flow.
+
+### From an MCP agent (one-off, ad hoc masking)
+
+The `apply_primitive` MCP tool accepts an optional `mask_spec` argument with the same JSON shape:
+
+```json
+{
+  "tool": "apply_primitive",
+  "args": {
+    "image_id": "<id>",
+    "primitive_name": "sat_kill",
+    "mask_spec": {
+      "dt_form": "ellipse",
+      "dt_params": {
+        "center_x": 0.5, "center_y": 0.5,
+        "radius_x": 0.3, "radius_y": 0.3,
+        "border": 0.1
+      }
+    }
+  }
+}
+```
+
+Same precedence as the CLI: `mask_spec` from the agent overrides the entry's manifest `mask_spec` if both are present.
 
 ### From Python (programmatic, one-off)
 

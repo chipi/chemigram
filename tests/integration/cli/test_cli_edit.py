@@ -181,7 +181,11 @@ def test_apply_primitive_unknown_image(runner: CliRunner, cli_workspace_root: Pa
 def test_apply_primitive_mask_override_on_global_primitive_invalid(
     runner: CliRunner, cli_workspace_root: Path
 ) -> None:
-    """--mask-override on a non-mask-bound primitive must error INVALID_INPUT."""
+    """--mask-override on a non-mask-bound primitive must error INVALID_INPUT.
+
+    (Vestigial from the removed PNG-mask era; the real ad-hoc-mask flag is
+    --mask-spec, exercised below.)
+    """
     result = runner.invoke(
         app,
         [
@@ -196,6 +200,127 @@ def test_apply_primitive_mask_override_on_global_primitive_invalid(
         ],
     )
     assert result.exit_code == ExitCode.INVALID_INPUT.value
+
+
+# ----- apply-primitive --mask-spec ad-hoc masking (closes #78) ---------
+
+
+_AD_HOC_ELLIPSE_MASK = (
+    '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,'
+    '"radius_x":0.3,"radius_y":0.3,"border":0.05}}'
+)
+
+
+def test_apply_primitive_mask_spec_ellipse_routes_through_drawn_mask(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """--mask-spec on a global primitive (sat_kill) routes through the
+    drawn-mask apply path; resulting XMP carries masks_history.
+
+    This is the main user-facing addition from #78: any primitive,
+    not just the 4 shipped masked entries, can be region-bound at apply
+    time without authoring a vocabulary entry.
+    """
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "sat_kill",
+            "--pack",
+            "expressive-baseline",
+            "--mask-spec",
+            _AD_HOC_ELLIPSE_MASK,
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    snapshot_hash = payload["snapshot_hash"]
+
+    from chemigram.core.versioning import ImageRepo
+
+    repo = ImageRepo(cli_workspace_root / "test-image")
+    raw = repo.read_object(snapshot_hash)
+    assert b"masks_history" in raw, (
+        "ad-hoc --mask-spec should inject darktable:masks_history into the "
+        "synthesized XMP via apply_with_drawn_mask"
+    )
+
+
+def test_apply_primitive_mask_spec_overrides_manifest_mask(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """When the entry already has a manifest mask_spec (e.g.,
+    radial_subject_lift), --mask-spec overrides it. Both paths produce
+    masks_history; this test asserts only that the override path works
+    cleanly (no error) — geometry verification lives in unit tests."""
+    rectangle_override = (
+        '{"dt_form":"rectangle","dt_params":{"x0":0.1,"y0":0.1,"x1":0.5,"y1":0.5,"border":0.02}}'
+    )
+    result = runner.invoke(
+        app,
+        [
+            "--json",
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "radial_subject_lift",
+            "--pack",
+            "expressive-baseline",
+            "--mask-spec",
+            rectangle_override,
+        ],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+
+
+def test_apply_primitive_mask_spec_invalid_json_rejected(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """Invalid JSON in --mask-spec returns a typer BadParameter (exit 2)."""
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "expo_+0.5",
+            "--mask-spec",
+            "{not valid json",
+        ],
+    )
+    assert result.exit_code != ExitCode.SUCCESS.value
+    assert "valid JSON" in (result.stdout + result.stderr)
+
+
+def test_apply_primitive_mask_spec_missing_dt_form_rejected(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """A mask_spec JSON object missing 'dt_form' is rejected up front
+    (better UX than letting it propagate to apply_with_drawn_mask)."""
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "expo_+0.5",
+            "--mask-spec",
+            '{"dt_params":{}}',
+        ],
+    )
+    assert result.exit_code != ExitCode.SUCCESS.value
+    assert "dt_form" in (result.stdout + result.stderr)
 
 
 # ----- remove-module ----------------------------------------------------

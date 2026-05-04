@@ -15,6 +15,13 @@ and tonal-response assertions. Per RFC-019 v0.2.
   efficiently — well under the 500 KB pre-commit large-file limit).
 - `grayscale_synthetic_linear.png` — synthetic 24-step linear grayscale
   ramp (sRGB 0..255 in equal increments). Used for tonal-response checks.
+- `clipped_gradient_synthetic.png` — 600x400 dual-purpose fixture (issue #79).
+  Top half: continuous-tone vertical sRGB gradient (0..255), the signal
+  medium for ``grain_*`` primitives. Bottom half: 60% clipped band
+  (255,255,255) plus 40% near-clip ramp (200..255), the signal for
+  ``highlights_recovery_*`` direction-of-change. The colorchecker24 and
+  grayscale-ramp fixtures don't have either signal, so masked / chart-
+  isolated proofs of those modules read near-baseline against them.
 - `generate_synthetic.py` — re-generation script. Run from repo root:
   ``uv run python tests/fixtures/reference-targets/generate_synthetic.py``.
 
