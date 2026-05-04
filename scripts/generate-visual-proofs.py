@@ -73,6 +73,21 @@ GALLERY_PAGE = REPO / "docs/guides/visual-proofs.md"
 RENDER_WIDTH = 400
 RENDER_HEIGHT = 400
 
+# Centered ellipse used to demonstrate "any global primitive can be
+# applied through a mask." Renders alongside the global version for
+# every non-mask-bound entry so the gallery shows mask localization
+# visually. Same geometry as `tests/e2e/test_lab_grade_masked_universality`.
+DEMO_MASK_SPEC = {
+    "dt_form": "ellipse",
+    "dt_params": {
+        "center_x": 0.5,
+        "center_y": 0.5,
+        "radius_x": 0.2,
+        "radius_y": 0.2,
+        "border": 0.05,
+    },
+}
+
 
 @dataclass(frozen=True)
 class RenderTarget:
@@ -130,6 +145,16 @@ def _synthesize_for_entry(baseline, entry):
     return synthesize_xmp(baseline, [entry.dtstyle])
 
 
+def _synthesize_for_entry_demo_masked(baseline, entry):
+    """Build the XMP that applies entry to baseline through a centered
+    ellipse mask. Used to demonstrate "any global primitive can be
+    masked"; only meaningful for non-mask-bound entries (the 4 already-
+    mask-bound entries don't get a demo render since their own
+    ``mask_spec`` is the demonstration).
+    """
+    return apply_with_drawn_mask(baseline, entry.dtstyle, DEMO_MASK_SPEC)
+
+
 def render_all(configdir: Path) -> dict[str, dict[str, Path]]:
     """Render baseline + every entry against every target. Returns
     ``{entry_name: {target_slug: output_path}}`` plus a special
@@ -157,30 +182,54 @@ def render_all(configdir: Path) -> dict[str, dict[str, Path]]:
     # 2) Every vocabulary entry against both targets
     vocab = load_packs(["starter", "expressive-baseline"])
     for entry in vocab.list_all():
-        # Pack root for output organization
-        pack_root = vocab.pack_for(entry.name)
-        pack_name = pack_root.name if pack_root else "unknown"
-        entry_dir = PROOFS_DIR / pack_name
-        entry_dir.mkdir(parents=True, exist_ok=True)
-
-        print(f"rendering {pack_name}/{entry.name}…")
-        try:
-            applied_xmp = _synthesize_for_entry(baseline, entry)
-        except Exception as exc:
-            print(f"  ✗ synthesize failed: {exc}", file=sys.stderr)
-            continue
-
-        xmp_path = entry_dir / f"_{entry.name}.xmp"
-        write_xmp(applied_xmp, xmp_path)
-
-        rendered.setdefault(entry.name, {})
-        for target in TARGETS:
-            out = entry_dir / f"{entry.name}-{target.slug}.jpg"
-            if _render_one(target.path, xmp_path, out, configdir):
-                rendered[entry.name][target.slug] = out
-        xmp_path.unlink(missing_ok=True)
+        _render_entry(entry, vocab, baseline, configdir, rendered)
 
     return rendered
+
+
+def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
+    """Render one vocab entry against every target plus the demo-masked
+    variant (when applicable). Mutates ``rendered`` in place. Errors are
+    logged and skipped so a single broken entry doesn't fail the whole run.
+    """
+    pack_root = vocab.pack_for(entry.name)
+    pack_name = pack_root.name if pack_root else "unknown"
+    entry_dir = PROOFS_DIR / pack_name
+    entry_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"rendering {pack_name}/{entry.name}…")
+    try:
+        applied_xmp = _synthesize_for_entry(baseline, entry)
+    except Exception as exc:
+        print(f"  ✗ synthesize failed: {exc}", file=sys.stderr)
+        return
+
+    xmp_path = entry_dir / f"_{entry.name}.xmp"
+    write_xmp(applied_xmp, xmp_path)
+    rendered.setdefault(entry.name, {})
+    for target in TARGETS:
+        out = entry_dir / f"{entry.name}-{target.slug}.jpg"
+        if _render_one(target.path, xmp_path, out, configdir):
+            rendered[entry.name][target.slug] = out
+    xmp_path.unlink(missing_ok=True)
+
+    # Demo-masked variant: only for entries that are NOT already mask-bound
+    # (those carry their own mask_spec; an additional demo mask would shadow
+    # their intended geometry).
+    if entry.mask_spec is not None:
+        return
+    try:
+        masked_xmp = _synthesize_for_entry_demo_masked(baseline, entry)
+    except Exception as exc:
+        print(f"  ✗ demo-mask synthesize failed: {exc}", file=sys.stderr)
+        return
+    masked_xmp_path = entry_dir / f"_{entry.name}_masked.xmp"
+    write_xmp(masked_xmp, masked_xmp_path)
+    for target in TARGETS:
+        out = entry_dir / f"{entry.name}-{target.slug}-masked.jpg"
+        if _render_one(target.path, masked_xmp_path, out, configdir):
+            rendered[entry.name][f"{target.slug}_masked"] = out
+    masked_xmp_path.unlink(missing_ok=True)
 
 
 def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
@@ -224,6 +273,16 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         "photographs.\n"
     )
     lines.append(
+        "> **Masked columns**: every non-mask-bound primitive renders "
+        "additionally through a centered ellipse mask "
+        "(``radius=0.2``, ``border=0.05``) so you can see the spatial "
+        "shaping in action. The mask covers the middle 16% of the frame; "
+        "anything outside it should remain at baseline. This visually "
+        "demonstrates that **any** primitive can be applied through a "
+        "mask — see [`mask-applicable-controls.md`](mask-applicable-controls.md) "
+        "for the per-module compatibility matrix.\n"
+    )
+    lines.append(
         "> **Auto-generated.** Regenerate via "
         "``uv run python scripts/generate-visual-proofs.py`` "
         "after vocabulary changes. Commit the regenerated images "
@@ -264,20 +323,45 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
             outs = rendered[entry.name]
             cc = outs.get("colorchecker")
             gs = outs.get("grayscale")
+            cc_masked = outs.get("colorchecker_masked")
+            gs_masked = outs.get("grayscale_masked")
             if cc is None and gs is None:
                 continue
 
-            mask_marker = " 🟦 mask-bound" if entry.mask_spec is not None else ""
+            is_mask_bound = entry.mask_spec is not None
+            mask_marker = " 🟦 mask-bound" if is_mask_bound else ""
             lines.append(f"### `{entry.name}`{mask_marker}\n")
             lines.append(f"_{entry.description}_\n")
 
-            cc_rel = cc.relative_to(GALLERY_PAGE.parent.parent) if cc else None
-            gs_rel = gs.relative_to(GALLERY_PAGE.parent.parent) if gs else None
-            lines.append("| ColorChecker | Grayscale ramp |")
-            lines.append("|-|-|")
-            cc_md = f"![{entry.name} ColorChecker](../{cc_rel})" if cc_rel else "_(render failed)_"
-            gs_md = f"![{entry.name} grayscale](../{gs_rel})" if gs_rel else "_(render failed)_"
-            lines.append(f"| {cc_md} | {gs_md} |")
+            def _img(p, alt):
+                if p is None:
+                    return "_(n/a)_"
+                rel = p.relative_to(GALLERY_PAGE.parent.parent)
+                return f'<img src="../{rel}" alt="{alt}" width="180">'
+
+            if is_mask_bound:
+                # Mask-bound: just the global render (which is already
+                # the entry's intrinsic mask). No demo-mask column.
+                lines.append("| ColorChecker | Grayscale ramp |")
+                lines.append("|-|-|")
+                lines.append(
+                    f"| {_img(cc, f'{entry.name} ColorChecker')} "
+                    f"| {_img(gs, f'{entry.name} grayscale')} |"
+                )
+            else:
+                # Global entry: 4-up — global + demo-masked for both targets.
+                lines.append(
+                    "| ColorChecker (global) | Grayscale (global) "
+                    "| ColorChecker (centered ellipse mask) "
+                    "| Grayscale (centered ellipse mask) |"
+                )
+                lines.append("|-|-|-|-|")
+                lines.append(
+                    f"| {_img(cc, f'{entry.name} ColorChecker global')} "
+                    f"| {_img(gs, f'{entry.name} grayscale global')} "
+                    f"| {_img(cc_masked, f'{entry.name} ColorChecker masked')} "
+                    f"| {_img(gs_masked, f'{entry.name} grayscale masked')} |"
+                )
             lines.append("")
 
         lines.append("---\n")

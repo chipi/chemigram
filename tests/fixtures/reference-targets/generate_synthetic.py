@@ -65,12 +65,15 @@ def _generate_cc24() -> None:
 
 
 def _generate_grayscale() -> None:
-    """24-step linear sRGB ramp, 25 px wide x 100 px tall per step.
-    Total width 600 px. sRGB values evenly spaced across [0, 255].
+    """24-step linear sRGB ramp, 25 px wide x 400 px tall per step.
+    Total dimensions 600x400 (matches the ColorChecker chart so visual-
+    proofs renders fit on the same page row, and so vertical-axis masks
+    like ``gradient_bottom_lift_shadows`` have y-range to act on).
+    sRGB values evenly spaced across [0, 255].
     """
     steps = 24
     step_width = 25
-    height = 100
+    height = 400
     width = steps * step_width
     img = Image.new("RGB", (width, height), (0, 0, 0))
     for i in range(steps):
