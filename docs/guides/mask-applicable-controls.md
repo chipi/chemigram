@@ -55,6 +55,22 @@ The matrix below maps each darktable module touched by the chemigram vocabulary 
 - **Photographic ⚠️**: It renders, but think carefully — there's a caveat (seam, pipeline position, edge artifact).
 - **Photographic ❌**: Don't. The combination doesn't make photographic sense.
 
+### Per-module rationale (anchor targets)
+
+Stable link targets for the per-row notes in the [visual proofs gallery](visual-proofs.md). One short paragraph per module with the rationale already implied by the matrix above.
+
+<a id="temperature"></a>
+**`temperature`** — drawn-mask binding is silently ignored at render time. darktable's temperature module runs early in the pipeline (before `colorin`), and the masking machinery operates on data that's already been white-balanced. Empirically, a masked `wb_warm_subtle` produces a render byte-identical to its global counterpart. Consequence: the gallery suppresses the masked column for `wb_*` entries; for "warm the subject," reach for `grade_highlights_warm` or a `colorbalancergb` move with a mask instead.
+
+<a id="vignette"></a>
+**`vignette`** — geometric × geometric is a contradiction. The `vignette` module produces its own radial intensity profile peaking at the frame edges; a centered ellipse mask is `1` where the vignette is `0`, and vice versa. The two geometries cancel; the masked render returns near-baseline. Consequence: the gallery suppresses the masked column for `vignette_*` entries. For region darkening, reach for `exposure` through a mask.
+
+<a id="highlights"></a>
+**`highlights`** — works through a mask, but only matters where input has clipping. The synthetic ColorChecker chart has no blown highlights, so the rendered effect is below the visible threshold. Consequence: the gallery annotates `highlights_recovery_*` rows as near-baseline-on-this-input rather than suppressing them; on a real raw with clipped sky or specular highlights the masked variant is photographically meaningful.
+
+<a id="grain"></a>
+**`grain`** — works through a mask, but the texture is hard to see on flat chart patches. Grain is per-pixel high-frequency noise; on uniform colored patches the diff vs baseline is small. Consequence: the gallery annotates `grain_*` rows as near-baseline-on-this-input. On a real photograph with continuous tone the grain is clearly visible inside the mask region.
+
 ---
 
 ## 3. How to mask an arbitrary primitive

@@ -39,6 +39,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from PIL import Image, ImageChops
+
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
@@ -87,6 +89,93 @@ DEMO_MASK_SPEC = {
         "border": 0.05,
     },
 }
+
+# Mean per-pixel diff (0..255 scale) below which we consider a render
+# "near baseline" (= no visible change). Annotated inline with a
+# reason from `_NEAR_BASELINE_NOTES`.
+_NEAR_BASELINE_DIFF_THRESHOLD = 2.0
+
+# Subtypes whose drawn-mask binding doesn't render usefully — suppress
+# the masked column entirely. Value is the anchor in
+# `mask-applicable-controls.md` the inline note links back to.
+#
+# - `wb` (temperature module): empirically `global == masked`
+#   (0.000 mean diff between them, ~32 from baseline). darktable
+#   processes temperature before colorin in the pipeline; the drawn-
+#   mask binding doesn't apply to pre-input-profile data.
+# - `vignette`: vignette intensity is ~0 at frame center where the
+#   demo mask = 1, and ~1 at edges where mask = 0. The two geometries
+#   cancel; result ≈ baseline. The matrix in mask-applicable-controls
+#   already flags this as a "don't" combo.
+_SUPPRESS_MASKED_SUBTYPES: dict[str, str] = {
+    "wb": "temperature",
+    "vignette": "vignette",
+}
+
+# Tags meaning "pure color / chroma move." Gray patches have zero
+# chroma; multiplying or shifting zero is still zero. Suppress the
+# grayscale column (both global and masked) for entries with any of
+# these tags.
+_SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
+
+# Subtypes / contexts where the engine renders correctly but the chart
+# is a poor signal medium. We render but annotate inline. Keys are
+# `entry.subtype` first, then the special key `_masked_sigmoid` for
+# masked sigmoid entries (small mask area x tone curve = small visible
+# delta, expected behavior).
+_NEAR_BASELINE_NOTES: dict[str, str] = {
+    "highlights": (
+        "chart input has no blown highlights to recover — "
+        "see [mask-applicable-controls](mask-applicable-controls.md#highlights)"
+    ),
+    "grain": (
+        "grain texture is hard to see on flat chart patches — "
+        "see [mask-applicable-controls](mask-applicable-controls.md#grain)"
+    ),
+    "vignette": (
+        "subtle vignette is small at the modest gallery render size; "
+        "effect is concentrated at the very corners of the frame"
+    ),
+    "_masked_sigmoid": (
+        "16% mask area x tone curve = small visible effect "
+        "(engine works correctly; chart just shows a faint signal)"
+    ),
+}
+
+
+def _should_skip_masked(entry) -> str | None:
+    """Return the anchor in mask-applicable-controls.md if the masked
+    column should be suppressed for this entry, else None."""
+    return _SUPPRESS_MASKED_SUBTYPES.get(entry.subtype)
+
+
+def _should_skip_target(entry, target_slug: str) -> bool:
+    """True if a particular target render should be suppressed for this
+    entry (e.g., color-only entries on the grayscale chart)."""
+    if target_slug == "grayscale" and (set(entry.tags) & _SKIP_GRAYSCALE_TAGS):
+        return True
+    return False
+
+
+def _mean_pixel_diff(a: Path, b: Path) -> float:
+    """Mean per-pixel absolute RGB difference (0..255 scale).
+
+    Used to detect renders that are visually indistinguishable from
+    baseline so the gallery can annotate them inline with a reason
+    rather than silently presenting an unchanged image.
+    """
+    img_a = Image.open(a).convert("RGB")
+    img_b = Image.open(b).convert("RGB")
+    diff = ImageChops.difference(img_a, img_b)
+    hist = diff.histogram()
+    n = sum(hist)
+    if n == 0:
+        return 0.0
+    total = 0.0
+    for ch in range(3):
+        for v in range(256):
+            total += v * hist[ch * 256 + v]
+    return total / n
 
 
 @dataclass(frozen=True)
@@ -191,6 +280,13 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     """Render one vocab entry against every target plus the demo-masked
     variant (when applicable). Mutates ``rendered`` in place. Errors are
     logged and skipped so a single broken entry doesn't fail the whole run.
+
+    Honors routing decisions from :data:`_SUPPRESS_MASKED_SUBTYPES` and
+    :func:`_should_skip_target`: skipped renders store a sentinel
+    ``"skipped"`` (target) or set ``_masked_skip_reason`` (whole masked
+    column) so the markdown emit can render the right layout. Pixel
+    diff vs baseline is computed for every emitted JPEG and stored as
+    ``{slug}_diff`` for inline near-baseline annotation.
     """
     pack_root = vocab.pack_for(entry.name)
     pack_name = pack_root.name if pack_root else "unknown"
@@ -207,29 +303,218 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     xmp_path = entry_dir / f"_{entry.name}.xmp"
     write_xmp(applied_xmp, xmp_path)
     rendered.setdefault(entry.name, {})
+    baseline_paths = rendered["baseline"]
     for target in TARGETS:
+        if _should_skip_target(entry, target.slug):
+            rendered[entry.name][target.slug] = "skipped"
+            continue
         out = entry_dir / f"{entry.name}-{target.slug}.jpg"
         if _render_one(target.path, xmp_path, out, configdir):
             rendered[entry.name][target.slug] = out
+            rendered[entry.name][f"{target.slug}_diff"] = _mean_pixel_diff(
+                out, baseline_paths[target.slug]
+            )
     xmp_path.unlink(missing_ok=True)
 
-    # Demo-masked variant: only for entries that are NOT already mask-bound
-    # (those carry their own mask_spec; an additional demo mask would shadow
-    # their intended geometry).
+    _render_masked_variant(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
+
+
+def _render_masked_variant(
+    entry, baseline, entry_dir: Path, configdir: Path, rendered: dict, baseline_paths: dict
+) -> None:
+    """Render the demo-mask variant for one entry, if applicable.
+
+    Skipped when entry is already mask-bound (its own mask_spec is the
+    demonstration) or when the entry's subtype is in the suppress list
+    (modules whose mask binding doesn't render usefully).
+    """
     if entry.mask_spec is not None:
+        return
+    suppress_reason = _should_skip_masked(entry)
+    if suppress_reason is not None:
+        rendered[entry.name]["_masked_skip_reason"] = suppress_reason
         return
     try:
         masked_xmp = _synthesize_for_entry_demo_masked(baseline, entry)
     except Exception as exc:
-        print(f"  ✗ demo-mask synthesize failed: {exc}", file=sys.stderr)
+        print(f"  x demo-mask synthesize failed: {exc}", file=sys.stderr)
         return
     masked_xmp_path = entry_dir / f"_{entry.name}_masked.xmp"
     write_xmp(masked_xmp, masked_xmp_path)
     for target in TARGETS:
+        if _should_skip_target(entry, target.slug):
+            rendered[entry.name][f"{target.slug}_masked"] = "skipped"
+            continue
         out = entry_dir / f"{entry.name}-{target.slug}-masked.jpg"
         if _render_one(target.path, masked_xmp_path, out, configdir):
             rendered[entry.name][f"{target.slug}_masked"] = out
+            rendered[entry.name][f"{target.slug}_masked_diff"] = _mean_pixel_diff(
+                out, baseline_paths[target.slug]
+            )
     masked_xmp_path.unlink(missing_ok=True)
+
+
+def _img_md(p, alt: str) -> str:
+    """Render an image cell as inline HTML so we can size it tight."""
+    if p is None:
+        return "_(n/a)_"
+    rel = p.relative_to(GALLERY_PAGE.parent.parent)
+    return f'<img src="../{rel}" alt="{alt}" width="180">'
+
+
+def _near_baseline_reason(entry, *, masked: bool) -> str:
+    """Pick the most-specific near-baseline reason for an entry+context.
+
+    Priority: subtype-keyed reason -> masked-sigmoid generic -> default.
+    """
+    if entry.subtype in _NEAR_BASELINE_NOTES:
+        return _NEAR_BASELINE_NOTES[entry.subtype]
+    if masked and entry.subtype == "sigmoid":
+        return _NEAR_BASELINE_NOTES["_masked_sigmoid"]
+    return "below visible threshold on this chart input"
+
+
+def _diff_annotations(entry, outs: dict) -> list[str]:
+    """One inline note per render cell whose diff signals it's worth flagging.
+
+    Different signal for global vs masked cells:
+
+    - **Global cells**: flag if mean-pixel-diff vs baseline is below
+      threshold — the entry effectively did nothing visible to the
+      whole image.
+    - **Masked cells**: a small whole-image diff is *expected and correct*
+      (the mask only affects ~16% of pixels, so 84% of the image stays
+      at baseline by design). We only flag a masked cell as
+      "near-baseline" when the *paired global* cell was also near-
+      baseline — i.e., the move is small everywhere, not just inside
+      the mask.
+    """
+    notes: list[str] = []
+    for slug, label in (
+        ("colorchecker", "ColorChecker (global)"),
+        ("grayscale", "grayscale (global)"),
+    ):
+        diff = outs.get(f"{slug}_diff")
+        if diff is None:
+            continue
+        if diff < _NEAR_BASELINE_DIFF_THRESHOLD:
+            reason = _near_baseline_reason(entry, masked=False)
+            notes.append(f"_(near-baseline diff in {label}: {reason})_")
+
+    for slug, label, paired_global in (
+        ("colorchecker_masked", "ColorChecker (masked)", "colorchecker"),
+        ("grayscale_masked", "grayscale (masked)", "grayscale"),
+    ):
+        diff = outs.get(f"{slug}_diff")
+        global_diff = outs.get(f"{paired_global}_diff")
+        if diff is None or global_diff is None:
+            continue
+        # Only annotate if BOTH global and masked are near-baseline (move
+        # is small everywhere). If global is visibly different but masked
+        # is near-baseline, the mask is correctly excluding most pixels —
+        # that's the expected behavior, not a problem to flag.
+        if diff < _NEAR_BASELINE_DIFF_THRESHOLD and global_diff < _NEAR_BASELINE_DIFF_THRESHOLD:
+            reason = _near_baseline_reason(entry, masked=True)
+            notes.append(f"_(near-baseline diff in {label}: {reason})_")
+    return notes
+
+
+def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
+    """Markdown lines for one entry's row in the gallery.
+
+    Layout selection priority:
+      1. Mask-bound entry (entry.mask_spec set) -> 2-col global only
+      2. Suppressed-masked entry (_masked_skip_reason set) -> 2-col global
+         + a "🚫 Masked variant suppressed" note
+      3. Skip-grayscale entry (gs slug == "skipped") -> CC-only columns
+         + a "Grayscale column omitted" note
+      4. Default 4-col (CC global, gs global, CC masked, gs masked)
+
+    Plus: for any rendered cell whose diff vs baseline is below the
+    near-baseline threshold, append an italicized one-liner reason
+    referencing the most-specific entry in :data:`_NEAR_BASELINE_NOTES`.
+    """
+    outs = rendered[entry.name]
+    cc = outs.get("colorchecker")
+    gs = outs.get("grayscale")
+    cc_masked = outs.get("colorchecker_masked")
+    gs_masked = outs.get("grayscale_masked")
+
+    if (cc in (None, "skipped")) and (gs in (None, "skipped")):
+        return []
+
+    is_mask_bound = entry.mask_spec is not None
+    masked_skip = outs.get("_masked_skip_reason")
+    gs_skipped = gs == "skipped"
+
+    out: list[str] = []
+    mask_marker = " 🟦 mask-bound" if is_mask_bound else ""
+    out.append(f"### `{entry.name}`{mask_marker}\n")
+    out.append(f"_{entry.description}_\n")
+
+    if is_mask_bound:
+        # Layout 1: mask-bound — 2-col global; demo-masked column omitted.
+        out.append("| ColorChecker | Grayscale ramp |")
+        out.append("|-|-|")
+        out.append(
+            f"| {_img_md(cc, f'{entry.name} ColorChecker')} "
+            f"| {_img_md(gs, f'{entry.name} grayscale')} |"
+        )
+    elif masked_skip is not None:
+        # Layout 2: masked column suppressed for this subtype (wb / vignette).
+        if gs_skipped:
+            # No grayscale either -> CC global only.
+            out.append("| ColorChecker (global) |")
+            out.append("|-|")
+            out.append(f"| {_img_md(cc, f'{entry.name} ColorChecker global')} |")
+        else:
+            out.append("| ColorChecker (global) | Grayscale (global) |")
+            out.append("|-|-|")
+            out.append(
+                f"| {_img_md(cc, f'{entry.name} ColorChecker global')} "
+                f"| {_img_md(gs, f'{entry.name} grayscale global')} |"
+            )
+        out.append("")
+        out.append(
+            f"> 🚫 **Masked variant suppressed**: "
+            f"see [mask-applicable-controls](mask-applicable-controls.md#{masked_skip}) "
+            f"for why drawn-mask binding doesn't render usefully for this module."
+        )
+    elif gs_skipped:
+        # Layout 3: chroma-only entry — CC columns only (global + masked).
+        out.append("| ColorChecker (global) | ColorChecker (centered ellipse mask) |")
+        out.append("|-|-|")
+        out.append(
+            f"| {_img_md(cc, f'{entry.name} ColorChecker global')} "
+            f"| {_img_md(cc_masked, f'{entry.name} ColorChecker masked')} |"
+        )
+        out.append("")
+        out.append(
+            "> **Grayscale column omitted**: this primitive moves chroma only; "
+            "gray patches have no chroma to affect."
+        )
+    else:
+        # Layout 4: default 4-column (CC + grayscale, global + masked).
+        out.append(
+            "| ColorChecker (global) | Grayscale (global) "
+            "| ColorChecker (centered ellipse mask) "
+            "| Grayscale (centered ellipse mask) |"
+        )
+        out.append("|-|-|-|-|")
+        out.append(
+            f"| {_img_md(cc, f'{entry.name} ColorChecker global')} "
+            f"| {_img_md(gs, f'{entry.name} grayscale global')} "
+            f"| {_img_md(cc_masked, f'{entry.name} ColorChecker masked')} "
+            f"| {_img_md(gs_masked, f'{entry.name} grayscale masked')} |"
+        )
+
+    # Inline near-baseline annotations for any cell with diff < threshold.
+    for note in _diff_annotations(entry, outs):
+        out.append("")
+        out.append(note)
+
+    out.append("")
+    return out
 
 
 def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
@@ -320,49 +605,7 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         lines.append(f"## `{pack_name}` pack ({len(entries)} entries)\n")
 
         for entry in entries:
-            outs = rendered[entry.name]
-            cc = outs.get("colorchecker")
-            gs = outs.get("grayscale")
-            cc_masked = outs.get("colorchecker_masked")
-            gs_masked = outs.get("grayscale_masked")
-            if cc is None and gs is None:
-                continue
-
-            is_mask_bound = entry.mask_spec is not None
-            mask_marker = " 🟦 mask-bound" if is_mask_bound else ""
-            lines.append(f"### `{entry.name}`{mask_marker}\n")
-            lines.append(f"_{entry.description}_\n")
-
-            def _img(p, alt):
-                if p is None:
-                    return "_(n/a)_"
-                rel = p.relative_to(GALLERY_PAGE.parent.parent)
-                return f'<img src="../{rel}" alt="{alt}" width="180">'
-
-            if is_mask_bound:
-                # Mask-bound: just the global render (which is already
-                # the entry's intrinsic mask). No demo-mask column.
-                lines.append("| ColorChecker | Grayscale ramp |")
-                lines.append("|-|-|")
-                lines.append(
-                    f"| {_img(cc, f'{entry.name} ColorChecker')} "
-                    f"| {_img(gs, f'{entry.name} grayscale')} |"
-                )
-            else:
-                # Global entry: 4-up — global + demo-masked for both targets.
-                lines.append(
-                    "| ColorChecker (global) | Grayscale (global) "
-                    "| ColorChecker (centered ellipse mask) "
-                    "| Grayscale (centered ellipse mask) |"
-                )
-                lines.append("|-|-|-|-|")
-                lines.append(
-                    f"| {_img(cc, f'{entry.name} ColorChecker global')} "
-                    f"| {_img(gs, f'{entry.name} grayscale global')} "
-                    f"| {_img(cc_masked, f'{entry.name} ColorChecker masked')} "
-                    f"| {_img(gs_masked, f'{entry.name} grayscale masked')} |"
-                )
-            lines.append("")
+            lines.extend(_render_entry_md(entry, rendered))
 
         lines.append("---\n")
 

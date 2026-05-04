@@ -46,9 +46,11 @@ _Lower exposure -0.5 EV._
 
 _Warm white balance, subtle._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/starter/wb_warm_subtle-colorchecker.jpg" alt="wb_warm_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/starter/wb_warm_subtle-grayscale.jpg" alt="wb_warm_subtle grayscale global" width="180"> | <img src="../visual-proofs/starter/wb_warm_subtle-colorchecker-masked.jpg" alt="wb_warm_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/starter/wb_warm_subtle-grayscale-masked.jpg" alt="wb_warm_subtle grayscale masked" width="180"> |
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/starter/wb_warm_subtle-colorchecker.jpg" alt="wb_warm_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/starter/wb_warm_subtle-grayscale.jpg" alt="wb_warm_subtle grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#temperature) for why drawn-mask binding doesn't render usefully for this module.
 
 ### `look_neutral`
 
@@ -70,6 +72,14 @@ _Subtle film-grain texture; strength 8/100._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker.jpg" alt="grain_fine ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale.jpg" alt="grain_fine grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker-masked.jpg" alt="grain_fine ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale-masked.jpg" alt="grain_fine grayscale masked" width="180"> |
 
+_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
 ### `grain_medium`
 
 _Visible film-grain texture; strength 25/100._
@@ -77,6 +87,12 @@ _Visible film-grain texture; strength 25/100._
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker.jpg" alt="grain_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale.jpg" alt="grain_medium grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker-masked.jpg" alt="grain_medium ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale-masked.jpg" alt="grain_medium grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 ### `grain_heavy`
 
@@ -86,29 +102,43 @@ _Heavy film-grain texture; strength 50/100, coarser scale._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker.jpg" alt="grain_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale.jpg" alt="grain_heavy grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker-masked.jpg" alt="grain_heavy ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale-masked.jpg" alt="grain_heavy grayscale masked" width="180"> |
 
+_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
 ### `vignette_subtle`
 
 _Subtle corner darkening; brightness -0.25._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_subtle-colorchecker.jpg" alt="vignette_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-grayscale.jpg" alt="vignette_subtle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-colorchecker-masked.jpg" alt="vignette_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-grayscale-masked.jpg" alt="vignette_subtle grayscale masked" width="180"> |
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette_subtle-colorchecker.jpg" alt="vignette_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-grayscale.jpg" alt="vignette_subtle grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
+
+_(near-baseline diff in ColorChecker (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
+
+_(near-baseline diff in grayscale (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
 
 ### `vignette_medium`
 
 _Medium corner darkening; brightness -0.5._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_medium-colorchecker.jpg" alt="vignette_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_medium-grayscale.jpg" alt="vignette_medium grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_medium-colorchecker-masked.jpg" alt="vignette_medium ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_medium-grayscale-masked.jpg" alt="vignette_medium grayscale masked" width="180"> |
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette_medium-colorchecker.jpg" alt="vignette_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_medium-grayscale.jpg" alt="vignette_medium grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
 
 ### `vignette_heavy`
 
 _Strong corner darkening; brightness -0.8._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_heavy-colorchecker.jpg" alt="vignette_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_heavy-grayscale.jpg" alt="vignette_heavy grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_heavy-colorchecker-masked.jpg" alt="vignette_heavy ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_heavy-grayscale-masked.jpg" alt="vignette_heavy grayscale masked" width="180"> |
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette_heavy-colorchecker.jpg" alt="vignette_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_heavy-grayscale.jpg" alt="vignette_heavy grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
 
 ### `highlights_recovery_subtle`
 
@@ -118,6 +148,14 @@ _Subtle highlight reconstruction; clip 0.95._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker.jpg" alt="highlights_recovery_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale.jpg" alt="highlights_recovery_subtle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker-masked.jpg" alt="highlights_recovery_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale-masked.jpg" alt="highlights_recovery_subtle grayscale masked" width="180"> |
 
+_(near-baseline diff in ColorChecker (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+_(near-baseline diff in grayscale (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+_(near-baseline diff in ColorChecker (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+_(near-baseline diff in grayscale (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
 ### `highlights_recovery_strong`
 
 _Strong highlight reconstruction; clip 0.85._
@@ -125,6 +163,10 @@ _Strong highlight reconstruction; clip 0.85._
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker.jpg" alt="highlights_recovery_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale.jpg" alt="highlights_recovery_strong grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker-masked.jpg" alt="highlights_recovery_strong ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale-masked.jpg" alt="highlights_recovery_strong grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+_(near-baseline diff in ColorChecker (masked): chart input has no blown highlights to recover — see [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
 ### `contrast_low`
 
@@ -218,41 +260,51 @@ _Lower global black level -0.05 (deepen shadows)._
 
 _Cool white balance, subtle (mirror of wb_warm_subtle)._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-colorchecker.jpg" alt="wb_cool_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-grayscale.jpg" alt="wb_cool_subtle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-colorchecker-masked.jpg" alt="wb_cool_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-grayscale-masked.jpg" alt="wb_cool_subtle grayscale masked" width="180"> |
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-colorchecker.jpg" alt="wb_cool_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-grayscale.jpg" alt="wb_cool_subtle grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#temperature) for why drawn-mask binding doesn't render usefully for this module.
 
 ### `sat_boost_strong`
 
 _Strong global saturation boost (+0.5)._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker.jpg" alt="sat_boost_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_strong-grayscale.jpg" alt="sat_boost_strong grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker-masked.jpg" alt="sat_boost_strong ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_strong-grayscale-masked.jpg" alt="sat_boost_strong grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker.jpg" alt="sat_boost_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker-masked.jpg" alt="sat_boost_strong ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `sat_boost_moderate`
 
 _Moderate global saturation boost (+0.25)._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker.jpg" alt="sat_boost_moderate ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-grayscale.jpg" alt="sat_boost_moderate grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker-masked.jpg" alt="sat_boost_moderate ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-grayscale-masked.jpg" alt="sat_boost_moderate grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker.jpg" alt="sat_boost_moderate ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker-masked.jpg" alt="sat_boost_moderate ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `sat_kill`
 
 _Kill all saturation (global -1.0)._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker.jpg" alt="sat_kill ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_kill-grayscale.jpg" alt="sat_kill grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker-masked.jpg" alt="sat_kill ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_kill-grayscale-masked.jpg" alt="sat_kill grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker.jpg" alt="sat_kill ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker-masked.jpg" alt="sat_kill ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `vibrance_+0.3`
 
 _Global vibrance +0.3._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker.jpg" alt="vibrance_+0.3 ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-grayscale.jpg" alt="vibrance_+0.3 grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker-masked.jpg" alt="vibrance_+0.3 ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-grayscale-masked.jpg" alt="vibrance_+0.3 grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker.jpg" alt="vibrance_+0.3 ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker-masked.jpg" alt="vibrance_+0.3 ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `grade_shadows_warm`
 
@@ -290,25 +342,31 @@ _Cool highlights (blue tint, hue 200 deg, chroma 0.2)._
 
 _Boost shadow chroma +0.3._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-colorchecker.jpg" alt="chroma_boost_shadows ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-grayscale.jpg" alt="chroma_boost_shadows grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-colorchecker-masked.jpg" alt="chroma_boost_shadows ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-grayscale-masked.jpg" alt="chroma_boost_shadows grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-colorchecker.jpg" alt="chroma_boost_shadows ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_shadows-colorchecker-masked.jpg" alt="chroma_boost_shadows ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `chroma_boost_midtones`
 
 _Boost mid-tone chroma +0.3._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-colorchecker.jpg" alt="chroma_boost_midtones ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-grayscale.jpg" alt="chroma_boost_midtones grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-colorchecker-masked.jpg" alt="chroma_boost_midtones ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-grayscale-masked.jpg" alt="chroma_boost_midtones grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-colorchecker.jpg" alt="chroma_boost_midtones ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_midtones-colorchecker-masked.jpg" alt="chroma_boost_midtones ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `chroma_boost_highlights`
 
 _Boost highlight chroma +0.3._
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-colorchecker.jpg" alt="chroma_boost_highlights ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-grayscale.jpg" alt="chroma_boost_highlights grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-colorchecker-masked.jpg" alt="chroma_boost_highlights ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-grayscale-masked.jpg" alt="chroma_boost_highlights grayscale masked" width="180"> |
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-colorchecker.jpg" alt="chroma_boost_highlights ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_boost_highlights-colorchecker-masked.jpg" alt="chroma_boost_highlights ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 ### `gradient_top_dampen_highlights` 🟦 mask-bound
 
