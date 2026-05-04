@@ -319,7 +319,7 @@ Agent:  [calls confirm_taste_update]
 
 That's the loop. The agent can branch (`branch experimental`), checkout earlier states, diff snapshots, log gaps when the vocabulary doesn't have what you want — the 22 tools are available; you don't need to know them by name, the agent reaches for what it needs.
 
-> **Note on local adjustments.** v1.5.0 ships drawn-form geometric masks (gradient / ellipse / rectangle) baked into vocabulary entries' `mask_spec`. Subject-precise content-aware masking ("lift the shadows on the manta's belly") arrives in Phase 4 via a sibling project. Per ADR-076, the earlier PNG-based masker path was retired — darktable doesn't read external PNG masks at all.
+> **Note on local adjustments.** Drawn-form geometric masks (gradient / ellipse / rectangle) ship in two paths: baked into a vocabulary entry's `mask_spec` (the 4 shipped masked entries), or ad-hoc via `apply-primitive --mask-spec '<json>'` (CLI) or `mask_spec` argument (MCP) — lets you mask any global primitive without authoring an entry. Subject-precise content-aware masking ("lift the shadows on the manta's belly") arrives in Phase 4 via a sibling project. Per ADR-076, the earlier PNG-based masker path was retired — darktable doesn't read external PNG masks at all.
 
 ---
 

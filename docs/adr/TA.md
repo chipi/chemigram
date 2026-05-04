@@ -69,7 +69,7 @@ Drawn-mask serialization for vocabulary entries that shape only part of the fram
 **Files (shipped v1.4.0, simplified v1.5.0):** `src/chemigram/core/masking/dt_serialize.py` — encoders for `dt_masks_point_gradient_t`, `dt_masks_point_ellipse_t`, 4-corner `dt_masks_point_path_t`, plus the 420-byte `dt_develop_blend_params_t` patch. High-level apply helper at `chemigram.core.helpers.apply_with_drawn_mask`.
 
 **Public API:**
-- `apply_with_drawn_mask(baseline, dtstyle, mask_spec, *, opacity=100.0) → Xmp` — apply a vocabulary entry's dtstyle bound to a drawn form. Used by `apply_primitive` automatically when the entry's `mask_spec` is set.
+- `apply_with_drawn_mask(baseline, dtstyle, mask_spec, *, opacity=100.0) → Xmp` — apply a vocabulary entry's dtstyle bound to a drawn form. Routed by `apply_primitive` either from the entry's manifest `mask_spec` (the v1.5.0 path) or from a caller-supplied `mask_spec` parameter (the v1.6.0 path; CLI: `--mask-spec '<json>'`, MCP: `mask_spec` arg). Caller override wins when both present.
 
 **Schema:** `mask_spec: {"dt_form": "gradient"|"ellipse"|"rectangle", "dt_params": {...}}` on the vocabulary entry. No PNG, no provider, no registry — see ADR-076.
 
@@ -267,7 +267,7 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 **Vocabulary and edit operations**
 - `list_vocabulary(layer?, tags?)` → entries
 - `get_state(image_id)` → entries + head hash
-- `apply_primitive(image_id, primitive_name, mask_override?)` → state_after, snapshot_hash
+- `apply_primitive(image_id, primitive_name, mask_spec?)` → state_after, snapshot_hash
 - `remove_module(image_id, module_name)` → state_after, snapshot_hash
 - `reset(image_id)` → state_after (resets to baseline_end, not empty)
 
