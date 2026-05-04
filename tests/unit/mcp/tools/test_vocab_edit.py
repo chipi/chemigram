@@ -2,10 +2,25 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import anyio
+import pytest
 
 from chemigram.mcp.errors import ErrorCode
 from chemigram.mcp.registry import ToolContext, get_tool
+
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+_EXPRESSIVE_BASELINE = _REPO_ROOT / "vocabulary" / "packs" / "expressive-baseline"
+
+# The four mask-bound entries shipped in expressive-baseline as of v1.4.0
+# (ADR-076). Each exercises a distinct dt_form serialization in dt_serialize.
+_SHIPPED_MASK_BOUND_ENTRIES = (
+    "gradient_top_dampen_highlights",
+    "gradient_bottom_lift_shadows",
+    "radial_subject_lift",
+    "rectangle_subject_band_dim",
+)
 
 
 def _call(tool_name: str, args: dict, ctx: ToolContext):
@@ -111,46 +126,53 @@ def test_apply_primitive_unknown_primitive_returns_not_found(
     assert result.error.code == ErrorCode.NOT_FOUND
 
 
-def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
-    context: ToolContext,
-) -> None:
-    """When entry.mask_spec is set, apply_primitive routes through
-    apply_with_drawn_mask which injects masks_history into the XMP.
-
-    Coverage gate for the mask_spec branch in
-    chemigram.mcp.tools.vocab_edit._apply_primitive — without this, only
-    the e2e suite (requires real darktable) exercises that branch.
+@pytest.fixture
+def context_with_shipped_masks(context: ToolContext) -> ToolContext:
+    """Augment the test-pack context with the four shipped mask-bound
+    entries from expressive-baseline. Lets dispatch tests exercise the
+    real specs we ship, not synthetic stand-ins.
     """
-    from dataclasses import replace as dc_replace
+    from chemigram.core.vocab import VocabularyIndex
 
-    base = context.vocabulary.lookup_by_name("expo_+0.5")
-    assert base is not None
-    masked = dc_replace(
-        base,
-        name="expo_top_gradient_test",
-        mask_spec={
-            "dt_form": "gradient",
-            "dt_params": {
-                "anchor_x": 0.5,
-                "anchor_y": 0.5,
-                "rotation": 0.0,
-                "compression": 0.5,
-            },
-        },
-    )
-    context.vocabulary._by_name["expo_top_gradient_test"] = masked
+    eb = VocabularyIndex(_EXPRESSIVE_BASELINE)
+    for name in _SHIPPED_MASK_BOUND_ENTRIES:
+        entry = eb.lookup_by_name(name)
+        assert entry is not None, (
+            f"shipped mask-bound entry {name!r} missing from expressive-baseline; "
+            f"_SHIPPED_MASK_BOUND_ENTRIES is out of date"
+        )
+        context.vocabulary._by_name[name] = entry
+    return context
 
+
+@pytest.mark.parametrize("entry_name", _SHIPPED_MASK_BOUND_ENTRIES)
+def test_apply_primitive_routes_through_drawn_mask_for_shipped_entry(
+    context_with_shipped_masks: ToolContext,
+    entry_name: str,
+) -> None:
+    """Each shipped mask-bound entry routes through ``apply_with_drawn_mask``
+    and ends up with ``masks_history`` injected into the snapshotted XMP.
+    Parity coverage across all four dt_form variants we ship (two gradient,
+    one ellipse, one rectangle).
+
+    The e2e suite (``tests/e2e/expressive/test_mask_bound_entries.py``)
+    validates that the binding actually shapes pixels under real darktable
+    via the noise-floor digital-reference protocol. This dispatch test
+    proves the apply-path routing + serialization layer is sound for each
+    specific spec we ship — without requiring darktable in the loop.
+    """
+    context = context_with_shipped_masks
     result = _call(
         "apply_primitive",
-        {"image_id": "test-image", "primitive_name": "expo_top_gradient_test"},
+        {"image_id": "test-image", "primitive_name": entry_name},
         context,
     )
-    assert result.success is True, result.error
+    assert result.success is True, f"{entry_name}: {result.error}"
     snapshot_hash = result.data["snapshot_hash"]
     raw = context.workspaces["test-image"].repo.read_object(snapshot_hash)
     assert b"masks_history" in raw, (
-        "drawn-mask path should inject darktable:masks_history into the XMP "
-        "when mask_spec is set on the vocab entry (ADR-076)"
+        f"{entry_name}: drawn-mask path should inject darktable:masks_history "
+        f"into the XMP (ADR-076)"
     )
 
 

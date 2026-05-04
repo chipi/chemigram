@@ -94,14 +94,28 @@ def test_apply_primitive_json_emits_snapshot_hash(
     assert "state_after" in payload
 
 
-def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
-    runner: CliRunner, cli_workspace_root: Path
+_SHIPPED_MASK_BOUND_ENTRIES = (
+    "gradient_top_dampen_highlights",
+    "gradient_bottom_lift_shadows",
+    "radial_subject_lift",
+    "rectangle_subject_band_dim",
+)
+
+
+@pytest.mark.parametrize("entry_name", _SHIPPED_MASK_BOUND_ENTRIES)
+def test_apply_primitive_routes_through_drawn_mask_for_shipped_entry(
+    runner: CliRunner, cli_workspace_root: Path, entry_name: str
 ) -> None:
-    """An expressive-baseline mask-bound entry routes through the drawn-mask
-    apply path; the resulting XMP carries masks_history. Coverage gate for
-    the ``vocab_entry.mask_spec is not None`` branch in cli/commands/edit.py
-    (the e2e suite proves the binding actually shapes pixels under real
-    darktable; this proves the dispatch logic works without darktable).
+    """Each shipped mask-bound expressive-baseline entry routes through the
+    drawn-mask apply path via the CLI; the resulting XMP carries masks_history.
+    Parity coverage across the four dt_form variants (two gradient, one
+    ellipse, one rectangle) at the CLI dispatch layer.
+
+    Mirrors the MCP unit-level parametrization at
+    ``tests/unit/mcp/tools/test_vocab_edit.py`` and complements the e2e
+    pixel-validation in ``tests/e2e/expressive/test_mask_bound_entries.py``.
+    Fast (no darktable); proves the CLI's edit.py dispatch logic routes
+    correctly for each specific spec we ship.
     """
     result = runner.invoke(
         app,
@@ -112,14 +126,16 @@ def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
             "apply-primitive",
             "test-image",
             "--entry",
-            "gradient_top_dampen_highlights",
+            entry_name,
             "--pack",
             "expressive-baseline",
         ],
     )
-    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    assert result.exit_code == ExitCode.SUCCESS.value, (
+        f"{entry_name}: {result.stdout + result.stderr}"
+    )
     payload = json.loads(result.stdout.strip().splitlines()[-1])
-    assert payload["status"] == "ok"
+    assert payload["status"] == "ok", f"{entry_name}: {payload}"
     snapshot_hash = payload["snapshot_hash"]
 
     from chemigram.core.versioning import ImageRepo
@@ -127,8 +143,8 @@ def test_apply_primitive_with_mask_spec_routes_through_drawn_mask(
     repo = ImageRepo(cli_workspace_root / "test-image")
     raw = repo.read_object(snapshot_hash)
     assert b"masks_history" in raw, (
-        "drawn-mask path should inject darktable:masks_history into the XMP "
-        "for entries with mask_spec (ADR-076)"
+        f"{entry_name}: drawn-mask path should inject darktable:masks_history "
+        f"into the XMP (ADR-076)"
     )
 
 
