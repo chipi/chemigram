@@ -8,6 +8,7 @@ Day-to-day usage:
 
 - [**Tastes quickstart**](tastes-quickstart.md) — your first taste file in 5 minutes; what goes in `_default.md`, when to add genre files
 - [**Vocabulary patterns**](vocabulary-patterns.md) — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
+- [**Visual proofs**](visual-proofs.md) — auto-generated before/after gallery for every vocabulary entry, rendered against the synthetic ColorChecker + grayscale chart in isolation. For human visual validation that each primitive does what its description claims.
 - [**Recipes / common how-do-I**](recipes.md) — cross-cutting tasks: reset to baseline, find by tag, export multiple sizes, replay a session
 
 CLI reference (the scripting / agent-loop surface):
