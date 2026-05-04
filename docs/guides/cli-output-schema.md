@@ -149,7 +149,7 @@ fi
 
 ### Python (NDJSON-stream + final-event capture)
 
-See [`examples/cli-agent-loop.py`](../../examples/cli-agent-loop.py) for a runnable example with full error handling.
+See [`examples/cli-agent-loop.py`](https://github.com/chipi/chemigram/blob/main/examples/cli-agent-loop.py) for a runnable example with full error handling.
 
 ---
 
@@ -198,6 +198,6 @@ Pin against major versions: `if (.schema_version | startswith("1.")) then ... el
 - [`cli-reference.md`](cli-reference.md) — every verb, every flag, auto-generated from `--help`
 - [`cli-env-vars.md`](cli-env-vars.md) — env vars that affect CLI behavior
 - [`docs/getting-started.md`](../getting-started.md#driving-chemigram-from-a-script-or-agent-loop-cli) — bash / Python quickstart
-- [`examples/cli-agent-loop.py`](../../examples/cli-agent-loop.py) — runnable Python example with error handling
-- [`examples/cli-batch-watch.sh`](../../examples/cli-batch-watch.sh) — runnable bash watch-folder script
+- [`examples/cli-agent-loop.py`](https://github.com/chipi/chemigram/blob/main/examples/cli-agent-loop.py) — runnable Python example with error handling
+- [`examples/cli-batch-watch.sh`](https://github.com/chipi/chemigram/blob/main/examples/cli-batch-watch.sh) — runnable bash watch-folder script
 - [`docs/adr/ADR-072-cli-output-format-and-exit-codes.md`](../adr/ADR-072-cli-output-format-and-exit-codes.md) — design rationale

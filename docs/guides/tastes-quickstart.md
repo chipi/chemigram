@@ -32,7 +32,7 @@ That's it for setup. No other files are required.
 
 ## Step 2 — Copy a starting template
 
-The repo ships a real-feeling sample at [`examples/templates/tastes/_default.md`](../../examples/templates/tastes/_default.md). Open it and read it through to see the shape of a working taste file. Don't copy it verbatim — it's not yours. But the structure (sections by concern, dated entries, specific opinions) is the right shape to imitate.
+The repo ships a real-feeling sample at [`examples/templates/tastes/_default.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/tastes/_default.md). Open it and read it through to see the shape of a working taste file. Don't copy it verbatim — it's not yours. But the structure (sections by concern, dated entries, specific opinions) is the right shape to imitate.
 
 Then create your own:
 
@@ -122,7 +122,7 @@ After 3–6 months of regular use, a taste file becomes recognizably *yours* —
 
 ## Genre-specific files
 
-Sibling templates ship at [`examples/templates/tastes/underwater.md`](../../examples/templates/tastes/underwater.md) and [`examples/templates/tastes/wildlife.md`](../../examples/templates/tastes/wildlife.md). The shape:
+Sibling templates ship at [`examples/templates/tastes/underwater.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/tastes/underwater.md) and [`examples/templates/tastes/wildlife.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/tastes/wildlife.md). The shape:
 
 ```markdown
 # underwater.md — underwater-specific preferences
@@ -157,8 +157,8 @@ Genre files compose with `_default.md`: both load when the brief calls for the g
 
 ## See also
 
-- [`examples/templates/tastes/_default.md`](../../examples/templates/tastes/_default.md) — full sample showing the shape of a real taste file (~25 entries)
-- [`examples/templates/brief.md`](../../examples/templates/brief.md) — per-image brief format (where you declare which tastes apply)
+- [`examples/templates/tastes/_default.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/tastes/_default.md) — full sample showing the shape of a real taste file (~25 entries)
+- [`examples/templates/brief.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/brief.md) — per-image brief format (where you declare which tastes apply)
 - [`docs/getting-started.md#your-first-session`](../getting-started.md#your-first-session) — full onboarding walkthrough
 - [`docs/concept/03-data-catalog.md`](../concept/03-data-catalog.md) — the broader context system (tastes / briefs / notes / sessions / gaps)
-- [`docs/adr/ADR-048-multi-scope-tastes.md`](../adr/ADR-048-multi-scope-tastes.md) — multi-scope taste resolution semantics
+- [`docs/adr/ADR-048-multi-scope-taste-structure.md`](../adr/ADR-048-multi-scope-taste-structure.md) — multi-scope taste resolution semantics

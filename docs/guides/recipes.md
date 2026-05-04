@@ -157,7 +157,7 @@ done
 chemigram checkout <image_id> main    # restore HEAD
 ```
 
-For batch export, see [`examples/cli-batch-watch.sh`](../../examples/cli-batch-watch.sh) for the watch-folder pattern.
+For batch export, see [`examples/cli-batch-watch.sh`](https://github.com/chipi/chemigram/blob/main/examples/cli-batch-watch.sh) for the watch-folder pattern.
 
 ---
 

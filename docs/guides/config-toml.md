@@ -154,4 +154,4 @@ chemigram --json status | jq .vocabulary_packs
 - [`cli-env-vars.md`](cli-env-vars.md) — env vars that override config-file paths
 - [`docs/concept/03-data-catalog.md`](../concept/03-data-catalog.md) — the broader data catalog
 - [`docs/adr/ADR-016-l1-empty-by-default.md`](../adr/ADR-016-l1-empty-by-default.md) — why L1 ships empty
-- [`docs/adr/ADR-053-l1-binding-exact-match.md`](../adr/ADR-053-l1-binding-exact-match.md) — L1 lookup semantics
+- [`docs/adr/ADR-053-exif-auto-binding-rules.md`](../adr/ADR-053-exif-auto-binding-rules.md) — L1 lookup semantics (exact-match on EXIF make/model/lens)

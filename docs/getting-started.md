@@ -404,7 +404,7 @@ for raw in glob("/path/to/raws/*.NEF"):
 
 No MCP session lifecycle. No transport. Just subprocesses + structured exit codes + NDJSON. The CLI's exit codes (`SUCCESS=0`, `INVALID_INPUT=2`, `NOT_FOUND=3`, `STATE_ERROR=4`, `VERSIONING_ERROR=5`, `DARKTABLE_ERROR=6`, `MASKING_ERROR=7`, `SYNTHESIZER_ERROR=8`, `PERMISSION_ERROR=9`, `NOT_IMPLEMENTED=10`) are documented and stable; agents can branch on them without parsing stderr text.
 
-For a full runnable example with proper error handling, see [`examples/cli-agent-loop.py`](../examples/cli-agent-loop.py). For the NDJSON event schema reference, see [`docs/guides/cli-output-schema.md`](guides/cli-output-schema.md). For a watch-folder bash script that demonstrates CLI-as-substrate, see [`examples/cli-batch-watch.sh`](../examples/cli-batch-watch.sh).
+For a full runnable example with proper error handling, see [`examples/cli-agent-loop.py`](https://github.com/chipi/chemigram/blob/main/examples/cli-agent-loop.py). For the NDJSON event schema reference, see [`docs/guides/cli-output-schema.md`](guides/cli-output-schema.md). For a watch-folder bash script that demonstrates CLI-as-substrate, see [`examples/cli-batch-watch.sh`](https://github.com/chipi/chemigram/blob/main/examples/cli-batch-watch.sh).
 
 ### Productivity flags: stdin batch + workspace auto-discovery
 
@@ -505,15 +505,15 @@ User guides (everyday usage):
 
 Vocabulary catalogs:
 
-- **[`vocabulary/starter/README.md`](../vocabulary/starter/README.md)** — what's in the bundled starter pack (4 entries)
-- **[`vocabulary/packs/expressive-baseline/README.md`](../vocabulary/packs/expressive-baseline/README.md)** — the 35-entry expressive-baseline catalog with intensity ladders + by-tag index
+- **[`vocabulary/starter/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/starter/README.md)** — what's in the bundled starter pack (4 entries)
+- **[`vocabulary/packs/expressive-baseline/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/packs/expressive-baseline/README.md)** — the 35-entry expressive-baseline catalog with intensity ladders + by-tag index
 - **[`authoring-vocabulary-entries.md`](guides/authoring-vocabulary-entries.md)** — author your own personal-pack entries (Phase 2 flow)
 
 Worked examples:
 
-- **[`examples/iguana-galapagos.md`](../examples/iguana-galapagos.md)** — a full Mode A session in prose
-- **[`examples/cli-agent-loop.py`](../examples/cli-agent-loop.py)** — runnable Python agent-loop example
-- **[`examples/cli-batch-watch.sh`](../examples/cli-batch-watch.sh)** — bash watch-folder script
+- **[`examples/iguana-galapagos.md`](https://github.com/chipi/chemigram/blob/main/examples/iguana-galapagos.md)** — a full Mode A session in prose
+- **[`examples/cli-agent-loop.py`](https://github.com/chipi/chemigram/blob/main/examples/cli-agent-loop.py)** — runnable Python agent-loop example
+- **[`examples/cli-batch-watch.sh`](https://github.com/chipi/chemigram/blob/main/examples/cli-batch-watch.sh)** — bash watch-folder script
 
 Going deeper:
 

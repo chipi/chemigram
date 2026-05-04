@@ -11,7 +11,7 @@ from chemigram.core.vocab import load_packs
 vocab = load_packs(["starter", "expressive-baseline"])
 ```
 
-For the full entry catalog see [`vocabulary/packs/expressive-baseline/README.md`](../../vocabulary/packs/expressive-baseline/README.md). For authoring your own primitives see [`authoring-vocabulary-entries.md`](authoring-vocabulary-entries.md).
+For the full entry catalog see [`vocabulary/packs/expressive-baseline/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/packs/expressive-baseline/README.md). For authoring your own primitives see [`authoring-vocabulary-entries.md`](authoring-vocabulary-entries.md).
 
 ---
 
@@ -205,7 +205,7 @@ The vocabulary becomes voice not by exhaustive coverage but by accumulating exac
 
 ## See also
 
-- [`vocabulary/packs/expressive-baseline/README.md`](../../vocabulary/packs/expressive-baseline/README.md) — full entry catalog with descriptions, tags, intensity ladders
+- [`vocabulary/packs/expressive-baseline/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/packs/expressive-baseline/README.md) — full entry catalog with descriptions, tags, intensity ladders
 - [`docs/guides/authoring-vocabulary-entries.md`](authoring-vocabulary-entries.md) — author your own personal-pack entries
 - [`docs/getting-started.md`](../getting-started.md#growing-your-vocabulary) — Phase 2 vocabulary-growth workflow
 - [`docs/prd/PRD-003-vocabulary-as-voice.md`](../prd/PRD-003-vocabulary-as-voice.md) — the user-value argument for the vocabulary system

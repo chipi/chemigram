@@ -584,7 +584,7 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
             "**On the clipped-gradient fixture** (continuous tone + blown "
             "highlights — chart designed to show this module's effect; "
             "see [`reference-targets/README.md`]"
-            "(../../tests/fixtures/reference-targets/README.md)):"
+            "(https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):"
         )
         if is_mask_bound or clipped_masked in (None, "skipped"):
             out.append("")
@@ -665,7 +665,7 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         f"> Render size: {RENDER_WIDTH}x{RENDER_HEIGHT}, JPEG quality default. "
         f"Inputs: synthetic targets from "
         f"[`tests/fixtures/reference-targets/`]"
-        f"(../../tests/fixtures/reference-targets/README.md).\n"
+        f"(https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md).\n"
     )
 
     lines.append("---\n")
@@ -705,7 +705,7 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         "moves) behave differently from how they would on a real raw. The "
         "gallery is for *visual response validation*, not pipeline "
         "calibration; for raw-pipeline direction-of-change validation see "
-        "the e2e suite in [`tests/e2e/`](../../tests/e2e/).\n"
+        "the e2e suite in [`tests/e2e/`](https://github.com/chipi/chemigram/blob/main/tests/e2e/).\n"
     )
     lines.append(
         "- **Mask-bound entries** (gradient/ellipse/rectangle, marked "
@@ -717,7 +717,7 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         "- **Out-of-gamut patches** on the ColorChecker (notably patch #18 "
         "Cyan) clip to nearest in-gamut sRGB; that clipping is in the input, "
         "not the primitive. See "
-        "[`reference-targets/README.md`](../../tests/fixtures/reference-targets/README.md).\n"
+        "[`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md).\n"
     )
 
     return "\n".join(lines) + "\n"

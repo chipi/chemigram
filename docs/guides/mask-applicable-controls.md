@@ -26,7 +26,7 @@ This guide answers three questions:
 
 The patched XMP, when rendered by `darktable-cli`, applies the primitive's effect *only* in the masked region (with the form's natural feathering / falloff), leaving the rest of the frame untouched.
 
-**This works the same way for every vocabulary entry.** The unit test [`test_apply_universality`](../../tests/unit/core/masking/test_apply_universality.py) verifies the apply path completes for every loaded entry × every drawn-form spec. There are no "this primitive can't be masked" cases in the engine.
+**This works the same way for every vocabulary entry.** The unit test [`test_apply_universality`](https://github.com/chipi/chemigram/blob/main/tests/unit/core/masking/test_apply_universality.py) verifies the apply path completes for every loaded entry × every drawn-form spec. There are no "this primitive can't be masked" cases in the engine.
 
 The interesting questions are at the photographic layer: does masking a particular module *make sense*, and does darktable's renderer produce the result you'd expect?
 
@@ -39,7 +39,7 @@ The matrix below maps each darktable module touched by the chemigram vocabulary 
 | Module | Vocabulary entries | Engine | Photographic | Notes |
 |--------|-------------------|--------|--------------|-------|
 | `exposure` | `expo_+0.5`, `expo_-0.5`, `expo_+0.3`, `expo_-0.3`, `shadows_global_+/-`, `gradient_*`, `radial_*`, `rectangle_*` | ✅ | ✅ | The 4 shipped masked primitives use this. EV deltas through a region are the canonical use case (dodge/burn). |
-| `colorbalancergb` | `sat_*`, `vibrance_+0.3`, `grade_*`, `chroma_boost_*` | ✅ | ✅ | Saturation and grading through a region work cleanly — collapse a background to monochrome, warm the subject, etc. Verified by [`test_lab_grade_masked_universality`](../../tests/e2e/test_lab_grade_masked_universality.py) (sat_kill through a center mask leaves corner chroma intact). |
+| `colorbalancergb` | `sat_*`, `vibrance_+0.3`, `grade_*`, `chroma_boost_*` | ✅ | ✅ | Saturation and grading through a region work cleanly — collapse a background to monochrome, warm the subject, etc. Verified by [`test_lab_grade_masked_universality`](https://github.com/chipi/chemigram/blob/main/tests/e2e/test_lab_grade_masked_universality.py) (sat_kill through a center mask leaves corner chroma intact). |
 | `sigmoid` | `contrast_low/high`, `blacks_lifted/crushed`, `whites_open` | ✅ | ⚠️ Use with care | s-curves are tone benders — applying one in a region can produce visible seam where the curve transitions between masked and unmasked areas. Soft falloff helps. Sometimes the right call; sometimes you want a global contrast move and a regional luma move instead. |
 | `bilat` (localcontrast) | `clarity_strong`, `clarity_painterly` | ✅ | ✅ | Local-contrast through a region is photographically clean (sharpen a face, soften a background). Edge enhancement respects the mask. |
 | `vignette` | `vignette_subtle/medium/heavy` | ✅ | ❌ Don't | The vignette module is itself geometric — it produces a radial darkening centered on the frame. Pairing it with a mask is two competing geometries; the result is rarely what you want. Use exposure-through-a-mask for region darkening instead. |
@@ -190,9 +190,9 @@ All coordinates are normalized image coordinates `[0, 1]`. See `chemigram.core.m
 
 If you author a masked entry and want laboratory-grade confirmation that it's localizing correctly:
 
-1. **Add an entry to `EXPECTED_EFFECTS`** in [`tests/e2e/_lab_grade_deltas.py`](../../tests/e2e/_lab_grade_deltas.py), using `_check_zone_dampen` or `_check_zone_lift` with the appropriate ColorChecker zones (constants `_CC_TOP_HALF`, `_CC_CENTER_4`, etc.).
+1. **Add an entry to `EXPECTED_EFFECTS`** in [`tests/e2e/_lab_grade_deltas.py`](https://github.com/chipi/chemigram/blob/main/tests/e2e/_lab_grade_deltas.py), using `_check_zone_dampen` or `_check_zone_lift` with the appropriate ColorChecker zones (constants `_CC_TOP_HALF`, `_CC_CENTER_4`, etc.).
 2. **Run the lab-grade suite**: `pytest tests/e2e/test_lab_grade_primitives.py -v`. The chart-based isolation will measure your primitive's spatial effect against synthetic ColorChecker patches and tell you whether the mask is localizing as expected.
-3. **For module-level validation** (a category not yet in `MASK_COVERAGE`), add to [`tests/e2e/test_lab_grade_masked_universality.py`](../../tests/e2e/test_lab_grade_masked_universality.py).
+3. **For module-level validation** (a category not yet in `MASK_COVERAGE`), add to [`tests/e2e/test_lab_grade_masked_universality.py`](https://github.com/chipi/chemigram/blob/main/tests/e2e/test_lab_grade_masked_universality.py).
 
 The visual gallery at [`docs/guides/visual-proofs.md`](visual-proofs.md) shows the rendered before/after for every primitive (including the 4 mask-bound ones). The lab-grade tests check the same renders programmatically.
 
