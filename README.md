@@ -180,11 +180,22 @@ Full procedure in **[`docs/getting-started.md`](docs/getting-started.md#growing-
 
 For users:
 
-- **[`docs/getting-started.md`](docs/getting-started.md)** — install, MCP-client config, first session, troubleshooting
-- **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)** — what ships in the bundled pack, how to grow your personal pack
+- **[`docs/getting-started.md`](docs/getting-started.md)** — install, MCP-client config, first session, troubleshooting, CLI quickstart
+- **[`docs/guides/tastes-quickstart.md`](docs/guides/tastes-quickstart.md)** — your first taste file in 5 minutes
+- **[`docs/guides/vocabulary-patterns.md`](docs/guides/vocabulary-patterns.md)** — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
+- **[`docs/guides/recipes.md`](docs/guides/recipes.md)** — common "how do I" patterns: reset to baseline, find by tag, export multiple sizes, replay a session
+- **[`docs/guides/cli-reference.md`](docs/guides/cli-reference.md)** — every verb, every flag, every exit code
+- **[`docs/guides/cli-output-schema.md`](docs/guides/cli-output-schema.md)** — NDJSON event format for `--json` output
+- **[`docs/guides/cli-env-vars.md`](docs/guides/cli-env-vars.md)** — env var reference
+- **[`docs/guides/config-toml.md`](docs/guides/config-toml.md)** — `~/.chemigram/config.toml` schema
+- **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)**, **[`vocabulary/packs/expressive-baseline/README.md`](vocabulary/packs/expressive-baseline/README.md)** — what ships in each pack
+- **[`examples/iguana-galapagos.md`](examples/iguana-galapagos.md)** — a worked Mode A session, prose form
+- **[`examples/cli-agent-loop.py`](examples/cli-agent-loop.py)** + **[`examples/cli-batch-watch.sh`](examples/cli-batch-watch.sh)** — runnable CLI examples
 
-For people engaging with the project deeper:
+For contributors and people engaging with the project deeper:
 
+- **[`docs/guides/authoring-vocabulary-entries.md`](docs/guides/authoring-vocabulary-entries.md)** — Phase 2 daily-use authoring flow
+- **[`docs/guides/expressive-baseline-authoring.md`](docs/guides/expressive-baseline-authoring.md)** — programmatic struct-RE methodology (Path C)
 - **`docs/concept/`** — six numbered concept documents (read end-to-end, ~2h):
   `00-introduction.md`, `01-vision.md`, `02-project-concept.md`,
   `03-data-catalog.md`, `04-architecture.md`, `05-design-system.md`
@@ -193,7 +204,7 @@ For people engaging with the project deeper:
 - **`docs/CONTRIBUTING.md`** — code + vocabulary contribution flows
 - **`docs/LICENSING.md`** — what's MIT, what's separate
 - **`docs/TODO.md`** — research backlog, deferred items
-- **`examples/iguana-galapagos.md`** — a worked Mode A session, prose form
+- **[`docs/guides/index.md`](docs/guides/index.md)** — full guides index, organized by audience
 
 ## Requirements
 

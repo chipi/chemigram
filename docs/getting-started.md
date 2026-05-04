@@ -404,12 +404,42 @@ for raw in glob("/path/to/raws/*.NEF"):
 
 No MCP session lifecycle. No transport. Just subprocesses + structured exit codes + NDJSON. The CLI's exit codes (`SUCCESS=0`, `INVALID_INPUT=2`, `NOT_FOUND=3`, `STATE_ERROR=4`, `VERSIONING_ERROR=5`, `DARKTABLE_ERROR=6`, `MASKING_ERROR=7`, `SYNTHESIZER_ERROR=8`, `PERMISSION_ERROR=9`, `NOT_IMPLEMENTED=10`) are documented and stable; agents can branch on them without parsing stderr text.
 
+For a full runnable example with proper error handling, see [`examples/cli-agent-loop.py`](../examples/cli-agent-loop.py). For the NDJSON event schema reference, see [`docs/guides/cli-output-schema.md`](guides/cli-output-schema.md). For a watch-folder bash script that demonstrates CLI-as-substrate, see [`examples/cli-batch-watch.sh`](../examples/cli-batch-watch.sh).
+
+### Productivity flags: stdin batch + workspace auto-discovery
+
+Two CLI ergonomics worth knowing about.
+
+**`--stdin` batch mode** lets four verbs (`get-state`, `apply-primitive`, `render-preview`, `export-final`) read image_ids from stdin one per line and aggregate the worst exit code:
+
+```bash
+# Process every workspace currently on disk
+ls ~/Pictures/Chemigram | chemigram apply-primitive - --stdin --entry expo_+0.5
+
+# Or feed from any pipeline
+find . -name "*.NEF" -newer last-run.tag | xargs -I{} chemigram ingest {}
+ls ~/Pictures/Chemigram | chemigram --json render-preview - --stdin --size 2048
+```
+
+The image_id positional argument becomes `-` when `--stdin` is set. Exit code is the worst code across all images (succeeds if every image succeeds; fails on the first non-zero).
+
+**Workspace auto-discovery** lets you skip the image_id when run from inside a workspace directory. Pass `.` as image_id and the CLI walks up from cwd to find the workspace root:
+
+```bash
+cd ~/Pictures/Chemigram/iguana
+chemigram get-state .             # auto-discovers image_id="iguana"
+chemigram apply-primitive . --entry expo_+0.5
+chemigram render-preview . --size 1024
+```
+
+Combined with shell aliases this makes per-image work fast: `cd <workspace> && chemigram get-state .`.
+
 ### What CLI doesn't do
 
 - **No `propose-taste-update` / `confirm-taste-update`.** Those are conversational by design — the propose/confirm dance lives between an agent and a human inside an MCP session. The CLI offers `apply-taste-update` / `apply-notes-update` as direct verbs for the agent-loop case (the agent has already decided; the CLI just writes).
 - **No interactive REPL.** Stateless per-invocation. If you want a conversation, MCP is the surface.
 
-For the full verb surface — every command, every flag, every exit code — see [`docs/guides/cli-reference.md`](guides/cli-reference.md).
+For the full verb surface — every command, every flag, every exit code — see [`docs/guides/cli-reference.md`](guides/cli-reference.md). For the NDJSON event schema reference, see [`docs/guides/cli-output-schema.md`](guides/cli-output-schema.md). For env-var reference, see [`docs/guides/cli-env-vars.md`](guides/cli-env-vars.md).
 
 ---
 
@@ -465,11 +495,32 @@ Markers of growth: ~30–60 personal entries after 3 months of regular use; ~80�
 
 ## Where to go next
 
+User guides (everyday usage):
+
+- **[`tastes-quickstart.md`](guides/tastes-quickstart.md)** — your first taste file in 5 minutes
+- **[`vocabulary-patterns.md`](guides/vocabulary-patterns.md)** — recipes for combining primitives
+- **[`recipes.md`](guides/recipes.md)** — common "how do I" patterns
+- **[`cli-reference.md`](guides/cli-reference.md)** + **[`cli-output-schema.md`](guides/cli-output-schema.md)** + **[`cli-env-vars.md`](guides/cli-env-vars.md)** — CLI surface in detail
+- **[`config-toml.md`](guides/config-toml.md)** — `~/.chemigram/config.toml` reference
+
+Vocabulary catalogs:
+
+- **[`vocabulary/starter/README.md`](../vocabulary/starter/README.md)** — what's in the bundled starter pack (4 entries)
+- **[`vocabulary/packs/expressive-baseline/README.md`](../vocabulary/packs/expressive-baseline/README.md)** — the 35-entry expressive-baseline catalog with intensity ladders + by-tag index
+- **[`authoring-vocabulary-entries.md`](guides/authoring-vocabulary-entries.md)** — author your own personal-pack entries (Phase 2 flow)
+
+Worked examples:
+
+- **[`examples/iguana-galapagos.md`](../examples/iguana-galapagos.md)** — a full Mode A session in prose
+- **[`examples/cli-agent-loop.py`](../examples/cli-agent-loop.py)** — runnable Python agent-loop example
+- **[`examples/cli-batch-watch.sh`](../examples/cli-batch-watch.sh)** — bash watch-folder script
+
+Going deeper:
+
 - **The concept package** (`docs/concept/`) — the project's intellectual frame. Read `00-introduction.md` if you want to engage with the why.
 - **`docs/IMPLEMENTATION.md`** — phase plan; what's shipped, what's next.
-- **`vocabulary/starter/README.md`** — what the bundled pack covers; what's intentionally absent.
-- **`docs/CONTRIBUTING.md`** — code and vocabulary contribution flows.
-- **`examples/iguana-galapagos.md`** — a worked Mode A session, prose form.
+- **`docs/CONTRIBUTING.md`** — code + vocabulary contribution flows.
+- **[`docs/guides/index.md`](guides/index.md)** — full guides index organized by audience.
 
 ---
 

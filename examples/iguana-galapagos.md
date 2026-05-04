@@ -2,7 +2,9 @@
 
 *A concrete Mode A walkthrough demonstrating the agent loop, its frictions, and what the session produces.*
 
-This example shows the loop from `agent-context.md` in action. It's intended as an onramp for new readers — read this and you understand what Chemigram actually does, before diving into architecture or layer-model docs.
+> **Note on capabilities:** this example shows a session against the **v1.5.0** capability surface — drawn-form geometric masks (gradient/ellipse/rectangle) baked into vocabulary entries' `mask_spec`, plus the photographer's accumulated personal vocabulary (~80 entries). Pixel-precise content-aware masking ("mask the iguana exactly," "mask just the eyes") is Phase 4 work via a sibling project (`chemigram-masker-sam`) producing darktable drawn-form geometry; per ADR-076 the v1.4-and-earlier PNG-mask path was retired (it was a silent no-op). The session honors that honestly — surfacing where v1.5.0 can't satisfy a brief and what compounds toward Phase 4.
+
+This example shows the agent loop in action. It's intended as an onramp for new readers — read this and you understand what Chemigram actually does, before diving into architecture or layer-model docs.
 
 ## The setup
 
@@ -90,80 +92,84 @@ photographer: "Not breeding season, just the typical gray. And by natural
 agent: [ writes to notes.md, propose-and-confirm:
          "Subject color target: warm dark gray, photographer's
          visual memory. Not species-typical slate, not raw appearance." ]
-agent: "Noted in notes.md. Generating subject mask now."
+agent: "Noted in notes.md. About subject isolation: pixel-precise
+        content-aware masking ('mask the iguana exactly') is Phase 4
+        work — the sibling project producing darktable drawn-form
+        geometry isn't shipped yet. For today, two paths:
 
-agent: generate_mask(image_id, target="subject")
-agent: render_preview(image_id, with_mask_overlay=True)
+        (a) Use radial_subject_lift_marine from your personal vocab —
+            a centered ellipse you authored for animal-on-rock
+            compositions. Approximates the subject area; not pixel-
+            precise, but the iguana sits roughly center-frame here so
+            the approximation should be acceptable.
+        (b) Apply effects globally and accept they touch the
+            background too.
 
-[ photographer sees mask overlay on preview ]
-
-agent: "Mask isolated the iguana cleanly. It includes the iguana's body
-        and tail but not the rocks. Want me to extend to include rocks
-        (treat them as 'subject context'), or keep tight to the animal?"
-
-photographer: "Tight is fine"
-
-agent: snapshot(label="subject mask generated")
-```
-
-This turn took several exchanges but did real work: established the color target, captured it in `notes.md`, generated and verified the mask. Three discoveries the photographer benefits from later — including the species research that's now in the agent's working memory for the rest of the session.
-
-### Turn 4 — Water blue recovery, vocabulary gap surfaces
-
-```
-agent: "Now the blue water work. Looking for an entry that pulls water
-        toward blue while protecting the subject — composite mask."
-
-[ agent scans vocabulary, finds none with both raster mask + parametric ]
-
-agent: "Vocabulary gap: I don't have a single entry for 'water-only blue
-        recovery while protecting subject.' Two paths:
-
-        (a) Apply global blue recovery (`colorcal_underwater_recover_blue`),
-            then a subject-protection move (`colorcal_warm_protect_subject`)
-            that counters the cool shift on the iguana.
-
-        (b) Skip this for now and we'll come back when the entry exists.
-
-        I'd lean (a) — gets you to the right result via two moves
-        instead of one. Logging the gap so you can author the
-        single-step entry later."
+        I'd lean (a). Your taste notes say you accept this kind of
+        geometric approximation when the subject is centered."
 
 photographer: "(a) is fine"
 
+agent: snapshot(label="color target captured, drawn-form mask plan set")
+```
+
+This turn took several exchanges but did real work: established the color target, captured it in `notes.md`, and made an honest call about masking. The agent named the v1.5.0 limit (no pixel-precise masking yet) without dressing it up — and proposed a workable approximation grounded in the photographer's taste.
+
+### Turn 4 — Water blue work + a real Phase 2 gap
+
+```
+agent: "Now the water-blue work. Ideal would be your hypothetical
+        wb_warm_water_only — a parametric mask in blendop_params
+        restricting WB warmth to cyan-blue hues only. You haven't
+        authored that one yet.
+
+        Three paths:
+        (a) Apply wb_warm_subtle (starter) globally; the warmth
+            touches the iguana too but at this strength it's mild
+            and your taste notes say you bias warmer on subjects
+            with natural warmth, so it might be fine.
+        (b) Apply your radial_subject_lift_marine (centered ellipse,
+            +0.6 EV) which we already planned for and stack a
+            subtle warm WB over it. The radial mask shapes the
+            warmth toward the subject area.
+        (c) Skip for now and log the gap; come back to it after
+            you've authored wb_warm_water_only this weekend.
+
+        I'd lean (b) — does double duty (subject lift + warmth)
+        and uses what we have."
+
+photographer: "(b) — and log the gap, I'll author the parametric
+                version next vocabulary evening"
+
 agent: [ appends to vocabulary_gaps.jsonl:
-         "colorcal_underwater_recover_blue_water_only — composite mask
-         (parametric hue + inverse subject raster). Worked around with
-         global + subject-protection counter. Session 1, image
-         iguana_galapagos." ]
+         "wb_warm_water_only — parametric WB restricted to cyan-blue
+         hue range via blendop_params. Workaround: radial_subject_lift_marine
+         + global wb_warm_subtle. Session 1, image iguana_galapagos.
+         intent_category: wb. Recurring across underwater work." ]
 
-agent: apply_primitive(image_id, "colorcal_underwater_recover_blue")
+agent: apply_primitive(image_id, "radial_subject_lift_marine")
+        # personal-pack entry, mask_spec: ellipse centered on frame
+agent: apply_primitive(image_id, "wb_warm_subtle")
 agent: render_preview(image_id)
 
-[ photographer sees: water now firmly blue, iguana now noticeably cooler
-  than was acceptable — the cost of fighting the move locally ]
-
-agent: "Now the protection counter. This pulls warmth back into the
-        iguana only."
-
-agent: apply_primitive(image_id, "colorcal_warm_protect_subject")
-agent: render_preview(image_id)
-
-[ photographer sees: water blue maintained, iguana warmed back toward
-  the dark-gray target ]
+[ photographer sees: subject area lifted and warmed, water still reads
+  cool but the subject pulls forward against it ]
 
 photographer: "Iguana's still a little gray. Push the warm a touch more"
 
-agent: apply_primitive(image_id, "colorcal_warm_protect_subject_strong")
-        # SET semantics replace previous entry
+agent: "I can stack grade_shadows_warm — it'll add an orange tint to
+        the shadow zones. Since the iguana is the dominant shadow
+        region in the frame, it lands mostly on him."
+
+agent: apply_primitive(image_id, "grade_shadows_warm")
 agent: render_preview(image_id)
 
 photographer: "Yes that's it"
 
-agent: snapshot(label="water blue + subject protected")
+agent: snapshot(label="subject lifted + warm + shadow grade")
 ```
 
-The vocabulary gap was real and got worked around. The agent surfaced it explicitly, the workaround took an extra turn, the gap is now logged for later authoring. This is the system working as designed — gaps don't block the work, they accumulate as future improvement targets.
+The vocabulary gap was real and got worked around. The agent surfaced it explicitly (a parametric `wb_warm_water_only` entry the photographer can author from a single darktable evening — see [`docs/guides/authoring-vocabulary-entries.md`](../docs/guides/authoring-vocabulary-entries.md)), the workaround stacked three existing primitives, the gap is now logged. This is the Phase 2 loop working — gaps don't block the work; they accumulate as concrete authoring targets that take 15 minutes each in darktable's GUI.
 
 ### Turn 5 — Top-down highlight dampening, composition tension surfaces
 
@@ -202,81 +208,71 @@ photographer: "Looks right"
 agent: snapshot(label="highlights dampened, subtle")
 ```
 
-### Turn 6 — Eye work, masking gets harder
+### Turn 6 — Eye work, the v1.5.0 → Phase 4 honesty moment
 
 ```
-agent: "Now the eye work — 'more clear, more attention.' This is fine-grained
-        and I want to be honest about uncertainty here.
+agent: "Now the eye work — 'more clear, more attention.' I want to be
+        honest about what's available today.
 
-        Standard subject mask covers the whole iguana. For eye-level
-        work I'd need to use prompted segmentation to isolate just the
-        eyes. Quality varies — sometimes great, sometimes catches one eye
-        and not the other.
+        Eye-precise masking — isolating just the iguana's eyes —
+        requires content-aware AI masking. That's Phase 4 work via
+        the chemigram-masker-sam sibling project (will produce
+        darktable drawn-form geometry per ADR-076). Not shipped yet.
 
-        Three options:
-        (a) Try prompted eye mask. If it works cleanly, apply clarity
-            there. If not, fall back.
-        (b) Apply subtle clarity to the whole iguana. Eyes get lifted
-            along with the rest, but consistently. Less precise but
-            reliable.
-        (c) Skip eye work this session, revisit when masking tools
-            improve.
+        Three options today:
 
-        I'd try (a) first, fall back to (b) if needed. Fine?"
+        (a) Apply clarity_painterly globally. Soft local-contrast,
+            touches everything. Eyes pop a bit but so does the
+            background — your taste notes say you accept this on
+            quiet animal portraits where the subject is the story.
+        (b) Skip eye work this session. The radial subject lift +
+            warmth + structure work we have planned will pull the
+            eye toward the iguana naturally; that may be enough.
+        (c) Author a personal radial-eye drawn-form mask later
+            (ellipse centered on the eye region) and revisit.
+            Not great for a moving subject but works for static
+            portraits where the eyes are predictable.
 
-photographer: "(a)"
+        Honestly? (b) — your previous moves are doing most of the
+        separation work already. Fine-grain eye clarity is the
+        kind of thing Phase 4 will fix; for today, the brief is
+        substantially satisfied without it."
 
-agent: generate_mask(image_id, target="custom", prompt="iguana eyes",
-                     name="iguana_eyes")
-agent: render_preview(image_id, with_mask_overlay=True, mask="iguana_eyes")
+photographer: "Yes (b), we'll come back when chemigram-masker-sam
+                ships. Log it as a gap."
 
-[ photographer sees: mask shows both eyes + a small region of scales
-  near the right eye that got picked up incorrectly ]
+agent: [ appends to vocabulary_gaps.jsonl:
+         "eye-precise local clarity on animal portraits — content-aware
+         masking, Phase 4 sibling project. Not a vocabulary-authoring
+         gap, an architecture gap. Workaround: skipped this session;
+         radial subject lift + structure handle most of the visual
+         separation. Session 1, image iguana_galapagos." ]
 
-agent: "Mask got both eyes but caught a few scales near the right eye.
-        Imperfect. Three options now:
-        (a) Accept and proceed. The extra area will get clarity too,
-            slightly lifting those scales. Probably visible at 100% but
-            unlikely to be objectionable.
-        (b) Regenerate with a tighter prompt.
-        (c) Fall back to whole-iguana clarity (option b from before)."
-
-photographer: "Try (b), tighter prompt"
-
-agent: regenerate_mask(image_id, target="custom",
-                        prompt="iguana eye pupils only",
-                        name="iguana_eyes")
-agent: render_preview(image_id, with_mask_overlay=True, mask="iguana_eyes")
-
-[ photographer sees: tighter mask, just the dark center of each eye ]
-
-photographer: "Better"
-
-agent: apply_primitive(image_id, "clarity_strong_masked",
-                        mask_override="iguana_eyes")
-agent: render_preview(image_id)
-
-[ photographer sees: eyes pop slightly more — subtle but noticeable ]
-
-photographer: "Good"
-
-agent: snapshot(label="eyes lifted with clarity")
+agent: snapshot(label="eye work deferred, brief substantially satisfied")
 ```
 
-The eye work is the hardest part of the session and the agent handled it well: surfaced uncertainty, offered options, demonstrated the mask, accepted refinement, applied the move. Two extra turns vs. perfect tooling, but no surprises and the photographer stayed in control.
+The eye work is the v1.5.0 → Phase 4 honesty moment. The agent didn't fake a workaround, didn't overpromise; it named the architectural limit, proposed honest options, and the photographer chose to skip. The gap log differentiates "vocabulary-authoring gap" (the photographer can fix tonight in darktable) from "architecture gap" (Phase 4 sibling project is the answer) — both are valid observations, but the response shapes are different.
 
 ### Turn 7 — Subject crispness for separation
 
 ```
-agent: "Last brief item: crispness on the iguana for separation. Subject
-        mask is still active. From your taste notes you bias toward
-        subtle structure — should I start there or push harder given
-        we softened the top contrast?"
+agent: "Last brief item: crispness on the iguana for separation. From
+        your taste notes you bias toward subtle structure. Two
+        candidates:
 
-photographer: "Subtle is fine, the eye work and color work are doing
-                most of the separation already"
+        (a) clarity_painterly globally — soft local contrast, touches
+            the whole frame. Works for animal portraits where the
+            subject is the story.
+        (b) clarity_strong — sharper, but you've flagged it as
+            'reads aggressive' in your taste.
 
-agent: apply_primitive(image_id, "structure_subject_subtle")
+        I'd default to (a)."
+
+photographer: "(a), and the previous moves are doing most of the
+                separation work already"
+
+agent: apply_primitive(image_id, "clarity_painterly")
+        # expressive-baseline; soft local contrast (detail 0.4)
 agent: render_preview(image_id)
 
 [ photographer sees: iguana slightly more dimensional, fine detail
@@ -284,10 +280,10 @@ agent: render_preview(image_id)
 
 photographer: "That works"
 
-agent: snapshot(label="subject structure subtle")
+agent: snapshot(label="clarity_painterly applied")
 ```
 
-Quick and clean because the previous turns had set the right context. Taste.md said "bias toward subtle"; the agent honored it without needing a discussion.
+Quick and clean because the previous turns had set the right context. Taste.md said "bias toward subtle"; the agent honored it without needing a discussion. `clarity_painterly` is a global move (touches the whole frame) — in v1.5.0 there's no shipped subject-only structure entry, but the iguana is dominant enough in the composition that a soft global clarity reads as subject-emphasis. A future personal entry like `clarity_painterly_radial_subject` (drawn-form ellipse) could refine this if the photographer wants tighter localization.
 
 ### Turn 8 — Final review, end-of-session synthesis
 
@@ -296,13 +292,16 @@ agent: render_preview(image_id, size=2048)  [ larger render for review ]
 
 agent: "Here's where we landed. Quick summary of what we did:
         - Baseline: lens correction, denoise, underwater_pelagic_blue
-        - Subject mask: clean isolation of iguana
-        - Water work: blue recovery + subject warmth protection (two
-          steps because the composite-mask vocabulary entry didn't exist)
-        - Highlights: subtle top-down dampen (subtle to preserve
-          background contrast — your call)
-        - Eyes: prompted mask + strong clarity, second attempt cleaner
-        - Subject: subtle structure for separation
+        - Subject area: radial_subject_lift_marine (centered ellipse,
+          drawn-form mask in blendop_params per ADR-076)
+        - Water/warmth work: wb_warm_subtle + grade_shadows_warm,
+          stacked over the radial. Worked around the missing
+          wb_warm_water_only entry.
+        - Highlights: gradient_top_dampen_highlights (drawn-form
+          gradient mask), subtle to preserve background contrast
+        - Eye work: deferred to Phase 4 (chemigram-masker-sam)
+        - Subject crispness: clarity_painterly globally (subject
+          area + background; your taste says fine for animal portraits)
 
         Anything to adjust before tagging this for export?"
 
@@ -314,27 +313,32 @@ agent: export_final(image_id, ref="iguana_galapagos_v1", size=4096)
 agent: "Exported. End-of-session synthesis:
 
         Proposed updates to taste.md:
-        1. 'For Galápagos / similar coastal subjects: blue cast is
-           strong; standard pattern is global blue recovery + subject
-           warmth protection.' Accept?
+        1. 'For Galápagos / similar coastal underwater subjects: stack
+           radial_subject_lift_marine + wb_warm_subtle + grade_shadows_warm
+           as a default. Iguana-on-rock pattern.' Accept?
         2. 'Bias to ask about composition tradeoffs before applying
            strong gradient/dampening moves.' Accept?
 
-        Proposed addition to vocabulary_gaps.jsonl (already logged
+        Proposed additions to vocabulary_gaps.jsonl (already logged
         in-session, just confirming):
-        - colorcal_underwater_recover_blue_water_only (composite mask)
+        - wb_warm_water_only — parametric WB by hue range. Authorable
+          this weekend in darktable (vocabulary gap, not architecture).
+        - eye-precise local clarity — Phase 4 sibling project work
+          (architecture gap, not vocabulary).
 
         Proposed addition to image notes.md:
         - 'Subject color target: warm dark gray, photographer's visual
            memory.' Already added in-session.
+        - 'Eye work deferred to Phase 4. radial + structure carried
+           the visual separation.'
 
-        Tooling observation worth noting: prompted eye mask required
-        a refinement turn. If 'iguana eyes' is a recurring need,
-        worth either authoring a tighter system prompt or training
-        a small specialist masker."
+        Architecture observation worth tracking: this session shows
+        the v1.5.0 → Phase 4 boundary cleanly. Drawn-form masks
+        carry placement-driven moves; subject-precise moves wait on
+        the sibling project."
 
-photographer: "Accept 1 and 2 for taste.md. Accept the gap note.
-                Note the tooling observation in this image's notes."
+photographer: "Accept 1 and 2 for taste.md. Accept both gap notes.
+                Add both observations to this image's notes."
 
 agent: [ updates ~/.chemigram/taste.md with two new notes ]
 agent: [ confirms vocabulary_gaps.jsonl entry ]
@@ -347,13 +351,13 @@ End-of-session synthesis is where the compounding happens. Two new entries in `t
 
 ## Session metrics
 
-- **Wall time:** roughly 50 minutes
-- **Conversational turns:** about 25
-- **Snapshots created:** 8 (each meaningful state)
+- **Wall time:** roughly 45 minutes
+- **Conversational turns:** about 22
+- **Snapshots created:** 7 (each meaningful state)
 - **Branches:** 0 (no exploration this session, just main)
-- **Vocabulary entries used:** 8 distinct entries
-- **Vocabulary gaps surfaced:** 1
-- **Mask generations:** 2 (subject + eye, with one regeneration)
+- **Vocabulary entries applied:** 6 distinct (4 personal-pack including 1 mask-bound, 2 expressive-baseline including 1 mask-bound)
+- **Drawn-form masks bound:** 2 (radial_subject_lift_marine + gradient_top_dampen_highlights — both via `mask_spec`, encoded into `masks_history` per ADR-076)
+- **Vocabulary gaps surfaced:** 2 (one authorable in darktable, one Phase 4 architecture)
 - **`taste.md` additions accepted:** 2
 - **`notes.md` additions:** 2
 - **Final result:** tagged snapshot, full-resolution JPEG exported
@@ -371,8 +375,8 @@ End-of-session synthesis is where the compounding happens. Two new entries in `t
 
 ### About friction points
 
-- The composite-mask vocabulary gap added one extra turn (acceptable cost, future sessions benefit)
-- Eye masking required a refinement turn (cost of imperfect tooling)
+- The missing `wb_warm_water_only` entry added one extra turn (acceptable cost; future sessions benefit once the photographer authors it)
+- Eye work was deferred to Phase 4 — honest acknowledgment, not a workaround
 - Some of the agent's surfacing was verbose (could be tuned with prompt iteration)
 
 ### About what compounds
@@ -386,18 +390,18 @@ End-of-session synthesis is where the compounding happens. Two new entries in `t
 
 Concrete to-do items the session surfaced:
 
-**Vocabulary gaps to author:**
-- `colorcal_underwater_recover_blue_water_only` (composite parametric + raster mask)
-- Possibly `colorcal_warm_protect_subject_strong` if the strength variants don't ladder well
-- `structure_subject_with_warmth` if the combined move comes up again
+**Vocabulary gaps to author** (Phase 2 work — open darktable, capture, drop into personal pack):
+- `wb_warm_water_only` — parametric WB restricted to cyan-blue hue range via `blendop_params`. ~15 minutes in darktable's GUI; see [`docs/guides/authoring-vocabulary-entries.md`](../docs/guides/authoring-vocabulary-entries.md).
+- Possibly `radial_subject_lift_marine_strong` if the existing radial doesn't push hard enough on darker subjects.
 
-**Tooling observations:**
-- Prompted segmentation for fine features ("eyes", "fins", "specific patterns") would benefit from caching successful prompts per species/subject
-- A `mask_overlay_render` mode that shows both the rendered preview and the active masks would speed up mask verification
+**Architecture gaps** (Phase 4 sibling project):
+- Eye-precise / pixel-precise content-aware masking → `chemigram-masker-sam` will produce darktable drawn-form geometry from natural-language prompts; the apply path stays unchanged when it lands. ADR-076 documents the seam.
+- A potential `radial_subject_lift_offcenter` family if many of the photographer's compositions don't land the subject mid-frame; could ship as an expressive-baseline addition or stay personal.
 
 **Process observations:**
 - End-of-session synthesis is valuable but verbose — worth tuning prompt for terser proposals
 - The composition tension catch (Discipline 6) felt natural in this session; worth instrumenting how often the agent catches vs. misses these
+- The vocabulary-gap-vs-architecture-gap distinction (made in this session) is genuinely useful for triaging the backlog — different gap types have different response shapes
 
 These observations would feed into the next iteration of the agent prompt, the vocabulary, and the engine. That's the compounding loop at the project level.
 
