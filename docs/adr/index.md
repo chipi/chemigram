@@ -91,6 +91,10 @@ ADRs come from two streams:
 | ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Superseded by ADR-076 |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
 | ADR-076 | Drawn-mask-only mask architecture (supersedes 021/022/055/057/058/074) | Accepted |
+| ADR-077 | Path C as default for parameterized modules (closes RFC-021; partially supersedes ADR-008) | Accepted |
+| ADR-078 | Vocabulary manifest `parameters` schema, multi-parameter from day one (closes RFC-021) | Accepted |
+| ADR-079 | `apply_primitive` `value` / `param` argument shape; hard-reject range validation (closes RFC-021) | Accepted |
+| ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
 
 ## Conventions
 

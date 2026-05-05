@@ -1,11 +1,11 @@
 # RFC-021 — Parameterized vocabulary magnitudes (Path C as default for continuous-magnitude modules)
 
-> Status · Draft v0.1
+> Status · Decided (2026-05-05)
 > Date · 2026-05-05
 > TA anchor ·/components/synthesizer ·/contracts/vocabulary-manifest ·/contracts/mcp-tools ·/components/cli ·/constraints/opaque-hex-blobs
 > Related · ADR-008 (opaque blob default), RFC-012 / ADR-073 (Path C as authoring technique), RFC-018 (vocabulary expansion), ADR-076 (drawn-mask architecture), capability-survey.md §11
-> Closes into · ADR (pending) — parameterized apply path; ADR (pending) — manifest schema extension for `parameter`; ADR (pending) — CLI/MCP `value` arg shape; ADR (pending) — test-coverage policy for parameterized modules; ADR (pending) — migration of existing magnitude-ladder entries
-> Why this is an RFC · ADR-008 made `op_params` opacity the default and Path C the rare exception. RFC-012 / ADR-073 confirmed Path C is feasible and shipped it as an *authoring* technique (programmatically generate `.dtstyle` files at vocabulary-build time). The next step — letting the *applier* parameterize at apply time so a photographer can request `+0.7 EV` directly — is a real architectural shift that supersedes part of ADR-008's framing. The shift, the manifest schema, the user-facing surface, the test-coverage policy, and the migration strategy are not all settled, so this is an RFC, not a direct ADR.
+> Closes into · ADR-077 (Path C as default for parameterized modules) · ADR-078 (manifest `parameters` schema, multi-parameter from day one) · ADR-079 (`apply_primitive` `value` / `param` argument shape; range validation) · ADR-080 (test-coverage policy for parameterized modules)
+> Why this is an RFC · ADR-008 made `op_params` opacity the default and Path C the rare exception. RFC-012 / ADR-073 confirmed Path C is feasible and shipped it as an *authoring* technique (programmatically generate `.dtstyle` files at vocabulary-build time). The next step — letting the *applier* parameterize at apply time so a photographer can request `+0.7 EV` directly — is a real architectural shift that supersedes part of ADR-008's framing. The shift, the manifest schema, the user-facing surface, the test-coverage policy were the open questions. Resolved 2026-05-05; closes into ADR-077..080.
 
 ---
 
@@ -191,39 +191,40 @@ Each is a self-contained ship: decoder + tests + manifest entry + visual proof. 
 
 ---
 
-## Open questions
+## Open questions — resolved 2026-05-05
 
-1. **Manifest schema — single-parameter only, or multi-parameter?** Some modules have natural multi-axis (`temperature` has temp + tint + WB strength). Should the first ship support only single-parameter (simpler) and add multi-parameter later, or design the schema for multi-parameter from day one?
-   - Lean toward: single-parameter first, schema extensible to multi later.
+1. **Manifest schema — single-parameter only, or multi-parameter?**
+   **Resolved:** multi-parameter from day one (closes into ADR-078). Schema lists an array of parameters; entries with one param are just `parameters: [{...}]`. Avoids a forced schema migration when `temperature` (temp + tint multi-axis) joins the parameterized set.
 
-2. **CLI flag shape — `--value V` or `--value name=V`?** With single-parameter modules, `--value 0.7` is unambiguous. With multi-parameter, you'd need `--value temp=+0.4 --value tint=-0.1`. Should the CLI commit to the multi-parameter shape from the start to avoid breaking change later?
-   - Lean toward: `--value V` for single-parameter (clean), `--param NAME=V` for multi (when we get there).
+2. **CLI flag shape — `--value V` or `--param NAME=V`?**
+   **Resolved:** both (closes into ADR-079). `--value V` is shorthand for `--param <default>=V` when the entry has a single parameter. Multi-parameter entries require `--param NAME=V` flags (repeatable). MCP tool `value` argument follows the same shape: scalar shorthand for single-param, dict for multi.
 
-3. **Range validation — soft (warn) or hard (reject)?** Should `--value 5.0` on `exposure` (declared range [-3, 3]) be a hard error, or apply with a clamp + warning?
-   - Lean toward: hard reject. Cleaner semantics; the user can always extend the manifest's declared range if they need it.
+3. **Range validation — soft clamp or hard reject?**
+   **Resolved:** hard reject with `INVALID_INPUT` (closes into ADR-079). Predictable; no silent surprises. The manifest's `range` declares the supported domain — extending it is a manifest edit, not a runtime override.
 
-4. **Deprecation timeline for migrated entries.** One minor version of overlap is the proposal — is that long enough? Some users may have scripts hardcoded to `expo_+0.5`.
-   - Lean toward: one minor version with deprecation log, then removal. The CLI flag is forward-compatible from day one.
+4. **Deprecation timeline for migrated entries.**
+   **Resolved:** no deprecation period; no overlap. The existing `expo_+0.5/+0.3/-0.5/-0.3`, `vignette_subtle/medium/heavy`, etc. magnitude-ladder entries get **deleted in the same PR** that introduces the parameterized form. The product has no users yet whose scripts depend on these names; backwards-compatibility burden buys nothing and adds complexity. New shape wins cleanly. Folded into ADR-078 implementation notes.
 
-5. **Test-coverage policy enforcement.** Should the test policy be a soft convention (documented in CONTRIBUTING.md) or a hard CI gate (a parameterized-module manifest entry without corresponding lab-grade tests fails CI)?
-   - Lean toward: hard CI gate. The "parameterized without test coverage" failure mode is exactly the trap that gets us a v1.6.0 with broken parameterization.
+5. **Test-coverage policy enforcement — soft convention or hard CI gate?**
+   **Resolved:** hard CI gate (closes into ADR-080). A parameterized-module manifest entry without corresponding lab-grade-global + lab-grade-masked test coverage fails CI. Implemented as a small linter test that reads the manifest, finds entries with a `parameters` field, and asserts each is referenced in both `tests/e2e/_lab_grade_deltas.py` (global) and `tests/e2e/test_lab_grade_masked_universality.py` (or successor file with masked coverage).
 
-6. **`exposure` is the canonical first module — does *any* other module want to ship at the same time as a sanity check?** Picking exposure alone risks designing the architecture around exposure's quirks.
-   - Lean toward: ship exposure alone in v1.6.0. Add `vignette` (also single-axis, simpler) as the second ship in v1.6.1 — that's the architectural-soundness check.
+6. **Sanity-check second module — ship `exposure` alone, or `exposure` + one more?**
+   **Resolved:** ship `exposure` + `vignette` together in v1.6.0. Both are single-axis, simple structs; the marginal cost of the second is small; catches architecture-tied-to-one-module problems immediately. Folded into Phase 1 of the implementation plan.
 
 ---
 
 ## How this closes
 
-This RFC closes into multiple ADRs:
+This RFC closes into four ADRs (resolved 2026-05-05):
 
-1. **ADR — Path C as default for parameterized modules.** Supersedes part of ADR-008's framing for the explicitly-declared-parameterizable case. ADR-008 stands for the rest of darktable's modules.
-2. **ADR — Vocabulary manifest `parameter` schema.** The optional field; type system; modversion-pinning; field offset / encoding declaration.
-3. **ADR — `apply_primitive` `value` argument** (CLI `--value` flag and MCP `value` arg). User-facing surface; precedence rules with `mask_spec`; range-validation policy.
-4. **ADR — Test-coverage policy for parameterized modules.** Unit + integration + lab-grade global + lab-grade masked, all required, gated in CI.
-5. **ADR — Migration policy for existing magnitude-ladder entries.** Deprecation period; alias behavior; doc-update obligations.
+1. **ADR-077 — Path C as default for parameterized modules.** Supersedes part of ADR-008's framing for the explicitly-declared-parameterizable case. ADR-008 stands for the rest of darktable's modules.
+2. **ADR-078 — Vocabulary manifest `parameters` schema.** Multi-parameter from day one; per-parameter type + range + default + module field offset/encoding declaration. Existing magnitude-ladder entries are removed in the same PR (no deprecation overlap; no users to migrate).
+3. **ADR-079 — `apply_primitive` `value` / `param` argument shape** (CLI `--value`/`--param` flags and MCP `value` argument). User-facing surface; precedence rules with `mask_spec` (independent axes); hard-reject range validation.
+4. **ADR-080 — Test-coverage policy for parameterized modules.** Unit + integration + lab-grade global + lab-grade masked, all required, hard CI gate enforced via a linter that reads the manifest.
 
-`exposure` is the first parameterized module that ships under the new architecture and serves as the closing-evidence for ADRs 1–4.
+The migration question (originally proposed as a fifth ADR) collapsed when Q4 resolved to "no overlap" — folded into ADR-078 implementation notes.
+
+`exposure` and `vignette` are the first two parameterized modules that ship under the new architecture (v1.6.0) and serve as the closing-evidence for ADRs 077–080.
 
 ---
 

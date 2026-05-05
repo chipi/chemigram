@@ -430,7 +430,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-018 | Vocabulary expansion for expressive taste articulation | Decided | ADR-063, ADR-064, ADR-073 |
 | RFC-019 | Reference-image validation baseline | Decided | ADR-066, ADR-067, ADR-068 |
 | RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
-| RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Draft v0.1 | ADR (pending) ×5 — apply path / manifest schema / CLI/MCP arg / test-coverage policy / migration |
+| RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
 
 ### ADRs
 
@@ -511,6 +511,10 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-074 | Built-in geometric mask providers (gradient/radial/rectangle) | Superseded by ADR-076 |
 | ADR-075 | CI matrix expands to Ubuntu alongside macOS (amends ADR-040) | Accepted |
 | ADR-076 | Drawn-mask-only mask architecture (supersedes 021/022/055/057/058/074) | Accepted |
+| ADR-077 | Path C as default for parameterized modules (closes RFC-021; partially supersedes ADR-008) | Accepted |
+| ADR-078 | Vocabulary manifest `parameters` schema, multi-parameter from day one (closes RFC-021) | Accepted |
+| ADR-079 | `apply_primitive` `value` / `param` argument shape; hard-reject range validation (closes RFC-021) | Accepted |
+| ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
 
 ---
 
