@@ -316,7 +316,7 @@ def test_diff_after_apply_shows_change(runner: CliRunner, cli_workspace_root: Pa
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert apply_result.exit_code == ExitCode.SUCCESS.value
@@ -381,7 +381,7 @@ def test_workflow_branch_apply_diff(runner: CliRunner, cli_workspace_root: Path)
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert apply_proc.exit_code == ExitCode.SUCCESS.value, apply_proc.stdout

@@ -32,7 +32,7 @@ from pathlib import Path
 
 import pytest
 
-from chemigram.core.helpers import apply_with_drawn_mask
+from chemigram.core.helpers import apply_entry, apply_with_drawn_mask
 from chemigram.core.pipeline import render
 from chemigram.core.vocab import VocabularyIndex, load_packs
 from chemigram.core.xmp import Xmp, parse_xmp, synthesize_xmp, write_xmp
@@ -43,6 +43,7 @@ sys.path.insert(0, str(_TESTS_ROOT.parent))  # repo root, so `tests.*` resolves
 
 from tests.e2e._lab_grade_deltas import (  # noqa: E402
     EXPECTED_EFFECTS,
+    PARAMETERIZED_EFFECTS,
     SKIP_REASONS,
     AssertionResult,
 )
@@ -104,16 +105,28 @@ def _render_and_read(
     target: str,
     configdir: Path,
     out_dir: Path,
+    parameter_values: dict[str, float] | None = None,
+    label: str | None = None,
 ) -> list[PatchSample]:
-    """Apply (or skip) the entry to the empty baseline, render, return patches."""
+    """Apply (or skip) the entry to the empty baseline, render, return patches.
+
+    ``parameter_values``: when supplied alongside a parameterized entry,
+    routes through :func:`apply_entry` so the entry's op_params is patched
+    per RFC-021. ``label`` is used in the rendered filename to keep
+    parameterized renders distinguishable across values.
+    """
     if entry is None:
         applied = baseline
+    elif parameter_values is not None or entry.parameters is not None:
+        applied = apply_entry(
+            baseline, entry, parameter_values=parameter_values, mask_spec=entry.mask_spec
+        )
     elif entry.mask_spec is not None:
         applied = apply_with_drawn_mask(baseline, entry.dtstyle, entry.mask_spec)
     else:
         applied = synthesize_xmp(baseline, [entry.dtstyle])
 
-    name = "baseline" if entry is None else entry.name
+    name = "baseline" if entry is None else (label or entry.name)
     xmp_path = out_dir / f"{name}-{target}.xmp"
     out_path = out_dir / f"{name}-{target}.jpg"
     write_xmp(applied, xmp_path)
@@ -222,6 +235,75 @@ def test_primitive_isolation_against_chart(
         pytest.fail("\n".join(msg_lines))
 
 
+@pytest.mark.parametrize(
+    "key",
+    sorted(PARAMETERIZED_EFFECTS.keys()),
+    ids=lambda k: f"{k[0]}-{k[1]}",
+)
+def test_parameterized_primitive_isolation_against_chart(
+    key: tuple[str, str],
+    baseline_patches: dict[str, list[PatchSample]],
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """For each parameterized entry x parameter-value tuple in
+    ``PARAMETERIZED_EFFECTS``: apply through the engine's parameterized
+    path, render against the synthetic chart, assert direction-of-change
+    matches the spec.
+
+    Closes ADR-080's lab-grade-global coverage requirement for
+    parameterized modules: every parameter value range bracketed by at
+    least one assertion against the live darktable renderer.
+    """
+    _ = darktable_binary
+
+    entry_name, label = key
+    target, check, parameter_values = PARAMETERIZED_EFFECTS[key]
+    entry = vocab.lookup_by_name(entry_name)
+    if entry is None:
+        pytest.fail(
+            f"parameterized entry {entry_name!r} not found in loaded packs "
+            f"(starter + expressive-baseline) — manifest cleanup left a stale ref?"
+        )
+    if entry.parameters is None:
+        pytest.fail(
+            f"entry {entry_name!r} has no 'parameters' declaration but is "
+            f"listed in PARAMETERIZED_EFFECTS — vocabulary/test mismatch."
+        )
+
+    out_dir = tmp_path_factory.mktemp(f"lab_grade_{entry_name}_{label}")
+    after = _render_and_read(
+        baseline=baseline_xmp,
+        entry=entry,
+        target=target,
+        configdir=configdir,
+        out_dir=out_dir,
+        parameter_values=parameter_values,
+        label=f"{entry_name}_{label}",
+    )
+    before = baseline_patches[target]
+
+    result: AssertionResult = check(before, after)
+    if not result.passed:
+        msg_lines = [
+            f"parameterized entry {entry_name!r} at {parameter_values!r} "
+            f"failed lab-grade isolation against {target}:",
+            f"  description: {entry.description}",
+            "  measurements: "
+            + ", ".join(
+                f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
+                for k, v in result.measurements.items()
+            ),
+            "  failures:",
+        ]
+        for f in result.failures:
+            msg_lines.append(f"    - {f}")
+        pytest.fail("\n".join(msg_lines))
+
+
 def test_skip_reasons_documented_for_remaining_primitives(
     vocab: VocabularyIndex,
 ) -> None:
@@ -229,10 +311,13 @@ def test_skip_reasons_documented_for_remaining_primitives(
     or in SKIP_REASONS (explicitly skipped with a reason). No silent
     coverage gaps."""
     asserted = set(EXPECTED_EFFECTS.keys())
+    # Parameterized entries are covered by the parametrized test above;
+    # extract just the entry-name half of the (name, label) keys.
+    parameterized_names = {k[0] for k in PARAMETERIZED_EFFECTS.keys()}
     skipped = set(SKIP_REASONS.keys())
     all_loaded = {entry.name for entry in vocab.list_all()}
 
-    missing = all_loaded - asserted - skipped
+    missing = all_loaded - asserted - parameterized_names - skipped
     # canon_eos_r5_baseline_l1 is an L1 entry (camera-specific binding); not
     # applicable to chart isolation. Skip with implicit reason.
     missing.discard("canon_eos_r5_baseline_l1")
@@ -240,7 +325,7 @@ def test_skip_reasons_documented_for_remaining_primitives(
     if missing:
         pytest.fail(
             "Primitives without lab-grade coverage (neither asserted nor "
-            f"skipped): {sorted(missing)}. Add to EXPECTED_EFFECTS in "
-            "tests/e2e/_lab_grade_deltas.py if asserting, or to SKIP_REASONS "
-            "with a reason if not (e.g., texture-noise, spatial-mask, composite)."
+            f"skipped): {sorted(missing)}. Add to EXPECTED_EFFECTS or "
+            "PARAMETERIZED_EFFECTS in tests/e2e/_lab_grade_deltas.py if "
+            "asserting, or to SKIP_REASONS with a reason if not."
         )

@@ -70,6 +70,38 @@ _VALID_LAYERS = ("L1", "L2", "L3")
 
 
 @dataclass(frozen=True)
+class ParameterField:
+    """Byte-level location declaration for a parameterized op_params field.
+
+    Identifies which module's op_params blob contains the field, the pinned
+    modversion the offset is valid against, the byte offset (0-based), and
+    the on-wire encoding. Per ADR-078.
+    """
+
+    module: str
+    modversion: int
+    offset: int
+    encoding: str  # "le_f32" | "le_i32" | "le_u32"
+
+
+@dataclass(frozen=True)
+class ParameterSpec:
+    """One parameter declaration on a parameterized vocabulary entry.
+
+    The schema closes RFC-021 / ADR-078. ``parameters`` on :class:`VocabEntry`
+    is always an array (multi-parameter from day one); single-parameter
+    entries carry an array of one. The ``field`` block declares the byte-
+    level patch location used by :mod:`chemigram.core.parameterize`.
+    """
+
+    name: str
+    type: str  # "float" today; "int" / "bool" / "enum" reserved
+    range: tuple[float, float]  # [min, max] inclusive
+    default: float
+    field: ParameterField
+
+
+@dataclass(frozen=True)
 class VocabEntry:
     """One vocabulary primitive: manifest metadata plus parsed dtstyle.
 
@@ -104,6 +136,13 @@ class VocabEntry:
     # (mask_kind/mask_ref + MaskingProvider) was removed in v1.5.0 —
     # darktable never reads external PNGs.
     mask_spec: dict[str, Any] | None = None
+    # parameters: presence triggers the parameterized apply path per
+    # RFC-021 / ADR-077..080. Each parameter declares a byte-level field
+    # in the touched module's op_params blob; callers supply values at
+    # apply time via ``apply-primitive --value V`` / ``--param NAME=V``
+    # (CLI) or the ``value`` argument on the ``apply_primitive`` MCP tool.
+    # Multi-parameter from day one (always a tuple, never a scalar).
+    parameters: tuple[ParameterSpec, ...] | None = None
 
 
 class VocabularyIndex:
@@ -194,6 +233,7 @@ class VocabularyIndex:
         dtstyle_path, dtstyle = self._load_dtstyle(raw, manifest_path, pack_root)
         touches = self._validate_touches(raw, dtstyle, manifest_path)
         applies_to = self._extract_applies_to(raw, layer, manifest_path)
+        parameters = self._extract_parameters(raw, manifest_path)
 
         return VocabEntry(
             name=str(raw["name"]),
@@ -211,6 +251,7 @@ class VocabularyIndex:
             global_variant=raw.get("global_variant"),
             applies_to=applies_to,
             mask_spec=raw.get("mask_spec"),
+            parameters=parameters,
         )
 
     def _validate_shape(self, raw: Any, manifest_path: Path) -> None:
@@ -276,6 +317,96 @@ class VocabularyIndex:
                 f"with make/model/lens_model"
             )
         return applies_to
+
+    def _extract_parameters(
+        self, raw: dict[str, Any], manifest_path: Path
+    ) -> tuple[ParameterSpec, ...] | None:
+        """Parse the optional ``parameters`` array on a manifest entry.
+
+        Returns ``None`` if the field is absent (entry is not parameterized);
+        otherwise validates the shape per ADR-078 and returns a tuple of
+        :class:`ParameterSpec`. Raises :class:`ManifestError` on any
+        validation failure (name uniqueness within entry, range non-empty,
+        default in range, encoding width matches type, field offset is a
+        non-negative int).
+        """
+        params_raw = raw.get("parameters")
+        if params_raw is None:
+            return None
+        if not isinstance(params_raw, list) or not params_raw:
+            raise ManifestError(
+                f"{manifest_path}: entry {raw['name']!r} 'parameters' must be "
+                f"a non-empty list (multi-parameter from day one per ADR-078)"
+            )
+        seen_names: set[str] = set()
+        out: list[ParameterSpec] = []
+        for idx, p in enumerate(params_raw):
+            if not isinstance(p, dict):
+                raise ManifestError(
+                    f"{manifest_path}: entry {raw['name']!r} parameters[{idx}] must be an object"
+                )
+            self._validate_parameter_shape(p, raw["name"], idx, manifest_path)
+            name = str(p["name"])
+            if name in seen_names:
+                raise ManifestError(
+                    f"{manifest_path}: entry {raw['name']!r} parameters duplicate name {name!r}"
+                )
+            seen_names.add(name)
+            range_ = (float(p["range"][0]), float(p["range"][1]))
+            default = float(p["default"])
+            if not (range_[0] <= default <= range_[1]):
+                raise ManifestError(
+                    f"{manifest_path}: entry {raw['name']!r} parameter {name!r} "
+                    f"default {default} outside range {range_}"
+                )
+            field_raw = p["field"]
+            field = ParameterField(
+                module=str(field_raw["module"]),
+                modversion=int(field_raw["modversion"]),
+                offset=int(field_raw["offset"]),
+                encoding=str(field_raw["encoding"]),
+            )
+            out.append(
+                ParameterSpec(
+                    name=name,
+                    type=str(p["type"]),
+                    range=range_,
+                    default=default,
+                    field=field,
+                )
+            )
+        return tuple(out)
+
+    def _validate_parameter_shape(
+        self, p: dict[str, Any], entry_name: str, idx: int, manifest_path: Path
+    ) -> None:
+        prefix = f"{manifest_path}: entry {entry_name!r} parameters[{idx}]"
+        for key in ("name", "type", "range", "default", "field"):
+            if key not in p:
+                raise ManifestError(f"{prefix} missing required key {key!r}")
+        if p["type"] not in ("float",):
+            raise ManifestError(
+                f"{prefix} unsupported type {p['type']!r} (only 'float' currently supported)"
+            )
+        self._validate_range(p["range"], prefix)
+        self._validate_field(p["field"], prefix)
+
+    def _validate_range(self, rng: Any, prefix: str) -> None:
+        if not (isinstance(rng, list) and len(rng) == 2):
+            raise ManifestError(f"{prefix} 'range' must be a [min, max] list of length 2")
+        if rng[0] >= rng[1]:
+            raise ManifestError(f"{prefix} 'range' min {rng[0]} must be < max {rng[1]}")
+
+    def _validate_field(self, field: Any, prefix: str) -> None:
+        if not isinstance(field, dict):
+            raise ManifestError(f"{prefix} 'field' must be an object")
+        for key in ("module", "modversion", "offset", "encoding"):
+            if key not in field:
+                raise ManifestError(f"{prefix}.field missing required key {key!r}")
+        if field["encoding"] not in ("le_f32", "le_i32", "le_u32"):
+            raise ManifestError(f"{prefix}.field unsupported encoding {field['encoding']!r}")
+        if not isinstance(field["offset"], int) or field["offset"] < 0:
+            raise ManifestError(f"{prefix}.field 'offset' must be a non-negative integer")
 
     def lookup_l1(
         self,

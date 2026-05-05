@@ -158,6 +158,144 @@ def stitch_side_by_side(
 
 
 # ---------------------------------------------------------------------------
+# Apply with parameter overrides (RFC-021 / ADR-077)
+# ---------------------------------------------------------------------------
+
+
+def _apply_parameter_values_to_dtstyle(
+    dtstyle: Any,  # DtstyleEntry; unannotated to avoid circular import
+    parameters: tuple[Any, ...],  # tuple[ParameterSpec, ...]
+    values: dict[str, float],
+) -> Any:
+    """Return a new ``DtstyleEntry`` with each parameter's ``op_params``
+    field patched per the supplied ``values`` dict.
+
+    For each :class:`ParameterSpec` in ``parameters``: if the parameter's
+    name appears in ``values``, locate the plugin in the dtstyle whose
+    ``operation`` matches the parameter's ``field.module``, decode its
+    ``op_params`` via :mod:`chemigram.core.parameterize`, edit the field,
+    re-encode, and substitute the patched plugin into the dtstyle's
+    plugins tuple. Parameters whose name isn't in ``values`` are skipped
+    (the dtstyle's existing default field value carries through).
+
+    Modversion mismatches between the dtstyle's plugin and the parameter
+    spec raise :class:`PatchError`. Callers should validate values
+    against the parameter declaration's range before reaching this code;
+    this function applies whatever values it's given.
+    """
+    import dataclasses
+
+    from chemigram.core.parameterize import patch_op_params
+
+    # Group parameter values by target module so each plugin's op_params
+    # is decoded/encoded at most once.
+    values_by_module: dict[str, dict[str, float]] = {}
+    spec_by_module: dict[str, Any] = {}
+    for spec in parameters:
+        if spec.name not in values:
+            continue
+        mod = spec.field.module
+        values_by_module.setdefault(mod, {})[spec.name] = values[spec.name]
+        spec_by_module[mod] = spec  # any spec for the module is fine for modversion lookup
+
+    if not values_by_module:
+        return dtstyle
+
+    new_plugins = []
+    for plug in dtstyle.plugins:
+        if plug.operation in values_by_module:
+            spec = spec_by_module[plug.operation]
+            patched_hex = patch_op_params(
+                plug.op_params,
+                module=plug.operation,
+                modversion=spec.field.modversion,
+                values=values_by_module[plug.operation],
+            )
+            new_plugins.append(dataclasses.replace(plug, op_params=patched_hex))
+        else:
+            new_plugins.append(plug)
+    return dataclasses.replace(dtstyle, plugins=tuple(new_plugins))
+
+
+def apply_entry(
+    baseline: Xmp,
+    entry: Any,  # VocabEntry; unannotated to avoid circular import
+    *,
+    parameter_values: dict[str, float] | None = None,
+    mask_spec: dict[str, Any] | None = None,
+    mask_id_seed: int | None = None,
+    opacity: float = 100.0,
+) -> Xmp:
+    """Apply a vocabulary entry to a baseline XMP, with optional parameter
+    overrides and/or drawn-mask binding.
+
+    Composes three orthogonal axes:
+
+    1. **Plain apply** (no parameters, no mask) — synthesizes the entry's
+       dtstyle directly onto baseline. Same shape as ``synthesize_xmp(
+       baseline, [entry.dtstyle])``.
+    2. **Parameterized apply** (``parameter_values`` supplied) — patches
+       the dtstyle's plugins' ``op_params`` per the entry's declared
+       parameters before synthesizing (RFC-021 / ADR-077).
+    3. **Drawn-mask apply** (``mask_spec`` supplied) — binds the mask
+       form to every plugin's ``blendop_params`` and injects
+       ``masks_history`` (ADR-076).
+
+    All three combinations are valid; (2) and (3) compose by editing
+    ``op_params`` first, then ``blendop_params``, on the same plugins.
+
+    Args:
+        baseline: The current XMP to apply onto.
+        entry: A :class:`~chemigram.core.vocab.VocabEntry`.
+        parameter_values: Optional dict mapping parameter name to value.
+            Must match names declared in ``entry.parameters``.
+        mask_spec: Optional drawn-mask spec per ADR-076.
+        mask_id_seed: Optional explicit mask_id (mask path only).
+        opacity: Mask opacity (0..100; mask path only).
+
+    Returns:
+        A new :class:`Xmp` with the requested transformations applied.
+
+    Raises:
+        TypeError: ``entry`` is not a VocabEntry, or ``entry.parameters``
+            is None when ``parameter_values`` is supplied.
+        chemigram.core.parameterize.PatchError: parameter patching failed
+            (modversion mismatch, no decoder registered, blob size
+            mismatch).
+        ValueError: ``mask_spec`` is malformed or names an unknown form.
+    """
+    from chemigram.core.vocab import VocabEntry
+    from chemigram.core.xmp import synthesize_xmp
+
+    if not isinstance(entry, VocabEntry):
+        raise TypeError(f"entry must be a VocabEntry, got {type(entry).__name__}")
+
+    dtstyle = entry.dtstyle
+
+    # Axis 1: parameter overrides (RFC-021)
+    if parameter_values:
+        if entry.parameters is None:
+            raise TypeError(
+                f"entry {entry.name!r} has no 'parameters' declaration; "
+                f"cannot apply parameter_values={parameter_values!r}"
+            )
+        dtstyle = _apply_parameter_values_to_dtstyle(dtstyle, entry.parameters, parameter_values)
+
+    # Axis 2: drawn-mask binding (ADR-076) — composes with parameter overrides
+    if mask_spec is not None:
+        return apply_with_drawn_mask(
+            baseline,
+            dtstyle,
+            mask_spec,
+            mask_id_seed=mask_id_seed,
+            opacity=opacity,
+        )
+
+    # Plain (or parameter-only) apply
+    return synthesize_xmp(baseline, [dtstyle])
+
+
+# ---------------------------------------------------------------------------
 # Apply with drawn-mask binding
 # ---------------------------------------------------------------------------
 

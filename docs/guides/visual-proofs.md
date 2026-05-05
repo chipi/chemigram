@@ -24,23 +24,7 @@ These are the reference targets rendered through the baseline XMP with no primit
 
 ---
 
-## `starter` pack (4 entries)
-
-### `expo_+0.5`
-
-_Lift exposure +0.5 EV._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/starter/expo_+0.5-colorchecker.jpg" alt="expo_+0.5 ColorChecker global" width="180"> | <img src="../visual-proofs/starter/expo_+0.5-grayscale.jpg" alt="expo_+0.5 grayscale global" width="180"> | <img src="../visual-proofs/starter/expo_+0.5-colorchecker-masked.jpg" alt="expo_+0.5 ColorChecker masked" width="180"> | <img src="../visual-proofs/starter/expo_+0.5-grayscale-masked.jpg" alt="expo_+0.5 grayscale masked" width="180"> |
-
-### `expo_-0.5`
-
-_Lower exposure -0.5 EV._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/starter/expo_-0.5-colorchecker.jpg" alt="expo_-0.5 ColorChecker global" width="180"> | <img src="../visual-proofs/starter/expo_-0.5-grayscale.jpg" alt="expo_-0.5 grayscale global" width="180"> | <img src="../visual-proofs/starter/expo_-0.5-colorchecker-masked.jpg" alt="expo_-0.5 ColorChecker masked" width="180"> | <img src="../visual-proofs/starter/expo_-0.5-grayscale-masked.jpg" alt="expo_-0.5 grayscale masked" width="180"> |
+## `starter` pack (2 entries)
 
 ### `wb_warm_subtle`
 
@@ -62,7 +46,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (35 entries)
+## `expressive-baseline` pack (32 entries)
 
 ### `grain_fine`
 
@@ -77,6 +61,8 @@ _(near-baseline diff in ColorChecker (global): grain texture is hard to see on f
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -97,6 +83,8 @@ _(near-baseline diff in ColorChecker (global): grain texture is hard to see on f
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -168,7 +156,7 @@ _(near-baseline diff in ColorChecker (global): this chart has no blown highlight
 
 _(near-baseline diff in grayscale (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
-_(near-baseline diff in grayscale (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+_(near-baseline diff in ColorChecker (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -250,37 +238,23 @@ _Soft painterly local contrast (detail 0.4)._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/clarity_painterly-colorchecker.jpg" alt="clarity_painterly ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-grayscale.jpg" alt="clarity_painterly grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-colorchecker-masked.jpg" alt="clarity_painterly ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-grayscale-masked.jpg" alt="clarity_painterly grayscale masked" width="180"> |
 
-### `expo_+0.3`
+### `exposure`
 
-_Lift exposure +0.3 EV (smaller than starter +0.5)._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/expo_+0.3-colorchecker.jpg" alt="expo_+0.3 ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_+0.3-grayscale.jpg" alt="expo_+0.3 grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_+0.3-colorchecker-masked.jpg" alt="expo_+0.3 ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_+0.3-grayscale-masked.jpg" alt="expo_+0.3 grayscale masked" width="180"> |
-
-### `expo_-0.3`
-
-_Lower exposure -0.3 EV (smaller than starter -0.5)._
+_Parameterized exposure compensation (RFC-021). Pass --value V (CLI) or value: V (MCP) in EV stops; range [-3.0, +3.0]. Replaces the v1.5.x discrete expo_+0.3 / expo_+0.5 / expo_-0.3 / expo_-0.5 / shadows_global_+/- entries with a single continuous-magnitude primitive._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/expo_-0.3-colorchecker.jpg" alt="expo_-0.3 ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_-0.3-grayscale.jpg" alt="expo_-0.3 grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_-0.3-colorchecker-masked.jpg" alt="expo_-0.3 ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/expo_-0.3-grayscale-masked.jpg" alt="expo_-0.3 grayscale masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/exposure-colorchecker.jpg" alt="exposure ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-grayscale.jpg" alt="exposure grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-colorchecker-masked.jpg" alt="exposure ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-grayscale-masked.jpg" alt="exposure grayscale masked" width="180"> |
 
-### `shadows_global_+`
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
-_Lift global black level +0.05._
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/shadows_global_+-colorchecker.jpg" alt="shadows_global_+ ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_+-grayscale.jpg" alt="shadows_global_+ grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_+-colorchecker-masked.jpg" alt="shadows_global_+ ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_+-grayscale-masked.jpg" alt="shadows_global_+ grayscale masked" width="180"> |
+**Parameter sweep** (`ev`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-### `shadows_global_-`
-
-_Lower global black level -0.05 (deepen shadows)._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/shadows_global_--colorchecker.jpg" alt="shadows_global_- ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_--grayscale.jpg" alt="shadows_global_- grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_--colorchecker-masked.jpg" alt="shadows_global_- ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/shadows_global_--grayscale-masked.jpg" alt="shadows_global_- grayscale masked" width="180"> |
+| `-1.00` | `-0.50` | `0.00` | `+0.50` | `+1.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/exposure-sweep-n1_00.jpg" alt="exposure ev=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-n0_50.jpg" alt="exposure ev=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-0_00.jpg" alt="exposure ev=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p0_50.jpg" alt="exposure ev=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p1_00.jpg" alt="exposure ev=+1.00" width="180"> |
 
 ### `wb_cool_subtle`
 

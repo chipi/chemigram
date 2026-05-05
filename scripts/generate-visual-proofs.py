@@ -44,7 +44,7 @@ from PIL import Image, ImageChops
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
-from chemigram.core.helpers import apply_with_drawn_mask  # noqa: E402
+from chemigram.core.helpers import apply_entry, apply_with_drawn_mask  # noqa: E402
 from chemigram.core.pipeline import render  # noqa: E402
 from chemigram.core.vocab import load_packs  # noqa: E402
 from chemigram.core.xmp import parse_xmp, synthesize_xmp, write_xmp  # noqa: E402
@@ -127,6 +127,17 @@ _SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
 # 0..255 gradient in the top half + a 60% clipped band on the bottom.
 # See tests/fixtures/reference-targets/README.md for the layout.
 _EXTRA_CLIPPED_FIXTURE_SUBTYPES: set[str] = {"highlights", "grain"}
+
+# Per-parameter sweep values for the parameter-sweep gallery row. Maps
+# a parameter name to the list of values to render. The first value
+# is treated as the "baseline" of the sweep (typically 0 / default).
+# When an entry's ``parameters`` block declares a parameter we know
+# how to sweep, the gallery emits a row showing the entry rendered at
+# each value side-by-side; otherwise no sweep row is emitted.
+_PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
+    "ev": [-1.0, -0.5, 0.0, 0.5, 1.0],
+    "brightness": [-0.8, -0.5, -0.25, 0.0],
+}
 
 # Subtypes / contexts where the engine renders correctly but the chart
 # is a poor signal medium. We render but annotate inline. Keys are
@@ -330,6 +341,68 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
 
     _render_masked_variant(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
     _render_clipped_fixture(entry, baseline, entry_dir, configdir, rendered)
+    _render_parameter_sweep(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
+
+
+def _render_parameter_sweep(
+    entry, baseline, entry_dir: Path, configdir: Path, rendered: dict, baseline_paths: dict
+) -> None:
+    """For parameterized entries (RFC-021), render the entry at multiple
+    parameter values side-by-side as a "parameter sweep" row in the
+    gallery. The values come from :data:`_PARAMETER_SWEEP_VALUES` keyed
+    by parameter name.
+
+    Single-parameter entries get a one-axis sweep across the declared
+    range. Multi-parameter entries: not yet supported (would need a 2-D
+    sweep grid; deferred until temperature ships).
+
+    Renders against the colorchecker target (the cleanest signal medium
+    for tone deltas; vignette + grain etc. need different targets but
+    those modules aren't parameterized in v1.6.0).
+    """
+    if entry.parameters is None:
+        return
+    if len(entry.parameters) != 1:
+        # Multi-parameter sweep grid not yet implemented (v1.6.0 ships
+        # only single-axis parameterized entries).
+        return
+    spec = entry.parameters[0]
+    sweep_values = _PARAMETER_SWEEP_VALUES.get(spec.name)
+    if sweep_values is None:
+        # No sweep recipe for this parameter name; skip the gallery
+        # block (the entry still renders at its default in the main row).
+        return
+
+    # Render against colorchecker only — tone deltas read cleanly there.
+    target_slug = "colorchecker"
+    target_path = COLORCHECKER
+
+    rendered[entry.name].setdefault("_sweep", {"param": spec.name, "renders": []})
+    sweep_records: list[dict] = rendered[entry.name]["_sweep"]["renders"]
+
+    for v in sweep_values:
+        # Synthesize via the engine's parameterized apply path so we
+        # exercise the same code the user/agent calls at apply time.
+        try:
+            applied = apply_entry(baseline, entry, parameter_values={spec.name: v})
+        except Exception as exc:
+            print(f"  x sweep synthesize failed at {spec.name}={v}: {exc}", file=sys.stderr)
+            continue
+        v_label = f"{v:+.2f}" if v != 0 else "0.00"
+        v_slug = v_label.replace("+", "p").replace("-", "n").replace(".", "_")
+        xmp_path = entry_dir / f"_{entry.name}_sweep_{v_slug}.xmp"
+        out = entry_dir / f"{entry.name}-sweep-{v_slug}.jpg"
+        write_xmp(applied, xmp_path)
+        if _render_one(target_path, xmp_path, out, configdir):
+            sweep_records.append(
+                {
+                    "value": v,
+                    "label": v_label,
+                    "path": out,
+                    "diff": _mean_pixel_diff(out, baseline_paths[target_slug]),
+                }
+            )
+        xmp_path.unlink(missing_ok=True)
 
 
 def _render_clipped_fixture(
@@ -599,6 +672,32 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
                 f"| {_img_md(clipped, f'{entry.name} clipped-gradient global')} "
                 f"| {_img_md(clipped_masked, f'{entry.name} clipped-gradient masked')} |"
             )
+
+    # Parameter sweep row (RFC-021): for parameterized entries, show the
+    # entry rendered at multiple parameter values side-by-side.
+    sweep = outs.get("_sweep")
+    if sweep and sweep.get("renders"):
+        out.append("")
+        out.append(
+            f"**Parameter sweep** (`{sweep['param']}`): "
+            "rendered at multiple values via the parameterized apply path "
+            "(`--value V` / `--param NAME=V`):"
+        )
+        out.append("")
+        # One column per swept value
+        records = sweep["renders"]
+        header = "| " + " | ".join(f"`{r['label']}`" for r in records) + " |"
+        sep = "|" + "|".join(["-"] * len(records)) + "|"
+        cells = (
+            "| "
+            + " | ".join(
+                _img_md(r["path"], f"{entry.name} {sweep['param']}={r['label']}") for r in records
+            )
+            + " |"
+        )
+        out.append(header)
+        out.append(sep)
+        out.append(cells)
 
     out.append("")
     return out

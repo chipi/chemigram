@@ -20,12 +20,16 @@ def runner() -> CliRunner:
 
 
 def test_vocab_list_returns_starter_entries(runner: CliRunner) -> None:
+    """Starter pack ships 2 entries post-v1.6.0: ``wb_warm_subtle`` and
+    ``look_neutral``. The discrete ``expo_+0.5`` / ``expo_-0.5`` entries
+    were removed in favor of the parameterized ``exposure`` entry that
+    lives in ``expressive-baseline`` (RFC-021)."""
     result = runner.invoke(app, ["vocab", "list"])
     assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
     out = result.stdout
-    assert "expo_+0.5" in out
     assert "wb_warm_subtle" in out
-    assert "4 entries" in out  # starter pack ships 4 (post-#62 retirement)
+    assert "look_neutral" in out
+    assert "2 entries" in out
 
 
 def test_vocab_list_json_emits_one_line_per_entry_plus_summary(runner: CliRunner) -> None:
@@ -35,9 +39,9 @@ def test_vocab_list_json_emits_one_line_per_entry_plus_summary(runner: CliRunner
     payloads = [json.loads(line) for line in lines]
     events = [p for p in payloads if p["event"] == "vocabulary_entry"]
     summaries = [p for p in payloads if p["event"] == "result"]
-    assert len(events) == 4
+    assert len(events) == 2  # post-v1.6.0 starter (RFC-021)
     assert len(summaries) == 1
-    assert summaries[0]["count"] == 4
+    assert summaries[0]["count"] == 2
     assert summaries[0]["status"] == "ok"
     # Summary is the last line (per RFC-020 §C convention).
     assert payloads[-1]["event"] == "result"
@@ -57,22 +61,22 @@ def test_vocab_list_layer_filter(runner: CliRunner) -> None:
 
 
 def test_vocab_show_returns_entry_fields(runner: CliRunner) -> None:
-    result = runner.invoke(app, ["vocab", "show", "expo_+0.5"])
+    result = runner.invoke(app, ["vocab", "show", "wb_warm_subtle"])
     assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
     out = result.stdout
-    assert "expo_+0.5" in out
+    assert "wb_warm_subtle" in out
     assert ".dtstyle" in out
     assert "L3" in out
 
 
 def test_vocab_show_json_returns_full_record(runner: CliRunner) -> None:
-    result = runner.invoke(app, ["--json", "vocab", "show", "expo_+0.5"])
+    result = runner.invoke(app, ["--json", "vocab", "show", "wb_warm_subtle"])
     assert result.exit_code == ExitCode.SUCCESS.value
     lines = [line for line in result.stdout.splitlines() if line.strip()]
     assert len(lines) == 1
     payload = json.loads(lines[0])
     assert payload["event"] == "result"
-    assert payload["name"] == "expo_+0.5"
+    assert payload["name"] == "wb_warm_subtle"
     assert payload["layer"] == "L3"
     assert payload["path"].endswith(".dtstyle")
     assert "modversions" in payload

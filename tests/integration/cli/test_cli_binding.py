@@ -88,7 +88,7 @@ def test_bind_layers_layer_mismatch_invalid_input(
             "bind-layers",
             "test-image",
             "--l2",
-            "expo_+0.5",  # this is L3
+            "wb_warm_subtle",  # this is L3
         ],
     )
     assert result.exit_code == ExitCode.INVALID_INPUT.value

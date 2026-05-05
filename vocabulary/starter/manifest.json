@@ -1,32 +1,6 @@
 {
-  "_comment": "Starter vocabulary pack. Deliberately small per IMPLEMENTATION.md (Phase 2 grows this from real session evidence). Calibrated to darktable 5.4.1.",
+  "_comment": "Starter vocabulary pack. Deliberately small per IMPLEMENTATION.md (Phase 2 grows this from real session evidence). Calibrated to darktable 5.4.1. v1.6.0: removed expo_+0.5 / expo_-0.5 — replaced by the parameterized 'exposure' entry in expressive-baseline (RFC-021 / ADR-077..080).",
   "entries": [
-    {
-      "name": "expo_+0.5",
-      "layer": "L3",
-      "subtype": "exposure",
-      "path": "layers/L3/exposure/expo_+0.5.dtstyle",
-      "touches": ["exposure"],
-      "tags": ["exposure", "lift", "global"],
-      "description": "Lift exposure +0.5 EV.",
-      "modversions": {"exposure": 6},
-      "darktable_version": "5.4",
-      "source": "starter",
-      "license": "MIT"
-    },
-    {
-      "name": "expo_-0.5",
-      "layer": "L3",
-      "subtype": "exposure",
-      "path": "layers/L3/exposure/expo_-0.5.dtstyle",
-      "touches": ["exposure"],
-      "tags": ["exposure", "lower", "global"],
-      "description": "Lower exposure -0.5 EV.",
-      "modversions": {"exposure": 6},
-      "darktable_version": "5.4",
-      "source": "starter",
-      "license": "MIT"
-    },
     {
       "name": "wb_warm_subtle",
       "layer": "L3",

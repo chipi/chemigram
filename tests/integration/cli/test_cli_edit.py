@@ -64,7 +64,7 @@ def test_apply_primitive_happy_path(runner: CliRunner, cli_workspace_root: Path)
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
@@ -83,13 +83,13 @@ def test_apply_primitive_json_emits_snapshot_hash(
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert result.exit_code == ExitCode.SUCCESS.value
     payload = json.loads(result.stdout.strip().splitlines()[-1])
     assert payload["status"] == "ok"
-    assert payload["entry"] == "expo_+0.5"
+    assert payload["entry"] == "wb_warm_subtle"
     assert payload["snapshot_hash"]
     assert "state_after" in payload
 
@@ -172,7 +172,7 @@ def test_apply_primitive_unknown_image(runner: CliRunner, cli_workspace_root: Pa
             "apply-primitive",
             "no-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert result.exit_code == ExitCode.NOT_FOUND.value
@@ -194,7 +194,7 @@ def test_apply_primitive_mask_override_on_global_primitive_invalid(
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
             "--mask-override",
             "subject",
         ],
@@ -292,7 +292,7 @@ def test_apply_primitive_mask_spec_invalid_json_rejected(
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
             "--mask-spec",
             "{not valid json",
         ],
@@ -314,13 +314,45 @@ def test_apply_primitive_mask_spec_missing_dt_form_rejected(
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
             "--mask-spec",
             '{"dt_params":{}}',
         ],
     )
     assert result.exit_code != ExitCode.SUCCESS.value
     assert "dt_form" in (result.stdout + result.stderr)
+
+
+# ----- apply-primitive --value / --param parameterized entries (RFC-021) ---
+
+
+def test_apply_primitive_value_flag_rejected_on_non_parameterized_entry(
+    runner: CliRunner, cli_workspace_root: Path
+) -> None:
+    """--value on an entry without a 'parameters' declaration is rejected
+    by the CLI before the engine sees it."""
+    result = runner.invoke(
+        app,
+        [
+            "--workspace",
+            str(cli_workspace_root),
+            "apply-primitive",
+            "test-image",
+            "--entry",
+            "wb_warm_subtle",
+            "--value",
+            "0.7",
+        ],
+    )
+    assert result.exit_code != ExitCode.SUCCESS.value
+    assert "no parameters declared" in (result.stdout + result.stderr)
+
+
+# Comprehensive --value / --param coverage (out-of-range, multi-param,
+# happy-path) lands in step 5 once the manifest carries a parameterized
+# entry. The unit tests in tests/unit/core/parameterize/ + the integration
+# tests in tests/integration/core/test_parameterize_exposure.py cover the
+# engine-side semantics today.
 
 
 # ----- remove-module ----------------------------------------------------
@@ -344,7 +376,7 @@ def test_remove_module_unknown_module_not_found(
 
 
 def test_remove_module_strips_history(runner: CliRunner, cli_workspace_root: Path) -> None:
-    """First apply expo_+0.5 to introduce an exposure entry, then remove it.
+    """First apply wb_warm_subtle to introduce an exposure entry, then remove it.
 
     Tests apply-primitive → remove-module round-trip end-to-end.
     """
@@ -357,7 +389,7 @@ def test_remove_module_strips_history(runner: CliRunner, cli_workspace_root: Pat
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     assert apply_result.exit_code == ExitCode.SUCCESS.value, apply_result.stdout
@@ -393,7 +425,7 @@ def test_reset_returns_to_baseline(runner: CliRunner, cli_workspace_root: Path) 
             "apply-primitive",
             "test-image",
             "--entry",
-            "expo_+0.5",
+            "wb_warm_subtle",
         ],
     )
     result = runner.invoke(app, ["--workspace", str(cli_workspace_root), "reset", "test-image"])

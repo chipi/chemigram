@@ -107,6 +107,25 @@ The JSON shape matches the manifest's `mask_spec` field — see [`mask-applicabl
 
 When the entry already has a manifest `mask_spec`, `--mask-spec` overrides it.
 
+### Apply a primitive at a specific magnitude
+
+Parameterized vocabulary entries (RFC-021) take a value at apply time so you don't enumerate fixed strengths. The `exposure` entry covers any EV in `[-3.0, +3.0]`:
+
+```bash
+# Lift +0.7 EV — a value the old discrete vocabulary couldn't express
+chemigram apply-primitive <image_id> --entry exposure --pack expressive-baseline --value 0.7
+
+# Lower -1.5 EV
+chemigram apply-primitive <image_id> --entry exposure --pack expressive-baseline --value -1.5
+
+# Compose with a mask: brighten the center +0.5 EV, leave corners alone
+chemigram apply-primitive <image_id> --entry exposure --pack expressive-baseline \
+  --value 0.5 \
+  --mask-spec '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.1}}'
+```
+
+For multi-parameter entries (when shipped), use `--param NAME=VALUE` (repeatable) instead of `--value`. Out-of-range values fail with `INVALID_INPUT`. See [`mask-applicable-controls.md`](mask-applicable-controls.md) for the full parameterization model.
+
 ### Find entries that touch a specific darktable module
 
 ```bash

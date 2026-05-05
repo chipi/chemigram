@@ -12,10 +12,8 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 
 ### What's there
 
-**Global exposure**
-- `expo_+0.5`, `expo_-0.5` — half-stop deltas (starter pack)
-- `expo_+0.3`, `expo_-0.3` — third-stop deltas
-- `shadows_global_+`, `shadows_global_-` — black-level micro-shift (±0.05; very small)
+**Global exposure** (RFC-021 parameterized — v1.6.0)
+- `exposure --value V` — continuous EV in `[-3.0, +3.0]`. Replaces the previous discrete `expo_+0.5 / expo_-0.5 / expo_+0.3 / expo_-0.3 / shadows_global_+/-` ladder. Any value the photographer wants.
 
 **Tone curve (sigmoid)**
 - `contrast_low`, `contrast_high` — global s-curve strength
@@ -27,14 +25,14 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - `gradient_bottom_lift_shadows` — bottom-half EV lift
 - `radial_subject_lift` — center ellipse +0.6 EV
 - `rectangle_subject_band_dim` — middle horizontal band -0.3 EV
+- **Or any EV through an ad-hoc mask**: `apply-primitive --entry exposure --value 0.7 --mask-spec '<json>'` composes parameter values with drawn-form geometry on a per-photograph basis.
 
 ### What's missing (fundamentals)
 
-- **Bigger exposure steps**: no `expo_±1.0`, `expo_±1.5`, `expo_±2.0`. The starter only covers small adjustments.
-- **Real shadow lift / crush** at meaningful magnitude (the existing `shadows_global_±` is `±0.05` black-level — barely visible).
-- **Highlight dampen** as a global move (no inverse of `whites_open`).
-- **Mid-tone luma**: nothing directly moves midtones globally. Closest is `expo_*`, which moves everything.
-- **Tonal-zone curves** like "lift only the bottom 25%" or "compress only the top 10%" — sigmoid only exposes black/white targets, not arbitrary control points.
+- **Highlight dampen** as a global move (no inverse of `whites_open` shipped, though sigmoid's white target handles the math).
+- **Mid-tone luma**: nothing directly moves midtones globally. Closest is `exposure --value V`, which moves everything proportionally (a true mid-tone-only move would route through `colorbalancergb` mid-zone luma fields).
+- **Tonal-zone curves** like "lift only the bottom 25%" or "compress only the top 10%" — sigmoid only exposes black/white targets, not arbitrary control points. `toneequal` would close this gap (see §12).
+- **Sigmoid contrast / blacks / whites parameterization** — these still ship as discrete strengths. Phase 4 (per RFC-021) parameterizes them.
 
 ---
 
@@ -418,5 +416,5 @@ Closing those gaps is real authoring work (and probably also benefits from the p
 - [`guides/mask-applicable-controls.md`](guides/mask-applicable-controls.md) — per-module compatibility for masking
 - [`guides/vocabulary-patterns.md`](guides/vocabulary-patterns.md) — how to combine shipped primitives
 - [`guides/authoring-vocabulary-entries.md`](guides/authoring-vocabulary-entries.md) — author your own primitives via darktable GUI
-- [`adr/ADR-008-op-params-opaque.md`](adr/ADR-008-op-params-opaque.md) — the opaque-blob design that today blocks parameterized vocabulary
+- [`adr/ADR-008-opaque-blob-carriers.md`](adr/ADR-008-opaque-blob-carriers.md) — the opaque-blob default; ADR-077 supersedes this for explicitly-declared parameterizable modules
 - `vocabulary/starter/README.md`, `vocabulary/packs/expressive-baseline/README.md` — pack-level catalogs

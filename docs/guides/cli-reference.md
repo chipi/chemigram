@@ -89,6 +89,14 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
                                docs/guides/mask-applicable-controls.md for
                                parameter semantics and the per-module
                                compatibility matrix.
+    --value              TEXT  Single-parameter shorthand for parameterized
+                               entries (e.g. 'exposure --value 0.7'). For
+                               multi-parameter entries, use --param NAME=V
+                               instead. See docs/guides/recipes.md.
+    --param              TEXT  Repeatable NAME=VALUE for multi-parameter
+                               entries (e.g. '--param temp=+0.4 --param
+                               tint=-0.1'). May be combined with --value if
+                               values agree.
     --stdin                    Read image_ids from stdin (one per line); same
                                entry applied to each.
     --help                     Show this message and exit.

@@ -34,10 +34,12 @@ from chemigram.cli._context import CliContext
 from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
 from chemigram.core.helpers import (
+    apply_entry,
     apply_with_drawn_mask,
     current_xmp,
     summarize_state,
 )
+from chemigram.core.parameterize import PatchError
 from chemigram.core.versioning import (
     RefNotFoundError,
     RepoError,
@@ -120,6 +122,7 @@ def _do_apply_primitive(
     vocab_entry: object,
     entry_name: str,
     mask_spec_override: dict[str, Any] | None = None,
+    parameter_values: dict[str, float] | None = None,
 ) -> int:
     """Per-image core for apply-primitive; returns exit code."""
     from chemigram.core.vocab import VocabEntry
@@ -142,7 +145,27 @@ def _do_apply_primitive(
         return ExitCode.STATE_ERROR.value
 
     effective_mask = _resolve_effective_mask(vocab_entry, mask_spec_override)
-    if effective_mask is not None:
+    has_parameters = parameter_values is not None or vocab_entry.parameters is not None
+
+    # Route through apply_entry when parameter axis is in play (entry has
+    # parameters declared, or caller supplied values). apply_entry handles
+    # the parameter-only / mask-only / both compositions.
+    if has_parameters:
+        try:
+            new_xmp = apply_entry(
+                baseline_xmp,
+                vocab_entry,
+                parameter_values=parameter_values,
+                mask_spec=effective_mask,
+            )
+        except (ValueError, TypeError) as exc:
+            writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry_name)
+            return ExitCode.INVALID_INPUT.value
+        except PatchError as exc:
+            writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry_name)
+            return ExitCode.INVALID_INPUT.value
+    elif effective_mask is not None:
+        # Legacy mask-only path (no parameters axis).
         try:
             new_xmp = apply_with_drawn_mask(baseline_xmp, vocab_entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
@@ -164,6 +187,110 @@ def _do_apply_primitive(
         state_after=summarize_state(new_xmp),
     )
     return ExitCode.SUCCESS.value
+
+
+def _parse_value_or_params(
+    value: str | None,
+    params: list[str] | None,
+    entry: Any,
+) -> dict[str, float] | None:
+    """Resolve ``--value V`` and/or ``--param NAME=V`` flags into a single
+    {name: float} dict suitable for :func:`apply_entry`.
+
+    Routing per ADR-079:
+    - Neither flag set: returns None (apply uses the entry's default param
+      values, or no parameter axis if the entry isn't parameterized).
+    - ``--value V`` only: shorthand for the single-parameter case. Resolves
+      to ``{<entry's only parameter name>: V}``. Rejects multi-parameter
+      entries with :class:`typer.BadParameter` (use ``--param`` instead).
+    - ``--param NAME=V`` only (repeatable): explicit name-keyed; required
+      for multi-parameter entries.
+    - Both: must agree for any name they both set; conflicting values
+      fail with :class:`typer.BadParameter`.
+
+    Validation done here:
+    - Numeric coercion of value strings.
+    - Unknown parameter name (not declared by the entry's ``parameters``):
+      :class:`typer.BadParameter` naming the entry's declared params.
+    - Out-of-range value (per the parameter spec's ``range``):
+      :class:`typer.BadParameter` naming the parameter, value, and range.
+
+    Returns ``None`` when the entry has no ``parameters`` declaration AND
+    neither flag was set; raises if the caller passed a value flag against
+    a non-parameterized entry.
+    """
+    from chemigram.core.vocab import VocabEntry
+
+    assert isinstance(entry, VocabEntry)
+    has_value = value is not None and value != ""
+    has_params = bool(params)
+
+    if not has_value and not has_params:
+        return None
+
+    if entry.parameters is None:
+        raise typer.BadParameter(
+            f"entry {entry.name!r} has no parameters declared; "
+            f"--value / --param cannot be used here"
+        )
+
+    declared_names = [p.name for p in entry.parameters]
+    declared_by_name = {p.name: p for p in entry.parameters}
+
+    out: dict[str, float] = {}
+
+    # --value V (single-parameter shorthand)
+    if has_value:
+        if len(declared_names) != 1:
+            raise typer.BadParameter(
+                f"--value V is only valid for single-parameter entries; "
+                f"entry {entry.name!r} declares {len(declared_names)} parameters "
+                f"({declared_names}). Use --param NAME=V (repeatable) instead."
+            )
+        try:
+            v = float(value)  # type: ignore[arg-type]
+        except ValueError as exc:
+            raise typer.BadParameter(f"--value must be a number, got {value!r}") from exc
+        out[declared_names[0]] = v
+
+    # --param NAME=V (repeatable)
+    if has_params:
+        for raw in params:  # type: ignore[union-attr]
+            if "=" not in raw:
+                raise typer.BadParameter(
+                    f"--param expects NAME=VALUE, got {raw!r} (missing '=' separator)"
+                )
+            name, _, vstr = raw.partition("=")
+            name = name.strip()
+            if name not in declared_by_name:
+                raise typer.BadParameter(
+                    f"unknown parameter {name!r} for entry {entry.name!r}; "
+                    f"declared: {declared_names}"
+                )
+            try:
+                v = float(vstr)
+            except ValueError as exc:
+                raise typer.BadParameter(
+                    f"--param {name}=... must be a number, got {vstr!r}"
+                ) from exc
+            if name in out and out[name] != v:
+                raise typer.BadParameter(
+                    f"conflicting values for parameter {name!r}: "
+                    f"--value supplied {out[name]}, --param supplied {v}"
+                )
+            out[name] = v
+
+    # Range validation (hard reject per ADR-079)
+    for name, v in out.items():
+        spec = declared_by_name[name]
+        lo, hi = spec.range
+        if not (lo <= v <= hi):
+            raise typer.BadParameter(
+                f"parameter {name!r} value {v} outside declared range "
+                f"[{lo}, {hi}] for entry {entry.name!r}"
+            )
+
+    return out
 
 
 def _parse_mask_spec_flag(value: str | None) -> dict[str, Any] | None:
@@ -215,6 +342,24 @@ def apply_primitive(
             "semantics and the per-module compatibility matrix."
         ),
     ),
+    value: str = typer.Option(
+        None,
+        "--value",
+        help=(
+            "Single-parameter shorthand for parameterized entries (e.g. "
+            "'exposure --value 0.7'). For multi-parameter entries, use "
+            "--param NAME=V instead. See docs/guides/recipes.md."
+        ),
+    ),
+    param: list[str] = typer.Option(
+        None,
+        "--param",
+        help=(
+            "Repeatable NAME=VALUE for multi-parameter entries "
+            "(e.g. '--param temp=+0.4 --param tint=-0.1'). May be combined "
+            "with --value if values agree."
+        ),
+    ),
     stdin: bool = typer.Option(
         False,
         "--stdin",
@@ -248,6 +393,11 @@ def apply_primitive(
         )
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 
+    # Resolve --value / --param into a single name->value dict, with all
+    # validation (unknown name, out-of-range, scalar-on-multi) performed
+    # up front. typer.BadParameter raises a clean exit-2 / INVALID_INPUT.
+    parameter_values = _parse_value_or_params(value, param, vocab_entry)
+
     codes = [
         _do_apply_primitive(
             ctx,
@@ -255,6 +405,7 @@ def apply_primitive(
             vocab_entry=vocab_entry,
             entry_name=entry,
             mask_spec_override=mask_spec_override,
+            parameter_values=parameter_values,
         )
         for img in iter_image_ids(stdin, image_id)
     ]

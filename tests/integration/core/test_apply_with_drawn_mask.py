@@ -20,7 +20,7 @@ from chemigram.core.masking.dt_serialize import (
     _OFFSET_MASK_MODE,
     _decode_default_blendop_blob,
 )
-from chemigram.core.vocab import load_starter
+from chemigram.core.vocab import load_packs
 from chemigram.core.xmp import parse_xmp, write_xmp
 
 FIXTURE_BASELINE = (
@@ -35,9 +35,12 @@ def baseline_xmp():
 
 @pytest.fixture
 def expo_dtstyle():
-    """The starter pack's expo_+0.5 dtstyle — single exposure plugin."""
-    index = load_starter()
-    entry = index.lookup_by_name("expo_+0.5")
+    """The expressive-baseline pack's parameterized exposure dtstyle —
+    single exposure plugin. (Post-v1.6.0: replaced the previous
+    expo_+0.5 reference; the discrete entry was removed when the
+    parameterized form shipped per RFC-021.)"""
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name("exposure")
     assert entry is not None
     return entry.dtstyle
 

@@ -452,18 +452,6 @@ def _check_lab_b_shift(direction: Sign, min_magnitude: float = 1.0) -> LabCheck:
 # signal, no chroma noise). Color checks use colorchecker.
 
 EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
-    # --- Direction of change: exposure deltas (grayscale ramp) ---
-    # Note: empirically the rendered ratio against this empty-baseline pipeline
-    # is ~2x the labeled EV for the chemigram dtstyles. The discrepancy is
-    # consistent across +/-0.3 and +/-0.5 — it's an artifact of darktable's
-    # exposure module on display-referred input (where black-level + clip
-    # interactions amplify), not a bug in the dtstyle. Real-raw exact-EV
-    # validation is covered by tests/e2e/test_render_validation.py against
-    # the production-pipeline baseline. Here we assert direction-of-change.
-    "expo_+0.5": ("grayscale", _check_bright_open(min_delta=0.05)),
-    "expo_-0.5": ("grayscale", _check_bright_dampen(max_delta=-0.05)),
-    "expo_+0.3": ("grayscale", _check_bright_open(min_delta=0.03)),
-    "expo_-0.3": ("grayscale", _check_bright_dampen(max_delta=-0.03)),
     # --- Clean math: saturation kill (colorchecker) ---
     # Threshold 12 accommodates one out-of-gamut patch (#12 "blue flower")
     # that retains slight chromaticity through display-pipeline mapping.
@@ -518,7 +506,7 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
 # Long descriptive strings — keep readable; ruff E501 doesn't add value here.
 # fmt: off
 SKIP_REASONS: dict[str, str] = {
-    "look_neutral": "L2 composite (exposure + temperature); sub-effects tested via expo_+0.5 and wb_warm_subtle.",  # noqa: E501
+    "look_neutral": "L2 composite (exposure + temperature); sub-effects tested via the parameterized exposure entry and wb_warm_subtle.",  # noqa: E501
     "grain_fine": "Texture noise; not a per-patch deterministic effect (std-dev check is future work).",  # noqa: E501
     "grain_medium": "Same as grain_fine.",
     "grain_heavy": "Same as grain_fine.",
@@ -529,11 +517,47 @@ SKIP_REASONS: dict[str, str] = {
     "clarity_painterly": "Same as clarity_strong.",
     "blacks_lifted": "Sigmoid 'target_black' is scene-referred; effect is below noise on display-referred chart input. Covered by test_path_a_sigmoid.py against real raws.",  # noqa: E501
     "blacks_crushed": "Same as blacks_lifted.",
-    "shadows_global_+": "Exposure black-level offset; effectively a no-op on display-referred chart input. Covered by direction-of-change e2e against real raws.",  # noqa: E501
-    "shadows_global_-": "Same as shadows_global_+.",
     "wb_cool_subtle": "Empirical: rendered a* shift is opposite-sign on the empty-baseline chart pipeline (a*+ instead of a*-). Likely a chromatic-adaptation interaction in the display-referred path; behavior on real raws is correct. Tracked for follow-up.",  # noqa: E501
+}
+
+# Parameterized entries (RFC-021): one entry, multiple values exercised
+# in the lab-grade test. Keys are (entry_name, label) so pytest can
+# generate unique parametrize ids ("exposure-ev_+0.5"). Values carry the
+# target chart, the assertion check, and the parameter-values dict that
+# gets passed to apply_entry().
+PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, float]]] = {
+    # exposure: empirically renders ~2x the labeled EV against the empty-
+    # baseline pipeline (display-referred chart vs raw). Direction-of-
+    # change assertions across the declared range; clean math is covered
+    # by the unit tests + integration tests at the byte level.
+    ("exposure", "ev_+0.5"): (
+        "grayscale",
+        _check_bright_open(min_delta=0.05),
+        {"ev": 0.5},
+    ),
+    ("exposure", "ev_-0.5"): (
+        "grayscale",
+        _check_bright_dampen(max_delta=-0.05),
+        {"ev": -0.5},
+    ),
+    ("exposure", "ev_+1.0"): (
+        "grayscale",
+        _check_bright_open(min_delta=0.15),
+        {"ev": 1.0},
+    ),
+    ("exposure", "ev_-1.0"): (
+        "grayscale",
+        _check_bright_dampen(max_delta=-0.15),
+        {"ev": -1.0},
+    ),
 }
 # fmt: on
 
 
-__all__ = ["EXPECTED_EFFECTS", "SKIP_REASONS", "AssertionResult", "LabCheck"]
+__all__ = [
+    "EXPECTED_EFFECTS",
+    "PARAMETERIZED_EFFECTS",
+    "SKIP_REASONS",
+    "AssertionResult",
+    "LabCheck",
+]

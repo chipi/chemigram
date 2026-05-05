@@ -18,11 +18,13 @@ def test_load_starter_via_factory() -> None:
 
 
 def test_starter_pack_has_expected_entries() -> None:
+    """Starter pack post-v1.6.0 carries 2 entries: ``wb_warm_subtle`` and
+    ``look_neutral``. The discrete ``expo_+0.5`` / ``expo_-0.5`` entries
+    were removed in favor of the parameterized ``exposure`` entry that
+    lives in the ``expressive-baseline`` pack (RFC-021)."""
     index = load_starter()
     names = {e.name for e in index.list_all()}
     expected = {
-        "expo_+0.5",
-        "expo_-0.5",
         "wb_warm_subtle",
         "look_neutral",
     }

@@ -242,6 +242,63 @@ def test_mask_localizes_arbitrary_primitive(
         )
 
 
+def test_parameterized_exposure_localizes_through_mask(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Closes ADR-080's masked-coverage requirement for parameterized
+    exposure: applying ``exposure`` at a non-zero EV through a centered
+    ellipse mask must visibly differ from applying it globally — the
+    mask actually constrains the parameterized op_params binding.
+
+    Asserts corner-luma divergence between global render at +1 EV and
+    masked render at +1 EV; the masked render's corners should be much
+    closer to baseline (since the mask excludes them) than the global's.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("exposure")
+    if entry is None:
+        pytest.fail("'exposure' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'exposure' loaded but parameters is None — manifest declaration mismatch")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_exposure")
+    global_xmp = apply_entry(baseline_xmp, entry, parameter_values={"ev": 1.0})
+    masked_xmp = apply_entry(
+        baseline_xmp, entry, parameter_values={"ev": 1.0}, mask_spec=_CENTER_MASK_SPEC
+    )
+
+    global_patches = _render_and_read(
+        applied=global_xmp, label="exposure_param_global", configdir=configdir, out_dir=out_dir
+    )
+    masked_patches = _render_and_read(
+        applied=masked_xmp, label="exposure_param_masked", configdir=configdir, out_dir=out_dir
+    )
+
+    # Compare corner luma (Rec. 709 weighted) — global brightens corners,
+    # masked leaves them at baseline.
+    from tests.e2e._patch_reader import luma_linear
+
+    global_corner_luma = sum(luma_linear(global_patches[i]) for i in _CC_CORNER_4) / 4
+    masked_corner_luma = sum(luma_linear(masked_patches[i]) for i in _CC_CORNER_4) / 4
+    divergence = abs(global_corner_luma - masked_corner_luma)
+
+    if divergence < 0.05:
+        pytest.fail(
+            "parameterized exposure at +1 EV: masked vs global corner luma "
+            f"didn't diverge:\n"
+            f"  global_corner_luma: {global_corner_luma:.4f}\n"
+            f"  masked_corner_luma: {masked_corner_luma:.4f}\n"
+            f"  divergence: {divergence:.4f} (expected > 0.05)\n"
+            "  Mask is not constraining the parameterized op_params binding."
+        )
+
+
 def test_coverage_documents_at_least_colorbalancergb(
     vocab: VocabularyIndex,
 ) -> None:

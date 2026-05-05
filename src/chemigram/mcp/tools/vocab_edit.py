@@ -119,10 +119,69 @@ register_tool(
 # --- apply_primitive ----------------------------------------------------
 
 
+def _resolve_value_arg(value_arg: Any, entry: Any) -> dict[str, float] | None:
+    """Normalize the MCP ``value`` argument into a name->float dict.
+
+    Per ADR-079, ``value`` is shape-polymorphic by entry's parameters
+    cardinality:
+    - ``None`` → no parameter override (entry uses dtstyle defaults).
+    - scalar (int/float) on a single-parameter entry → wraps as
+      ``{<the parameter's name>: scalar}``.
+    - dict on a multi-parameter (or single-parameter) entry → keys must
+      match declared parameter names.
+
+    Validation: out-of-range values, unknown names, and shape mismatches
+    raise :class:`ValueError` mapped to ``INVALID_INPUT`` by the caller.
+    """
+    if value_arg is None:
+        return None
+    if entry.parameters is None:
+        raise ValueError(
+            f"entry {entry.name!r} has no parameters declared; 'value' argument cannot be supplied"
+        )
+    declared_by_name = {p.name: p for p in entry.parameters}
+    declared_names = list(declared_by_name.keys())
+
+    if isinstance(value_arg, (int, float)):
+        if len(declared_names) != 1:
+            raise ValueError(
+                f"scalar 'value' is only valid for single-parameter entries; "
+                f"{entry.name!r} declares {len(declared_names)} parameters: "
+                f"{declared_names}. Pass a dict instead."
+            )
+        out: dict[str, float] = {declared_names[0]: float(value_arg)}
+    elif isinstance(value_arg, dict):
+        out = {}
+        for name, v in value_arg.items():
+            if name not in declared_by_name:
+                raise ValueError(
+                    f"unknown parameter {name!r} for entry {entry.name!r}; "
+                    f"declared: {declared_names}"
+                )
+            try:
+                out[name] = float(v)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"parameter {name!r} value {v!r} is not numeric") from exc
+    else:
+        raise ValueError(f"'value' must be a number or dict, got {type(value_arg).__name__}")
+
+    # Range validation (hard reject per ADR-079)
+    for name, v in out.items():
+        spec = declared_by_name[name]
+        lo, hi = spec.range
+        if not (lo <= v <= hi):
+            raise ValueError(
+                f"parameter {name!r} value {v} outside declared range "
+                f"[{lo}, {hi}] for entry {entry.name!r}"
+            )
+    return out
+
+
 async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     image_id = args["image_id"]
     primitive_name = args["primitive_name"]
     mask_spec_override = args.get("mask_spec")
+    value_arg = args.get("value")
 
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
@@ -142,11 +201,31 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
             )
         )
 
+    # Resolve parameter values (per ADR-079; raises on shape / range error).
+    try:
+        parameter_values = _resolve_value_arg(value_arg, entry)
+    except ValueError as exc:
+        return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+
     # Mask resolution: caller-supplied mask_spec override > manifest mask_spec.
-    # Lets an agent ad-hoc-mask any global primitive without authoring a
-    # vocabulary entry (closes #78).
     effective_mask = mask_spec_override if mask_spec_override is not None else entry.mask_spec
-    if effective_mask is not None:
+
+    # Route: parameterized OR non-parameterized.
+    has_parameters = parameter_values is not None or entry.parameters is not None
+    if has_parameters:
+        from chemigram.core.helpers import apply_entry
+        from chemigram.core.parameterize import PatchError
+
+        try:
+            new_xmp = apply_entry(
+                baseline_xmp,
+                entry,
+                parameter_values=parameter_values,
+                mask_spec=effective_mask,
+            )
+        except (ValueError, TypeError, PatchError) as exc:
+            return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+    elif effective_mask is not None:
         from chemigram.core.helpers import apply_with_drawn_mask
 
         try:
@@ -194,9 +273,12 @@ register_tool(
     name="apply_primitive",
     description=(
         "Apply a vocabulary primitive to the current XMP and snapshot the "
-        "result. Mask binding: the entry's manifest mask_spec (if any) is "
-        "honored by default; pass an explicit mask_spec to override and "
-        "apply ANY primitive through an ad-hoc drawn mask (per ADR-076)."
+        "result. Composes three orthogonal axes: (1) entry's manifest "
+        "mask_spec is honored automatically; (2) caller-supplied mask_spec "
+        "overrides the manifest one (ADR-076); (3) caller-supplied value "
+        "patches the entry's op_params per its parameters declaration "
+        "(RFC-021 / ADR-077). Scalar value is shorthand for single-parameter "
+        'entries; dict value (e.g., {"temp": 0.4, "tint": -0.1}) for multi-parameter.'
     ),
     input_schema={
         "type": "object",
@@ -212,6 +294,19 @@ register_tool(
                     "field; see docs/guides/mask-applicable-controls.md "
                     "for the per-module compatibility matrix and parameter "
                     "semantics."
+                ),
+            },
+            "value": {
+                "oneOf": [
+                    {"type": "number"},
+                    {"type": "object"},
+                ],
+                "description": (
+                    "Optional parameter value(s) for parameterized entries "
+                    "(per RFC-021 / ADR-079). Number for single-parameter "
+                    "entries (shorthand); object {name: value, ...} for "
+                    "multi-parameter entries. Out-of-range values and "
+                    "unknown parameter names fail with INVALID_INPUT."
                 ),
             },
         },
