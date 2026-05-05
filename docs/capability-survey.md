@@ -218,37 +218,79 @@ The CLI mirrors most MCP tools verb-for-verb. Agent-only tools (no direct CLI):
 
 - **Workflow + versioning**: snapshot/branch/diff/tag/reset is comprehensive and Git-shaped. Cheap, reversible, content-addressed. This part feels finished.
 - **Engine architecture**: synthesizer, mask-binding, MCP/CLI parity, taste/brief/notes context, session transcripts — all the *plumbing* is solid.
-- **Color grading via `colorbalancergb`**: 11 entries cover saturation, vibrance, per-zone chroma, and warm/cool grade.
+- **Parameterized continuous control** (RFC-021 / ADR-077..080, v1.6.0): two modules so far (`exposure`, `vignette`) accept any value at apply time. The architecture is in place; remaining Phase 4 modules ship at ~half-a-day each.
+- **Color grading via `colorbalancergb`**: 8 remaining entries cover vibrance, per-zone chroma, and warm/cool grade. (Saturation collapses into a parameterized entry in the next iteration.)
 - **Drawn-mask masking**: works on every primitive (engine-tested), with three drawn-form geometries.
 
-### Where chemigram is thin today
+### Where chemigram is thin today (post-v1.6.0)
 
-- **Tone fundamentals**: only ±0.5 EV at the limit. A photographer reaching for "+1 stop" has nothing.
-- **WB**: only `subtle` strength; no tint axis at all.
-- **Sharpening / noise**: nothing.
-- **Geometry / lens / crop**: nothing.
-- **Tone equalizer / zone tone**: nothing.
+- **Sharpening / noise**: nothing. (Entire `sharpen`, `diffuse-or-sharpen`, `equalizer`, `denoiseprofile`, `nlmeans` family unrepresented.)
+- **Geometry / lens / crop**: nothing. (`clipping`, `ashift`, `flip`, `lens`, `liquify`, `retouch`, `spots` all untouched.)
+- **Tone equalizer / zone tone**: nothing. (`toneequal` is darktable's preferred local-tone tool; chemigram has no entry for it.)
+- **Selective color (HSL)**: nothing. (`colorzones` would unlock "shift only blues toward teal" type moves.)
+- **WB**: only `subtle` strength; no tint axis. (Multi-axis parameterization in Phase 4 will unlock the temp + tint + WB-strength continuous control.)
+- **Sigmoid / clarity / grain / highlights**: shipped as discrete strengths still. (Phase 4 parameterizes each — see "What's next" below.)
 - **Looks / presets**: one entry (`look_neutral`).
+
+### What's done (RFC-021 Phase 4 — in progress)
+
+Phase 4 collapses the remaining magnitude-ladder entries into parameterized form. Per the priority order in RFC-021 and ADR-077:
+
+| # | Module | Status | Replaces |
+|---|---|---|---|
+| 1 | `exposure` | ✅ shipped (v1.6.0) | `expo_+0.5/-0.5/+0.3/-0.3`, `shadows_global_+/-` |
+| 2 | `vignette` | ✅ shipped (v1.6.0) | `vignette_subtle/medium/heavy` |
+| 3 | `colorbalancergb-saturation` | next iteration | `sat_boost_strong/moderate`, `sat_kill` |
+| 4 | `sigmoid-contrast` | next iteration | `contrast_low/high` |
+| 5 | `bilat-clarity-strength` | following | strength axis of `clarity_strong` (clarity_painterly stays — different *kind*, not strength) |
+| 6 | `grain-strength` | following | `grain_fine/medium/heavy` |
+| 7 | `highlights-clip-threshold` | following | `highlights_recovery_subtle/strong` |
+| 8 | `temperature` (multi-axis) | last in Phase 4 | `wb_warm_subtle/cool_subtle`; first multi-parameter ship |
+
+Each module is a single commit: decoder + manifest entry + 5-layer test coverage + visual-proof sweep + magnitude-ladder cleanup. The CI linter (`tests/unit/core/test_parameterized_module_coverage.py`) enforces ADR-080's coverage policy.
+
+### What's next (planned for the next session)
+
+**Iteration N+1 — finish Phase 4 single-axis modules (target: 2–3 modules per session).**
+
+1. **`colorbalancergb-saturation`** (single-axis) — first to ship. Mid-pipeline (composes cleanly with masks). Largest cleanup payoff: 3 entries → 1.
+2. **`sigmoid-contrast`** (single-axis) — second. 2 entries → 1.
+3. **`bilat-clarity-strength`** (single-axis) — third if time. 1 entry remains discrete (`clarity_painterly`); only the strength axis collapses.
+
+After Phase 4 ships completely (likely 2–3 sessions), open the question of brand-new module authoring (sharpen / toneequal / denoise / lens / crop) — those address the "where chemigram is thin" gaps above. Each new module ships parameterized from day 1 (no discrete-strength ladder to migrate).
 
 ### What "growing it" actually requires
 
 Per the project's Phase 2 framing: *open darktable, capture moves you reach for that don't exist, drop the resulting `.dtstyle` into `~/.chemigram/vocabulary/personal/layers/L3/<module>/`, and add a manifest entry.* The vocabulary-authoring workflow is documented in [`docs/guides/authoring-vocabulary-entries.md`](guides/authoring-vocabulary-entries.md). Building a personal pack to ~30–60 entries over 3 months is the design target.
 
-The infrastructure to grow vocabulary is in place. What's missing is the actual primitives.
+The infrastructure to grow vocabulary is in place. What's left is finishing the parameterization rollout, then adding the missing fundamental modules.
 
 ---
 
-## 11. The discrete-vocabulary problem (the elephant in the room)
+## 11. The discrete-vocabulary problem (resolved for exposure + vignette in v1.6.0; in-progress elsewhere)
 
-### The question
+> **Status update — 2026-05-05:** RFC-021 / ADR-077..080 closed this. The architecture for parameterized vocabulary entries shipped in v1.6.0 along with the first two modules (`exposure`, `vignette`). The remaining Phase 4 modules (`colorbalancergb-saturation`, `sigmoid-contrast`, etc.) ship in subsequent iterations using the same pattern. The framing below is preserved as historical motivation.
+
+### The question (historical)
 
 *Why does chemigram ship `expo_+0.3`, `expo_-0.3`, `expo_+0.5`, `expo_-0.5` as four separate vocabulary entries instead of one `exposure(ev: float)` primitive that takes a value at apply time?*
 
-### Honest answer
+### Honest answer (historical)
 
-The current design is **discrete named primitives** — each entry is a fixed `.dtstyle` file with hardcoded parameter values. To get `+0.7 EV` today you cannot. You can apply `expo_+0.5` and then `expo_+0.3` separately (which works because exposure stacks linearly), but that is a workaround, not a feature. If you want `+1.5 EV`, `+2.0 EV`, `-1.0 EV`, etc., you have nothing.
+The pre-v1.6.0 design was **discrete named primitives** — each entry was a fixed `.dtstyle` file with hardcoded parameter values. To get `+0.7 EV` you couldn't. You could apply `expo_+0.5` and then `expo_+0.3` separately (which worked because exposure stacks linearly), but that was a workaround, not a feature. If you wanted `+1.5 EV`, `+2.0 EV`, `-1.0 EV`, etc., you had nothing.
 
-This is a real limitation. Combinatorially enumerating every plausible exposure value (every 0.1 EV from -3 to +3 = 60 entries) is, as you noted, insane. So is shipping only four.
+This was a real limitation. Combinatorially enumerating every plausible exposure value (every 0.1 EV from -3 to +3 = 60 entries) is infeasible. So is shipping only four.
+
+### How it's resolved (v1.6.0 onwards)
+
+Per RFC-021 and the closing ADRs:
+
+- **ADR-077** — Path C (decode/edit/re-encode `op_params`) is the default for explicitly-declared parameterizable modules. `op_params` opacity (ADR-008) still applies to non-parameterized modules.
+- **ADR-078** — Vocabulary manifest gains a `parameters` array (multi-parameter from day one). Each parameter declares `name / type / range / default` plus a byte-level `field` location.
+- **ADR-079** — `apply_primitive` accepts `--value V` (single-parameter shorthand) and `--param NAME=V` (repeatable, multi-parameter). MCP `value` arg is shape-polymorphic.
+- **ADR-080** — Hard CI gate enforces 5-layer test coverage (unit / integration / lab-grade global / lab-grade masked / visual-proof sweep) on every parameterized entry.
+
+The shipped surface today: `chemigram apply-primitive --entry exposure --value 0.7` works. So does `chemigram apply-primitive --entry vignette --value -0.6`. Composes orthogonally with `--mask-spec`.
 
 ### Why the project chose discrete-vocabulary in the first place
 
