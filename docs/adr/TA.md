@@ -430,6 +430,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-018 | Vocabulary expansion for expressive taste articulation | Decided | ADR-063, ADR-064, ADR-073 |
 | RFC-019 | Reference-image validation baseline | Decided | ADR-066, ADR-067, ADR-068 |
 | RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
+| RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Draft v0.1 | ADR (pending) ×5 — apply path / manifest schema / CLI/MCP arg / test-coverage policy / migration |
 
 ### ADRs
 
