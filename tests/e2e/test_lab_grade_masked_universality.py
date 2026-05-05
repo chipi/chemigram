@@ -242,6 +242,39 @@ def test_mask_localizes_arbitrary_primitive(
         )
 
 
+def test_parameterized_vignette_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Vignette mask binding doesn't compose photographically (geometric x
+    geometric per ADR-076 / mask-applicable-controls.md#vignette), so
+    we don't assert spatial localization. We do verify the parameterized
+    apply path runs end-to-end and produces a valid render at multiple
+    brightness values.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("vignette")
+    if entry is None:
+        pytest.fail("'vignette' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'vignette' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_vignette")
+    for v in (-0.8, -0.25, 0.5):
+        applied = apply_entry(baseline_xmp, entry, parameter_values={"brightness": v})
+        _render_and_read(
+            applied=applied,
+            label=f"vignette_brightness_{v:+.2f}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_exposure_localizes_through_mask(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

@@ -101,7 +101,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 ### What's there
 
 **Vignette (post-process, decorative)**
-- `vignette_subtle`, `vignette_medium`, `vignette_heavy` — radial corner darkening
+- `vignette --value V` — parameterized radial corner darkening (RFC-021); brightness in `[-1.0, +1.0]` (negative darkens corners; positive lifts). Replaces the v1.5.x discrete `vignette_subtle / medium / heavy` ladder.
 - Three intensity ladder; no inverted vignette or off-center variant
 
 ### What's missing entirely

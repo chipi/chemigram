@@ -42,43 +42,21 @@
       "license": "MIT"
     },
     {
-      "name": "vignette_subtle",
+      "name": "vignette",
       "layer": "L3",
       "subtype": "vignette",
-      "path": "layers/L3/vignette/vignette_subtle.dtstyle",
+      "path": "layers/L3/vignette/vignette.dtstyle",
       "touches": ["vignette"],
-      "tags": ["vignette", "subtle", "global"],
-      "description": "Subtle corner darkening; brightness -0.25.",
+      "tags": ["vignette", "fundamental", "global", "parameterized"],
+      "description": "Parameterized vignette (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (negative darkens corners; positive lifts). Replaces the v1.5.x discrete vignette_subtle / vignette_medium / vignette_heavy entries with a single continuous-magnitude primitive.",
       "modversions": {"vignette": 4},
       "darktable_version": "5.4",
       "source": "expressive-baseline",
-      "license": "MIT"
-    },
-    {
-      "name": "vignette_medium",
-      "layer": "L3",
-      "subtype": "vignette",
-      "path": "layers/L3/vignette/vignette_medium.dtstyle",
-      "touches": ["vignette"],
-      "tags": ["vignette", "medium", "global"],
-      "description": "Medium corner darkening; brightness -0.5.",
-      "modversions": {"vignette": 4},
-      "darktable_version": "5.4",
-      "source": "expressive-baseline",
-      "license": "MIT"
-    },
-    {
-      "name": "vignette_heavy",
-      "layer": "L3",
-      "subtype": "vignette",
-      "path": "layers/L3/vignette/vignette_heavy.dtstyle",
-      "touches": ["vignette"],
-      "tags": ["vignette", "heavy", "global"],
-      "description": "Strong corner darkening; brightness -0.8.",
-      "modversions": {"vignette": 4},
-      "darktable_version": "5.4",
-      "source": "expressive-baseline",
-      "license": "MIT"
+      "license": "MIT",
+      "parameters": [
+        {"name": "brightness", "type": "float", "range": [-1.0, 1.0], "default": -0.25,
+         "field": {"module": "vignette", "modversion": 4, "offset": 8, "encoding": "le_f32"}}
+      ]
     },
     {
       "name": "highlights_recovery_subtle",

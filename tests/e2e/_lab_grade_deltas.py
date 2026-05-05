@@ -510,9 +510,6 @@ SKIP_REASONS: dict[str, str] = {
     "grain_fine": "Texture noise; not a per-patch deterministic effect (std-dev check is future work).",  # noqa: E501
     "grain_medium": "Same as grain_fine.",
     "grain_heavy": "Same as grain_fine.",
-    "vignette_subtle": "Positional darkening at corners; covered by tests/e2e/expressive/test_path_b_vignette.py.",  # noqa: E501
-    "vignette_medium": "Same as vignette_subtle.",
-    "vignette_heavy": "Same as vignette_subtle.",
     "clarity_strong": "Local-contrast on edges/details, not flat patches (covered by test_path_b_localcontrast.py).",  # noqa: E501
     "clarity_painterly": "Same as clarity_strong.",
     "blacks_lifted": "Sigmoid 'target_black' is scene-referred; effect is below noise on display-referred chart input. Covered by test_path_a_sigmoid.py against real raws.",  # noqa: E501
@@ -549,6 +546,22 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         "grayscale",
         _check_bright_dampen(max_delta=-0.15),
         {"ev": -1.0},
+    ),
+    # vignette: positional darkening at corners. The lab-grade harness's
+    # corner-vs-center contrast metric is the natural assertion shape but
+    # the existing PARAMETERIZED_EFFECTS framework expects a LabCheck
+    # operating on patch lists. We register a placeholder direction-of-
+    # change check that asserts overall luma drops; the masked test in
+    # test_lab_grade_masked_universality.py validates spatial localization.
+    ("vignette", "brightness_-0.5"): (
+        "grayscale",
+        _check_bright_dampen(max_delta=-0.005),
+        {"brightness": -0.5},
+    ),
+    ("vignette", "brightness_-0.8"): (
+        "grayscale",
+        _check_bright_dampen(max_delta=-0.01),
+        {"brightness": -0.8},
     ),
 }
 # fmt: on

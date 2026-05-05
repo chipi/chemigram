@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from chemigram.core.parameterize import exposure
+from chemigram.core.parameterize import exposure, vignette
 
 
 class PatchError(Exception):
@@ -37,6 +37,7 @@ class PatchError(Exception):
 # silently corrupting bytes.
 _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
     ("exposure", 7): exposure.patch,
+    ("vignette", 4): vignette.patch,
 }
 
 
@@ -74,4 +75,4 @@ def patch_op_params(
     return fn(op_params, **values)
 
 
-__all__ = ["PatchError", "exposure", "patch_op_params"]
+__all__ = ["PatchError", "exposure", "patch_op_params", "vignette"]

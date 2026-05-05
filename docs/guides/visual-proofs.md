@@ -46,7 +46,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (32 entries)
+## `expressive-baseline` pack (30 entries)
 
 ### `grain_fine`
 
@@ -59,8 +59,6 @@ _Subtle film-grain texture; strength 8/100._
 _(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
@@ -81,8 +79,6 @@ _Visible film-grain texture; strength 25/100._
 _(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
@@ -110,13 +106,13 @@ _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat
 |-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped.jpg" alt="grain_heavy clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped-masked.jpg" alt="grain_heavy clipped-gradient masked" width="180"> |
 
-### `vignette_subtle`
+### `vignette`
 
-_Subtle corner darkening; brightness -0.25._
+_Parameterized vignette (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (negative darkens corners; positive lifts). Replaces the v1.5.x discrete vignette_subtle / vignette_medium / vignette_heavy entries with a single continuous-magnitude primitive._
 
 | ColorChecker (global) | Grayscale (global) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_subtle-colorchecker.jpg" alt="vignette_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-grayscale.jpg" alt="vignette_subtle grayscale global" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/vignette-colorchecker.jpg" alt="vignette ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-grayscale.jpg" alt="vignette grayscale global" width="180"> |
 
 > 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
 
@@ -124,25 +120,11 @@ _(near-baseline diff in ColorChecker (global): subtle vignette is small at the m
 
 _(near-baseline diff in grayscale (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
 
-### `vignette_medium`
+**Parameter sweep** (`brightness`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-_Medium corner darkening; brightness -0.5._
-
-| ColorChecker (global) | Grayscale (global) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_medium-colorchecker.jpg" alt="vignette_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_medium-grayscale.jpg" alt="vignette_medium grayscale global" width="180"> |
-
-> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
-
-### `vignette_heavy`
-
-_Strong corner darkening; brightness -0.8._
-
-| ColorChecker (global) | Grayscale (global) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette_heavy-colorchecker.jpg" alt="vignette_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_heavy-grayscale.jpg" alt="vignette_heavy grayscale global" width="180"> |
-
-> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
+| `-0.80` | `-0.50` | `-0.25` | `0.00` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_80.jpg" alt="vignette brightness=-0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_50.jpg" alt="vignette brightness=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_25.jpg" alt="vignette brightness=-0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-0_00.jpg" alt="vignette brightness=0.00" width="180"> |
 
 ### `highlights_recovery_subtle`
 
@@ -157,6 +139,8 @@ _(near-baseline diff in ColorChecker (global): this chart has no blown highlight
 _(near-baseline diff in grayscale (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
 _(near-baseline diff in ColorChecker (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
+
+_(near-baseline diff in grayscale (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -249,6 +233,10 @@ _Parameterized exposure compensation (RFC-021). Pass --value V (CLI) or value: V
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`ev`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
