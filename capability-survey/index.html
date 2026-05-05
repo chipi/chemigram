@@ -1,0 +1,6431 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agent-driven photo editing on darktable, via MCP — design and engineering documentation.">
+      
+      
+      
+        <link rel="canonical" href="https://chipi.github.io/chemigram/capability-survey/">
+      
+      
+        <link rel="prev" href="../TODO/">
+      
+      
+        <link rel="next" href="../doc-tree/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Chemigram capability survey — what a user can actually do today - Chemigram</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chemigram-capability-survey-what-a-user-can-actually-do-today" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Chemigram" class="md-header__button md-logo" aria-label="Chemigram" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Chemigram
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chemigram capability survey — what a user can actually do today
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/chipi/chemigram" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chipi/chemigram
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Chemigram" class="md-nav__button md-logo" aria-label="Chemigram" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Chemigram
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/chipi/chemigram" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chipi/chemigram
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase-2-playbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 2 playbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase-3-preview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 preview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TODO/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap & TODO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Api
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Api
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/binding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.binding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/dtstyle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.dtstyle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/exif/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.exif
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/stages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.stages.darktable_cli
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/xmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    chemigram.core.xmp
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licensing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Internals
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Internals
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../doc-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_4" id="__nav_8_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concept Package
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concept Package
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_4_1" id="__nav_8_4_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concept Package
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concept Package
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/00-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/01-vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/02-project-concept/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Concept
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/03-data-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/04-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concept/05-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product (PRDs)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Product (PRDs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_5_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../prd/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product (PRDs)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_5_1" id="__nav_8_5_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_5_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Product (PRDs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PA — Product Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PRD-001-mode-a-editing-session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-001 — Mode A: the editing session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PRD-002-mode-b-autonomous/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-002 — Mode B: autonomous fine-tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PRD-003-vocabulary-as-voice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-003 — Vocabulary as voice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PRD-004-local-adjustments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-004 — Local adjustments through drawn-form and content-aware masking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prd/PRD-005-command-line-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-005 — A command-line interface for Chemigram
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_6" id="__nav_8_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tech (RFCs)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tech (RFCs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../rfc/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tech (RFCs)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_6_1" id="__nav_8_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tech (RFCs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-001-xmp-synthesizer-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-001 — XMP synthesizer architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-002-canonical-xmp-serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-002 — Canonical XMP serialization for stable hashing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-003-mask-storage-in-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-003 — Mask storage in versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-004-default-masking-provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-004 — Default masking provider — coarse vs SAM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-005-pipeline-stage-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-005 — Pipeline stage protocol — abstract now or YAGNI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-006-same-module-collision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-006 — Same-module collision behavior
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-007-modversion-drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-007 — modversion drift handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-008-vocabulary-discovery-at-scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-008 — Vocabulary discovery at scale
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-009-mask-provider-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-009 — Mask provider protocol shape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-010-mcp-tool-surface-parameter-shapes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-010 — MCP tool surface — parameter shapes and error contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-011-agent-context-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-011 — Agent context loading order and format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-012-programmatic-vocabulary-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-012 — Programmatic vocabulary generation (Path C)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-013-vocabulary-gap-surfacing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-013 — Vocabulary gap surfacing format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-014-end-of-session-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-014 — End-of-session synthesis flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-015-exif-auto-binding-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-015 — EXIF auto-binding rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-016-versioned-prompt-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-016 — Versioned prompt system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-017-evaluation-harness-and-auto-research/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-017 — Evaluation harness and auto-research workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-018-vocabulary-expansion-taste-articulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-018 — Vocabulary expansion for expressive taste articulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-019-reference-image-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-019 — Reference-image validation baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-020-command-line-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-020 — Command-line interface for Chemigram
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rfc/RFC-021-parameterized-vocabulary-magnitudes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-021 — Parameterized vocabulary magnitudes (Path C as default for continuous-magnitude modules)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_7" id="__nav_8_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tech (ADRs)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tech (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_7_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tech (ADRs)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_7_1" id="__nav_8_7_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tech (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/TA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TA — Technical Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-001-vocabulary-approach/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 — Vocabulary approach (Architecture B)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-002-set-semantics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 — SET semantics: replace by (operation, multi_priority)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-003-three-foundational-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 — Three foundational disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-004-darktable-cli-invocation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 — darktable-cli invocation form
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-005-subprocess-serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 — Subprocess serialization per configdir
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-006-single-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 — Single Python process, MCP server, no daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-007-byoa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 — BYOA: no bundled AI capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-008-opaque-blob-carriers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008 — XMP and .dtstyle as opaque-blob carriers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-009-path-a-vs-path-b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009 — Path A vs Path B for synthesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-010-parser-user-entries-by-multi-name/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010 — Vocabulary parser identifies user entries by empty &lt;multi_name&gt;
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-011-reject-darktable-cli-style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011 — Reject darktable-cli --style NAME for vocabulary application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-012-apply-custom-presets-false/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012 — --apply-custom-presets false always
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-013-python-3-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 — Python 3.11+
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-014-all-image-processing-via-darktable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014 — All image-processing via darktable
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-015-three-layer-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-015 — Three-layer model (L0/L1/L2/L3)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-016-l1-empty-by-default/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-016 — L1 empty by default; opt-in per camera+lens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-017-l2-two-flavors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-017 — L2 has two flavors (neutralizing, look-committed)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-018-per-image-dag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-018 — Per-image content-addressed DAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-019-git-like-ref-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-019 — Git-like ref structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-020-no-remote-merge-reflog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-020 — No remote, no three-way merge, no reflog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-021-three-layer-mask-pattern/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 — Three-layer mask pattern
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-022-mask-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 — Mask registry per image with symbolic references
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-023-vocabulary-primitives-dtstyle-plus-manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-023 — Vocabulary primitives are .dtstyle files + manifest entries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-024-authoring-discipline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-024 — Authoring discipline: uncheck non-target modules in dialog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-025-wb-color-cal-coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-025 — WB and color calibration coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-026-vocabulary-modversion-pinned/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-026 — Vocabulary modversion-pinned to darktable version
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-027-local-only-session-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-027 — Local-only session data; no telemetry, no cloud
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-028-configuration-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-028 — Configuration formats: TOML for config, JSON for manifests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-029-session-transcripts-jsonl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-029 — Session transcripts as JSONL with header metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-030-three-tier-context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-030 — Three-tier context model (taste/brief/notes)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-031-propose-and-confirm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-031 — Propose-and-confirm for context updates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-032-distribution-split/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-032 — Distribution split (OSS engine, OSS starter, OSS packs, private personal)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-033-mcp-tool-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-033 — MCP tool surface (initial)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-034-build-system-and-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-034 — Build system and package layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-035-uv-dev-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-035 — Dev environment with uv
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-036-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-036 — Testing strategy: pytest with three tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-037-ruff-linting-formatting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-037 — Linting and formatting with ruff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-038-mypy-type-checking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-038 — Type checking with mypy strict for core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-039-pre-commit-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-039 — Pre-commit hooks for local quality gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-040-ci-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-040 — CI on GitHub Actions, macOS-only for v1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-041-versioning-scheme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-041 — SemVer with 0.x for Phase 1 development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-042-distribution-pypi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-042 — Distribution via PyPI, GitHub releases as supplement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-043-jinja2-versioned-templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-043 — Jinja2 + filename-versioned templates as prompt format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-044-promptstore-api-and-manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-044 — PromptStore API and MANIFEST.toml as active-version registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-045-prompt-versioning-independent-of-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-045 — Prompt versioning is independent of package SemVer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-046-golden-dataset-versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-046 — Golden dataset versioning (immutable, append-only)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-047-run-manifests-for-eval-reproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-047 — Run manifests for eval reproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-048-multi-scope-taste-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-048 — Multi-scope taste structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-049-vocabulary-starter-in-main-repo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-049 — Vocabulary-starter ships within chemigram (clarifies ADR-032)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-050-parser-api-and-synthesizer-error-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-050 — Parser API and synthesizer error contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-051-same-module-set-replace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-051 — Same-module collision: SET-replace by (operation, multi_priority), last-writer-wins, Path B deferred
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-052-pipeline-stage-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-052 — PipelineStage Protocol with single v1 stage (DarktableCliStage)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-053-exif-auto-binding-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-053 — EXIF auto-binding by exact-match identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-054-canonical-xmp-serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-054 — Canonical XMP serialization for stable content hashing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-055-mask-storage-in-objects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-055 — Raster masks share the per-image objects/ store; registry maps symbolic names to hashes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-056-mcp-tool-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-056 — MCP tool surface: parameter shapes and error contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-057-mask-provider-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-057 — MaskingProvider Protocol shape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-058-default-masker-coarse-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-058 — Default masking provider: CoarseAgentProvider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-059-context-loading-order/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-059 — Agent context loading order and format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-060-vocabulary-gap-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-060 — Vocabulary gap JSONL schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-061-end-of-session-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-061 — End-of-session synthesis is agent-orchestrated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-062-reset-rewinds-current-branch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-062 — Reset rewinds the current branch to baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-063-path-b-unblocking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-063 — Path B unblocking; iop_order resolved as None
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-064-vocabulary-authoring-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-064 — Vocabulary authoring workflow (post-v0.2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-066-reference-fixture-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-066 — Reference fixture policy (synthetic-only)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-067-pixel-assertion-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-067 — Pixel-level assertion protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-068-darktable-version-gate-deferred/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-068 — darktable version gate (deferred)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-069-cli-alongside-mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-069 — CLI alongside MCP, won't replace it
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-070-cli-framework-typer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-070 — CLI framework: Typer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-071-cli-mcp-thin-wrapper-discipline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-071 — CLI, MCP, and core: thin-wrapper discipline (lint-enforced)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-072-cli-output-format-and-exit-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-072 — CLI output format: human default, NDJSON via --json; exit-code IntEnum
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-073-programmatic-vocabulary-authoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-073 — Programmatic vocabulary authoring via reverse-engineered iop structs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-074-built-in-geometric-mask-providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-074 — Built-in geometric mask providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-075-ci-add-linux-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-075 — CI matrix expands to Ubuntu alongside macOS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-076-drawn-mask-only-mask-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-076 — Drawn-mask-only mask architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-077-path-c-default-for-parameterized-modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-077 — Path C as default for parameterized modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-078-vocabulary-manifest-parameters-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-078 — Vocabulary manifest parameters schema (multi-parameter from day one)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-079-apply-primitive-value-argument/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-079 — apply_primitive value / param argument shape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/ADR-080-test-coverage-policy-parameterized-modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-080 — Test-coverage policy for parameterized modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_8" id="__nav_8_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_8_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_8_1" id="__nav_8_8_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_8_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_8_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/standardized-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standardized testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-tone-and-exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Tone and exposure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Tone and exposure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing-fundamentals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing (fundamentals)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-color-and-white-balance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Color and white balance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Color and white balance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing-fundamentals_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing (fundamentals)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-sharpening-and-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Sharpening and detail
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Sharpening and detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing-fundamentals_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing (fundamentals)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-texture-and-grain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Texture and grain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Texture and grain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-optical-geometric-corrections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Optical / geometric corrections
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Optical / geometric corrections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing-entirely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing entirely
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-highlights-and-shadows-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Highlights and shadows recovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Highlights and shadows recovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-local-adjustments-drawn-masks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Local adjustments (drawn masks)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Local adjustments (drawn masks)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-not-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's not supported
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-looks-and-multi-module-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Looks and multi-module presets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Looks and multi-module presets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-there_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's there
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-missing_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-workflow-operations-not-photographic-pure-chemigram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Workflow operations (not photographic; pure chemigram)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Workflow operations (not photographic; pure chemigram)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#versioning-snapshot-branch-checkout-tag-log-diff-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning (snapshot / branch / checkout / tag / log / diff / reset)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#render-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Render and export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vocabulary-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vocabulary discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#context-tastes-briefs-notes-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context (tastes / briefs / notes / sessions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bindings-l1l2-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bindings (L1/L2 templates)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-only-agent-driven" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP-only (agent-driven)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-honest-assessment-of-the-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Honest assessment of the gap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Honest assessment of the gap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-chemigram-is-strong-today" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where chemigram is strong today
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-chemigram-is-thin-today-post-v160" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where chemigram is thin today (post-v1.6.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-done-rfc-021-phase-4-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's done (RFC-021 Phase 4 — in progress)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whats-next-planned-for-the-next-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's next (planned for the next session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-growing-it-actually-requires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What "growing it" actually requires
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-the-discrete-vocabulary-problem-resolved-for-exposure-vignette-in-v160-in-progress-elsewhere" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. The discrete-vocabulary problem (resolved for exposure + vignette in v1.6.0; in-progress elsewhere)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. The discrete-vocabulary problem (resolved for exposure + vignette in v1.6.0; in-progress elsewhere)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-question-historical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The question (historical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#honest-answer-historical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Honest answer (historical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-its-resolved-v160-onwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it's resolved (v1.6.0 onwards)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-the-project-chose-discrete-vocabulary-in-the-first-place" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the project chose discrete-vocabulary in the first place
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-the-framing-breaks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the framing breaks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-this-would-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this would look like
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-migration-would-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the migration would cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-full-darktable-module-catalog-the-universe-of-whats-possible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Full darktable module catalog (the universe of what's possible)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Full darktable module catalog (the universe of what&#39;s possible)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#raw-phase-pre-demosaic-scene-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAW phase (pre-demosaic / scene-data)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scene-referred-phase-the-modern-pipeline-middle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scene-referred phase (the modern pipeline middle)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display-referred-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Display-referred / output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/chipi/chemigram/edit/main/docs/capability-survey.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="chemigram-capability-survey-what-a-user-can-actually-do-today">Chemigram capability survey — what a user can actually do today<a class="headerlink" href="#chemigram-capability-survey-what-a-user-can-actually-do-today" title="Anchor link">&para;</a></h1>
+<blockquote>
+<p>Honest, unvarnished snapshot of every photographic move and workflow operation chemigram supports as of v1.5.x. Two purposes: (1) baseline for planning what to add next, (2) read-from-cold reference for new contributors / agents asking "is X in scope?"</p>
+</blockquote>
+<p>This document organizes capabilities by <strong>what a photographer wants to do</strong>, not by code structure. Each section lists what's there, what's missing, and where the gap is. Honest about both.</p>
+<p>Vocabulary loaded: <code>starter</code> (4 entries) + <code>expressive-baseline</code> (35 entries) = <strong>39 vocabulary primitives</strong>. MCP tools exposed: <strong>22</strong>. CLI verbs: <strong>22</strong>.</p>
+<hr />
+<h2 id="1-tone-and-exposure">1. Tone and exposure<a class="headerlink" href="#1-tone-and-exposure" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there">What's there<a class="headerlink" href="#whats-there" title="Anchor link">&para;</a></h3>
+<p><strong>Global exposure</strong> (RFC-021 parameterized — v1.6.0)
+- <code>exposure --value V</code> — continuous EV in <code>[-3.0, +3.0]</code>. Replaces the previous discrete <code>expo_+0.5 / expo_-0.5 / expo_+0.3 / expo_-0.3 / shadows_global_+/-</code> ladder. Any value the photographer wants.</p>
+<p><strong>Tone curve (sigmoid)</strong>
+- <code>contrast_low</code>, <code>contrast_high</code> — global s-curve strength
+- <code>blacks_lifted</code>, <code>blacks_crushed</code> — pull or crush deep shadows via sigmoid target
+- <code>whites_open</code> — extend white target</p>
+<p><strong>Local tone (drawn-mask exposure)</strong>
+- <code>gradient_top_dampen_highlights</code> — top-half EV reduction
+- <code>gradient_bottom_lift_shadows</code> — bottom-half EV lift
+- <code>radial_subject_lift</code> — center ellipse +0.6 EV
+- <code>rectangle_subject_band_dim</code> — middle horizontal band -0.3 EV
+- <strong>Or any EV through an ad-hoc mask</strong>: <code>apply-primitive --entry exposure --value 0.7 --mask-spec '&lt;json&gt;'</code> composes parameter values with drawn-form geometry on a per-photograph basis.</p>
+<h3 id="whats-missing-fundamentals">What's missing (fundamentals)<a class="headerlink" href="#whats-missing-fundamentals" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Highlight dampen</strong> as a global move (no inverse of <code>whites_open</code> shipped, though sigmoid's white target handles the math).</li>
+<li><strong>Mid-tone luma</strong>: nothing directly moves midtones globally. Closest is <code>exposure --value V</code>, which moves everything proportionally (a true mid-tone-only move would route through <code>colorbalancergb</code> mid-zone luma fields).</li>
+<li><strong>Tonal-zone curves</strong> like "lift only the bottom 25%" or "compress only the top 10%" — sigmoid only exposes black/white targets, not arbitrary control points. <code>toneequal</code> would close this gap (see §12).</li>
+<li><strong>Sigmoid contrast / blacks / whites parameterization</strong> — these still ship as discrete strengths. Phase 4 (per RFC-021) parameterizes them.</li>
+</ul>
+<hr />
+<h2 id="2-color-and-white-balance">2. Color and white balance<a class="headerlink" href="#2-color-and-white-balance" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_1">What's there<a class="headerlink" href="#whats-there_1" title="Anchor link">&para;</a></h3>
+<p><strong>White balance (temperature module)</strong>
+- <code>wb_warm_subtle</code>, <code>wb_cool_subtle</code> — small temperature shift
+- ⚠️ does not honor masks (darktable pipeline-position issue, see <a href="../guides/mask-applicable-controls/#temperature"><code>mask-applicable-controls.md</code></a>)</p>
+<p><strong>Saturation (colorbalancergb)</strong>
+- <code>sat_boost_strong</code> (+0.5), <code>sat_boost_moderate</code> (+0.25), <code>sat_kill</code> (-1.0 → monochrome)
+- <code>vibrance_+0.3</code> — gentle saturation that protects saturated pixels</p>
+<p><strong>Per-zone chroma</strong>
+- <code>chroma_boost_shadows</code>, <code>chroma_boost_midtones</code>, <code>chroma_boost_highlights</code> — boost color intensity in a tonal zone (not selective on hue)</p>
+<p><strong>4-way grade (color tinting per zone)</strong>
+- <code>grade_shadows_warm</code>, <code>grade_shadows_cool</code>, <code>grade_highlights_warm</code>, <code>grade_highlights_cool</code> — push tint toward orange or blue in the named zone
+- <em>No mid-tone grade entries shipped</em></p>
+<h3 id="whats-missing-fundamentals_1">What's missing (fundamentals)<a class="headerlink" href="#whats-missing-fundamentals_1" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>WB strength variants</strong>: only <code>subtle</code> exists. No <code>wb_warm_medium</code>, <code>wb_warm_heavy</code>, <code>wb_cool_medium</code>, etc.</li>
+<li><strong>Tint axis</strong> (magenta ↔ green): the temperature module supports it, but no vocabulary primitive touches <code>tint</code>. Users who want to push toward magenta or green have no entry.</li>
+<li><strong>Hue rotation</strong>: the <code>colorbalancergb</code> 4-way is fixed at warm/cool axes (orange ↔ blue). No hue-shift primitive that targets, say, "shift greens toward teal" or "shift reds toward orange."</li>
+<li><strong>Mid-tone grade</strong>: only shadows + highlights have warm/cool entries; midtones don't.</li>
+<li><strong>Selective color</strong> (HSL-style "only affect blues"): not present at all.</li>
+<li><strong>Channel mixer / B&amp;W conversion</strong>: <code>channelmixerrgb</code> is in the planned-but-not-shipped list (issue #63).</li>
+</ul>
+<hr />
+<h2 id="3-sharpening-and-detail">3. Sharpening and detail<a class="headerlink" href="#3-sharpening-and-detail" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_2">What's there<a class="headerlink" href="#whats-there_2" title="Anchor link">&para;</a></h3>
+<p><strong>Local contrast (bilateral filter)</strong>
+- <code>clarity_strong</code> — pronounced local contrast / clarity
+- <code>clarity_painterly</code> — softer painterly local contrast</p>
+<h3 id="whats-missing-fundamentals_2">What's missing (fundamentals)<a class="headerlink" href="#whats-missing-fundamentals_2" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Real sharpening</strong>: no entries for darktable's <code>sharpen</code> / <code>diffuse-or-sharpen</code> modules. The existing <code>clarity_*</code> uses bilateral local contrast, which is a different operation from edge-aware sharpening.</li>
+<li><strong>Noise reduction</strong>: no entries for <code>denoiseprofile</code>, <code>nlmeans</code>, <code>bilat</code>-as-denoiser. Users with high-ISO files have no go-to.</li>
+<li><strong>Luminance vs chrominance noise control</strong>: derivative of the above.</li>
+<li><strong>Hot-pixel removal, dust spotting</strong>: not in scope (no entries; would need separate vocabulary subtype).</li>
+</ul>
+<hr />
+<h2 id="4-texture-and-grain">4. Texture and grain<a class="headerlink" href="#4-texture-and-grain" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_3">What's there<a class="headerlink" href="#whats-there_3" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>grain_fine</code>, <code>grain_medium</code>, <code>grain_heavy</code> — film-grain texture at 8/25/50 strength</li>
+</ul>
+<h3 id="whats-missing">What's missing<a class="headerlink" href="#whats-missing" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Negative grain / smoothing</strong> as an opposite move.</li>
+<li><strong>Grain coloring</strong> (sepia tint within grain) — possible via the module, no entry.</li>
+</ul>
+<hr />
+<h2 id="5-optical-geometric-corrections">5. Optical / geometric corrections<a class="headerlink" href="#5-optical-geometric-corrections" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_4">What's there<a class="headerlink" href="#whats-there_4" title="Anchor link">&para;</a></h3>
+<p><strong>Vignette (post-process, decorative)</strong>
+- <code>vignette --value V</code> — parameterized radial corner darkening (RFC-021); brightness in <code>[-1.0, +1.0]</code> (negative darkens corners; positive lifts). Replaces the v1.5.x discrete <code>vignette_subtle / medium / heavy</code> ladder.
+- Three intensity ladder; no inverted vignette or off-center variant</p>
+<h3 id="whats-missing-entirely">What's missing entirely<a class="headerlink" href="#whats-missing-entirely" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Lens correction</strong> (<code>lens</code> module) — no entries despite darktable supporting it for thousands of lens profiles</li>
+<li><strong>Crop / aspect ratio</strong>: no entries; the <code>clipping</code> module is darktable-supported</li>
+<li><strong>Rotation / perspective correction</strong>: not in vocabulary</li>
+<li><strong>Distortion correction</strong> (barrel / pincushion): not in vocabulary</li>
+<li><strong>Chromatic aberration removal</strong> (<code>cacorrect</code>): not in vocabulary</li>
+</ul>
+<p>This entire category is missing — chemigram doesn't yet have any geometry-touching primitives.</p>
+<hr />
+<h2 id="6-highlights-and-shadows-recovery">6. Highlights and shadows recovery<a class="headerlink" href="#6-highlights-and-shadows-recovery" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_5">What's there<a class="headerlink" href="#whats-there_5" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>highlights_recovery_subtle</code>, <code>highlights_recovery_strong</code> — pull back blown highlights via the <code>highlights</code> (raw) module</li>
+</ul>
+<h3 id="whats-missing_1">What's missing<a class="headerlink" href="#whats-missing_1" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Shadow recovery</strong> as an explicit primitive (closest is <code>shadows_global_+</code> and <code>gradient_bottom_lift_shadows</code>, both small / mask-bound).</li>
+<li><strong>HDR-style highlight + shadow combined recovery</strong> as a single named move.</li>
+<li><strong>Tone equalizer / <code>toneequal</code> module</strong>: not in vocabulary at all. This is darktable's preferred zone-based tone tool; nothing in chemigram exposes it.</li>
+</ul>
+<hr />
+<h2 id="7-local-adjustments-drawn-masks">7. Local adjustments (drawn masks)<a class="headerlink" href="#7-local-adjustments-drawn-masks" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_6">What's there<a class="headerlink" href="#whats-there_6" title="Anchor link">&para;</a></h3>
+<ul>
+<li>4 mask-bound vocabulary entries (gradient × 2, ellipse, rectangle) — all on the <code>exposure</code> module</li>
+<li><strong>Ad-hoc masking via <code>--mask-spec</code></strong>: any vocabulary primitive can be applied through a drawn mask region at apply time (CLI flag + MCP <code>mask_spec</code> arg). Engine-tested for every primitive.</li>
+<li><code>gradient</code>, <code>ellipse</code>, <code>rectangle</code> drawn-form geometries supported in darktable's wire format</li>
+</ul>
+<h3 id="whats-not-supported">What's not supported<a class="headerlink" href="#whats-not-supported" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Brush-drawn masks</strong> (<code>brush</code> form): no encoder; per ADR-076 deferred.</li>
+<li><strong>Path / polygon masks</strong> with curves: only sharp-cornered rectangles are encoded (rectangle path with degenerate Bézier control points).</li>
+<li><strong>Mask combination</strong> (multiple shapes per binding via boolean ops): one form per binding currently.</li>
+<li><strong>Parametric masks</strong> (mask by luma / chroma / hue range, no drawn shape): the darktable feature exists; chemigram doesn't expose it as vocabulary.</li>
+<li><strong>Content-aware / AI masks</strong> ("the manta's belly"): Phase 4 work; no provider shipped.</li>
+</ul>
+<hr />
+<h2 id="8-looks-and-multi-module-presets">8. Looks and multi-module presets<a class="headerlink" href="#8-looks-and-multi-module-presets" title="Anchor link">&para;</a></h2>
+<h3 id="whats-there_7">What's there<a class="headerlink" href="#whats-there_7" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>look_neutral</code> — combines <code>expo_+0.0</code> + <code>wb_warm_subtle</code> as a "baseline neutral look"</li>
+</ul>
+<h3 id="whats-missing_2">What's missing<a class="headerlink" href="#whats-missing_2" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Genre-specific looks</strong>: no portrait look, landscape look, B&amp;W look, vintage film emulation, etc.</li>
+<li><strong>Style transfer / look composition</strong>: no L2 entries beyond <code>look_neutral</code>.</li>
+</ul>
+<p>This is intentionally thin per design (the project's "starter is small, Phase 2 grows from session evidence" framing) — but it does mean a new user has essentially no "one-click look" available.</p>
+<hr />
+<h2 id="9-workflow-operations-not-photographic-pure-chemigram">9. Workflow operations (not photographic; pure chemigram)<a class="headerlink" href="#9-workflow-operations-not-photographic-pure-chemigram" title="Anchor link">&para;</a></h2>
+<h3 id="versioning-snapshot-branch-checkout-tag-log-diff-reset">Versioning (snapshot / branch / checkout / tag / log / diff / reset)<a class="headerlink" href="#versioning-snapshot-branch-checkout-tag-log-diff-reset" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram snapshot &lt;image_id&gt;</code> — capture current XMP as content-addressed object</li>
+<li><code>chemigram branch &lt;image_id&gt; --name &lt;branch&gt;</code> — create branch at HEAD</li>
+<li><code>chemigram checkout &lt;image_id&gt; &lt;ref&gt;</code> — move HEAD to a ref / hash / branch</li>
+<li><code>chemigram tag &lt;image_id&gt; --name &lt;name&gt;</code> — immutable tag (no overwrite)</li>
+<li><code>chemigram log &lt;image_id&gt;</code> — operation history (newest first)</li>
+<li><code>chemigram diff &lt;image_id&gt; &lt;a&gt; &lt;b&gt;</code> — added / removed / changed primitives between snapshots</li>
+<li><code>chemigram reset &lt;image_id&gt;</code> — rewind to baseline ref (ADR-062)</li>
+<li><code>chemigram remove-module &lt;image_id&gt; --operation &lt;name&gt;</code> — strip all history entries for a darktable module</li>
+</ul>
+<h3 id="render-and-export">Render and export<a class="headerlink" href="#render-and-export" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram render-preview &lt;image_id&gt; --size N</code> — JPEG preview</li>
+<li><code>chemigram compare &lt;image_id&gt; &lt;a&gt; &lt;b&gt;</code> — side-by-side stitched render of two snapshots</li>
+<li><code>chemigram export-final &lt;image_id&gt; --format jpeg --size N</code> — high-quality export</li>
+</ul>
+<h3 id="vocabulary-discovery">Vocabulary discovery<a class="headerlink" href="#vocabulary-discovery" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram vocab list</code> — all entries (filterable by <code>--tag</code>, <code>--layer</code>)</li>
+<li><code>chemigram vocab show &lt;name&gt;</code> — full manifest fields for one entry</li>
+<li><code>chemigram log-vocabulary-gap &lt;image_id&gt;</code> — record a missing-primitive observation</li>
+</ul>
+<h3 id="context-tastes-briefs-notes-sessions">Context (tastes / briefs / notes / sessions)<a class="headerlink" href="#context-tastes-briefs-notes-sessions" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram read-context &lt;image_id&gt;</code> — agent's first-turn context (tastes + brief + notes + recent log + recent gaps)</li>
+<li><code>chemigram apply-taste-update --content &lt;text&gt;</code> — direct CLI-only taste write</li>
+<li><code>chemigram apply-notes-update &lt;image_id&gt; --content &lt;text&gt;</code> — direct CLI-only per-image note write</li>
+<li>(MCP path: <code>propose_taste_update</code> → <code>confirm_taste_update</code>, two-step)</li>
+</ul>
+<h3 id="bindings-l1l2-templates">Bindings (L1/L2 templates)<a class="headerlink" href="#bindings-l1l2-templates" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram bind-layers &lt;image_id&gt;</code> — apply camera-specific (L1) and look-baseline (L2) templates onto the current XMP</li>
+</ul>
+<h3 id="workspace-lifecycle">Workspace lifecycle<a class="headerlink" href="#workspace-lifecycle" title="Anchor link">&para;</a></h3>
+<ul>
+<li><code>chemigram ingest &lt;raw_path&gt;</code> — bootstrap a per-image workspace</li>
+<li><code>chemigram status</code> — runtime diagnostics</li>
+</ul>
+<h3 id="mcp-only-agent-driven">MCP-only (agent-driven)<a class="headerlink" href="#mcp-only-agent-driven" title="Anchor link">&para;</a></h3>
+<p>The CLI mirrors most MCP tools verb-for-verb. Agent-only tools (no direct CLI):
+- <code>propose_taste_update</code>, <code>confirm_taste_update</code> — the two-step propose/confirm flow
+- <code>propose_notes_update</code>, <code>confirm_notes_update</code> — same shape for per-image notes</p>
+<hr />
+<h2 id="10-honest-assessment-of-the-gap">10. Honest assessment of the gap<a class="headerlink" href="#10-honest-assessment-of-the-gap" title="Anchor link">&para;</a></h2>
+<h3 id="where-chemigram-is-strong-today">Where chemigram is strong today<a class="headerlink" href="#where-chemigram-is-strong-today" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Workflow + versioning</strong>: snapshot/branch/diff/tag/reset is comprehensive and Git-shaped. Cheap, reversible, content-addressed. This part feels finished.</li>
+<li><strong>Engine architecture</strong>: synthesizer, mask-binding, MCP/CLI parity, taste/brief/notes context, session transcripts — all the <em>plumbing</em> is solid.</li>
+<li><strong>Parameterized continuous control</strong> (RFC-021 / ADR-077..080, v1.6.0): two modules so far (<code>exposure</code>, <code>vignette</code>) accept any value at apply time. The architecture is in place; remaining Phase 4 modules ship at ~half-a-day each.</li>
+<li><strong>Color grading via <code>colorbalancergb</code></strong>: 8 remaining entries cover vibrance, per-zone chroma, and warm/cool grade. (Saturation collapses into a parameterized entry in the next iteration.)</li>
+<li><strong>Drawn-mask masking</strong>: works on every primitive (engine-tested), with three drawn-form geometries.</li>
+</ul>
+<h3 id="where-chemigram-is-thin-today-post-v160">Where chemigram is thin today (post-v1.6.0)<a class="headerlink" href="#where-chemigram-is-thin-today-post-v160" title="Anchor link">&para;</a></h3>
+<ul>
+<li><strong>Sharpening / noise</strong>: nothing. (Entire <code>sharpen</code>, <code>diffuse-or-sharpen</code>, <code>equalizer</code>, <code>denoiseprofile</code>, <code>nlmeans</code> family unrepresented.)</li>
+<li><strong>Geometry / lens / crop</strong>: nothing. (<code>clipping</code>, <code>ashift</code>, <code>flip</code>, <code>lens</code>, <code>liquify</code>, <code>retouch</code>, <code>spots</code> all untouched.)</li>
+<li><strong>Tone equalizer / zone tone</strong>: nothing. (<code>toneequal</code> is darktable's preferred local-tone tool; chemigram has no entry for it.)</li>
+<li><strong>Selective color (HSL)</strong>: nothing. (<code>colorzones</code> would unlock "shift only blues toward teal" type moves.)</li>
+<li><strong>WB</strong>: only <code>subtle</code> strength; no tint axis. (Multi-axis parameterization in Phase 4 will unlock the temp + tint + WB-strength continuous control.)</li>
+<li><strong>Sigmoid / clarity / grain / highlights</strong>: shipped as discrete strengths still. (Phase 4 parameterizes each — see "What's next" below.)</li>
+<li><strong>Looks / presets</strong>: one entry (<code>look_neutral</code>).</li>
+</ul>
+<h3 id="whats-done-rfc-021-phase-4-in-progress">What's done (RFC-021 Phase 4 — in progress)<a class="headerlink" href="#whats-done-rfc-021-phase-4-in-progress" title="Anchor link">&para;</a></h3>
+<p>Phase 4 collapses the remaining magnitude-ladder entries into parameterized form. Per the priority order in RFC-021 and ADR-077:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Module</th>
+<th>Status</th>
+<th>Replaces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>exposure</code></td>
+<td>✅ shipped (v1.6.0)</td>
+<td><code>expo_+0.5/-0.5/+0.3/-0.3</code>, <code>shadows_global_+/-</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>vignette</code></td>
+<td>✅ shipped (v1.6.0)</td>
+<td><code>vignette_subtle/medium/heavy</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>colorbalancergb-saturation</code></td>
+<td>next iteration</td>
+<td><code>sat_boost_strong/moderate</code>, <code>sat_kill</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>sigmoid-contrast</code></td>
+<td>next iteration</td>
+<td><code>contrast_low/high</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>bilat-clarity-strength</code></td>
+<td>following</td>
+<td>strength axis of <code>clarity_strong</code> (clarity_painterly stays — different <em>kind</em>, not strength)</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>grain-strength</code></td>
+<td>following</td>
+<td><code>grain_fine/medium/heavy</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>highlights-clip-threshold</code></td>
+<td>following</td>
+<td><code>highlights_recovery_subtle/strong</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>temperature</code> (multi-axis)</td>
+<td>last in Phase 4</td>
+<td><code>wb_warm_subtle/cool_subtle</code>; first multi-parameter ship</td>
+</tr>
+</tbody>
+</table>
+<p>Each module is a single commit: decoder + manifest entry + 5-layer test coverage + visual-proof sweep + magnitude-ladder cleanup. The CI linter (<code>tests/unit/core/test_parameterized_module_coverage.py</code>) enforces ADR-080's coverage policy.</p>
+<h3 id="whats-next-planned-for-the-next-session">What's next (planned for the next session)<a class="headerlink" href="#whats-next-planned-for-the-next-session" title="Anchor link">&para;</a></h3>
+<p><strong>Iteration N+1 — finish Phase 4 single-axis modules (target: 2–3 modules per session).</strong></p>
+<ol>
+<li><strong><code>colorbalancergb-saturation</code></strong> (single-axis) — first to ship. Mid-pipeline (composes cleanly with masks). Largest cleanup payoff: 3 entries → 1.</li>
+<li><strong><code>sigmoid-contrast</code></strong> (single-axis) — second. 2 entries → 1.</li>
+<li><strong><code>bilat-clarity-strength</code></strong> (single-axis) — third if time. 1 entry remains discrete (<code>clarity_painterly</code>); only the strength axis collapses.</li>
+</ol>
+<p>After Phase 4 ships completely (likely 2–3 sessions), open the question of brand-new module authoring (sharpen / toneequal / denoise / lens / crop) — those address the "where chemigram is thin" gaps above. Each new module ships parameterized from day 1 (no discrete-strength ladder to migrate).</p>
+<h3 id="what-growing-it-actually-requires">What "growing it" actually requires<a class="headerlink" href="#what-growing-it-actually-requires" title="Anchor link">&para;</a></h3>
+<p>Per the project's Phase 2 framing: <em>open darktable, capture moves you reach for that don't exist, drop the resulting <code>.dtstyle</code> into <code>~/.chemigram/vocabulary/personal/layers/L3/&lt;module&gt;/</code>, and add a manifest entry.</em> The vocabulary-authoring workflow is documented in <a href="../guides/authoring-vocabulary-entries/"><code>docs/guides/authoring-vocabulary-entries.md</code></a>. Building a personal pack to ~30–60 entries over 3 months is the design target.</p>
+<p>The infrastructure to grow vocabulary is in place. What's left is finishing the parameterization rollout, then adding the missing fundamental modules.</p>
+<hr />
+<h2 id="11-the-discrete-vocabulary-problem-resolved-for-exposure-vignette-in-v160-in-progress-elsewhere">11. The discrete-vocabulary problem (resolved for exposure + vignette in v1.6.0; in-progress elsewhere)<a class="headerlink" href="#11-the-discrete-vocabulary-problem-resolved-for-exposure-vignette-in-v160-in-progress-elsewhere" title="Anchor link">&para;</a></h2>
+<blockquote>
+<p><strong>Status update — 2026-05-05:</strong> RFC-021 / ADR-077..080 closed this. The architecture for parameterized vocabulary entries shipped in v1.6.0 along with the first two modules (<code>exposure</code>, <code>vignette</code>). The remaining Phase 4 modules (<code>colorbalancergb-saturation</code>, <code>sigmoid-contrast</code>, etc.) ship in subsequent iterations using the same pattern. The framing below is preserved as historical motivation.</p>
+</blockquote>
+<h3 id="the-question-historical">The question (historical)<a class="headerlink" href="#the-question-historical" title="Anchor link">&para;</a></h3>
+<p><em>Why does chemigram ship <code>expo_+0.3</code>, <code>expo_-0.3</code>, <code>expo_+0.5</code>, <code>expo_-0.5</code> as four separate vocabulary entries instead of one <code>exposure(ev: float)</code> primitive that takes a value at apply time?</em></p>
+<h3 id="honest-answer-historical">Honest answer (historical)<a class="headerlink" href="#honest-answer-historical" title="Anchor link">&para;</a></h3>
+<p>The pre-v1.6.0 design was <strong>discrete named primitives</strong> — each entry was a fixed <code>.dtstyle</code> file with hardcoded parameter values. To get <code>+0.7 EV</code> you couldn't. You could apply <code>expo_+0.5</code> and then <code>expo_+0.3</code> separately (which worked because exposure stacks linearly), but that was a workaround, not a feature. If you wanted <code>+1.5 EV</code>, <code>+2.0 EV</code>, <code>-1.0 EV</code>, etc., you had nothing.</p>
+<p>This was a real limitation. Combinatorially enumerating every plausible exposure value (every 0.1 EV from -3 to +3 = 60 entries) is infeasible. So is shipping only four.</p>
+<h3 id="how-its-resolved-v160-onwards">How it's resolved (v1.6.0 onwards)<a class="headerlink" href="#how-its-resolved-v160-onwards" title="Anchor link">&para;</a></h3>
+<p>Per RFC-021 and the closing ADRs:</p>
+<ul>
+<li><strong>ADR-077</strong> — Path C (decode/edit/re-encode <code>op_params</code>) is the default for explicitly-declared parameterizable modules. <code>op_params</code> opacity (ADR-008) still applies to non-parameterized modules.</li>
+<li><strong>ADR-078</strong> — Vocabulary manifest gains a <code>parameters</code> array (multi-parameter from day one). Each parameter declares <code>name / type / range / default</code> plus a byte-level <code>field</code> location.</li>
+<li><strong>ADR-079</strong> — <code>apply_primitive</code> accepts <code>--value V</code> (single-parameter shorthand) and <code>--param NAME=V</code> (repeatable, multi-parameter). MCP <code>value</code> arg is shape-polymorphic.</li>
+<li><strong>ADR-080</strong> — Hard CI gate enforces 5-layer test coverage (unit / integration / lab-grade global / lab-grade masked / visual-proof sweep) on every parameterized entry.</li>
+</ul>
+<p>The shipped surface today: <code>chemigram apply-primitive --entry exposure --value 0.7</code> works. So does <code>chemigram apply-primitive --entry vignette --value -0.6</code>. Composes orthogonally with <code>--mask-spec</code>.</p>
+<h3 id="why-the-project-chose-discrete-vocabulary-in-the-first-place">Why the project chose discrete-vocabulary in the first place<a class="headerlink" href="#why-the-project-chose-discrete-vocabulary-in-the-first-place" title="Anchor link">&para;</a></h3>
+<p>Three reasons, each defensible in isolation but they compound:</p>
+<ol>
+<li>
+<p><strong>Agent-paradigm fit.</strong> LLM agents reason better over named choices ("apply lift_shadows") than over continuous parameter tuning ("set exposure to +0.7"). The vocabulary becomes the <em>action space</em>; the agent picks moves the way a photographer does — by name and intent, not by knob position.</p>
+</li>
+<li>
+<p><strong><code>op_params</code> opacity (ADR-008).</strong> Every darktable module's parameters are stored as an opaque hex/base64 binary blob. To parameterize <code>exposure(ev=0.7)</code>, the engine needs to <em>decode</em> the blob, edit the EV field, and <em>re-encode</em> it — a non-trivial reverse-engineering job per module ("Path C" in the project's terminology). The decision was to keep <code>op_params</code> opaque by default and only do Path C for high-value exceptions. Today, <code>exposure</code> is technically <em>in</em> the Path C exception list (per ADR-008's exception clause), but no parameterized API was ever built.</p>
+</li>
+<li>
+<p><strong>Magnitude-as-vocabulary framing.</strong> The project's design system (<code>concept/05-design-system.md</code>) treats magnitude itself as a photographic decision — "subtle / medium / heavy" is the vocabulary, not a slider. This works for moves with discrete photographic intent ("<code>vignette_subtle</code> vs <code>vignette_heavy</code>"). It works <em>less</em> well for moves where the photographer's mental model is genuinely continuous ("I want +1 stop").</p>
+</li>
+</ol>
+<h3 id="where-the-framing-breaks">Where the framing breaks<a class="headerlink" href="#where-the-framing-breaks" title="Anchor link">&para;</a></h3>
+<p>The discrete-vocabulary framing makes sense for <strong>moves with photographic intent that fold cleanly into named buckets</strong>:</p>
+<ul>
+<li><code>clarity_strong</code> vs <code>clarity_painterly</code> — these are different <em>kinds</em> of clarity, not the same kind at different strengths. Names carry semantic weight.</li>
+<li><code>grade_shadows_warm</code> vs <code>grade_highlights_warm</code> — the <em>zone</em> matters; you can't slide between them.</li>
+<li>The 4 mask-bound entries — each is a specific geometric move.</li>
+</ul>
+<p>It breaks down for <strong>moves whose only meaningful difference is magnitude</strong>:</p>
+<ul>
+<li><code>expo_+0.5</code> vs <code>expo_+0.3</code> — these are not different photographic moves. They are the same move at two strengths. Shipping them as separate entries is a category error.</li>
+<li><code>vignette_subtle</code> vs <code>vignette_medium</code> vs <code>vignette_heavy</code> — three magnitudes of the same move.</li>
+<li><code>wb_warm_subtle</code> (no medium, no heavy) — the magnitude ladder is incomplete here.</li>
+</ul>
+<p>The cleaner shape for this category: <strong>one entry per photographic intent, with a <code>value</code> parameter at apply time.</strong></p>
+<h3 id="what-this-would-look-like">What this would look like<a class="headerlink" href="#what-this-would-look-like" title="Anchor link">&para;</a></h3>
+<p>A parameterized <code>apply-primitive</code> flow:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>chemigram<span class="w"> </span>apply-primitive<span class="w"> </span>iguana<span class="w"> </span>--entry<span class="w"> </span>exposure<span class="w"> </span>--value<span class="w"> </span>+0.7
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>chemigram<span class="w"> </span>apply-primitive<span class="w"> </span>iguana<span class="w"> </span>--entry<span class="w"> </span>vignette<span class="w"> </span>--value<span class="w"> </span>-0.4
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>chemigram<span class="w"> </span>apply-primitive<span class="w"> </span>iguana<span class="w"> </span>--entry<span class="w"> </span>wb_warmth<span class="w"> </span>--value<span class="w"> </span>+500<span class="w">   </span><span class="c1"># Kelvin delta</span>
+</span></code></pre></div>
+<p>The vocabulary entry declares <em>which field of <code>op_params</code> is the magnitude field</em> and what the valid range is. The engine decodes the blob, edits the field, re-encodes, applies. The agent still reasons in terms of named moves; magnitude becomes a parameter rather than part of the name.</p>
+<p>This already has a precedent in darktable — every module's GUI is exactly this: named knob with a continuous value. Chemigram's discrete vocabulary diverges from darktable's underlying model.</p>
+<h3 id="what-the-migration-would-cost">What the migration would cost<a class="headerlink" href="#what-the-migration-would-cost" title="Anchor link">&para;</a></h3>
+<p>Roughly, in scope-of-work terms:</p>
+<ol>
+<li>
+<p><strong>Path C decoders</strong>: per-module hex codecs for the modules where parameterization makes sense (<code>exposure</code>, <code>vignette</code>, <code>temperature</code>, <code>colorbalancergb</code> saturation, sigmoid contrast, <code>grain</code> strength, <code>bilat</code> clarity strength, <code>highlights</code> clip threshold). Probably 8–12 modules total. Each is a half-day of struct reverse-engineering against the darktable source. The <code>_lab_grade_deltas.py</code> test layer can validate the round-trip.</p>
+</li>
+<li>
+<p><strong>Manifest schema extension</strong>: vocabulary entries gain an optional <code>parameter</code> field declaring the magnitude axis (<code>{"name": "ev", "field_offset": 0, "type": "float", "range": [-3.0, 3.0], "default": 0.0}</code>).</p>
+</li>
+<li>
+<p><strong>CLI / MCP surface</strong>: <code>apply-primitive</code> gains a <code>--value &lt;n&gt;</code> flag (and MCP <code>value</code> arg). Engine routes through the parameterized synthesizer when the entry has a <code>parameter</code> field.</p>
+</li>
+<li>
+<p><strong>Vocabulary cleanup</strong>: the 39 current entries collapse. <code>expo_±0.3/±0.5/shadows_global_±</code> become one parameterized <code>exposure</code> entry. The three vignette intensities become one. The two WB entries become one (with sign and magnitude as parameter). Net: probably ~20 parameterized entries replace ~30 discrete ones, plus space for ~10 new genuinely-discrete moves.</p>
+</li>
+<li>
+<p><strong>ADR</strong>: a new ADR documenting the architectural shift. Likely supersedes part of ADR-008's Path A/Path C framing, since Path C becomes the default for parameterizable modules rather than the rare exception.</p>
+</li>
+</ol>
+<p>This is a real piece of architectural work — not a 1-hour ergonomic add. But it's also the right shape for what chemigram is trying to be. The current vocabulary's thinness on fundamentals is a <em>symptom</em> of the discrete-vocabulary framing being asked to do work it wasn't designed for.</p>
+<h3 id="recommendation">Recommendation<a class="headerlink" href="#recommendation" title="Anchor link">&para;</a></h3>
+<p>Tomorrow's planning conversation should put parameterization on the table as a candidate for the next significant ship. It's the kind of change that unblocks the whole "fundamental controls" gap in section 1, 2, 3, 4, 6 above — without combinatorial vocabulary explosion.</p>
+<hr />
+<h2 id="12-full-darktable-module-catalog-the-universe-of-whats-possible">12. Full darktable module catalog (the universe of what's possible)<a class="headerlink" href="#12-full-darktable-module-catalog-the-universe-of-whats-possible" title="Anchor link">&para;</a></h2>
+<p>What follows is <strong>every photographically-meaningful darktable 5.x module</strong>, organized by pipeline phase. The purpose is to make the gap between "what darktable can do" and "what chemigram exposes" explicit. A primitive is <strong>chemigram-shipped</strong> when there's at least one vocabulary entry touching the module today.</p>
+<p>Categories:
+- ✅ shipped — chemigram has at least one vocab entry touching this module
+- ⚠️ partial — module is touched but coverage is thin (one direction, one magnitude, etc.)
+- ❌ not yet — module is not touched by any vocabulary entry
+- 🚫 out of scope — generally not exposed via vocabulary (camera/raw plumbing, output)</p>
+<h3 id="raw-phase-pre-demosaic-scene-data">RAW phase (pre-demosaic / scene-data)<a class="headerlink" href="#raw-phase-pre-demosaic-scene-data" title="Anchor link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What it does</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rawprepare</code></td>
+<td>Raw black / white levels, crop edges</td>
+<td>🚫 out of scope (camera-specific)</td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td>White balance (camera-as-shot or user)</td>
+<td>⚠️ partial — only <code>wb_warm_subtle</code>, <code>wb_cool_subtle</code>; no medium/heavy, no tint axis. Mask binding silently ignored (#80)</td>
+</tr>
+<tr>
+<td><code>highlights</code></td>
+<td>Highlight reconstruction (clip / LCH / inpaint / segmentation)</td>
+<td>⚠️ partial — <code>highlights_recovery_subtle/strong</code>; no method-selection variants</td>
+</tr>
+<tr>
+<td><code>hotpixels</code></td>
+<td>Hot-pixel removal</td>
+<td>🚫 out of scope</td>
+</tr>
+<tr>
+<td><code>rawdenoise</code></td>
+<td>Wavelet denoise on raw mosaic</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>cacorrect</code></td>
+<td>Chromatic-aberration correction</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>demosaic</code></td>
+<td>Bayer / X-Trans interpolation</td>
+<td>🚫 out of scope (algorithm choice, not photographic intent)</td>
+</tr>
+<tr>
+<td><code>denoiseprofile</code></td>
+<td>Profiled (per-camera) denoise</td>
+<td>❌ not yet — high-value gap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scene-referred-phase-the-modern-pipeline-middle">Scene-referred phase (the modern pipeline middle)<a class="headerlink" href="#scene-referred-phase-the-modern-pipeline-middle" title="Anchor link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What it does</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>exposure</code></td>
+<td>Global EV / black-level / clipping</td>
+<td>⚠️ partial — only ±0.3, ±0.5; black-level via <code>shadows_global_±</code> is too small to matter</td>
+</tr>
+<tr>
+<td><code>colorin</code></td>
+<td>Input color profile</td>
+<td>🚫 out of scope (technical)</td>
+</tr>
+<tr>
+<td><code>lens</code></td>
+<td>Lens correction (vignetting, distortion, CA)</td>
+<td>❌ not yet — entire module unrepresented</td>
+</tr>
+<tr>
+<td><code>clipping</code></td>
+<td>Crop / aspect ratio / rotation</td>
+<td>❌ not yet — entire module unrepresented</td>
+</tr>
+<tr>
+<td><code>flip</code></td>
+<td>Orientation (rotate 90/180/270, flip)</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>ashift</code></td>
+<td>Perspective / keystone correction</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>liquify</code></td>
+<td>Local pixel pushing (manual warp)</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>retouch</code></td>
+<td>Frequency-separation retouching</td>
+<td>❌ not yet — major omission for portrait work</td>
+</tr>
+<tr>
+<td><code>spots</code></td>
+<td>Spot healing / cloning</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>censorize</code></td>
+<td>Pixelation / blur for privacy</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>colorchecker</code></td>
+<td>Color calibration via reference chart</td>
+<td>🚫 out of scope (technical)</td>
+</tr>
+<tr>
+<td><code>channelmixerrgb</code></td>
+<td>RGB channel mixer (modern)</td>
+<td>❌ planned (#63 — B&amp;W trio)</td>
+</tr>
+<tr>
+<td><code>colorbalancergb</code></td>
+<td>4-way grade + saturation + chroma + brilliance</td>
+<td>✅ shipped — 11 entries (saturation, vibrance, chroma, grade)</td>
+</tr>
+<tr>
+<td><code>tonecurve</code></td>
+<td>Manual RGB / Lab tone curve</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>toneequal</code></td>
+<td>Zone-based tone equalizer (darktable's preferred local tone tool)</td>
+<td>❌ not yet — major omission</td>
+</tr>
+<tr>
+<td><code>sigmoid</code></td>
+<td>Modern tone mapping (filmic replacement)</td>
+<td>⚠️ partial — <code>contrast_low/high</code>, <code>blacks_lifted/crushed</code>, <code>whites_open</code>. No <code>whites_dampen</code>, no per-channel control</td>
+</tr>
+<tr>
+<td><code>filmicrgb</code></td>
+<td>Older tone mapping (still ships)</td>
+<td>🚫 out of scope (sigmoid is preferred)</td>
+</tr>
+<tr>
+<td><code>basicadj</code></td>
+<td>Combined exposure + contrast + saturation</td>
+<td>❌ not yet (covered by separate primitives)</td>
+</tr>
+<tr>
+<td><code>colorize</code></td>
+<td>Solid color tint</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>colorbalance</code></td>
+<td>Older 4-way grade (pre-rgb)</td>
+<td>🚫 out of scope (colorbalancergb is preferred)</td>
+</tr>
+<tr>
+<td><code>colorzones</code></td>
+<td>Per-hue selective adjustment (HSL)</td>
+<td>❌ not yet — no "shift only blues toward teal" capability</td>
+</tr>
+<tr>
+<td><code>colorcontrast</code></td>
+<td>Lab a/b chroma contrast</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>velvia</code></td>
+<td>Saturation with falloff for skin tones</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>vibrance</code></td>
+<td>Old vibrance module (newer is in colorbalancergb)</td>
+<td>🚫 out of scope (modern path)</td>
+</tr>
+<tr>
+<td><code>monochrome</code></td>
+<td>B&amp;W via filter color</td>
+<td>❌ not yet — overlap with #63 channelmixerrgb</td>
+</tr>
+<tr>
+<td><code>grain</code></td>
+<td>Film grain texture</td>
+<td>✅ shipped — 3 entries (fine/medium/heavy)</td>
+</tr>
+<tr>
+<td><code>bilat</code> (local contrast)</td>
+<td>Bilateral local contrast / clarity</td>
+<td>⚠️ partial — <code>clarity_strong</code>, <code>clarity_painterly</code>; no negative/soften variant</td>
+</tr>
+<tr>
+<td><code>bloom</code></td>
+<td>Soft glow / orton-style bloom</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>soften</code></td>
+<td>Gaussian softening</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>sharpen</code></td>
+<td>Unsharp mask sharpening</td>
+<td>❌ not yet — major omission</td>
+</tr>
+<tr>
+<td><code>diffuse</code> (diffuse-or-sharpen)</td>
+<td>Reaction-diffusion sharpen / denoise / restore detail</td>
+<td>❌ not yet — modern darktable's flagship sharpening</td>
+</tr>
+<tr>
+<td><code>equalizer</code> (contrast equalizer)</td>
+<td>Wavelet-based per-frequency contrast control</td>
+<td>❌ not yet — flagship advanced sharpening / clarity</td>
+</tr>
+<tr>
+<td><code>nlmeans</code></td>
+<td>Non-local-means denoise</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>bilateral</code> (denoise)</td>
+<td>Bilateral denoise</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>defringe</code></td>
+<td>Color-fringe removal</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>hazeremoval</code></td>
+<td>Atmospheric haze removal</td>
+<td>❌ not yet</td>
+</tr>
+<tr>
+<td><code>vignette</code></td>
+<td>Decorative radial darkening</td>
+<td>✅ shipped — 3 entries (subtle/medium/heavy); no inverted variant</td>
+</tr>
+<tr>
+<td><code>borders</code></td>
+<td>Frame border</td>
+<td>❌ not yet (composition / output decoration)</td>
+</tr>
+<tr>
+<td><code>watermark</code></td>
+<td>Text or image overlay</td>
+<td>❌ not yet</td>
+</tr>
+</tbody>
+</table>
+<h3 id="display-referred-output">Display-referred / output<a class="headerlink" href="#display-referred-output" title="Anchor link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What it does</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>colorout</code></td>
+<td>Output color profile</td>
+<td>🚫 out of scope (technical)</td>
+</tr>
+<tr>
+<td><code>gamma</code></td>
+<td>Display gamma</td>
+<td>🚫 out of scope</td>
+</tr>
+<tr>
+<td><code>dither</code></td>
+<td>Output dithering</td>
+<td>🚫 out of scope</td>
+</tr>
+<tr>
+<td><code>finalscale</code></td>
+<td>Resampling / output size</td>
+<td>🚫 out of scope (handled by <code>--width</code>/<code>--height</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tally">Tally<a class="headerlink" href="#tally" title="Anchor link">&para;</a></h3>
+<ul>
+<li>darktable modules total: ~50 photographically-meaningful (excluding 🚫 out-of-scope plumbing)</li>
+<li>chemigram ✅ shipped: <strong>5 modules</strong> (exposure, sigmoid, colorbalancergb, vignette, grain)</li>
+<li>chemigram ⚠️ partial: <strong>5 modules</strong> (temperature/wb, highlights, exposure, sigmoid, bilat)</li>
+<li>chemigram ❌ not yet: <strong>~30 modules</strong></li>
+</ul>
+<p>The gap isn't that the project chose to ship 39 thin entries and ran out of time — it's that ~30 distinct photographic capabilities darktable supports are unrepresented in the vocabulary. The biggest user-visible holes:</p>
+<ol>
+<li><strong><code>toneequal</code></strong> — zone-based tone equalizer; the modern darktable user's primary local-tone tool</li>
+<li><strong><code>sharpen</code> / <code>diffuse-or-sharpen</code> / <code>equalizer</code></strong> — the entire sharpening family</li>
+<li><strong><code>denoiseprofile</code> / <code>nlmeans</code></strong> — denoise; a daily-use need</li>
+<li><strong><code>clipping</code> / <code>ashift</code> / <code>flip</code></strong> — composition (crop, rotate, perspective)</li>
+<li><strong><code>lens</code></strong> — lens correction (vignetting, distortion, CA)</li>
+<li><strong><code>retouch</code> / <code>spots</code></strong> — frequency-sep retouching; portrait essential</li>
+<li><strong><code>colorzones</code></strong> — selective hue/sat/lum (HSL) adjustments</li>
+<li><strong><code>tonecurve</code></strong> — manual tone curve</li>
+</ol>
+<p>Closing those gaps is real authoring work (and probably also benefits from the parameterization shift in section 11).</p>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Anchor link">&para;</a></h2>
+<ul>
+<li><a href="../guides/visual-proofs/"><code>guides/visual-proofs.md</code></a> — chart-based before/after gallery showing every shipped primitive in action</li>
+<li><a href="../guides/mask-applicable-controls/"><code>guides/mask-applicable-controls.md</code></a> — per-module compatibility for masking</li>
+<li><a href="../guides/vocabulary-patterns/"><code>guides/vocabulary-patterns.md</code></a> — how to combine shipped primitives</li>
+<li><a href="../guides/authoring-vocabulary-entries/"><code>guides/authoring-vocabulary-entries.md</code></a> — author your own primitives via darktable GUI</li>
+<li><a href="../adr/ADR-008-opaque-blob-carriers/"><code>adr/ADR-008-opaque-blob-carriers.md</code></a> — the opaque-blob default; ADR-077 supersedes this for explicitly-declared parameterizable modules</li>
+<li><code>vocabulary/starter/README.md</code>, <code>vocabulary/packs/expressive-baseline/README.md</code> — pack-level catalogs</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      MIT — Marko Mrdjenovic and contributors
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/chipi/chemigram" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "navigation.tracking", "navigation.top", "search.highlight", "search.share", "search.suggest", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
