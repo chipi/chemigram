@@ -20,6 +20,14 @@ from pathlib import Path
 import pytest
 
 from chemigram.core.parameterize.colorbalancergb import (
+    _BRILLIANCE_GLOBAL_FIELD_INDEX,
+    _BRILLIANCE_GLOBAL_OFFSET,
+    _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX,
+    _BRILLIANCE_HIGHLIGHTS_OFFSET,
+    _BRILLIANCE_MIDTONES_FIELD_INDEX,
+    _BRILLIANCE_MIDTONES_OFFSET,
+    _BRILLIANCE_SHADOWS_FIELD_INDEX,
+    _BRILLIANCE_SHADOWS_OFFSET,
     _CHROMA_GLOBAL_FIELD_INDEX,
     _CHROMA_GLOBAL_OFFSET,
     _HUE_ANGLE_FIELD_INDEX,
@@ -254,3 +262,81 @@ def test_patch_preserves_saturation_formula_enum_across_all_axes() -> None:
         patch(src, saturation_global=0.5, vibrance=-0.2, hue_angle=45.0, chroma_global=0.1)
     )[-1]
     assert src_enum == patched_enum == 1
+
+
+# ---------------------------------------------------------------------------
+# Brilliance axes (#86): 4 per-zone luminance shaping parameters.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "axis,field_index,offset",
+    [
+        ("brilliance_global", _BRILLIANCE_GLOBAL_FIELD_INDEX, _BRILLIANCE_GLOBAL_OFFSET),
+        (
+            "brilliance_highlights",
+            _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX,
+            _BRILLIANCE_HIGHLIGHTS_OFFSET,
+        ),
+        ("brilliance_midtones", _BRILLIANCE_MIDTONES_FIELD_INDEX, _BRILLIANCE_MIDTONES_OFFSET),
+        ("brilliance_shadows", _BRILLIANCE_SHADOWS_FIELD_INDEX, _BRILLIANCE_SHADOWS_OFFSET),
+    ],
+)
+def test_patch_sets_brilliance_axis_only(axis: str, field_index: int, offset: int) -> None:
+    """Patching a single brilliance axis leaves the other 7 parameterized
+    axes (and every other field in the struct) at the source values."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_fields = decode(src)
+    out = patch(src, **{axis: 0.5})
+    fields = decode(out)
+    assert fields[field_index] == pytest.approx(0.5, abs=1e-5)
+    # Every other field unchanged
+    for i in range(len(src_fields)):
+        if i == field_index:
+            continue
+        assert fields[i] == src_fields[i], f"field {i} changed unexpectedly"
+
+
+def test_patch_sets_all_four_brilliance_axes_simultaneously() -> None:
+    """All 4 brilliance axes patched at once."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    out = patch(
+        src,
+        brilliance_global=0.1,
+        brilliance_highlights=0.2,
+        brilliance_midtones=0.3,
+        brilliance_shadows=0.4,
+    )
+    fields = decode(out)
+    assert fields[_BRILLIANCE_GLOBAL_FIELD_INDEX] == pytest.approx(0.1, abs=1e-5)
+    assert fields[_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX] == pytest.approx(0.2, abs=1e-5)
+    assert fields[_BRILLIANCE_MIDTONES_FIELD_INDEX] == pytest.approx(0.3, abs=1e-5)
+    assert fields[_BRILLIANCE_SHADOWS_FIELD_INDEX] == pytest.approx(0.4, abs=1e-5)
+
+
+def test_patch_brilliance_offsets_match_field_indices() -> None:
+    """Sanity: each brilliance axis offset is 4 * field_index."""
+    assert _BRILLIANCE_GLOBAL_OFFSET == _BRILLIANCE_GLOBAL_FIELD_INDEX * 4
+    assert _BRILLIANCE_HIGHLIGHTS_OFFSET == _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX * 4
+    assert _BRILLIANCE_MIDTONES_OFFSET == _BRILLIANCE_MIDTONES_FIELD_INDEX * 4
+    assert _BRILLIANCE_SHADOWS_OFFSET == _BRILLIANCE_SHADOWS_FIELD_INDEX * 4
+
+
+def test_patch_combines_brilliance_with_other_axes() -> None:
+    """Brilliance axes compose with the existing 4 axes — all 8 patchable
+    simultaneously."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    out = patch(
+        src,
+        saturation_global=0.4,
+        chroma_global=0.2,
+        hue_angle=15.0,
+        vibrance=0.3,
+        brilliance_global=0.1,
+        brilliance_highlights=-0.1,
+    )
+    fields = decode(out)
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == pytest.approx(0.4, abs=1e-5)
+    assert fields[_VIBRANCE_FIELD_INDEX] == pytest.approx(0.3, abs=1e-5)
+    assert fields[_BRILLIANCE_GLOBAL_FIELD_INDEX] == pytest.approx(0.1, abs=1e-5)
+    assert fields[_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX] == pytest.approx(-0.1, abs=1e-5)

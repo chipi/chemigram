@@ -229,6 +229,46 @@
         {"name": "hue_angle", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
          "field": {"module": "colorbalancergb", "modversion": 5, "offset": 92, "encoding": "le_f32"}}
       ]},
+    {"name": "brilliance_global", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_global.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["brilliance", "global", "parameterized"],
+      "description": "Parameterized global brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Brilliance shapes per-zone luminance — the global axis moves all zones together. Per-zone variants (highlights/midtones/shadows) target specific tonal ranges.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "brilliance_global", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 96, "encoding": "le_f32"}}
+      ]},
+    {"name": "brilliance_highlights", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_highlights.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["brilliance", "highlights", "parameterized"],
+      "description": "Parameterized highlight-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the highlight tonal zone — useful for selectively brightening or compressing high-key areas without affecting shadows / midtones.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "brilliance_highlights", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 100, "encoding": "le_f32"}}
+      ]},
+    {"name": "brilliance_midtones", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_midtones.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["brilliance", "midtones", "parameterized"],
+      "description": "Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the midtone tonal zone — selectively shapes the body of the tonal distribution.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "brilliance_midtones", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 104, "encoding": "le_f32"}}
+      ]},
+    {"name": "brilliance_shadows", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_shadows.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["brilliance", "shadows", "parameterized"],
+      "description": "Parameterized shadow-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the shadow tonal zone — selectively lifts or deepens dark areas without affecting highlights / midtones.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "brilliance_shadows", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 108, "encoding": "le_f32"}}
+      ]},
     {"name": "grade_shadows_warm", "layer": "L3", "subtype": "colorbalancergb",
       "path": "layers/L3/colorbalancergb/grade_shadows_warm.dtstyle", "touches": ["colorbalancergb"],
       "tags": ["grade", "shadows", "warm"],
@@ -306,6 +346,27 @@
       "modversions": {"exposure": 7}, "darktable_version": "5.4",
       "source": "expressive-baseline", "license": "MIT",
       "mask_spec":{"dt_form": "rectangle",
-                    "dt_params": {"x0": 0.0, "y0": 0.4, "x1": 1.0, "y1": 0.6, "border": 0.05}}}
+                    "dt_params": {"x0": 0.0, "y0": 0.4, "x1": 1.0, "y1": 0.6, "border": 0.05}}},
+    {"name": "look_portrait", "layer": "L2", "subtype": "look",
+      "path": "layers/L2/look/look_portrait.dtstyle",
+      "touches": ["exposure", "sigmoid", "colorbalancergb"],
+      "tags": ["look", "portrait", "skin", "gentle"],
+      "description": "L2 look — gentle skin-protective composition. exposure +0.2 EV, sigmoid_contrast 1.2 (soft s-curve), colorbalancergb saturation_global=-0.1 + vibrance=+0.2 (mild chroma push that protects saturated pixels). Targets portraiture; avoid stacking with aggressive contrast or clarity.",
+      "modversions": {"exposure": 7, "sigmoid": 3, "colorbalancergb": 5},
+      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
+    {"name": "look_landscape", "layer": "L2", "subtype": "look",
+      "path": "layers/L2/look/look_landscape.dtstyle",
+      "touches": ["sigmoid", "colorbalancergb", "bilat"],
+      "tags": ["look", "landscape", "vibrant", "dramatic"],
+      "description": "L2 look — vibrant dramatic landscape composition. sigmoid_contrast 2.0 (strong s-curve), colorbalancergb saturation_global=+0.3 + vibrance=+0.2, bilat_clarity_strength 1.0 (definite local-contrast pop). Aggressive — pull back via sigmoid to ~1.5 if it feels harsh.",
+      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "bilat": 3},
+      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
+    {"name": "look_vintage_film", "layer": "L2", "subtype": "look",
+      "path": "layers/L2/look/look_vintage_film.dtstyle",
+      "touches": ["sigmoid", "colorbalancergb", "grain", "temperature"],
+      "tags": ["look", "vintage", "film", "nostalgia"],
+      "description": "L2 look — nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-curve), colorbalancergb saturation_global=-0.2 (slight desaturation), grain_strength 25 (medium film grain), temperature warm shift (red 2.148 / blue 1.209). Pairs well with grade_shadows_warm.",
+      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2, "temperature": 4},
+      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"}
   ]
 }

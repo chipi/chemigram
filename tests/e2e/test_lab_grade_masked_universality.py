@@ -319,6 +319,43 @@ def test_parameterized_toneequalizer_apply_completes(
         )
 
 
+def test_parameterized_colorbalancergb_brilliance_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """The 4 colorbalancergb brilliance axes (#86) ride the same shared
+    decoder. We verify each parameterized + masked apply path runs
+    end-to-end."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    cases = [
+        ("brilliance_global", {"brilliance_global": 0.5}),
+        ("brilliance_highlights", {"brilliance_highlights": 0.5}),
+        ("brilliance_midtones", {"brilliance_midtones": 0.5}),
+        ("brilliance_shadows", {"brilliance_shadows": 0.5}),
+    ]
+    out_dir = tmp_path_factory.mktemp("masked_param_colorbalancergb_brilliance")
+    for entry_name, values in cases:
+        entry = vocab.lookup_by_name(entry_name)
+        if entry is None:
+            pytest.fail(f"{entry_name!r} parameterized entry not in loaded packs")
+        if entry.parameters is None:
+            pytest.fail(f"{entry_name!r} loaded but parameters is None")
+        applied = apply_entry(
+            baseline_xmp, entry, parameter_values=values, mask_spec=_CENTER_MASK_SPEC
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"{entry_name}_masked",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_colorbalancergb_axes_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

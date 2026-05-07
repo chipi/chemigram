@@ -54,8 +54,8 @@ import struct
 _STRUCT_FORMAT = "<32fI"
 _STRUCT_SIZE = 132
 
-# Parameterized axes (RFC-021 / RFC-022 Tier 2). Field indices in the
-# 33-tuple returned by decode(); byte offsets in the packed blob.
+# Parameterized axes (RFC-021 / RFC-022 Tier 2 + #86 brilliance). Field
+# indices in the 33-tuple returned by decode(); byte offsets in the blob.
 _SATURATION_GLOBAL_FIELD_INDEX = 19  # offset 76 — global saturation
 _SATURATION_GLOBAL_OFFSET = 76
 _CHROMA_GLOBAL_FIELD_INDEX = 17  # offset 68 — global chroma
@@ -64,6 +64,15 @@ _HUE_ANGLE_FIELD_INDEX = 23  # offset 92 — global hue rotation
 _HUE_ANGLE_OFFSET = 92
 _VIBRANCE_FIELD_INDEX = 29  # offset 116 — vibrance
 _VIBRANCE_OFFSET = 116
+# Brilliance axes (#86): per-zone luminance shaping
+_BRILLIANCE_GLOBAL_FIELD_INDEX = 24  # offset 96
+_BRILLIANCE_GLOBAL_OFFSET = 96
+_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX = 25  # offset 100
+_BRILLIANCE_HIGHLIGHTS_OFFSET = 100
+_BRILLIANCE_MIDTONES_FIELD_INDEX = 26  # offset 104
+_BRILLIANCE_MIDTONES_OFFSET = 104
+_BRILLIANCE_SHADOWS_FIELD_INDEX = 27  # offset 108
+_BRILLIANCE_SHADOWS_OFFSET = 108
 
 # Pinned modversion for v1.6.0 / Phase 4 ship.
 SUPPORTED_MODVERSION = 5
@@ -98,35 +107,37 @@ def patch(
     chroma_global: float | None = None,
     hue_angle: float | None = None,
     vibrance: float | None = None,
+    brilliance_global: float | None = None,
+    brilliance_highlights: float | None = None,
+    brilliance_midtones: float | None = None,
+    brilliance_shadows: float | None = None,
 ) -> str:
     """Patch any combination of colorbalancergb's parameterized axes.
 
     Multi-axis partial-update: caller may supply any subset of the
     declared parameters. Unspecified axes preserved from the input.
     Every other field in the 132-byte struct (per-zone saturation,
-    brilliance, chroma per zone, grading angles, output gamma, the
+    chroma per zone, grading angles, output gamma, the
     ``saturation_formula`` enum, etc.) is always preserved.
 
-    The four parameterized axes per RFC-021 / RFC-022 Tier 2:
+    The eight parameterized axes (RFC-021 / RFC-022 Tier 2 + #86):
 
-    - ``saturation_global`` (offset 76; range [-1.0, +1.0]; -1.0 →
-      monochrome, +0.5 → strong boost). Replaces v1.5.x sat_kill /
-      sat_boost_moderate / sat_boost_strong.
-    - ``chroma_global``    (offset 68; range [-1.0, +1.0]; vibrance-like
-      chroma push that protects already-saturated pixels less than
-      vibrance does).
-    - ``hue_angle``        (offset 92; range [-180.0, +180.0]; degrees of
-      global hue rotation).
-    - ``vibrance``         (offset 116; range [-1.0, +1.0]; protects
-      saturated pixels). Replaces v1.5.x vibrance_+0.3.
+    - ``saturation_global``    (offset 76; range [-1.0, +1.0]).
+    - ``chroma_global``        (offset 68; range [-1.0, +1.0]).
+    - ``hue_angle``            (offset 92; range [-180.0, +180.0]; degrees).
+    - ``vibrance``             (offset 116; range [-1.0, +1.0]).
+    - ``brilliance_global``    (offset 96; range [-1.0, +1.0]; per-zone luma).
+    - ``brilliance_highlights`` (offset 100; range [-1.0, +1.0]).
+    - ``brilliance_midtones``  (offset 104; range [-1.0, +1.0]).
+    - ``brilliance_shadows``   (offset 108; range [-1.0, +1.0]).
 
     Args:
         op_params: hex-encoded source ``op_params`` (132 bytes / 264 hex
             chars).
-        saturation_global: new global saturation, or None to preserve.
-        chroma_global: new global chroma, or None to preserve.
-        hue_angle: new hue-rotation angle in degrees, or None to preserve.
-        vibrance: new vibrance, or None to preserve.
+        saturation_global, chroma_global, hue_angle, vibrance,
+        brilliance_global, brilliance_highlights, brilliance_midtones,
+        brilliance_shadows: each axis is independently optional;
+        ``None`` preserves the dtstyle's encoded value.
 
     Returns:
         New hex-encoded ``op_params`` (132 bytes / 264 hex chars).
@@ -143,4 +154,12 @@ def patch(
         fields[_HUE_ANGLE_FIELD_INDEX] = float(hue_angle)
     if vibrance is not None:
         fields[_VIBRANCE_FIELD_INDEX] = float(vibrance)
+    if brilliance_global is not None:
+        fields[_BRILLIANCE_GLOBAL_FIELD_INDEX] = float(brilliance_global)
+    if brilliance_highlights is not None:
+        fields[_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX] = float(brilliance_highlights)
+    if brilliance_midtones is not None:
+        fields[_BRILLIANCE_MIDTONES_FIELD_INDEX] = float(brilliance_midtones)
+    if brilliance_shadows is not None:
+        fields[_BRILLIANCE_SHADOWS_FIELD_INDEX] = float(brilliance_shadows)
     return encode(tuple(fields))

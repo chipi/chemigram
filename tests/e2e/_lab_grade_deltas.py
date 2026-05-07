@@ -533,6 +533,9 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
 # fmt: off
 SKIP_REASONS: dict[str, str] = {
     "look_neutral": "L2 composite (exposure + temperature); sub-effects tested via the parameterized exposure entry and wb_warm_subtle.",  # noqa: E501
+    "look_portrait": "L2 composite (exposure + sigmoid_contrast + colorbalancergb); sub-effects tested via the parameterized entries individually.",  # noqa: E501
+    "look_landscape": "L2 composite (sigmoid_contrast + colorbalancergb + bilat_clarity_strength); sub-effects tested via the parameterized entries individually.",  # noqa: E501
+    "look_vintage_film": "L2 composite (sigmoid_contrast + colorbalancergb + grain_strength + temperature); sub-effects tested via the parameterized entries individually.",  # noqa: E501
     "clarity_painterly": "Local-contrast on edges/details, not flat patches (covered by test_path_b_localcontrast.py). The strength axis was parameterized in v1.6.0+ (bilat_clarity_strength); clarity_painterly stays discrete because it represents a different *kind* of clarity (different sigma_r/s/midtone shaping), not a different strength.",  # noqa: E501
     "blacks_lifted": "Sigmoid 'target_black' is scene-referred; effect is below noise on display-referred chart input. Covered by test_path_a_sigmoid.py against real raws.",  # noqa: E501
     "blacks_crushed": "Same as blacks_lifted.",
@@ -744,6 +747,31 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         "colorchecker",
         _check_render_completes(),
         {"hue_angle": 30.0},
+    ),
+    # brilliance axes (#86): per-zone luminance shaping. On flat chart
+    # patches the per-zone effect is small and depends on each patch's
+    # tonal placement — direction-of-change on real raws covers the
+    # photographic effect; the lab-grade slot just verifies the
+    # parameterized apply path completes for each axis.
+    ("brilliance_global", "brilliance_+0.5"): (
+        "grayscale",
+        _check_render_completes(),
+        {"brilliance_global": 0.5},
+    ),
+    ("brilliance_highlights", "brilliance_+0.5"): (
+        "grayscale",
+        _check_render_completes(),
+        {"brilliance_highlights": 0.5},
+    ),
+    ("brilliance_midtones", "brilliance_+0.5"): (
+        "grayscale",
+        _check_render_completes(),
+        {"brilliance_midtones": 0.5},
+    ),
+    ("brilliance_shadows", "brilliance_+0.5"): (
+        "grayscale",
+        _check_render_completes(),
+        {"brilliance_shadows": 0.5},
     ),
     # toneequalizer: 9-band tonal curve (RFC-022 Tier 2; most complex
     # multi-parameter ship). Each node shifts a luminance band ±2 EV.

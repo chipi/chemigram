@@ -172,6 +172,11 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "highlights": [-1.5, -0.5, 0.0, 0.5, 1.5],
     "whites": [-1.5, -0.5, 0.0, 0.5, 1.5],
     "speculars": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    # ----- colorbalancergb brilliance axes (#86) -----
+    "brilliance_global": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    "brilliance_highlights": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    "brilliance_midtones": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    "brilliance_shadows": [-0.5, 0.0, 0.3, 0.6, 1.0],
 }
 
 # Subtypes / contexts where the engine renders correctly but the chart

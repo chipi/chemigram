@@ -20,6 +20,10 @@ import pytest
 
 from chemigram.core.helpers import apply_entry
 from chemigram.core.parameterize.colorbalancergb import (
+    _BRILLIANCE_GLOBAL_FIELD_INDEX,
+    _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX,
+    _BRILLIANCE_MIDTONES_FIELD_INDEX,
+    _BRILLIANCE_SHADOWS_FIELD_INDEX,
     _CHROMA_GLOBAL_FIELD_INDEX,
     _HUE_ANGLE_FIELD_INDEX,
     _SATURATION_GLOBAL_FIELD_INDEX,
@@ -214,3 +218,56 @@ def test_apply_entry_hue_angle_default_is_no_op(baseline_xmp, hue_angle_entry) -
     plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
     assert plugins
     assert decode(plugins[-1].params)[_HUE_ANGLE_FIELD_INDEX] == pytest.approx(0.0, abs=1e-5)
+
+
+# ---------------------------------------------------------------------------
+# Brilliance axes (#86): 4 separate single-axis manifest entries on the
+# same shared decoder.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "entry_name,param_name,field_index",
+    [
+        ("brilliance_global", "brilliance_global", _BRILLIANCE_GLOBAL_FIELD_INDEX),
+        ("brilliance_highlights", "brilliance_highlights", _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX),
+        ("brilliance_midtones", "brilliance_midtones", _BRILLIANCE_MIDTONES_FIELD_INDEX),
+        ("brilliance_shadows", "brilliance_shadows", _BRILLIANCE_SHADOWS_FIELD_INDEX),
+    ],
+)
+@pytest.mark.parametrize("v", [-1.0, -0.3, 0.0, 0.3, 1.0])
+def test_apply_entry_brilliance_axis_patches_op_params(
+    baseline_xmp, entry_name: str, param_name: str, field_index: int, v: float
+) -> None:
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name(entry_name)
+    assert entry is not None
+    assert entry.parameters is not None
+    new_xmp = apply_entry(baseline_xmp, entry, parameter_values={param_name: v})
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[field_index] == pytest.approx(v, abs=1e-5)
+
+
+@pytest.mark.parametrize(
+    "entry_name",
+    ["brilliance_global", "brilliance_highlights", "brilliance_midtones", "brilliance_shadows"],
+)
+def test_apply_entry_brilliance_default_is_no_op(baseline_xmp, entry_name: str) -> None:
+    """Each brilliance entry's default is 0.0 (no luminance shift)."""
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name(entry_name)
+    assert entry is not None
+    new_xmp = apply_entry(baseline_xmp, entry)
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    # Find which field this entry parameterizes and verify it defaults to 0
+    spec = entry.parameters[0]
+    field_idx_map = {
+        "brilliance_global": _BRILLIANCE_GLOBAL_FIELD_INDEX,
+        "brilliance_highlights": _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX,
+        "brilliance_midtones": _BRILLIANCE_MIDTONES_FIELD_INDEX,
+        "brilliance_shadows": _BRILLIANCE_SHADOWS_FIELD_INDEX,
+    }
+    assert decode(plugins[-1].params)[field_idx_map[spec.name]] == pytest.approx(0.0, abs=1e-5)
