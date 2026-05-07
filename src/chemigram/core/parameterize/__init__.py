@@ -25,7 +25,16 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from chemigram.core.parameterize import exposure, vignette
+from chemigram.core.parameterize import (
+    bilat,
+    colorbalancergb,
+    exposure,
+    grain,
+    highlights,
+    sigmoid,
+    temperature,
+    vignette,
+)
 
 
 class PatchError(Exception):
@@ -38,6 +47,12 @@ class PatchError(Exception):
 _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
     ("exposure", 7): exposure.patch,
     ("vignette", 4): vignette.patch,
+    ("colorbalancergb", 5): colorbalancergb.patch,
+    ("sigmoid", 3): sigmoid.patch,
+    ("bilat", 3): bilat.patch,
+    ("grain", 2): grain.patch,
+    ("highlights", 4): highlights.patch,
+    ("temperature", 4): temperature.patch,
 }
 
 
@@ -75,4 +90,15 @@ def patch_op_params(
     return fn(op_params, **values)
 
 
-__all__ = ["PatchError", "exposure", "patch_op_params", "vignette"]
+__all__ = [
+    "PatchError",
+    "bilat",
+    "colorbalancergb",
+    "exposure",
+    "grain",
+    "highlights",
+    "patch_op_params",
+    "sigmoid",
+    "temperature",
+    "vignette",
+]

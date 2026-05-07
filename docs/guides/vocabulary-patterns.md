@@ -44,7 +44,7 @@ Both are mask-bound (drawn-form gradients). The pair gives compositional depth w
 
 ```
 radial_subject_lift              # ellipse mask, +0.6 EV on the subject area
-clarity_painterly                # gentle global clarity (or clarity_strong if you want crisper)
+clarity_painterly                # gentle global clarity (or bilat_clarity_strength --value 1.5 if you want crisper)
 ```
 
 Works when the subject sits roughly center-frame. If the subject is off-center, use a personal variant of the radial with adjusted center coordinates (see authoring guide).
@@ -52,7 +52,7 @@ Works when the subject sits roughly center-frame. If the subject is off-center, 
 ### "Aggressive contemporary contrast"
 
 ```
-contrast_high                    # sigmoid s-curve, contrast 2.5
+sigmoid_contrast --value 2.5     # aggressive s-curve
 blacks_crushed                   # crush the deep shadows
 chroma_boost_midtones            # bring the chroma back in the mids (contrast often kills chroma)
 ```
@@ -62,9 +62,9 @@ Optionally cap with `vignette_medium` for a polished feel.
 ### "Faded film stock"
 
 ```
-contrast_low                     # mild s-curve
+sigmoid_contrast --value 1.0     # mild s-curve
 blacks_lifted                    # lift target black
-grain_medium                     # visible film-grain texture
+grain_strength --value 25        # visible film-grain texture
 ```
 
 The combination evokes a faded medium-format aesthetic. Add `grade_shadows_warm` for warm-tone grading on top.
@@ -72,7 +72,7 @@ The combination evokes a faded medium-format aesthetic. Add `grade_shadows_warm`
 ### "Blown highlights, hot afternoon"
 
 ```
-highlights_recovery_strong       # pull back clipped highlights
+highlights_clip_threshold --value 0.85   # pull back clipped highlights aggressively
 gradient_top_dampen_highlights   # mask-bound, drops top of frame -0.5 EV
 ```
 
@@ -87,7 +87,7 @@ Apply in order: recovery first (acts on full frame), then the gradient mask loca
 ```
 grade_highlights_warm            # +orange in highlights
 grade_shadows_cool               # +blue in shadows
-sat_boost_moderate               # bring saturation up so the grade reads
+saturation_global --value 0.25   # bring saturation up so the grade reads
 ```
 
 Order: grade first, sat last. Saturation amplifies whatever color you've put in.
@@ -105,21 +105,21 @@ The order matters: WB sets the global tone, chroma boost lets the blues survive 
 ### "Skin-tone protective contrast"
 
 ```
-contrast_low                     # avoid aggressive S-curves on skin
+sigmoid_contrast --value 1.0     # avoid aggressive S-curves on skin
 chroma_boost_highlights          # let skin highlights bloom slightly
-clarity_painterly                # soft local contrast (clarity_strong damages skin)
+clarity_painterly                # soft local contrast (high clarity strengths damage skin)
 ```
 
-Stay away from `contrast_high`, `clarity_strong`, and `chroma_boost_midtones` for portraiture — all three destroy skin tonality.
+Stay away from aggressive `sigmoid_contrast` (>2.0), high `bilat_clarity_strength` (>1.0), and `chroma_boost_midtones` for portraiture — all three destroy skin tonality.
 
 ### "Monochromatic conversion (placeholder)"
 
 ```
-sat_kill                         # global saturation -1.0 (drops all color)
-contrast_high                    # compensate for the contrast loss B&W typically wants
+saturation_global --value -1.0   # global saturation -1.0 (drops all color)
+sigmoid_contrast --value 2.5     # compensate for the contrast loss B&W typically wants
 ```
 
-This is the placeholder until the channelmixerrgb B&W trio (`bw_convert`, `bw_sky_drama`, `bw_foliage`) ships in v1.6.0 (#63). `sat_kill` desaturates without channel-aware luminance mapping, which is what the dedicated B&W entries will fix — different parts of the frame will read at different luminance values depending on color, and the dedicated entries will tune that.
+This is the placeholder until the channelmixerrgb B&W trio (`bw_convert`, `bw_sky_drama`, `bw_foliage`) ships in v1.6.0 (#63). `saturation_global --value -1.0` desaturates without channel-aware luminance mapping, which is what the dedicated B&W entries will fix — different parts of the frame will read at different luminance values depending on color, and the dedicated entries will tune that.
 
 ---
 
@@ -158,9 +158,9 @@ The gradient mask localizes the lift to the actual foreground. `shadows_global_+
 ### "Film-look polish"
 
 ```
-contrast_low                     # mild S-curve (avoid digital aggression)
-grain_medium                     # visible texture
-vignette_subtle                  # corner softening
+sigmoid_contrast --value 1.0     # mild S-curve (avoid digital aggression)
+grain_strength --value 25        # visible texture
+vignette --value -0.25           # corner softening
 ```
 
 Optionally finish with `clarity_painterly` for a gentle micro-contrast.
@@ -168,20 +168,20 @@ Optionally finish with `clarity_painterly` for a gentle micro-contrast.
 ### "Modern HDR-ish (handle carefully)"
 
 ```
-contrast_high
-clarity_strong
+sigmoid_contrast --value 2.5
+bilat_clarity_strength --value 1.5
 chroma_boost_midtones
 chroma_boost_highlights
 ```
 
-Reads as commercial / advertising. Easy to overdo. If the result feels harsh, pull back to `clarity_painterly` first, then `contrast_low`.
+Reads as commercial / advertising. Easy to overdo. If the result feels harsh, pull back to `clarity_painterly` first, then `sigmoid_contrast --value 1.0`.
 
 ### "Soft painterly mood"
 
 ```
 clarity_painterly                # soft local contrast
-contrast_low
-grain_fine                       # subtle texture
+sigmoid_contrast --value 1.0
+grain_strength --value 8         # subtle texture
 grade_highlights_warm            # gentle warmth in highlights
 ```
 

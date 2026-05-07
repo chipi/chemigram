@@ -39,7 +39,7 @@ The matrix below maps each darktable module touched by the chemigram vocabulary 
 | Module | Vocabulary entries | Engine | Photographic | Notes |
 |--------|-------------------|--------|--------------|-------|
 | `exposure` | `expo_+0.5`, `expo_-0.5`, `expo_+0.3`, `expo_-0.3`, `shadows_global_+/-`, `gradient_*`, `radial_*`, `rectangle_*` | ✅ | ✅ | The 4 shipped masked primitives use this. EV deltas through a region are the canonical use case (dodge/burn). |
-| `colorbalancergb` | `sat_*`, `vibrance_+0.3`, `grade_*`, `chroma_boost_*` | ✅ | ✅ | Saturation and grading through a region work cleanly — collapse a background to monochrome, warm the subject, etc. Verified by [`test_lab_grade_masked_universality`](https://github.com/chipi/chemigram/blob/main/tests/e2e/test_lab_grade_masked_universality.py) (sat_kill through a center mask leaves corner chroma intact). |
+| `colorbalancergb` | `saturation_global` (parameterized), `vibrance_+0.3`, `grade_*`, `chroma_boost_*` | ✅ | ✅ | Saturation and grading through a region work cleanly — collapse a background to monochrome, warm the subject, etc. Verified by [`test_lab_grade_masked_universality`](https://github.com/chipi/chemigram/blob/main/tests/e2e/test_lab_grade_masked_universality.py) (`saturation_global --value -1.0` through a center mask leaves corner chroma intact). |
 | `sigmoid` | `contrast_low/high`, `blacks_lifted/crushed`, `whites_open` | ✅ | ⚠️ Use with care | s-curves are tone benders — applying one in a region can produce visible seam where the curve transitions between masked and unmasked areas. Soft falloff helps. Sometimes the right call; sometimes you want a global contrast move and a regional luma move instead. |
 | `bilat` (localcontrast) | `clarity_strong`, `clarity_painterly` | ✅ | ✅ | Local-contrast through a region is photographically clean (sharpen a face, soften a background). Edge enhancement respects the mask. |
 | `vignette` | `vignette_subtle/medium/heavy` | ✅ | ❌ Don't | The vignette module is itself geometric — it produces a radial darkening centered on the frame. Pairing it with a mask is two competing geometries; the result is rarely what you want. Use exposure-through-a-mask for region darkening instead. |
@@ -82,8 +82,9 @@ Three paths: direct CLI, vocabulary authoring, and Python.
 `chemigram apply-primitive` accepts `--mask-spec '<json>'` to apply any primitive through an ad-hoc drawn mask:
 
 ```bash
-chemigram apply-primitive <image_id> --entry sat_kill \
+chemigram apply-primitive <image_id> --entry saturation_global \
   --pack expressive-baseline \
+  --value -1.0 \
   --mask-spec '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.1}}'
 ```
 
@@ -132,7 +133,8 @@ The `apply_primitive` MCP tool accepts an optional `mask_spec` argument with the
   "tool": "apply_primitive",
   "args": {
     "image_id": "<id>",
-    "primitive_name": "sat_kill",
+    "primitive_name": "saturation_global",
+    "value": -1.0,
     "mask_spec": {
       "dt_form": "ellipse",
       "dt_params": {
@@ -150,7 +152,7 @@ Same precedence as the CLI: `mask_spec` from the agent overrides the entry's man
 ### From Python (programmatic, one-off)
 
 ```python
-from chemigram.core.helpers import apply_with_drawn_mask
+from chemigram.core.helpers import apply_entry
 from chemigram.core.vocab import load_packs
 from chemigram.core.xmp import parse_xmp
 
@@ -158,9 +160,9 @@ baseline = parse_xmp(workspace / "current.xmp")
 vocab = load_packs(["starter", "expressive-baseline"])
 
 # Pick any global primitive
-entry = vocab.lookup_by_name("sat_kill")
+entry = vocab.lookup_by_name("saturation_global")
 
-# Apply it through a centered radial mask
+# Apply it at -1.0 (kill saturation) through a centered radial mask
 mask_spec = {
     "dt_form": "ellipse",
     "dt_params": {
@@ -169,8 +171,12 @@ mask_spec = {
         "border": 0.1,
     },
 }
-applied = apply_with_drawn_mask(baseline, entry.dtstyle, mask_spec)
-# `applied` is a new Xmp with sat_kill bound to the ellipse.
+applied = apply_entry(
+    baseline, entry,
+    parameter_values={"saturation_global": -1.0},
+    mask_spec=mask_spec,
+)
+# `applied` is a new Xmp with saturation_global bound to the ellipse.
 # Render it through `chemigram.core.pipeline.render(...)`.
 ```
 

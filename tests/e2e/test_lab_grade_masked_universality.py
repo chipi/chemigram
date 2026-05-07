@@ -51,10 +51,9 @@ from pathlib import Path
 
 import pytest
 
-from chemigram.core.helpers import apply_with_drawn_mask
 from chemigram.core.pipeline import render
 from chemigram.core.vocab import VocabularyIndex, load_packs
-from chemigram.core.xmp import Xmp, parse_xmp, synthesize_xmp, write_xmp
+from chemigram.core.xmp import Xmp, parse_xmp, write_xmp
 
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_TESTS_ROOT.parent))
@@ -98,7 +97,11 @@ def _corner_chroma(samples: list[PatchSample]) -> float:
 # globally so a "masked corners are clearly different from globally-
 # affected corners" assertion has enough headroom over render noise.
 #
-# We pick ``sat_kill`` because:
+# Each entry: (name, parameter_values). For non-parameterized entries
+# parameter_values is an empty dict; for parameterized entries (RFC-021)
+# we supply the values that produce the expected signature.
+#
+# We pick ``saturation_global`` at -1.0 because:
 #   - It collapses corner chroma from ~14 to ~0 globally — the largest,
 #     most repeatable signature in the vocab.
 #   - It exercises colorbalancergb, the most-used module category and
@@ -107,7 +110,13 @@ def _corner_chroma(samples: list[PatchSample]) -> float:
 #   - The unit test :mod:`test_apply_universality` separately proves
 #     the apply path completes for every loaded vocab entry across
 #     every drawn-form, so we don't need to enumerate at the e2e tier.
-MASK_COVERAGE: list[str] = ["sat_kill"]
+#
+# Pre-v1.6 this slot was the discrete ``sat_kill`` entry; it was retired
+# when ``saturation_global`` shipped (RFC-021) and the parameterized form
+# at -1.0 is the direct equivalent.
+MASK_COVERAGE: list[tuple[str, dict[str, float]]] = [
+    ("saturation_global", {"saturation_global": -1.0}),
+]
 
 
 def _resolve_configdir() -> Path:
@@ -172,9 +181,9 @@ def vocab() -> VocabularyIndex:
     return load_packs(["starter", "expressive-baseline"])
 
 
-@pytest.mark.parametrize("primitive_name", MASK_COVERAGE, ids=MASK_COVERAGE)
+@pytest.mark.parametrize("coverage_entry", MASK_COVERAGE, ids=[name for name, _ in MASK_COVERAGE])
 def test_mask_localizes_arbitrary_primitive(
-    primitive_name: str,
+    coverage_entry: tuple[str, dict[str, float]],
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,
     configdir: Path,
@@ -198,6 +207,9 @@ def test_mask_localizes_arbitrary_primitive(
     test is the empirical working ceiling.
     """
     _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    primitive_name, parameter_values = coverage_entry
 
     entry = vocab.lookup_by_name(primitive_name)
     if entry is None:
@@ -211,13 +223,18 @@ def test_mask_localizes_arbitrary_primitive(
     out_dir = tmp_path_factory.mktemp(f"masked_universality_{primitive_name}")
 
     global_patches = _render_and_read(
-        applied=synthesize_xmp(baseline_xmp, [entry.dtstyle]),
+        applied=apply_entry(baseline_xmp, entry, parameter_values=parameter_values or None),
         label="global",
         configdir=configdir,
         out_dir=out_dir,
     )
     masked_patches = _render_and_read(
-        applied=apply_with_drawn_mask(baseline_xmp, entry.dtstyle, _CENTER_MASK_SPEC),
+        applied=apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=parameter_values or None,
+            mask_spec=_CENTER_MASK_SPEC,
+        ),
         label="masked",
         configdir=configdir,
         out_dir=out_dir,
@@ -239,6 +256,193 @@ def test_mask_localizes_arbitrary_primitive(
             f"  receive the same effect whether masked or global, suggesting\n"
             f"  a broken mask binding (mask_id mismatch, opacity 0, inverted\n"
             f"  mask, or pipeline-order issue)."
+        )
+
+
+def test_parameterized_temperature_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Temperature mask binding is documented as ineffective on most
+    pipelines (per mask-applicable-controls.md#temperature) — the module
+    runs early in darktable's pipeline so masking has limited photographic
+    use. We verify the parameterized + masked apply path runs end-to-end
+    at multi-parameter values to exercise the multi-axis ship.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("temperature")
+    if entry is None:
+        pytest.fail("'temperature' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'temperature' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_temperature")
+    cases = [
+        ("warmer", {"red_coeff": 2.148, "blue_coeff": 1.209}),
+        ("cooler", {"red_coeff": 1.209, "blue_coeff": 2.137}),
+        ("neutral_partial", {"red_coeff": 1.5}),  # partial-update — only red
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"temperature_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_highlights_clip_threshold_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Highlights recovery operates on clipped input data; the synthetic
+    chart fixture has no clipping. We verify the parameterized + masked
+    apply path runs end-to-end.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("highlights_clip_threshold")
+    if entry is None:
+        pytest.fail("'highlights_clip_threshold' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'highlights_clip_threshold' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_highlights_clip_threshold")
+    for v in (0.85, 0.95, 1.0):
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values={"clip_threshold": v},
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"highlights_clip_threshold_{v:.2f}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_grain_strength_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Grain mask binding is mechanically valid but produces a visible
+    boundary at the mask edge (per mask-applicable-controls.md#grain).
+    We verify the parameterized apply + mask path runs end-to-end.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("grain_strength")
+    if entry is None:
+        pytest.fail("'grain_strength' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'grain_strength' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_grain_strength")
+    for v in (8.0, 25.0, 50.0):
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values={"grain_strength": v},
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"grain_strength_{v:.0f}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_bilat_clarity_strength_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Bilat (clarity) operates on edges/details, not flat chart patches —
+    no spatial-localization assertion is meaningful on the synthetic
+    fixture. We verify the parameterized apply + mask path runs end-to-
+    end at multiple strength values.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("bilat_clarity_strength")
+    if entry is None:
+        pytest.fail("'bilat_clarity_strength' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'bilat_clarity_strength' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_bilat_clarity_strength")
+    for v in (0.5, 1.5, 2.5):
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values={"clarity_strength": v},
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"bilat_clarity_strength_{v:.1f}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_sigmoid_contrast_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Sigmoid mask binding is mechanically valid but produces visible
+    seams between masked and unmasked regions (per
+    mask-applicable-controls.md#sigmoid). We don't assert spatial
+    localization — just verify the parameterized apply path runs end-to-
+    end and produces a valid render at multiple contrast values.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("sigmoid_contrast")
+    if entry is None:
+        pytest.fail("'sigmoid_contrast' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'sigmoid_contrast' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_sigmoid_contrast")
+    for v in (1.0, 1.5, 2.5):
+        applied = apply_entry(
+            baseline_xmp, entry, parameter_values={"contrast": v}, mask_spec=_CENTER_MASK_SPEC
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"sigmoid_contrast_{v:.1f}",
+            configdir=configdir,
+            out_dir=out_dir,
         )
 
 
@@ -343,7 +547,7 @@ def test_coverage_documents_at_least_colorbalancergb(
         pytest.fail("MASK_COVERAGE is empty — at least one primitive required")
 
     touched_modules: set[str] = set()
-    for name in MASK_COVERAGE:
+    for name, _params in MASK_COVERAGE:
         entry = vocab.lookup_by_name(name)
         if entry is None:
             pytest.fail(f"MASK_COVERAGE references unknown primitive: {name}")

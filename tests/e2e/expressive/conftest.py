@@ -41,17 +41,27 @@ def render_with_entry(
     out_dir: Path,
     configdir: Path,
     size: int = 256,
+    parameter_values: dict[str, float] | None = None,
 ) -> Path:
     """Synthesize ``entry_name`` onto ``baseline``, render, return JPEG path.
 
     Skips the test (rather than failing) if the entry isn't in the pack
     yet — entries are added incrementally during #45/#46/#47.
+
+    Parameterized entries (RFC-021) accept ``parameter_values`` to
+    override the dtstyle's defaults via the apply_entry path; plain
+    entries ignore it.
     """
     entry = pack.lookup_by_name(entry_name)
     if entry is None:
         pytest.skip(f"entry {entry_name!r} not yet authored in expressive-baseline")
 
-    synthesized = synthesize_xmp(baseline, [entry.dtstyle])
+    if parameter_values is not None and entry.parameters is not None:
+        from chemigram.core.helpers import apply_entry
+
+        synthesized = apply_entry(baseline, entry, parameter_values=parameter_values)
+    else:
+        synthesized = synthesize_xmp(baseline, [entry.dtstyle])
     out_dir.mkdir(parents=True, exist_ok=True)
     xmp_path = out_dir / f"{entry_name}.xmp"
     out_path = out_dir / f"{entry_name}.jpg"

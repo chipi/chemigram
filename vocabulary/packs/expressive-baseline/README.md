@@ -2,7 +2,7 @@
 
 The comprehensive baseline vocabulary pack for expressive taste articulation.
 
-35 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 31 authored programmatically via Path C struct reverse-engineering (ADR-073) plus 4 drawn-mask-bound entries via path 4a (ADR-076).
+24 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 12 authored programmatically via Path C struct reverse-engineering (ADR-073), 4 drawn-mask-bound via path 4a (ADR-076), and 8 parameterized via Path C decoders (ADR-077..080: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` — Phase 4 closed v1.6.0+).
 
 ## Composition with `starter`
 
@@ -41,32 +41,28 @@ All 35 entries grouped by subtype. The mask-bound entries (drawn-form geometry) 
 
 (The 4 mask-bound exposure entries — `gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows`, `radial_subject_lift`, `rectangle_subject_band_dim` — are listed under "Mask-bound" below.)
 
-### sigmoid (5 — tone curve)
+### sigmoid (4 — tone curve)
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `contrast_low` | sigmoid | tone, contrast, low | Mild s-curve; sigmoid contrast 1.0. |
-| `contrast_high` | sigmoid | tone, contrast, high | Aggressive s-curve; sigmoid contrast 2.5. |
+| `sigmoid_contrast` | sigmoid | tone, contrast, parameterized | Parameterized s-curve contrast; `--value V` in [0.5, 5.0]. 1.0 = mild, 1.5 = darktable default, 2.5 = aggressive. (RFC-021; replaces v1.5.x contrast_low / contrast_high.) |
 | `blacks_lifted` | sigmoid | tone, blacks, lift | Lift target black to 0.5. |
 | `blacks_crushed` | sigmoid | tone, blacks, crush | Crush blacks: target 0.001 + skew -0.3. |
 | `whites_open` | sigmoid | tone, whites, open | Open whites: target 300 (3x default). |
 
-### highlights (2)
+### highlights (1)
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `highlights_recovery_subtle` | highlights | highlights, subtle | Subtle highlight reconstruction; clip 0.95. |
-| `highlights_recovery_strong` | highlights | highlights, strong | Strong highlight reconstruction; clip 0.85. |
+| `highlights_clip_threshold` | highlights | highlights, parameterized | Parameterized highlight-recovery clip threshold; `--value V` in [0.0, 2.0]. 0.95 = subtle, 0.85 = strong, 0.5 = aggressive. (RFC-021; replaces v1.5.x highlights_recovery_subtle / highlights_recovery_strong.) |
 
-### colorbalancergb (11 — color grading)
+### colorbalancergb (9 — color grading)
 
 Saturation:
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `sat_boost_moderate` | colorbalancergb | saturation, boost, moderate | Moderate global saturation boost (+0.25). |
-| `sat_boost_strong` | colorbalancergb | saturation, boost, strong | Strong global saturation boost (+0.5). |
-| `sat_kill` | colorbalancergb | saturation, kill, monochrome | Kill all saturation (global -1.0). |
+| `saturation_global` | colorbalancergb | saturation, global, parameterized | Parameterized global saturation; `--value V` in [-1.0, +1.0]. -1.0 = monochrome; +0.5 = strong boost. (RFC-021; replaces v1.5.x sat_kill / sat_boost_moderate / sat_boost_strong.) |
 | `vibrance_+0.3` | colorbalancergb | vibrance, boost | Global vibrance +0.3. |
 
 Color grading (split-tone style):
@@ -90,16 +86,14 @@ Per-zone chroma:
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `clarity_strong` | localcontrast | clarity, strong | Strong local contrast / clarity (detail 1.5). |
-| `clarity_painterly` | localcontrast | clarity, painterly, soft | Soft painterly local contrast (detail 0.4). |
+| `bilat_clarity_strength` | localcontrast | clarity, parameterized | Parameterized clarity strength; `--value V` in [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. (RFC-021; replaces v1.5.x clarity_strong — strength axis only.) |
+| `clarity_painterly` | localcontrast | clarity, painterly, soft | Soft painterly local contrast (detail 0.4). Different *kind* of clarity, not a different strength — kept as a discrete entry. |
 
-### grain (3 — film-grain texture)
+### grain (1 — film-grain texture)
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `grain_fine` | grain | grain, subtle | Subtle film-grain texture; strength 8/100. |
-| `grain_medium` | grain | grain, medium | Visible film-grain texture; strength 25/100. |
-| `grain_heavy` | grain | grain, heavy | Heavy film-grain texture; strength 50/100, coarser scale. |
+| `grain_strength` | grain | grain, parameterized | Parameterized grain strength; `--value V` in [0.0, 100.0]. 8 = fine, 25 = medium, 50 = heavy. (RFC-021; replaces v1.5.x grain_fine / grain_medium / grain_heavy.) |
 
 ### vignette (3 — corner darkening)
 
@@ -109,11 +103,11 @@ Per-zone chroma:
 | `vignette_medium` | vignette | vignette, medium | Medium corner darkening; brightness -0.5. |
 | `vignette_heavy` | vignette | vignette, heavy | Strong corner darkening; brightness -0.8. |
 
-### wb (1 — white balance)
+### wb (1 — white balance, multi-axis parameterized)
 
 | Name | Subtype | Tags | Description |
 |-|-|-|-|
-| `wb_cool_subtle` | wb | wb, cool, subtle | Cool white balance, subtle (mirror of starter's `wb_warm_subtle`). |
+| `temperature` | wb | wb, parameterized, multi-axis | Parameterized white balance — first multi-parameter ship. Pass `--param red_coeff=V --param blue_coeff=V`; both range [0.5, 4.0], default 1.0 (no shift). Warmer: red↑; cooler: blue↑. (RFC-021; replaces v1.5.x wb_cool_subtle. Starter's `wb_warm_subtle` remains as a discrete teaching artifact.) |
 
 ---
 
@@ -138,14 +132,17 @@ For authoring your own drawn-mask-bound vocabulary entries, see [`docs/guides/au
 
 For tags that have intensity gradations, the relationships:
 
-- **Exposure delta:** `expo_-0.5` (starter) ← `expo_-0.3` ← (no-op) → `expo_+0.3` → `expo_+0.5` (starter)
-- **Saturation:** `sat_kill` ← (no-op) → `sat_boost_moderate` → `sat_boost_strong`
-- **Contrast:** `contrast_low` → (no-op) → `contrast_high`
-- **Blacks (sigmoid):** `blacks_crushed` ← (no-op) → `blacks_lifted` → (no-op) → `whites_open`
-- **Highlights recovery:** `highlights_recovery_subtle` → `highlights_recovery_strong`
-- **Clarity:** `clarity_painterly` (soft) ← (no-op) → `clarity_strong` (sharp)
-- **Grain:** `grain_fine` → `grain_medium` → `grain_heavy`
-- **Vignette:** `vignette_subtle` → `vignette_medium` → `vignette_heavy`
+All magnitude ladders are now parameterized (RFC-021 / Phase 4 closed v1.6.0+):
+
+- **Exposure:** `exposure --value V` (in [-3.0, +3.0])
+- **Saturation:** `saturation_global --value V` (in [-1.0, +1.0])
+- **Contrast (sigmoid):** `sigmoid_contrast --value V` (in [0.5, 5.0]; 1.0 = mild, 1.5 = no-op, 2.5 = aggressive)
+- **Blacks (sigmoid):** `blacks_crushed` ← (no-op) → `blacks_lifted` → (no-op) → `whites_open` *(remain discrete — different kinds, not strengths on the same axis)*
+- **Highlights recovery:** `highlights_clip_threshold --value V` (in [0.0, 2.0]; 0.95 = subtle, 0.85 = strong, 0.5 = aggressive)
+- **Clarity:** `bilat_clarity_strength --value V` (in [-1.0, 4.0]; 1.5 = pronounced). `clarity_painterly` remains discrete — different *kind*.
+- **Grain:** `grain_strength --value V` (in [0.0, 100.0]; 8 = fine, 25 = medium, 50 = heavy)
+- **Vignette:** `vignette --value V` (in [-1.0, +1.0])
+- **Temperature (multi-axis):** `temperature --param red_coeff=V --param blue_coeff=V` (each in [0.5, 4.0])
 
 Pick the gentlest move that addresses the brief; stack from there.
 
@@ -156,14 +153,14 @@ Quick lookup by intent:
 - **`tone`** — `contrast_low`, `contrast_high`, `blacks_lifted`, `blacks_crushed`, `whites_open`
 - **`shadows`** — `shadows_global_+`, `shadows_global_-`, `blacks_lifted`, `blacks_crushed`, `gradient_bottom_lift_shadows`
 - **`highlights`** — `highlights_recovery_subtle`, `highlights_recovery_strong`, `whites_open`, `gradient_top_dampen_highlights`, `chroma_boost_highlights`, `grade_highlights_warm`, `grade_highlights_cool`
-- **`saturation` / `chroma` / `vibrance`** — `sat_boost_moderate/strong`, `sat_kill`, `vibrance_+0.3`, `chroma_boost_shadows/midtones/highlights`
+- **`saturation` / `chroma` / `vibrance`** — `saturation_global` (parameterized), `vibrance_+0.3`, `chroma_boost_shadows/midtones/highlights`
 - **`grade` (split-tone)** — `grade_shadows_warm/cool`, `grade_highlights_warm/cool`
-- **`clarity`** — `clarity_strong`, `clarity_painterly`
-- **`grain`** — `grain_fine`, `grain_medium`, `grain_heavy`
-- **`vignette`** — `vignette_subtle`, `vignette_medium`, `vignette_heavy`
-- **`wb`** — `wb_cool_subtle` (this pack), `wb_warm_subtle` (starter)
+- **`clarity`** — `bilat_clarity_strength` (parameterized), `clarity_painterly` (discrete)
+- **`grain`** — `grain_strength` (parameterized)
+- **`vignette`** — `vignette` (parameterized)
+- **`wb`** — `temperature` (parameterized, multi-axis), `wb_warm_subtle` (starter, discrete)
 - **`mask` / `gradient` / `radial` / `rectangle`** — see "Mask-bound entries" above
-- **`monochrome`** — `sat_kill` (a channelmixerrgb-based B&W trio is on the v1.6.0 milestone, #63)
+- **`monochrome`** — `saturation_global --value -1.0` (a channelmixerrgb-based B&W trio is on the v1.6.0 milestone, #63)
 
 For "for X intent, reach for Y composition" patterns, see [`docs/guides/vocabulary-patterns.md`](../../../docs/guides/vocabulary-patterns.md).
 

@@ -48,7 +48,7 @@ Most darktable params structs are flat float-and-int sequences with no padding (
 
 ### 3. Calibrate values
 
-Look at the `$DEFAULT:` annotation in the C struct comments for the engine default. For "subtle / medium / heavy" variants, deviate from the default in the direction the entry name implies. Example: `grain_heavy` uses `strength=50.0` (vs default 25.0); `vignette_heavy` uses `brightness=-0.8` (vs default -0.5).
+Look at the `$DEFAULT:` annotation in the C struct comments for the engine default. The v1.5.x discrete "subtle / medium / heavy" variants followed this pattern (each entry deviated in the direction its name implied). Post-v1.6.0 those magnitude ladders collapse into single parameterized entries (RFC-021 / Phase 4): the magnitude is supplied at apply time via `--value V`, so the dtstyle bakes in a no-op default and the user/agent picks the strength explicitly.
 
 ### 4. Wrap in `.dtstyle` XML + manifest entry
 

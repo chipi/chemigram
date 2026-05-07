@@ -86,7 +86,7 @@ def test_blacks_lifted_decreases_shadow_clip_pct(
     )
 
 
-def test_contrast_high_vs_low_relative_ordering(
+def test_sigmoid_contrast_high_vs_low_relative_ordering(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
@@ -95,32 +95,35 @@ def test_contrast_high_vs_low_relative_ordering(
     tmp_path: Path,
     pixel_stats,
 ) -> None:
-    """contrast_high produces measurably higher local contrast than
-    contrast_low. Direction-of-change between two entries that both touch
-    sigmoid; tolerant of scene-specific magnitude.
+    """sigmoid_contrast at 2.5 produces measurably higher local contrast
+    than at 1.0. Direction-of-change across two values of the parameterized
+    entry; tolerant of scene-specific magnitude. Replaces the v1.5.x
+    contrast_low / contrast_high pair (RFC-021 / Phase 4).
     """
     _ = darktable_binary
     low = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="contrast_low",
+        entry_name="sigmoid_contrast",
         pack=expressive_pack,
         out_dir=tmp_path / "low",
         configdir=configdir,
+        parameter_values={"contrast": 1.0},
     )
     high = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="contrast_high",
+        entry_name="sigmoid_contrast",
         pack=expressive_pack,
         out_dir=tmp_path / "high",
         configdir=configdir,
+        parameter_values={"contrast": 2.5},
     )
     low_lc = pixel_stats.local_contrast_metric(low)
     high_lc = pixel_stats.local_contrast_metric(high)
     assert high_lc > low_lc, (
-        f"contrast_high should produce higher local-contrast variance "
-        f"than contrast_low; got low={low_lc:.2f}, high={high_lc:.2f}"
+        f"sigmoid_contrast at 2.5 should produce higher local-contrast variance "
+        f"than at 1.0; got low={low_lc:.2f}, high={high_lc:.2f}"
     )
 
 

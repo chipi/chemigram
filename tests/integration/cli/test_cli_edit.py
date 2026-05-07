@@ -214,12 +214,14 @@ _AD_HOC_ELLIPSE_MASK = (
 def test_apply_primitive_mask_spec_ellipse_routes_through_drawn_mask(
     runner: CliRunner, cli_workspace_root: Path
 ) -> None:
-    """--mask-spec on a global primitive (sat_kill) routes through the
-    drawn-mask apply path; resulting XMP carries masks_history.
+    """--mask-spec on a global primitive (saturation_global at -1.0) routes
+    through the drawn-mask apply path; resulting XMP carries masks_history.
 
     This is the main user-facing addition from #78: any primitive,
     not just the 4 shipped masked entries, can be region-bound at apply
-    time without authoring a vocabulary entry.
+    time without authoring a vocabulary entry. The parameterized
+    saturation_global at -1.0 is the post-v1.6 equivalent of the v1.5.x
+    sat_kill that originally exercised this path (RFC-021).
     """
     result = runner.invoke(
         app,
@@ -230,9 +232,11 @@ def test_apply_primitive_mask_spec_ellipse_routes_through_drawn_mask(
             "apply-primitive",
             "test-image",
             "--entry",
-            "sat_kill",
+            "saturation_global",
             "--pack",
             "expressive-baseline",
+            "--value",
+            "-1.0",
             "--mask-spec",
             _AD_HOC_ELLIPSE_MASK,
         ],

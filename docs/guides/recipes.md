@@ -95,11 +95,12 @@ Shows the entry's manifest fields (subtype, touches, tags, description, modversi
 
 ### Apply any primitive through an ad-hoc drawn mask
 
-You want to mask a global primitive (e.g., `sat_kill`) for a specific photograph without authoring a new vocabulary entry. Use `--mask-spec`:
+You want to mask a global primitive (e.g., kill saturation in a region) for a specific photograph without authoring a new vocabulary entry. Use `--mask-spec` together with `--value` for parameterized entries:
 
 ```bash
-chemigram apply-primitive <image_id> --entry sat_kill \
+chemigram apply-primitive <image_id> --entry saturation_global \
   --pack expressive-baseline \
+  --value -1.0 \
   --mask-spec '{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.3,"radius_y":0.3,"border":0.1}}'
 ```
 

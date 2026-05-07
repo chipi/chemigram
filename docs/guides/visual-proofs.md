@@ -46,39 +46,21 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (30 entries)
+## `expressive-baseline` pack (24 entries)
 
-### `grain_fine`
+### `grain_strength`
 
-_Subtle film-grain texture; strength 8/100._
+_Parameterized grain strength (RFC-021). Pass --value V; range [0.0, 100.0]. 8 = grain_fine-equivalent, 25 = grain_medium-equivalent, 50 = grain_heavy-equivalent. Replaces the v1.5.x discrete grain_fine / grain_medium / grain_heavy entries with a single continuous-magnitude primitive._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker.jpg" alt="grain_fine ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale.jpg" alt="grain_fine grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-colorchecker-masked.jpg" alt="grain_fine ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-grayscale-masked.jpg" alt="grain_fine grayscale masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/grain_strength-colorchecker.jpg" alt="grain_strength ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-grayscale.jpg" alt="grain_strength grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-colorchecker-masked.jpg" alt="grain_strength ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-grayscale-masked.jpg" alt="grain_strength grayscale masked" width="180"> |
 
 _(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
-_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
-
-| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_fine-clipped.jpg" alt="grain_fine clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_fine-clipped-masked.jpg" alt="grain_fine clipped-gradient masked" width="180"> |
-
-### `grain_medium`
-
-_Visible film-grain texture; strength 25/100._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker.jpg" alt="grain_medium ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale.jpg" alt="grain_medium grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-colorchecker-masked.jpg" alt="grain_medium ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-grayscale-masked.jpg" alt="grain_medium grayscale masked" width="180"> |
-
-_(near-baseline diff in ColorChecker (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+_(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
@@ -86,25 +68,13 @@ _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat
 
 | Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_medium-clipped.jpg" alt="grain_medium clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_medium-clipped-masked.jpg" alt="grain_medium clipped-gradient masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/grain_strength-clipped.jpg" alt="grain_strength clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-clipped-masked.jpg" alt="grain_strength clipped-gradient masked" width="180"> |
 
-### `grain_heavy`
+**Parameter sweep** (`grain_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-_Heavy film-grain texture; strength 50/100, coarser scale._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker.jpg" alt="grain_heavy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale.jpg" alt="grain_heavy grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-colorchecker-masked.jpg" alt="grain_heavy ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-grayscale-masked.jpg" alt="grain_heavy grayscale masked" width="180"> |
-
-_(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
-
-| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped.jpg" alt="grain_heavy clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_heavy-clipped-masked.jpg" alt="grain_heavy clipped-gradient masked" width="180"> |
+| `0.00` | `+8.00` | `+25.00` | `+50.00` | `+100.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-0_00.jpg" alt="grain_strength grain_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p8_00.jpg" alt="grain_strength grain_strength=+8.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p25_00.jpg" alt="grain_strength grain_strength=+25.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p50_00.jpg" alt="grain_strength grain_strength=+50.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p100_00.jpg" alt="grain_strength grain_strength=+100.00" width="180"> |
 
 ### `vignette`
 
@@ -126,13 +96,13 @@ _(near-baseline diff in grayscale (global): subtle vignette is small at the mode
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_80.jpg" alt="vignette brightness=-0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_50.jpg" alt="vignette brightness=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_25.jpg" alt="vignette brightness=-0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-0_00.jpg" alt="vignette brightness=0.00" width="180"> |
 
-### `highlights_recovery_subtle`
+### `highlights_clip_threshold`
 
-_Subtle highlight reconstruction; clip 0.95._
+_Parameterized highlight-recovery clip threshold (RFC-021). Pass --value V; range [0.0, 2.0]: lower = more aggressive recovery (0.95 = subtle, 0.85 = strong, 0.5 = aggressive). Default 1.0 (darktable default; recovers only above 1.0). Replaces the v1.5.x discrete highlights_recovery_subtle / highlights_recovery_strong entries._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker.jpg" alt="highlights_recovery_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale.jpg" alt="highlights_recovery_subtle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-colorchecker-masked.jpg" alt="highlights_recovery_subtle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-grayscale-masked.jpg" alt="highlights_recovery_subtle grayscale masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-colorchecker.jpg" alt="highlights_clip_threshold ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-grayscale.jpg" alt="highlights_clip_threshold grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-colorchecker-masked.jpg" alt="highlights_clip_threshold ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-grayscale-masked.jpg" alt="highlights_clip_threshold grayscale masked" width="180"> |
 
 _(near-baseline diff in ColorChecker (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
 
@@ -146,41 +116,27 @@ _(near-baseline diff in grayscale (masked): this chart has no blown highlights t
 
 | Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-clipped.jpg" alt="highlights_recovery_subtle clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_subtle-clipped-masked.jpg" alt="highlights_recovery_subtle clipped-gradient masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-clipped.jpg" alt="highlights_clip_threshold clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-clipped-masked.jpg" alt="highlights_clip_threshold clipped-gradient masked" width="180"> |
 
-### `highlights_recovery_strong`
+**Parameter sweep** (`clip_threshold`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-_Strong highlight reconstruction; clip 0.85._
+| `+0.50` | `+0.85` | `+0.95` | `+1.00` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_50.jpg" alt="highlights_clip_threshold clip_threshold=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_85.jpg" alt="highlights_clip_threshold clip_threshold=+0.85" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_95.jpg" alt="highlights_clip_threshold clip_threshold=+0.95" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p1_00.jpg" alt="highlights_clip_threshold clip_threshold=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p1_50.jpg" alt="highlights_clip_threshold clip_threshold=+1.50" width="180"> |
 
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker.jpg" alt="highlights_recovery_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale.jpg" alt="highlights_recovery_strong grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-colorchecker-masked.jpg" alt="highlights_recovery_strong ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-grayscale-masked.jpg" alt="highlights_recovery_strong grayscale masked" width="180"> |
+### `sigmoid_contrast`
 
-_(near-baseline diff in ColorChecker (global): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
-
-_(near-baseline diff in ColorChecker (masked): this chart has no blown highlights to recover — see the **clipped-gradient row below** for the visible effect, or [mask-applicable-controls](mask-applicable-controls.md#highlights))_
-
-**On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
-
-| Clipped gradient (global) | Clipped gradient (centered ellipse mask) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-clipped.jpg" alt="highlights_recovery_strong clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_recovery_strong-clipped-masked.jpg" alt="highlights_recovery_strong clipped-gradient masked" width="180"> |
-
-### `contrast_low`
-
-_Mild s-curve; sigmoid contrast 1.0._
+_Parameterized sigmoid tone-curve contrast (RFC-021). Pass --value V (CLI) or value: V (MCP); range [0.5, 5.0] (1.0 = mild s-curve, 1.5 = darktable default / no curve change, 2.5 = aggressive s-curve). Replaces the v1.5.x discrete contrast_low / contrast_high entries with a single continuous-magnitude primitive._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/contrast_low-colorchecker.jpg" alt="contrast_low ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_low-grayscale.jpg" alt="contrast_low grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_low-colorchecker-masked.jpg" alt="contrast_low ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_low-grayscale-masked.jpg" alt="contrast_low grayscale masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-colorchecker.jpg" alt="sigmoid_contrast ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-grayscale.jpg" alt="sigmoid_contrast grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-colorchecker-masked.jpg" alt="sigmoid_contrast ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-grayscale-masked.jpg" alt="sigmoid_contrast grayscale masked" width="180"> |
 
-### `contrast_high`
+**Parameter sweep** (`contrast`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-_Aggressive s-curve; sigmoid contrast 2.5._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/contrast_high-colorchecker.jpg" alt="contrast_high ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_high-grayscale.jpg" alt="contrast_high grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_high-colorchecker-masked.jpg" alt="contrast_high ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/contrast_high-grayscale-masked.jpg" alt="contrast_high grayscale masked" width="180"> |
+| `+0.50` | `+1.00` | `+1.50` | `+2.00` | `+2.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p0_50.jpg" alt="sigmoid_contrast contrast=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p1_00.jpg" alt="sigmoid_contrast contrast=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p1_50.jpg" alt="sigmoid_contrast contrast=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p2_00.jpg" alt="sigmoid_contrast contrast=+2.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p2_50.jpg" alt="sigmoid_contrast contrast=+2.50" width="180"> |
 
 ### `blacks_lifted`
 
@@ -206,13 +162,25 @@ _Open whites: target 300 (3x default)._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker.jpg" alt="whites_open ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale.jpg" alt="whites_open grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker-masked.jpg" alt="whites_open ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale-masked.jpg" alt="whites_open grayscale masked" width="180"> |
 
-### `clarity_strong`
+### `bilat_clarity_strength`
 
-_Strong local contrast / clarity (detail 1.5)._
+_Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry — different kind, not strength._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/clarity_strong-colorchecker.jpg" alt="clarity_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_strong-grayscale.jpg" alt="clarity_strong grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_strong-colorchecker-masked.jpg" alt="clarity_strong ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_strong-grayscale-masked.jpg" alt="clarity_strong grayscale masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-colorchecker.jpg" alt="bilat_clarity_strength ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-grayscale.jpg" alt="bilat_clarity_strength grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-colorchecker-masked.jpg" alt="bilat_clarity_strength ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-grayscale-masked.jpg" alt="bilat_clarity_strength grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`clarity_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+
+| `-0.50` | `0.00` | `+0.50` | `+1.50` | `+2.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-n0_50.jpg" alt="bilat_clarity_strength clarity_strength=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-0_00.jpg" alt="bilat_clarity_strength clarity_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p0_50.jpg" alt="bilat_clarity_strength clarity_strength=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p1_50.jpg" alt="bilat_clarity_strength clarity_strength=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p2_50.jpg" alt="bilat_clarity_strength clarity_strength=+2.50" width="180"> |
 
 ### `clarity_painterly`
 
@@ -244,45 +212,39 @@ _(near-baseline diff in grayscale (masked): below visible threshold on this char
 |-|-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/exposure-sweep-n1_00.jpg" alt="exposure ev=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-n0_50.jpg" alt="exposure ev=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-0_00.jpg" alt="exposure ev=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p0_50.jpg" alt="exposure ev=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p1_00.jpg" alt="exposure ev=+1.00" width="180"> |
 
-### `wb_cool_subtle`
+### `temperature`
 
-_Cool white balance, subtle (mirror of wb_warm_subtle)._
+_Parameterized white balance (RFC-021; first multi-parameter ship). Two axes: --param red_coeff=V (warmer image: red↑) and --param blue_coeff=V (cooler image: blue↑). Range [0.5, 4.0] each; both default 1.0 (no shift). Replaces the v1.5.x discrete wb_cool_subtle entry. Starter's wb_warm_subtle remains as a discrete teaching artifact; production use of WB shifts should prefer this parameterized entry._
 
 | ColorChecker (global) | Grayscale (global) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-colorchecker.jpg" alt="wb_cool_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/wb_cool_subtle-grayscale.jpg" alt="wb_cool_subtle grayscale global" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/temperature-colorchecker.jpg" alt="temperature ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-grayscale.jpg" alt="temperature grayscale global" width="180"> |
 
 > 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#temperature) for why drawn-mask binding doesn't render usefully for this module.
 
-### `sat_boost_strong`
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
-_Strong global saturation boost (+0.5)._
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-| ColorChecker (global) | ColorChecker (centered ellipse mask) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker.jpg" alt="sat_boost_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_strong-colorchecker-masked.jpg" alt="sat_boost_strong ColorChecker masked" width="180"> |
+### `saturation_global`
 
-> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
-
-### `sat_boost_moderate`
-
-_Moderate global saturation boost (+0.25)._
+_Parameterized global saturation in colorbalancergb (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (-1.0 = fully desaturated / monochrome; +0.5 = strong boost). Replaces the v1.5.x discrete sat_kill / sat_boost_moderate / sat_boost_strong entries with a single continuous-magnitude primitive._
 
 | ColorChecker (global) | ColorChecker (centered ellipse mask) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker.jpg" alt="sat_boost_moderate ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_boost_moderate-colorchecker-masked.jpg" alt="sat_boost_moderate ColorChecker masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/saturation_global-colorchecker.jpg" alt="saturation_global ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-colorchecker-masked.jpg" alt="saturation_global ColorChecker masked" width="180"> |
 
 > **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
-### `sat_kill`
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
-_Kill all saturation (global -1.0)._
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-| ColorChecker (global) | ColorChecker (centered ellipse mask) |
-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker.jpg" alt="sat_kill ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sat_kill-colorchecker-masked.jpg" alt="sat_kill ColorChecker masked" width="180"> |
+**Parameter sweep** (`saturation_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
 
-> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
+| `-1.00` | `-0.50` | `0.00` | `+0.25` | `+0.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n1_00.jpg" alt="saturation_global saturation_global=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n0_50.jpg" alt="saturation_global saturation_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-0_00.jpg" alt="saturation_global saturation_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_25.jpg" alt="saturation_global saturation_global=+0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_50.jpg" alt="saturation_global saturation_global=+0.50" width="180"> |
 
 ### `vibrance_+0.3`
 

@@ -1,14 +1,18 @@
-"""Lab-grade validation that highlights_recovery actually reduces clipped
+"""Lab-grade validation that highlight recovery actually reduces clipped
 pixel count on the clipped-gradient fixture (issue #79).
 
 The colorchecker24 and grayscale-ramp fixtures don't have blown
 highlights, so the existing lab-grade isolation suite can only assert
-"highlights_recovery dampens bright patches" via grayscale-ramp luma —
+"highlight recovery dampens bright patches" via grayscale-ramp luma —
 which works as a direction-of-change proxy but doesn't actually test
 the recovery operation. The clipped-gradient fixture has a 60% pure-
 white band on the bottom half by design; this test counts the clipped
-pixels there before and after applying ``highlights_recovery_strong``
-and asserts the count drops.
+pixels there before and after applying ``highlights_clip_threshold``
+at 0.85 (the strong-recovery equivalent) and asserts the count drops.
+
+Phase 4 / RFC-021: ``highlights_recovery_strong`` was retired and
+replaced by the parameterized ``highlights_clip_threshold`` entry. The
+test exercises the parameterized form at ``clip_threshold=0.85``.
 
 Per RFC-019 / ADR-067 fixture-integrity rules: the test stays in
 direction-of-change territory (just asserts clip-count direction +
@@ -28,7 +32,7 @@ from PIL import Image
 
 from chemigram.core.pipeline import render
 from chemigram.core.vocab import VocabularyIndex, load_packs
-from chemigram.core.xmp import Xmp, parse_xmp, synthesize_xmp, write_xmp
+from chemigram.core.xmp import Xmp, parse_xmp, write_xmp
 
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_TESTS_ROOT.parent))
@@ -87,24 +91,26 @@ def vocab() -> VocabularyIndex:
     return load_packs(["expressive-baseline"])
 
 
-def test_highlights_recovery_strong_reduces_clipped_pixels_on_clipped_fixture(
+def test_highlights_clip_threshold_strong_reduces_clipped_pixels_on_clipped_fixture(
     vocab: VocabularyIndex,
     configdir: Path,
     tmp_path_factory: pytest.TempPathFactory,
     darktable_binary: str,
 ) -> None:
     """Render the clipped fixture twice — empty baseline vs through
-    ``highlights_recovery_strong`` — and assert the clipped-pixel count
-    in the white band drops.
+    ``highlights_clip_threshold`` at 0.85 (strong-recovery equivalent) —
+    and assert the clipped-pixel count in the white band drops.
 
     Threshold for pass: at least 5% reduction in clipped pixels. Real
-    highlights recovery on actual blown raw data drops clipping much
+    highlight recovery on actual blown raw data drops clipping much
     more aggressively (often 30-80%); the modest 5% threshold here is
     deliberately conservative because the synthetic fixture is sRGB
     PNG (display-referred), not raw — recovery only has the limited
     headroom darktable's display-referred path provides.
     """
     _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
     out_dir = tmp_path_factory.mktemp("clipped_recovery")
     baseline_xmp = _empty_baseline()
 
@@ -124,11 +130,11 @@ def test_highlights_recovery_strong_reduces_clipped_pixels_on_clipped_fixture(
     if not base_result.success:
         pytest.fail(f"baseline render failed: {base_result.error_message}")
 
-    # Recovery render
-    entry = vocab.lookup_by_name("highlights_recovery_strong")
+    # Recovery render via parameterized apply path (RFC-021)
+    entry = vocab.lookup_by_name("highlights_clip_threshold")
     if entry is None:
-        pytest.fail("highlights_recovery_strong not found in expressive-baseline pack")
-    recovery_xmp = synthesize_xmp(baseline_xmp, [entry.dtstyle])
+        pytest.fail("highlights_clip_threshold not found in expressive-baseline pack")
+    recovery_xmp = apply_entry(baseline_xmp, entry, parameter_values={"clip_threshold": 0.85})
     recovery_xmp_path = out_dir / "recovery.xmp"
     recovery_out = out_dir / "recovery.jpg"
     write_xmp(recovery_xmp, recovery_xmp_path)
@@ -157,7 +163,7 @@ def test_highlights_recovery_strong_reduces_clipped_pixels_on_clipped_fixture(
     reduction_pct = (base_clipped - recovery_clipped) / base_clipped * 100
     if reduction_pct < 5.0:
         pytest.fail(
-            f"highlights_recovery_strong reduced clipped pixels by only "
+            f"highlights_clip_threshold at 0.85 reduced clipped pixels by only "
             f"{reduction_pct:.2f}% (baseline {base_clipped} -> recovery "
             f"{recovery_clipped}); expected >= 5% reduction. The clipped "
             f"fixture is sRGB display-referred so recovery is limited, but "

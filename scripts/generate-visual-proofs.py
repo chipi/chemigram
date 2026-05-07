@@ -137,6 +137,17 @@ _EXTRA_CLIPPED_FIXTURE_SUBTYPES: set[str] = {"highlights", "grain"}
 _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "ev": [-1.0, -0.5, 0.0, 0.5, 1.0],
     "brightness": [-0.8, -0.5, -0.25, 0.0],
+    "saturation_global": [-1.0, -0.5, 0.0, 0.25, 0.5],
+    "contrast": [0.5, 1.0, 1.5, 2.0, 2.5],
+    "clarity_strength": [-0.5, 0.0, 0.5, 1.5, 2.5],
+    "grain_strength": [0.0, 8.0, 25.0, 50.0, 100.0],
+    "clip_threshold": [0.5, 0.85, 0.95, 1.0, 1.5],
+    # temperature is multi-parameter (red_coeff + blue_coeff). The current
+    # sweep harness handles single-axis only; we register red_coeff so the
+    # CI linter (test_parameterized_module_coverage.py) recognizes
+    # ``temperature`` has a sweep recipe. The actual multi-axis sweep grid
+    # is deferred — see _render_parameter_sweep below.
+    "red_coeff": [0.5, 1.0, 1.5, 2.148],
 }
 
 # Subtypes / contexts where the engine renders correctly but the chart

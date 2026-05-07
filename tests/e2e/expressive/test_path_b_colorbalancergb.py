@@ -1,9 +1,10 @@
-"""Path B: colorbalancergb entries (#47). Auto-skips ungated entries.
+"""Path B: colorbalancergb saturation entries (Phase 4 / RFC-021).
 
-Final structure depends on Pre-flight 1 (#40). The tests below assume
-the v0.1 entry table (per-axis entries compose). If Pre-flight 1
-confirms axes clobber, the entries restructure as multi-axis profiles
-and these tests need adjustment.
+These tests originally exercised the v1.5.x discrete entries
+(``sat_kill``, ``sat_boost_moderate``, ``sat_boost_strong``). When
+v1.6.0 / Phase 4 collapsed those into the parameterized
+``saturation_global`` entry, the tests were rewritten to apply the
+single parameterized entry at the equivalent saturation values.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from chemigram.core.xmp import Xmp
 from .conftest import render_baseline, render_with_entry
 
 
-def test_sat_boost_strong_increases_saturation(
+def test_saturation_boost_increases_saturation(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
@@ -32,20 +33,21 @@ def test_sat_boost_strong_increases_saturation(
     after = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="sat_boost_strong",
+        entry_name="saturation_global",
         pack=expressive_pack,
         out_dir=tmp_path,
         configdir=configdir,
+        parameter_values={"saturation_global": 0.5},
     )
     base_sat = pixel_stats.saturation_avg(base)
     after_sat = pixel_stats.saturation_avg(after)
     assert after_sat > base_sat, (
-        f"sat_boost_strong should increase saturation; "
+        f"saturation_global at +0.5 should increase saturation; "
         f"got base={base_sat:.3f}, after={after_sat:.3f}"
     )
 
 
-def test_sat_kill_decreases_saturation(
+def test_saturation_kill_decreases_saturation(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
@@ -61,19 +63,21 @@ def test_sat_kill_decreases_saturation(
     after = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="sat_kill",
+        entry_name="saturation_global",
         pack=expressive_pack,
         out_dir=tmp_path,
         configdir=configdir,
+        parameter_values={"saturation_global": -1.0},
     )
     base_sat = pixel_stats.saturation_avg(base)
     after_sat = pixel_stats.saturation_avg(after)
     assert after_sat < base_sat, (
-        f"sat_kill should decrease saturation; got base={base_sat:.3f}, after={after_sat:.3f}"
+        f"saturation_global at -1.0 should decrease saturation; "
+        f"got base={base_sat:.3f}, after={after_sat:.3f}"
     )
 
 
-def test_sat_boost_strong_vs_moderate_relative_ordering(
+def test_saturation_strong_vs_moderate_relative_ordering(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
@@ -86,22 +90,24 @@ def test_sat_boost_strong_vs_moderate_relative_ordering(
     moderate = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="sat_boost_moderate",
+        entry_name="saturation_global",
         pack=expressive_pack,
         out_dir=tmp_path / "moderate",
         configdir=configdir,
+        parameter_values={"saturation_global": 0.25},
     )
     strong = render_with_entry(
         raw_path=test_raw,
         baseline=baseline_xmp,
-        entry_name="sat_boost_strong",
+        entry_name="saturation_global",
         pack=expressive_pack,
         out_dir=tmp_path / "strong",
         configdir=configdir,
+        parameter_values={"saturation_global": 0.5},
     )
     mod_sat = pixel_stats.saturation_avg(moderate)
     strong_sat = pixel_stats.saturation_avg(strong)
     assert strong_sat > mod_sat, (
-        f"sat_boost_strong should saturate more than sat_boost_moderate; "
+        f"saturation_global at +0.5 should saturate more than +0.25; "
         f"got moderate={mod_sat:.3f}, strong={strong_sat:.3f}"
     )

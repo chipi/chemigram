@@ -16,7 +16,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - `exposure --value V` — continuous EV in `[-3.0, +3.0]`. Replaces the previous discrete `expo_+0.5 / expo_-0.5 / expo_+0.3 / expo_-0.3 / shadows_global_+/-` ladder. Any value the photographer wants.
 
 **Tone curve (sigmoid)**
-- `contrast_low`, `contrast_high` — global s-curve strength
+- `sigmoid_contrast` (parameterized; range [0.5, 5.0]; 1.0 = mild s-curve, 1.5 = darktable default, 2.5 = aggressive). Replaces the v1.5.x `contrast_low / contrast_high` ladder.
 - `blacks_lifted`, `blacks_crushed` — pull or crush deep shadows via sigmoid target
 - `whites_open` — extend white target
 
@@ -41,11 +41,11 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 ### What's there
 
 **White balance (temperature module)**
-- `wb_warm_subtle`, `wb_cool_subtle` — small temperature shift
+- `temperature` (parameterized; multi-axis: `red_coeff`, `blue_coeff` in [0.5, 4.0] each; defaults 1.0). The first multi-parameter parameterized entry. Replaces the v1.5.x `wb_cool_subtle`. `wb_warm_subtle` remains in the starter pack as a discrete teaching artifact.
 - ⚠️ does not honor masks (darktable pipeline-position issue, see [`mask-applicable-controls.md`](guides/mask-applicable-controls.md#temperature))
 
 **Saturation (colorbalancergb)**
-- `sat_boost_strong` (+0.5), `sat_boost_moderate` (+0.25), `sat_kill` (-1.0 → monochrome)
+- `saturation_global` (parameterized; range [-1.0, +1.0]; -1.0 → monochrome, +0.5 → strong boost). Replaces the v1.5.x discrete `sat_kill / sat_boost_moderate / sat_boost_strong` ladder.
 - `vibrance_+0.3` — gentle saturation that protects saturated pixels
 
 **Per-zone chroma**
@@ -71,7 +71,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 ### What's there
 
 **Local contrast (bilateral filter)**
-- `clarity_strong` — pronounced local contrast / clarity
+- `bilat_clarity_strength` (parameterized; range [-1.0, 4.0]; default 0.0 = no clarity, 1.5 = pronounced). Replaces the v1.5.x discrete `clarity_strong` (the strength axis only). `clarity_painterly` remains discrete — different *kind* of clarity, not strength.
 - `clarity_painterly` — softer painterly local contrast
 
 ### What's missing (fundamentals)
@@ -87,7 +87,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 
 ### What's there
 
-- `grain_fine`, `grain_medium`, `grain_heavy` — film-grain texture at 8/25/50 strength
+- `grain_strength` (parameterized; range [0.0, 100.0]; 8 = grain_fine-equivalent, 25 = medium, 50 = heavy). Replaces the v1.5.x `grain_fine / grain_medium / grain_heavy` ladder.
 
 ### What's missing
 
@@ -120,7 +120,7 @@ This entire category is missing — chemigram doesn't yet have any geometry-touc
 
 ### What's there
 
-- `highlights_recovery_subtle`, `highlights_recovery_strong` — pull back blown highlights via the `highlights` (raw) module
+- `highlights_clip_threshold` (parameterized; range [0.0, 2.0]; default 1.0 = darktable default, 0.95 = subtle, 0.85 = strong). Replaces the v1.5.x `highlights_recovery_subtle / highlights_recovery_strong` ladder.
 
 ### What's missing
 
@@ -240,24 +240,20 @@ Phase 4 collapses the remaining magnitude-ladder entries into parameterized form
 |---|---|---|---|
 | 1 | `exposure` | ✅ shipped (v1.6.0) | `expo_+0.5/-0.5/+0.3/-0.3`, `shadows_global_+/-` |
 | 2 | `vignette` | ✅ shipped (v1.6.0) | `vignette_subtle/medium/heavy` |
-| 3 | `colorbalancergb-saturation` | next iteration | `sat_boost_strong/moderate`, `sat_kill` |
-| 4 | `sigmoid-contrast` | next iteration | `contrast_low/high` |
-| 5 | `bilat-clarity-strength` | following | strength axis of `clarity_strong` (clarity_painterly stays — different *kind*, not strength) |
-| 6 | `grain-strength` | following | `grain_fine/medium/heavy` |
-| 7 | `highlights-clip-threshold` | following | `highlights_recovery_subtle/strong` |
-| 8 | `temperature` (multi-axis) | last in Phase 4 | `wb_warm_subtle/cool_subtle`; first multi-parameter ship |
+| 3 | `saturation_global` (colorbalancergb) | ✅ shipped | `sat_boost_strong/moderate`, `sat_kill` |
+| 4 | `sigmoid_contrast` | ✅ shipped | `contrast_low/high` |
+| 5 | `bilat_clarity_strength` | ✅ shipped | strength axis of `clarity_strong` (clarity_painterly stays — different *kind*, not strength) |
+| 6 | `grain_strength` | ✅ shipped | `grain_fine/medium/heavy` |
+| 7 | `highlights_clip_threshold` | ✅ shipped | `highlights_recovery_subtle/strong` |
+| 8 | `temperature` (multi-axis) | ✅ shipped | `wb_cool_subtle`; first multi-parameter ship. `wb_warm_subtle` retained in starter as discrete teaching artifact |
 
 Each module is a single commit: decoder + manifest entry + 5-layer test coverage + visual-proof sweep + magnitude-ladder cleanup. The CI linter (`tests/unit/core/test_parameterized_module_coverage.py`) enforces ADR-080's coverage policy.
 
-### What's next (planned for the next session)
+### What's next
 
-**Iteration N+1 — finish Phase 4 single-axis modules (target: 2–3 modules per session).**
+**Phase 4 closed.** All 8 magnitude-ladder modules now collapse into parameterized entries: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` (multi-axis). The architecture is proven across single-axis and multi-axis cases; the test-coverage CI linter (ADR-080) enforces 5-layer discipline on every parameterized entry.
 
-1. **`colorbalancergb-saturation`** (single-axis) — first to ship. Mid-pipeline (composes cleanly with masks). Largest cleanup payoff: 3 entries → 1.
-2. **`sigmoid-contrast`** (single-axis) — second. 2 entries → 1.
-3. **`bilat-clarity-strength`** (single-axis) — third if time. 1 entry remains discrete (`clarity_painterly`); only the strength axis collapses.
-
-After Phase 4 ships completely (likely 2–3 sessions), open the question of brand-new module authoring (sharpen / toneequal / denoise / lens / crop) — those address the "where chemigram is thin" gaps above. Each new module ships parameterized from day 1 (no discrete-strength ladder to migrate).
+The next architectural question — bulk parameterization of brand-new modules (sharpen / toneequal / denoise / lens / crop) — is open in **RFC-022** (tiered baseline policy). The decision there determines whether the project commits to a complete parameterized foundation before further agent/session work, or stays incremental as session evidence surfaces specific gaps.
 
 ### What "growing it" actually requires
 
@@ -267,9 +263,9 @@ The infrastructure to grow vocabulary is in place. What's left is finishing the 
 
 ---
 
-## 11. The discrete-vocabulary problem (resolved for exposure + vignette in v1.6.0; in-progress elsewhere)
+## 11. The discrete-vocabulary problem (resolved for all 8 magnitude-ladder modules in v1.6.0+)
 
-> **Status update — 2026-05-05:** RFC-021 / ADR-077..080 closed this. The architecture for parameterized vocabulary entries shipped in v1.6.0 along with the first two modules (`exposure`, `vignette`). The remaining Phase 4 modules (`colorbalancergb-saturation`, `sigmoid-contrast`, etc.) ship in subsequent iterations using the same pattern. The framing below is preserved as historical motivation.
+> **Status update — 2026-05-07:** RFC-021 / ADR-077..080 closed this. All 8 magnitude-ladder modules from the Phase 4 plan are now parameterized: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` (the first multi-parameter ship). The framing below is preserved as historical motivation. Whether to expand the parameterized baseline to net-new modules (sharpen / toneequal / denoise / lens / crop) is the open question in RFC-022.
 
 ### The question (historical)
 
