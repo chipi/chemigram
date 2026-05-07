@@ -8,6 +8,95 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-05-07
+
+**Lightroom daily-use parity — 51/52 controls (98%) across 6 panels.**
+
+v1.8.0 closes the bulk of the Lightroom-parity work tracked under the v1.8.0
+milestone. The capability-survey § 13 daily-use surface count moved from 12/23
+covered (pre-v1.7.0) to 45/47 (post-v1.7.0) to **51/52 (post-v1.8.0)**. Only
+manual tone curve (#94) remains, blocked on the darktable-session empirical-
+baseline work tracked under #100.
+
+### Closed Lightroom-parity gaps
+
+**Color panel (4/4 covered):**
+- WB Tint via `temperature.green_coeff` (#90 Bucket A.3).
+- WB Kelvin/Tint UX wrapper via `wb_kelvin_delta` (#102) — photographic-units
+  axes layered on the existing temperature decoder.
+
+**Color Mixer panel (24/24 covered):**
+- HSL Hue / Saturation / Luminance per 8 colors via `colorequal` mv4
+  (RFC-023 / ADR-083 / #93). 3 multi-axis vocabulary entries
+  (`hsl_hue` / `hsl_saturation` / `hsl_luminance`), 24 axes total.
+- First formal Tier 3 → Tier 2 promotion under ADR-081's policy.
+
+**Color Grading panel (7/7 covered):**
+- Per-zone hue × 3 + per-zone saturation × 3 + blending (shadows_weight /
+  highlights_weight) + balance (white_fulcrum) via 9 new `colorbalancergb`
+  axes (#91 Bucket A.5).
+- Midtones grade discrete entries (`grade_midtones_warm` / `_cool`, #90 Bucket A.4).
+
+**Effects panel (5/5 covered):**
+- Texture via `diffuse-or-sharpen` mv2 (#92 Bucket A.6).
+- Dehaze via `hazeremoval` mv3 (#90 Bucket A.2).
+
+**Transform panel (5/5 covered, NEW):**
+- Rotation, vertical/horizontal perspective, shear, aspect via `ashift` mv5
+  (#101 Bucket A.7).
+
+### Tier 3 promotions (darktable-specific power)
+
+Beyond Lightroom parity, three Tier 3 modules promoted to Tier 2 under ADR-081's
+"feature commit + cite ADR + 5-layer coverage" pattern:
+
+- **Lens correction** (`lens` mv10, #95) — 10 magnitude axes for manual TCA /
+  vignette / per-correction-type strengths. The 356-byte struct includes two
+  embedded char[128] arrays for lensfun identifier strings; EXIF auto-binding
+  to populate them is sequenced under #100.
+- **Denoise** (`denoiseprofile` mv12, #96) — 4 magnitude axes (denoise_strength,
+  denoise_shadows, denoise_radius, denoise_scattering). The 416-byte struct
+  contains 84 floats of wavelet-frequency curves; baseline is constructed,
+  empirical verification under #100.
+- **Filmic v6** (`filmicrgb` mv6, #97) — 8 magnitude axes parallel to sigmoid
+  for users who want explicit log-encoding control.
+
+### Architecture
+
+- **ADR-083** closes RFC-023 — picks `colorequal` over `colorzones` for HSL
+  parity; reclassifies HSL from Tier 3 to Tier 2.
+- 18 Path C decoders in the registry (was 11 at v1.7.0); 38 parameterized
+  vocabulary entries (was 18 at v1.7.0).
+- 5-layer coverage gate per ADR-080 covers all 38 parameterized entries.
+- Modversion drift detection (ADR-082) registers all 18 modules.
+
+### Deferred (tracked under #100 darktable-session umbrella)
+
+- **#94 manual tone curve** (`tonecurve` mv5) — 520-byte spline-curve struct
+  needs darktable-GUI baseline capture.
+- **#95 lens EXIF auto-binding extension** — populate lensfun camera/lens
+  strings from raw EXIF at apply time.
+- **#96 denoise wavelet-curve baseline verification** — confirm or fix the
+  constructed `x[6][7]/y[6][7]` baseline against a darktable-emitted dtstyle.
+- **#98 colorzones spline-curve HSL precision fallback** — discrete-only
+  presets for the 5% workflow that needs Lightroom HSL Range slider precision.
+
+### Stats
+
+- Tests: 1127 → **1451** passing (+324).
+- Path C decoders: 11 → **18**.
+- Parameterized vocabulary entries: 18 → **38**.
+- ADRs: 82 → **83** (ADR-083 closes RFC-023).
+- Lightroom daily-use parity: 12/23 → **51/52** (98%).
+
+## [1.7.0] — 2026-05-07
+
+**Phase 4 close + RFC-022 Tier 2 + brilliance + B&W trio + L2 looks.**
+
+See GitHub release notes — v1.7.0 wrapped Phase 4's 8 magnitude-ladder
+parameterizations and shipped the first Tier 2 expansion batch (sharpen,
+crop, additional colorbalancergb axes, toneequalizer 9-axis).
+
 ## [1.5.0] — 2026-05-03
 
 **Mask architecture cleanup — drawn-mask only.**
