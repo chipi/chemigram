@@ -154,6 +154,15 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "first": [-0.5, -0.2, 0.0, 0.3, 0.7],
     "second": [-0.3, 0.0, 0.3, 0.6, 1.0],
     "sharpness": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    # ----- HSL Color Mixer (colorequal): 24 axes total, RFC-023 -----
+    # Per the closing RFC's open question (visual-proof sweep coverage scope),
+    # ship one representative axis per HSL channel at v1.8.0; the remaining
+    # 21 axes can be added as gaps surface. Saturation is the most-used HSL
+    # axis so sat_blue gets a sweep; hue_green covers foliage warmth; bright_blue
+    # covers sky-deepening — three of the most common Lightroom HSL moves.
+    "sat_blue": [-0.5, -0.2, 0.0, 0.3, 0.6],
+    "hue_green": [-30.0, -10.0, 0.0, 15.0, 30.0],
+    "bright_blue": [-0.6, -0.3, 0.0, 0.2, 0.5],
     # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
     "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],

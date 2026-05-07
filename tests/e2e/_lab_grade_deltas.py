@@ -756,6 +756,52 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"first": 0.5, "second": 0.3, "sharpness": 0.4},
     ),
+    # HSL Color Mixer (RFC-023): colorequal module. Each axis only affects
+    # pixels in its color zone; on a flat-grayscale chart there are no
+    # color zones to discriminate, so direction-of-change isn't measurable
+    # with the existing fixture. Verify the parameterized + multi-axis
+    # apply path completes for one axis per HSL channel; visual-proof
+    # sweeps + on-real-raws cover the photographic effect.
+    ("hsl_saturation", "sat_blue"): (
+        "grayscale",
+        _check_render_completes(),
+        {"sat_blue": 0.5},
+    ),
+    ("hsl_saturation", "sat_orange_negative"): (
+        "grayscale",
+        _check_render_completes(),
+        {"sat_orange": -0.3},  # subtle skin-tone desat
+    ),
+    ("hsl_saturation", "full_row"): (
+        "grayscale",
+        _check_render_completes(),
+        {
+            "sat_red": 0.2,
+            "sat_orange": -0.1,
+            "sat_blue": 0.3,
+            "sat_green": 0.2,
+        },
+    ),
+    ("hsl_hue", "hue_green"): (
+        "grayscale",
+        _check_render_completes(),
+        {"hue_green": 15.0},
+    ),
+    ("hsl_hue", "multi_axis"): (
+        "grayscale",
+        _check_render_completes(),
+        {"hue_blue": 20.0, "hue_orange": -10.0},
+    ),
+    ("hsl_luminance", "bright_blue_negative"): (
+        "grayscale",
+        _check_render_completes(),
+        {"bright_blue": -0.4},  # deeper sky
+    ),
+    ("hsl_luminance", "multi_axis"): (
+        "grayscale",
+        _check_render_completes(),
+        {"bright_red": 0.2, "bright_yellow": -0.2},
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline

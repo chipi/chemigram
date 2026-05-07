@@ -609,6 +609,65 @@ def test_parameterized_color_grading_apply_completes(
     )
 
 
+@pytest.mark.parametrize(
+    "entry_name,values",
+    [
+        ("hsl_saturation", {"sat_blue": 0.5}),
+        ("hsl_saturation", {"sat_orange": -0.3}),
+        (
+            "hsl_saturation",
+            {"sat_red": 0.2, "sat_blue": 0.4, "sat_green": -0.1},
+        ),
+        ("hsl_hue", {"hue_green": 15.0}),
+        ("hsl_hue", {"hue_blue": -20.0}),
+        ("hsl_luminance", {"bright_blue": -0.4}),
+        ("hsl_luminance", {"bright_orange": 0.3}),
+        (
+            "hsl_luminance",
+            {"bright_red": 0.2, "bright_yellow": -0.2, "bright_blue": -0.4},
+        ),
+    ],
+)
+def test_parameterized_hsl_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+    entry_name: str,
+    values: dict,
+) -> None:
+    """Each HSL multi-axis entry (RFC-023) is bound to a drawn mask and
+    rendered to verify the parameterized + masked apply path completes.
+    The colorequal decoder is shared across all 3 HSL entries; this stress-
+    tests every channel hitting the same patch path with different field
+    offsets and parameter shapes.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name(entry_name)
+    if entry is None:
+        pytest.fail(f"{entry_name!r} parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail(f"{entry_name!r} loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp(f"masked_param_{entry_name}")
+    label = "_".join(values.keys())
+    applied = apply_entry(
+        baseline_xmp,
+        entry,
+        parameter_values=values,
+        mask_spec=_CENTER_MASK_SPEC,
+    )
+    _render_and_read(
+        applied=applied,
+        label=f"{entry_name}_{label}",
+        configdir=configdir,
+        out_dir=out_dir,
+    )
+
+
 def test_parameterized_texture_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

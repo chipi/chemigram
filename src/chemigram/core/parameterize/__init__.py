@@ -28,6 +28,7 @@ from collections.abc import Callable
 from chemigram.core.parameterize import (
     bilat,
     colorbalancergb,
+    colorequal,
     crop,
     diffuse,
     exposure,
@@ -53,6 +54,7 @@ _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
     ("exposure", 7): exposure.patch,
     ("vignette", 4): vignette.patch,
     ("colorbalancergb", 5): colorbalancergb.patch,
+    ("colorequal", 4): colorequal.patch,
     ("sigmoid", 3): sigmoid.patch,
     ("bilat", 3): bilat.patch,
     ("grain", 2): grain.patch,
@@ -104,6 +106,7 @@ __all__ = [
     "PatchError",
     "bilat",
     "colorbalancergb",
+    "colorequal",
     "crop",
     "diffuse",
     "exposure",

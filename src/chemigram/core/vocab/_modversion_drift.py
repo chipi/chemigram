@@ -55,6 +55,7 @@ def _build_known_pinned_modversions() -> dict[str, int]:
     from chemigram.core.parameterize import (
         bilat,
         colorbalancergb,
+        colorequal,
         crop,
         diffuse,
         exposure,
@@ -71,6 +72,7 @@ def _build_known_pinned_modversions() -> dict[str, int]:
     return {
         "bilat": bilat.SUPPORTED_MODVERSION,
         "colorbalancergb": colorbalancergb.SUPPORTED_MODVERSION,
+        "colorequal": colorequal.SUPPORTED_MODVERSION,
         "crop": crop.SUPPORTED_MODVERSION,
         "diffuse": diffuse.SUPPORTED_MODVERSION,
         "exposure": exposure.SUPPORTED_MODVERSION,
