@@ -43,7 +43,38 @@ def _serialize_entry(e: VocabEntry) -> dict[str, Any]:
         "touches": list(e.touches),
         "mask_spec": e.mask_spec,
         "global_variant": e.global_variant,
+        "parameters": _serialize_parameters(e),
     }
+
+
+def _serialize_parameters(e: VocabEntry) -> list[dict[str, Any]] | None:
+    """Serialize an entry's parameter specs for MCP / CLI introspection.
+
+    Returns ``None`` for non-parameterized entries (closes #89's
+    discoverability gap — the agent or user can tell at a glance whether
+    an entry takes ``--value V`` / ``value`` and what the parameter
+    shape is).
+
+    Each parameter is rendered as: ``{name, type, range: [min, max],
+    default, module, modversion, offset}``. The byte-level ``field``
+    block from ADR-078 is flattened into the parameter dict for terser
+    consumption; full reconstruction is possible from the entry's
+    ParameterSpec if needed.
+    """
+    if e.parameters is None:
+        return None
+    return [
+        {
+            "name": p.name,
+            "type": p.type,
+            "range": list(p.range),
+            "default": p.default,
+            "module": p.field.module,
+            "modversion": p.field.modversion,
+            "offset": p.field.offset,
+        }
+        for p in e.parameters
+    ]
 
 
 # --- list_vocabulary ----------------------------------------------------

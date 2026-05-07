@@ -250,3 +250,89 @@ def test_reset_unknown_image_returns_not_found(context: ToolContext) -> None:
     result = _call("reset", {"image_id": "ghost"}, context)
     assert result.success is False
     assert result.error.code == ErrorCode.NOT_FOUND
+
+
+# ---------------------------------------------------------------------------
+# #89 — list_vocabulary surfaces parameter shape for parameterized entries
+# ---------------------------------------------------------------------------
+
+
+def test_list_vocabulary_includes_parameters_for_parameterized_entry() -> None:
+    """An entry with a parameters block (post-RFC-021) must have the
+    parameter spec in the serialized output. Closes the #89
+    discoverability gap for agents."""
+    from chemigram.core.vocab import load_packs
+    from chemigram.mcp.tools.vocab_edit import _serialize_entry
+
+    index = load_packs(["expressive-baseline"])
+    exposure_entry = index.lookup_by_name("exposure")
+    assert exposure_entry is not None
+    serialized = _serialize_entry(exposure_entry)
+
+    assert "parameters" in serialized
+    assert serialized["parameters"] is not None
+    assert len(serialized["parameters"]) == 1
+    p = serialized["parameters"][0]
+    assert p["name"] == "ev"
+    assert p["type"] == "float"
+    assert p["range"] == [-3.0, 3.0]
+    assert p["default"] == 0.0
+    assert p["module"] == "exposure"
+    assert p["modversion"] == 7
+    assert p["offset"] == 8
+
+
+def test_list_vocabulary_parameters_is_none_for_discrete_entry() -> None:
+    """Non-parameterized entries surface ``parameters: None``."""
+    from chemigram.core.vocab import load_packs
+    from chemigram.mcp.tools.vocab_edit import _serialize_entry
+
+    index = load_packs(["starter"])
+    look_neutral = index.lookup_by_name("look_neutral")
+    assert look_neutral is not None
+    serialized = _serialize_entry(look_neutral)
+    assert serialized["parameters"] is None
+
+
+def test_list_vocabulary_includes_multi_parameter_entry() -> None:
+    """temperature is the first multi-parameter ship — both axes appear."""
+    from chemigram.core.vocab import load_packs
+    from chemigram.mcp.tools.vocab_edit import _serialize_entry
+
+    index = load_packs(["expressive-baseline"])
+    temperature = index.lookup_by_name("temperature")
+    assert temperature is not None
+    serialized = _serialize_entry(temperature)
+
+    assert serialized["parameters"] is not None
+    assert len(serialized["parameters"]) == 2
+    assert {p["name"] for p in serialized["parameters"]} == {"red_coeff", "blue_coeff"}
+
+
+def test_list_vocabulary_includes_nine_parameter_entry() -> None:
+    """toneequalizer has 9 axes — every one must appear in the
+    serialized parameters list."""
+    from chemigram.core.vocab import load_packs
+    from chemigram.mcp.tools.vocab_edit import _serialize_entry
+
+    index = load_packs(["expressive-baseline"])
+    toneeq = index.lookup_by_name("toneequalizer")
+    assert toneeq is not None
+    serialized = _serialize_entry(toneeq)
+
+    assert serialized["parameters"] is not None
+    assert len(serialized["parameters"]) == 9
+    expected = {
+        "noise",
+        "ultra_deep_blacks",
+        "deep_blacks",
+        "blacks",
+        "shadows",
+        "midtones",
+        "highlights",
+        "whites",
+        "speculars",
+    }
+    assert {p["name"] for p in serialized["parameters"]} == expected
+    assert {p["module"] for p in serialized["parameters"]} == {"toneequal"}
+    assert {p["modversion"] for p in serialized["parameters"]} == {2}

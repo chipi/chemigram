@@ -8,7 +8,7 @@ the MCP ``list_vocabulary`` tool; ``vocab show`` is a CLI-only helper
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 import typer
 
@@ -59,6 +59,8 @@ def list_(
             description=entry.description,
             pack=str(pack_root) if pack_root else None,
             tags=list(entry.tags),
+            parameterized=entry.parameters is not None,
+            parameter_names=([p.name for p in entry.parameters] if entry.parameters else None),
         )
 
     writer.result(
@@ -105,6 +107,7 @@ def show(
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 
     pack_root = index.pack_for(entry.name)
+    parameters = _serialize_parameters(entry)
     writer.result(
         message=f"entry: {entry.name}",
         name=entry.name,
@@ -120,4 +123,31 @@ def show(
         license=entry.license,
         subtype=entry.subtype,
         mask_spec=entry.mask_spec,
+        parameters=parameters,
+        parameterized=parameters is not None,
     )
+
+
+def _serialize_parameters(entry: Any) -> list[dict[str, Any]] | None:
+    """Render an entry's ParameterSpec list as plain dicts for CLI output.
+
+    Returns None for non-parameterized entries (closes #89). Mirrors the
+    MCP _serialize_parameters in chemigram.mcp.tools.vocab_edit so CLI
+    and MCP report the same shape — useful for agent / human cross-
+    reference. The two helpers are deliberately not shared via import
+    because the surfaces have independent stability windows.
+    """
+    if entry.parameters is None:
+        return None
+    return [
+        {
+            "name": p.name,
+            "type": p.type,
+            "range": list(p.range),
+            "default": p.default,
+            "module": p.field.module,
+            "modversion": p.field.modversion,
+            "offset": p.field.offset,
+        }
+        for p in entry.parameters
+    ]

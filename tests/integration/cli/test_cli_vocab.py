@@ -96,3 +96,75 @@ def test_vocab_show_unknown_json_emits_error_event(runner: CliRunner) -> None:
     assert payload["event"] == "error"
     assert payload["status"] == "error"
     assert payload["exit_code"] == ExitCode.NOT_FOUND.value
+
+
+# ---------------------------------------------------------------------------
+# #89 — CLI surfaces parameter shape for parameterized entries
+# ---------------------------------------------------------------------------
+
+
+def test_vocab_show_parameterized_entry_includes_parameters(runner: CliRunner) -> None:
+    """``chemigram vocab show <parameterized_entry>`` must surface the
+    parameters block. Closes the #89 discoverability gap for human users."""
+    result = runner.invoke(
+        app,
+        ["--json", "vocab", "show", "exposure", "--pack", "expressive-baseline"],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["parameterized"] is True
+    assert payload["parameters"] is not None
+    assert len(payload["parameters"]) == 1
+    p = payload["parameters"][0]
+    assert p["name"] == "ev"
+    assert p["range"] == [-3.0, 3.0]
+    assert p["module"] == "exposure"
+    assert p["modversion"] == 7
+
+
+def test_vocab_show_discrete_entry_parameters_is_none(runner: CliRunner) -> None:
+    """Non-parameterized entries report parameterized=False and parameters=None."""
+    result = runner.invoke(app, ["--json", "vocab", "show", "wb_warm_subtle"])
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    payload = json.loads(result.stdout.strip().splitlines()[-1])
+    assert payload["parameterized"] is False
+    assert payload["parameters"] is None
+
+
+def test_vocab_show_multi_axis_entry_includes_all_axes(runner: CliRunner) -> None:
+    """temperature ships 2 axes; toneequalizer ships 9."""
+    for name, expected_count in [("temperature", 2), ("toneequalizer", 9)]:
+        result = runner.invoke(
+            app,
+            ["--json", "vocab", "show", name, "--pack", "expressive-baseline"],
+        )
+        assert result.exit_code == ExitCode.SUCCESS.value, (
+            f"{name}: {result.stdout + result.stderr}"
+        )
+        payload = json.loads(result.stdout.strip().splitlines()[-1])
+        assert len(payload["parameters"]) == expected_count
+
+
+def test_vocab_list_flags_parameterized_entries(runner: CliRunner) -> None:
+    """`vocab list` includes parameterized + parameter_names fields per entry."""
+    result = runner.invoke(
+        app,
+        ["--json", "vocab", "list", "--pack", "expressive-baseline"],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    lines = result.stdout.strip().splitlines()
+    entries = [json.loads(line) for line in lines if '"vocabulary_entry"' in line]
+    assert len(entries) > 0
+
+    by_name = {e["name"]: e for e in entries}
+    # Parameterized entries flagged true
+    for parameterized_name in ("exposure", "saturation_global", "temperature"):
+        assert parameterized_name in by_name
+        assert by_name[parameterized_name]["parameterized"] is True
+        assert by_name[parameterized_name]["parameter_names"] is not None
+
+    # Discrete entries flagged false
+    for discrete_name in ("blacks_lifted", "grade_shadows_warm"):
+        assert discrete_name in by_name
+        assert by_name[discrete_name]["parameterized"] is False
+        assert by_name[discrete_name]["parameter_names"] is None
