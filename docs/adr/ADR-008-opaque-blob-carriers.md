@@ -1,9 +1,10 @@
 # ADR-008 — XMP and `.dtstyle` as opaque-blob carriers
 
-> Status · Accepted
+> Status · Accepted (amended in part by ADR-077 / ADR-081)
 > Date · 2026-04-27
 > TA anchor ·/constraints/opaque-hex-blobs ·/contracts/dtstyle-schema ·/contracts/xmp-darktable-history
-> Related RFC · None (foundational; underlies vocabulary approach)
+> Related RFC · None originally (foundational; underlies vocabulary approach). Subsequently amended by RFC-021 / ADR-077 (Path C default for parameterized modules) and RFC-022 / ADR-081 (parameterization tiering policy).
+> Amendment · ADR-081 explicitly amends the "Path C is the rare exception" framing of this ADR. The new boundary: Tier 1+2 modules (named in ADR-081) ride Path C parameterization at apply time; Tier 3 modules + `blendop_params` universally retain this ADR's opacity policy. The original framing below remains historically valid; it described the v1.0 / Phase 1 reality accurately.
 
 ## Context
 

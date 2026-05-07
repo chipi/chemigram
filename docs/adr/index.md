@@ -95,6 +95,7 @@ ADRs come from two streams:
 | ADR-078 | Vocabulary manifest `parameters` schema, multi-parameter from day one (closes RFC-021) | Accepted |
 | ADR-079 | `apply_primitive` `value` / `param` argument shape; hard-reject range validation (closes RFC-021) | Accepted |
 | ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
+| ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
 
 ## Conventions
 

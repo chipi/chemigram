@@ -431,7 +431,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-019 | Reference-image validation baseline | Decided | ADR-066, ADR-067, ADR-068 |
 | RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
 | RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
-| RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Draft v0.1 | ADR (pending) — tiering policy + Tier 2 shipping cadence |
+| RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
 
 ### ADRs
 
@@ -516,6 +516,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-078 | Vocabulary manifest `parameters` schema, multi-parameter from day one (closes RFC-021) | Accepted |
 | ADR-079 | `apply_primitive` `value` / `param` argument shape; hard-reject range validation (closes RFC-021) | Accepted |
 | ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
+| ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
 
 ---
 

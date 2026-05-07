@@ -25,9 +25,9 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **Begins post-v1.5.0** — use-driven; intermittent; grows the *personal* pack on top of starter + expressive-baseline. Not slice-and-gate. |
 | **Phase 3** | Additional drawn-form geometries in vocabulary | Conditional — when Phase 2 surfaces region needs the existing gradient/ellipse/rectangle don't cover |
 | **Phase 4** | Content-aware masking via sibling provider (drawn-form output) | Conditional — when local adjustments demand pixel-precise organic shapes |
-| **Phase 5** | Continuous control via hex encoders (Path C) | Conditional — when discrete vocabulary becomes a bottleneck |
+| ~~**Phase 5**~~ | ~~Continuous control via hex encoders (Path C)~~ | ✅ **Retired by ADR-081 (2026-05-07)** — Path C is the default for Tier 1+2 modules per the parameterization tiering policy; further extension rides per-module Tier 2 expansion or Tier 3 promotion ADRs, not a distinct "Phase 5". |
 
-Phases 3–5 are deliberately conditional. They happen only if Phase 2 evidence shows they're worth doing. The project may converge before Phase 5 ever ships; that's a feature, not a failure.
+Phases 3–4 are deliberately conditional. They happen only if Phase 2 evidence shows they're worth doing. Phase 5 was retired by ADR-081 — the question it asked ("should the project commit to extending Path C beyond high-value modules?") is now answered by the tiered policy: yes for Tier 1+2 (already shipped at v1.6.0+ and ongoing); no for Tier 3 except via individual promotion ADRs. There is no distinct Phase 5 implementation effort.
 
 ---
 
@@ -339,26 +339,16 @@ Phase 2 doesn't decompose into slices the way Phase 1 does, because the work is 
 
 ---
 
-## Phase 5 — Continuous control via hex encoders (Path C) [conditional]
+## ~~Phase 5 — Continuous control via hex encoders (Path C)~~ [retired by ADR-081, 2026-05-07]
 
-**Trigger:** Phase 2 sessions show that discrete vocabulary granularity is genuinely insufficient for taste expression — the photographer wants `expo_+0.42` not `expo_+0.3` or `expo_+0.5`, *and* the workaround (authoring more granular vocabulary entries) doesn't scale.
+**Status:** Retired. The question this phase asked — *should the project commit to extending Path C beyond high-value modules?* — was answered by the parameterization work between v1.6.0 and the RFC-022 closure:
 
-**Goal:** Build hex encoder/decoder pairs for one or two high-value modules. Most likely candidates:
+- **RFC-021** (Decided) shipped the apply-time Path C architecture and 8 magnitude-ladder modules (Tier 1 in ADR-081 terms).
+- **RFC-022** (Decided) shipped the Tier 2 baseline expansion (4 brand-new modules: sharpen, crop, colorbalancergb additional axes, toneequalizer) and codified the four-tier parameterization policy in **ADR-081**.
 
-- `exposure` — single float, predictable byte offset, demonstrated feasible in Phase 0
-- `colorbalancergb` shadows/highlights lift — a few floats with non-trivial layout
+Per ADR-081, Path C is the default for Tier 1+2 modules; ADR-008's opacity continues for Tier 3. Further parameterized-vocabulary work happens as **Tier 2 expansions** (during the build-baseline phase) or **Tier 3 promotion ADRs** (post-multi-photographer-review). There is no distinct "Phase 5" implementation effort separate from those cadences.
 
-**Scope:** ~50 lines of Python per module supported. Plus tools like `set_exposure(image_id, ev: float)` exposed via MCP. Closes RFC-012 (programmatic vocabulary generation Path C).
-
-**Reference docs:**
-
-- RFC-012 — Programmatic vocabulary generation (Path C) [currently deferred]
-- TODO.md — Path C extended discussion
-- ADR-008 — XMP and `.dtstyle` as opaque-blob carriers (this phase is the principled exception)
-
-**Important:** Path C is a deliberate exception to the "opaque hex blobs" principle. It's reserved for high-value modules where continuous control matters and where the param struct is stable across darktable versions. It is *not* a general direction; the vocabulary approach remains the dominant path.
-
-**Updated outlook (post Phase 0):** Phase 0 evidence strengthened the case for building exposure's encoder earlier — possibly during a Phase 1 polish slice rather than waiting for Phase 5. The official "Phase 5" naming preserves the original sequencing for now; in practice, exposure-specific Path C work may slot in as Phase 1.5.
+**What's preserved as historical record:** Phase 0's evidence that exposure's hex `op_params` was reverse-engineerable directly informed the v1.6.0+ parameterization architecture. Phase 5 was the placeholder for that work; ADR-077..080 + ADR-081 are its conclusion.
 
 ---
 

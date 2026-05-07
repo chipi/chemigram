@@ -1,11 +1,11 @@
 # RFC-022 — Bulk parameterization of common-use darktable modules
 
-> Status · Draft v0.1
+> Status · Decided (2026-05-07)
 > Date · 2026-05-07
 > TA anchor ·/components/synthesizer ·/contracts/vocabulary-manifest ·/constraints/opaque-hex-blobs ·/components/cli ·/contracts/mcp-tools
-> Related · ADR-008 (opaque-blob default — the central tension), RFC-012 / ADR-073 (Path C as authoring), RFC-021 / ADR-077..080 (parameterization architecture; this RFC's foundation), capability-survey.md §1, §10, §12, IMPLEMENTATION.md Phase 4 / Phase 5
-> Closes into · ADR-NNN (parameterization tiering policy; pending) · ADR-NNN (per-tier shipping cadence; pending) · possibly an amending ADR to ADR-008's framing
-> Why this is an RFC · RFC-021 settled the *architecture* for parameterized vocabulary entries and Phase 4 is collapsing six existing magnitude-ladder modules into the parameterized form. The question this RFC opens is what comes *after* Phase 4: should we commit to parameterizing every common-use darktable module as an architectural baseline before further session/agent work, or stay incremental and author new modules as photographic need surfaces? ADR-008's "high-value modules only, when there's a clear bottleneck" framing was load-bearing through Phase 1; the v1.6.0+ shift is real enough that a foundational answer is worth arguing now rather than rediscovering through accumulated ad-hoc decisions.
+> Related · ADR-008 (opaque-blob default — explicitly amended by ADR-081), RFC-012 / ADR-073 (Path C as authoring), RFC-021 / ADR-077..080 (parameterization architecture; this RFC's foundation), capability-survey.md §1, §10, §12, IMPLEMENTATION.md Phase 4 / Phase 5
+> Closes into · ADR-081 (parameterization tiering policy; explicitly amends ADR-008)
+> Why this is an RFC · RFC-021 settled the *architecture* for parameterized vocabulary entries and Phase 4 collapsed eight magnitude-ladder modules into the parameterized form. The question this RFC opens is what comes *after* Phase 4: should we commit to parameterizing every common-use darktable module as an architectural baseline before further session/agent work, or stay incremental and author new modules as photographic need surfaces? ADR-008's "high-value modules only, when there's a clear bottleneck" framing was load-bearing through Phase 1; the v1.6.0+ shift is real enough that a foundational answer is worth arguing now rather than rediscovering through accumulated ad-hoc decisions. Resolved 2026-05-07 with the build-baseline-phase nuance: Tier 2 stays active during the current phase; the formal multi-photographer Tier 3 promotion threshold is deferred to the later real-people-review phase. Closes into ADR-081.
 
 ---
 
