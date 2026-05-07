@@ -54,8 +54,8 @@ import struct
 _STRUCT_FORMAT = "<32fI"
 _STRUCT_SIZE = 132
 
-# Parameterized axes (RFC-021 / RFC-022 Tier 2 + #86 brilliance). Field
-# indices in the 33-tuple returned by decode(); byte offsets in the blob.
+# Parameterized axes (RFC-021 / RFC-022 Tier 2 + #86 brilliance + #91 Bucket A.5).
+# Field indices in the 33-tuple returned by decode(); byte offsets in the blob.
 _SATURATION_GLOBAL_FIELD_INDEX = 19  # offset 76 — global saturation
 _SATURATION_GLOBAL_OFFSET = 76
 _CHROMA_GLOBAL_FIELD_INDEX = 17  # offset 68 — global chroma
@@ -73,6 +73,30 @@ _BRILLIANCE_MIDTONES_FIELD_INDEX = 26  # offset 104
 _BRILLIANCE_MIDTONES_OFFSET = 104
 _BRILLIANCE_SHADOWS_FIELD_INDEX = 27  # offset 108
 _BRILLIANCE_SHADOWS_OFFSET = 108
+# Per-zone hue (#91 Bucket A.5): Lightroom Color Grading wheels
+_HUE_SHADOWS_FIELD_INDEX = 2  # offset 8
+_HUE_SHADOWS_OFFSET = 8
+_HUE_MIDTONES_FIELD_INDEX = 5  # offset 20
+_HUE_MIDTONES_OFFSET = 20
+_HUE_HIGHLIGHTS_FIELD_INDEX = 8  # offset 32
+_HUE_HIGHLIGHTS_OFFSET = 32
+# Per-zone saturation (#91 Bucket A.5)
+_SATURATION_HIGHLIGHTS_FIELD_INDEX = 20  # offset 80
+_SATURATION_HIGHLIGHTS_OFFSET = 80
+_SATURATION_MIDTONES_FIELD_INDEX = 21  # offset 84
+_SATURATION_MIDTONES_OFFSET = 84
+_SATURATION_SHADOWS_FIELD_INDEX = 22  # offset 88
+_SATURATION_SHADOWS_OFFSET = 88
+# Blending + Balance (#91 Bucket A.5): Lightroom Color Grading panel's
+# bottom two sliders. shadows_weight and highlights_weight control the
+# falloff into each zone (Lightroom calls this "Blending"); white_fulcrum
+# shifts where the shadow/highlight midpoint sits (Lightroom "Balance").
+_SHADOWS_WEIGHT_FIELD_INDEX = 12  # offset 48
+_SHADOWS_WEIGHT_OFFSET = 48
+_WHITE_FULCRUM_FIELD_INDEX = 13  # offset 52
+_WHITE_FULCRUM_OFFSET = 52
+_HIGHLIGHTS_WEIGHT_FIELD_INDEX = 14  # offset 56
+_HIGHLIGHTS_WEIGHT_OFFSET = 56
 
 # Pinned modversion for v1.6.0 / Phase 4 ship.
 SUPPORTED_MODVERSION = 5
@@ -100,6 +124,30 @@ def encode(fields: tuple[float | int, ...]) -> str:
     return struct.pack(_STRUCT_FORMAT, *fields).hex()
 
 
+# Map every parameterized axis to its struct field index. Used by patch()
+# to drive a single loop instead of branching per-axis (otherwise C901
+# complexity grows linearly with the number of axes — 17 axes triggers it).
+_AXIS_FIELD_INDICES: dict[str, int] = {
+    "saturation_global": _SATURATION_GLOBAL_FIELD_INDEX,
+    "chroma_global": _CHROMA_GLOBAL_FIELD_INDEX,
+    "hue_angle": _HUE_ANGLE_FIELD_INDEX,
+    "vibrance": _VIBRANCE_FIELD_INDEX,
+    "brilliance_global": _BRILLIANCE_GLOBAL_FIELD_INDEX,
+    "brilliance_highlights": _BRILLIANCE_HIGHLIGHTS_FIELD_INDEX,
+    "brilliance_midtones": _BRILLIANCE_MIDTONES_FIELD_INDEX,
+    "brilliance_shadows": _BRILLIANCE_SHADOWS_FIELD_INDEX,
+    "hue_shadows": _HUE_SHADOWS_FIELD_INDEX,
+    "hue_midtones": _HUE_MIDTONES_FIELD_INDEX,
+    "hue_highlights": _HUE_HIGHLIGHTS_FIELD_INDEX,
+    "saturation_shadows": _SATURATION_SHADOWS_FIELD_INDEX,
+    "saturation_midtones": _SATURATION_MIDTONES_FIELD_INDEX,
+    "saturation_highlights": _SATURATION_HIGHLIGHTS_FIELD_INDEX,
+    "shadows_weight": _SHADOWS_WEIGHT_FIELD_INDEX,
+    "highlights_weight": _HIGHLIGHTS_WEIGHT_FIELD_INDEX,
+    "white_fulcrum": _WHITE_FULCRUM_FIELD_INDEX,
+}
+
+
 def patch(
     op_params: str,
     *,
@@ -111,16 +159,25 @@ def patch(
     brilliance_highlights: float | None = None,
     brilliance_midtones: float | None = None,
     brilliance_shadows: float | None = None,
+    # #91 Bucket A.5: Lightroom Color Grading parity
+    hue_shadows: float | None = None,
+    hue_midtones: float | None = None,
+    hue_highlights: float | None = None,
+    saturation_shadows: float | None = None,
+    saturation_midtones: float | None = None,
+    saturation_highlights: float | None = None,
+    shadows_weight: float | None = None,
+    highlights_weight: float | None = None,
+    white_fulcrum: float | None = None,
 ) -> str:
     """Patch any combination of colorbalancergb's parameterized axes.
 
     Multi-axis partial-update: caller may supply any subset of the
     declared parameters. Unspecified axes preserved from the input.
-    Every other field in the 132-byte struct (per-zone saturation,
-    chroma per zone, grading angles, output gamma, the
-    ``saturation_formula`` enum, etc.) is always preserved.
+    Every other field in the 132-byte struct (chroma per zone, output
+    gamma, the ``saturation_formula`` enum, etc.) is always preserved.
 
-    The eight parameterized axes (RFC-021 / RFC-022 Tier 2 + #86):
+    Parameterized axes (RFC-021 / RFC-022 Tier 2 + #86 brilliance + #91 Bucket A.5):
 
     - ``saturation_global``    (offset 76; range [-1.0, +1.0]).
     - ``chroma_global``        (offset 68; range [-1.0, +1.0]).
@@ -130,14 +187,21 @@ def patch(
     - ``brilliance_highlights`` (offset 100; range [-1.0, +1.0]).
     - ``brilliance_midtones``  (offset 104; range [-1.0, +1.0]).
     - ``brilliance_shadows``   (offset 108; range [-1.0, +1.0]).
+    - ``hue_shadows``          (offset 8; degrees, 0..360).
+    - ``hue_midtones``         (offset 20; degrees).
+    - ``hue_highlights``       (offset 32; degrees).
+    - ``saturation_shadows``   (offset 88; range [-1.0, +1.0]).
+    - ``saturation_midtones``  (offset 84; range [-1.0, +1.0]).
+    - ``saturation_highlights`` (offset 80; range [-1.0, +1.0]).
+    - ``shadows_weight``       (offset 48; Lightroom "Blending" bottom).
+    - ``highlights_weight``    (offset 56; Lightroom "Blending" top).
+    - ``white_fulcrum``        (offset 52; Lightroom "Balance"; default 0.0).
 
     Args:
         op_params: hex-encoded source ``op_params`` (132 bytes / 264 hex
             chars).
-        saturation_global, chroma_global, hue_angle, vibrance,
-        brilliance_global, brilliance_highlights, brilliance_midtones,
-        brilliance_shadows: each axis is independently optional;
-        ``None`` preserves the dtstyle's encoded value.
+        Each axis is independently optional; ``None`` preserves the
+        dtstyle's encoded value.
 
     Returns:
         New hex-encoded ``op_params`` (132 bytes / 264 hex chars).
@@ -145,21 +209,27 @@ def patch(
     Raises:
         ValueError: input blob is not 132 bytes after hex-decode.
     """
+    supplied = {
+        "saturation_global": saturation_global,
+        "chroma_global": chroma_global,
+        "hue_angle": hue_angle,
+        "vibrance": vibrance,
+        "brilliance_global": brilliance_global,
+        "brilliance_highlights": brilliance_highlights,
+        "brilliance_midtones": brilliance_midtones,
+        "brilliance_shadows": brilliance_shadows,
+        "hue_shadows": hue_shadows,
+        "hue_midtones": hue_midtones,
+        "hue_highlights": hue_highlights,
+        "saturation_shadows": saturation_shadows,
+        "saturation_midtones": saturation_midtones,
+        "saturation_highlights": saturation_highlights,
+        "shadows_weight": shadows_weight,
+        "highlights_weight": highlights_weight,
+        "white_fulcrum": white_fulcrum,
+    }
     fields = list(decode(op_params))
-    if saturation_global is not None:
-        fields[_SATURATION_GLOBAL_FIELD_INDEX] = float(saturation_global)
-    if chroma_global is not None:
-        fields[_CHROMA_GLOBAL_FIELD_INDEX] = float(chroma_global)
-    if hue_angle is not None:
-        fields[_HUE_ANGLE_FIELD_INDEX] = float(hue_angle)
-    if vibrance is not None:
-        fields[_VIBRANCE_FIELD_INDEX] = float(vibrance)
-    if brilliance_global is not None:
-        fields[_BRILLIANCE_GLOBAL_FIELD_INDEX] = float(brilliance_global)
-    if brilliance_highlights is not None:
-        fields[_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX] = float(brilliance_highlights)
-    if brilliance_midtones is not None:
-        fields[_BRILLIANCE_MIDTONES_FIELD_INDEX] = float(brilliance_midtones)
-    if brilliance_shadows is not None:
-        fields[_BRILLIANCE_SHADOWS_FIELD_INDEX] = float(brilliance_shadows)
+    for axis_name, value in supplied.items():
+        if value is not None:
+            fields[_AXIS_FIELD_INDICES[axis_name]] = float(value)
     return encode(tuple(fields))

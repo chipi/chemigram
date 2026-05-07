@@ -283,6 +283,96 @@
         {"name": "brilliance_shadows", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
          "field": {"module": "colorbalancergb", "modversion": 5, "offset": 108, "encoding": "le_f32"}}
       ]},
+    {"name": "hue_shadows", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_shadows.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["hue", "shadows", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone hue rotation for shadows (#91 Bucket A.5; Lightroom Color Grading shadows wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "hue_shadows", "type": "float", "range": [0.0, 360.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 8, "encoding": "le_f32"}}
+      ]},
+    {"name": "hue_midtones", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_midtones.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["hue", "midtones", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone hue rotation for midtones (#91 Bucket A.5; Lightroom Color Grading midtones wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "hue_midtones", "type": "float", "range": [0.0, 360.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 20, "encoding": "le_f32"}}
+      ]},
+    {"name": "hue_highlights", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_highlights.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["hue", "highlights", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone hue rotation for highlights (#91 Bucket A.5; Lightroom Color Grading highlights wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "hue_highlights", "type": "float", "range": [0.0, 360.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 32, "encoding": "le_f32"}}
+      ]},
+    {"name": "saturation_shadows", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_shadows.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["saturation", "shadows", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone saturation for shadows (#91 Bucket A.5; pairs with hue_shadows for full Lightroom shadow-zone color-grading control). Pass --value V; range [-1.0, +1.0].",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "saturation_shadows", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 88, "encoding": "le_f32"}}
+      ]},
+    {"name": "saturation_midtones", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_midtones.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["saturation", "midtones", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone saturation for midtones (#91 Bucket A.5). Pass --value V; range [-1.0, +1.0].",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "saturation_midtones", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 84, "encoding": "le_f32"}}
+      ]},
+    {"name": "saturation_highlights", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_highlights.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["saturation", "highlights", "color-grading", "parameterized"],
+      "description": "Parameterized per-zone saturation for highlights (#91 Bucket A.5). Pass --value V; range [-1.0, +1.0].",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "saturation_highlights", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 80, "encoding": "le_f32"}}
+      ]},
+    {"name": "shadows_weight", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/shadows_weight.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["blending", "shadows", "color-grading", "parameterized"],
+      "description": "Parameterized shadow-zone falloff weight (#91 Bucket A.5; Lightroom Color Grading 'Blending' bottom). Pass --value V; range [0.0, 4.0]; default 1.0. Higher = more aggressive zone overlap.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "shadows_weight", "type": "float", "range": [0.0, 4.0], "default": 1.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 48, "encoding": "le_f32"}}
+      ]},
+    {"name": "highlights_weight", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/highlights_weight.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["blending", "highlights", "color-grading", "parameterized"],
+      "description": "Parameterized highlights-zone falloff weight (#91 Bucket A.5; Lightroom Color Grading 'Blending' top). Pass --value V; range [0.0, 4.0]; default 1.0.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "highlights_weight", "type": "float", "range": [0.0, 4.0], "default": 1.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 56, "encoding": "le_f32"}}
+      ]},
+    {"name": "white_fulcrum", "layer": "L3", "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/white_fulcrum.dtstyle", "touches": ["colorbalancergb"],
+      "tags": ["balance", "color-grading", "parameterized"],
+      "description": "Parameterized shadow/highlight balance point (#91 Bucket A.5; Lightroom Color Grading 'Balance' slider). Pass --value V; range [-2.0, 2.0]; default 0.0 (neutral midpoint). Negative shifts the split toward shadows; positive toward highlights.",
+      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "white_fulcrum", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
+         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 52, "encoding": "le_f32"}}
+      ]},
     {"name": "grade_shadows_warm", "layer": "L3", "subtype": "colorbalancergb",
       "path": "layers/L3/colorbalancergb/grade_shadows_warm.dtstyle", "touches": ["colorbalancergb"],
       "tags": ["grade", "shadows", "warm"],

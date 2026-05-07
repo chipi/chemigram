@@ -25,9 +25,18 @@ from chemigram.core.parameterize.colorbalancergb import (
     _BRILLIANCE_MIDTONES_FIELD_INDEX,
     _BRILLIANCE_SHADOWS_FIELD_INDEX,
     _CHROMA_GLOBAL_FIELD_INDEX,
+    _HIGHLIGHTS_WEIGHT_FIELD_INDEX,
     _HUE_ANGLE_FIELD_INDEX,
+    _HUE_HIGHLIGHTS_FIELD_INDEX,
+    _HUE_MIDTONES_FIELD_INDEX,
+    _HUE_SHADOWS_FIELD_INDEX,
     _SATURATION_GLOBAL_FIELD_INDEX,
+    _SATURATION_HIGHLIGHTS_FIELD_INDEX,
+    _SATURATION_MIDTONES_FIELD_INDEX,
+    _SATURATION_SHADOWS_FIELD_INDEX,
+    _SHADOWS_WEIGHT_FIELD_INDEX,
     _VIBRANCE_FIELD_INDEX,
+    _WHITE_FULCRUM_FIELD_INDEX,
     decode,
 )
 from chemigram.core.vocab import load_packs
@@ -271,3 +280,80 @@ def test_apply_entry_brilliance_default_is_no_op(baseline_xmp, entry_name: str) 
         "brilliance_shadows": _BRILLIANCE_SHADOWS_FIELD_INDEX,
     }
     assert decode(plugins[-1].params)[field_idx_map[spec.name]] == pytest.approx(0.0, abs=1e-5)
+
+
+# ---------------------------------------------------------------------------
+# #91 Bucket A.5: per-zone hue/sat + blending/balance apply paths
+# ---------------------------------------------------------------------------
+
+
+_COLOR_GRADING_AXIS_FIELD_INDICES = {
+    "hue_shadows": _HUE_SHADOWS_FIELD_INDEX,
+    "hue_midtones": _HUE_MIDTONES_FIELD_INDEX,
+    "hue_highlights": _HUE_HIGHLIGHTS_FIELD_INDEX,
+    "saturation_shadows": _SATURATION_SHADOWS_FIELD_INDEX,
+    "saturation_midtones": _SATURATION_MIDTONES_FIELD_INDEX,
+    "saturation_highlights": _SATURATION_HIGHLIGHTS_FIELD_INDEX,
+    "shadows_weight": _SHADOWS_WEIGHT_FIELD_INDEX,
+    "highlights_weight": _HIGHLIGHTS_WEIGHT_FIELD_INDEX,
+    "white_fulcrum": _WHITE_FULCRUM_FIELD_INDEX,
+}
+
+
+@pytest.mark.parametrize(
+    "entry_name,test_value",
+    [
+        ("hue_shadows", 210.0),
+        ("hue_midtones", 30.0),
+        ("hue_highlights", 45.0),
+        ("saturation_shadows", 0.3),
+        ("saturation_midtones", 0.2),
+        ("saturation_highlights", 0.25),
+        ("shadows_weight", 1.5),
+        ("highlights_weight", 2.0),
+        ("white_fulcrum", 0.5),
+    ],
+)
+def test_apply_entry_color_grading_axis_patches_op_params(
+    baseline_xmp, entry_name: str, test_value: float
+) -> None:
+    """Each #91 Bucket A.5 vocabulary entry patches the correct field in
+    the colorbalancergb mv5 struct."""
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name(entry_name)
+    assert entry is not None
+    assert entry.parameters is not None
+    new_xmp = apply_entry(baseline_xmp, entry, parameter_values={entry_name: test_value})
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    field_index = _COLOR_GRADING_AXIS_FIELD_INDICES[entry_name]
+    assert fields[field_index] == pytest.approx(test_value, abs=1e-5)
+
+
+@pytest.mark.parametrize(
+    "entry_name,default",
+    [
+        ("hue_shadows", 0.0),
+        ("hue_midtones", 0.0),
+        ("hue_highlights", 0.0),
+        ("saturation_shadows", 0.0),
+        ("saturation_midtones", 0.0),
+        ("saturation_highlights", 0.0),
+        ("shadows_weight", 1.0),
+        ("highlights_weight", 1.0),
+        ("white_fulcrum", 0.0),
+    ],
+)
+def test_apply_entry_color_grading_default_matches_baseline(
+    baseline_xmp, entry_name: str, default: float
+) -> None:
+    """Each #91 Bucket A.5 entry's no-args default matches the dtstyle baseline."""
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name(entry_name)
+    assert entry is not None
+    new_xmp = apply_entry(baseline_xmp, entry)
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    field_index = _COLOR_GRADING_AXIS_FIELD_INDICES[entry_name]
+    assert decode(plugins[-1].params)[field_index] == pytest.approx(default, abs=1e-5)

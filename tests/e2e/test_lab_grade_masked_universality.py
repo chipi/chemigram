@@ -556,6 +556,59 @@ def test_parameterized_highlights_clip_threshold_apply_completes(
         )
 
 
+@pytest.mark.parametrize(
+    "entry_name,values",
+    [
+        ("hue_shadows", {"hue_shadows": 210.0}),
+        ("hue_midtones", {"hue_midtones": 30.0}),
+        ("hue_highlights", {"hue_highlights": 45.0}),
+        ("saturation_shadows", {"saturation_shadows": 0.4}),
+        ("saturation_midtones", {"saturation_midtones": 0.3}),
+        ("saturation_highlights", {"saturation_highlights": 0.3}),
+        ("shadows_weight", {"shadows_weight": 2.0}),
+        ("highlights_weight", {"highlights_weight": 2.0}),
+        ("white_fulcrum", {"white_fulcrum": 0.5}),
+    ],
+)
+def test_parameterized_color_grading_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+    entry_name: str,
+    values: dict,
+) -> None:
+    """Each #91 Bucket A.5 axis (per-zone hue/sat + blending/balance) is
+    bound to a drawn mask and rendered to verify the parameterized + masked
+    apply path completes end-to-end. The decoder is shared (colorbalancergb
+    mv5), so this stresses every axis hitting the same patch path with
+    different field offsets.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name(entry_name)
+    if entry is None:
+        pytest.fail(f"{entry_name!r} parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail(f"{entry_name!r} loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp(f"masked_param_{entry_name}")
+    applied = apply_entry(
+        baseline_xmp,
+        entry,
+        parameter_values=values,
+        mask_spec=_CENTER_MASK_SPEC,
+    )
+    _render_and_read(
+        applied=applied,
+        label=f"{entry_name}_masked",
+        configdir=configdir,
+        out_dir=out_dir,
+    )
+
+
 def test_parameterized_dehaze_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

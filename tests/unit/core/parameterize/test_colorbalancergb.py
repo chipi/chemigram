@@ -30,14 +30,32 @@ from chemigram.core.parameterize.colorbalancergb import (
     _BRILLIANCE_SHADOWS_OFFSET,
     _CHROMA_GLOBAL_FIELD_INDEX,
     _CHROMA_GLOBAL_OFFSET,
+    _HIGHLIGHTS_WEIGHT_FIELD_INDEX,
+    _HIGHLIGHTS_WEIGHT_OFFSET,
     _HUE_ANGLE_FIELD_INDEX,
     _HUE_ANGLE_OFFSET,
+    _HUE_HIGHLIGHTS_FIELD_INDEX,
+    _HUE_HIGHLIGHTS_OFFSET,
+    _HUE_MIDTONES_FIELD_INDEX,
+    _HUE_MIDTONES_OFFSET,
+    _HUE_SHADOWS_FIELD_INDEX,
+    _HUE_SHADOWS_OFFSET,
     _SATURATION_GLOBAL_FIELD_INDEX,
     _SATURATION_GLOBAL_OFFSET,
+    _SATURATION_HIGHLIGHTS_FIELD_INDEX,
+    _SATURATION_HIGHLIGHTS_OFFSET,
+    _SATURATION_MIDTONES_FIELD_INDEX,
+    _SATURATION_MIDTONES_OFFSET,
+    _SATURATION_SHADOWS_FIELD_INDEX,
+    _SATURATION_SHADOWS_OFFSET,
+    _SHADOWS_WEIGHT_FIELD_INDEX,
+    _SHADOWS_WEIGHT_OFFSET,
     _STRUCT_FORMAT,
     _STRUCT_SIZE,
     _VIBRANCE_FIELD_INDEX,
     _VIBRANCE_OFFSET,
+    _WHITE_FULCRUM_FIELD_INDEX,
+    _WHITE_FULCRUM_OFFSET,
     SUPPORTED_MODVERSION,
     decode,
     encode,
@@ -340,3 +358,106 @@ def test_patch_combines_brilliance_with_other_axes() -> None:
     assert fields[_VIBRANCE_FIELD_INDEX] == pytest.approx(0.3, abs=1e-5)
     assert fields[_BRILLIANCE_GLOBAL_FIELD_INDEX] == pytest.approx(0.1, abs=1e-5)
     assert fields[_BRILLIANCE_HIGHLIGHTS_FIELD_INDEX] == pytest.approx(-0.1, abs=1e-5)
+
+
+# ---------------------------------------------------------------------------
+# #91 Bucket A.5: Lightroom Color Grading parity
+# Per-zone hue x 3, per-zone saturation x 3, blending x 2, balance x 1
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "axis,field_index,offset",
+    [
+        ("hue_shadows", _HUE_SHADOWS_FIELD_INDEX, _HUE_SHADOWS_OFFSET),
+        ("hue_midtones", _HUE_MIDTONES_FIELD_INDEX, _HUE_MIDTONES_OFFSET),
+        ("hue_highlights", _HUE_HIGHLIGHTS_FIELD_INDEX, _HUE_HIGHLIGHTS_OFFSET),
+        ("saturation_shadows", _SATURATION_SHADOWS_FIELD_INDEX, _SATURATION_SHADOWS_OFFSET),
+        ("saturation_midtones", _SATURATION_MIDTONES_FIELD_INDEX, _SATURATION_MIDTONES_OFFSET),
+        (
+            "saturation_highlights",
+            _SATURATION_HIGHLIGHTS_FIELD_INDEX,
+            _SATURATION_HIGHLIGHTS_OFFSET,
+        ),
+        ("shadows_weight", _SHADOWS_WEIGHT_FIELD_INDEX, _SHADOWS_WEIGHT_OFFSET),
+        ("highlights_weight", _HIGHLIGHTS_WEIGHT_FIELD_INDEX, _HIGHLIGHTS_WEIGHT_OFFSET),
+        ("white_fulcrum", _WHITE_FULCRUM_FIELD_INDEX, _WHITE_FULCRUM_OFFSET),
+    ],
+)
+def test_patch_sets_color_grading_axis_only(axis: str, field_index: int, offset: int) -> None:
+    """Patching one #91 Bucket A.5 axis preserves the other 16 parameterized
+    axes and every other field in the struct."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_fields = decode(src)
+    test_value = 0.5 if "weight" in axis or "saturation" in axis else 90.0
+    if axis == "white_fulcrum":
+        test_value = 0.3
+    out = patch(src, **{axis: test_value})
+    fields = decode(out)
+    assert fields[field_index] == pytest.approx(test_value, abs=1e-5)
+    for i in range(len(src_fields)):
+        if i == field_index:
+            continue
+        assert fields[i] == src_fields[i], f"field {i} changed unexpectedly when patching {axis}"
+
+
+def test_patch_sets_full_color_grading_panel_simultaneously() -> None:
+    """Stress test: patch the entire 9-axis Color Grading panel at once."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    out = patch(
+        src,
+        hue_shadows=210.0,
+        hue_midtones=30.0,
+        hue_highlights=45.0,
+        saturation_shadows=0.3,
+        saturation_midtones=0.2,
+        saturation_highlights=0.25,
+        shadows_weight=1.5,
+        highlights_weight=2.0,
+        white_fulcrum=0.5,
+    )
+    fields = decode(out)
+    assert fields[_HUE_SHADOWS_FIELD_INDEX] == pytest.approx(210.0, abs=1e-5)
+    assert fields[_HUE_MIDTONES_FIELD_INDEX] == pytest.approx(30.0, abs=1e-5)
+    assert fields[_HUE_HIGHLIGHTS_FIELD_INDEX] == pytest.approx(45.0, abs=1e-5)
+    assert fields[_SATURATION_SHADOWS_FIELD_INDEX] == pytest.approx(0.3, abs=1e-5)
+    assert fields[_SATURATION_MIDTONES_FIELD_INDEX] == pytest.approx(0.2, abs=1e-5)
+    assert fields[_SATURATION_HIGHLIGHTS_FIELD_INDEX] == pytest.approx(0.25, abs=1e-5)
+    assert fields[_SHADOWS_WEIGHT_FIELD_INDEX] == pytest.approx(1.5, abs=1e-5)
+    assert fields[_HIGHLIGHTS_WEIGHT_FIELD_INDEX] == pytest.approx(2.0, abs=1e-5)
+    assert fields[_WHITE_FULCRUM_FIELD_INDEX] == pytest.approx(0.5, abs=1e-5)
+
+
+def test_color_grading_offsets_match_field_indices() -> None:
+    """Sanity: each #91 Bucket A.5 axis offset is 4 * field_index."""
+    assert _HUE_SHADOWS_OFFSET == _HUE_SHADOWS_FIELD_INDEX * 4
+    assert _HUE_MIDTONES_OFFSET == _HUE_MIDTONES_FIELD_INDEX * 4
+    assert _HUE_HIGHLIGHTS_OFFSET == _HUE_HIGHLIGHTS_FIELD_INDEX * 4
+    assert _SATURATION_SHADOWS_OFFSET == _SATURATION_SHADOWS_FIELD_INDEX * 4
+    assert _SATURATION_MIDTONES_OFFSET == _SATURATION_MIDTONES_FIELD_INDEX * 4
+    assert _SATURATION_HIGHLIGHTS_OFFSET == _SATURATION_HIGHLIGHTS_FIELD_INDEX * 4
+    assert _SHADOWS_WEIGHT_OFFSET == _SHADOWS_WEIGHT_FIELD_INDEX * 4
+    assert _HIGHLIGHTS_WEIGHT_OFFSET == _HIGHLIGHTS_WEIGHT_FIELD_INDEX * 4
+    assert _WHITE_FULCRUM_OFFSET == _WHITE_FULCRUM_FIELD_INDEX * 4
+
+
+def test_patch_color_grading_combines_with_other_axes() -> None:
+    """Color-grading axes compose with the existing 8 axes —
+    all 17 patchable simultaneously."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    out = patch(
+        src,
+        saturation_global=0.4,
+        chroma_global=0.2,
+        hue_angle=15.0,
+        vibrance=0.3,
+        brilliance_global=0.1,
+        hue_shadows=210.0,
+        saturation_midtones=0.2,
+        white_fulcrum=0.5,
+    )
+    fields = decode(out)
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == pytest.approx(0.4, abs=1e-5)
+    assert fields[_HUE_SHADOWS_FIELD_INDEX] == pytest.approx(210.0, abs=1e-5)
+    assert fields[_SATURATION_MIDTONES_FIELD_INDEX] == pytest.approx(0.2, abs=1e-5)
+    assert fields[_WHITE_FULCRUM_FIELD_INDEX] == pytest.approx(0.5, abs=1e-5)

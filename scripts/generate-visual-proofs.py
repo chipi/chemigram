@@ -164,6 +164,16 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "vibrance": [-0.5, 0.0, 0.3, 0.6, 1.0],
     "chroma_global": [-0.5, 0.0, 0.3, 0.6, 1.0],
     "hue_angle": [-90.0, -30.0, 0.0, 30.0, 90.0],
+    # ----- #91 Bucket A.5: colorbalancergb per-zone hue/sat + blending/balance -----
+    "hue_shadows": [0.0, 90.0, 180.0, 270.0, 350.0],
+    "hue_midtones": [0.0, 90.0, 180.0, 270.0, 350.0],
+    "hue_highlights": [0.0, 90.0, 180.0, 270.0, 350.0],
+    "saturation_shadows": [-0.5, 0.0, 0.3, 0.5, 1.0],
+    "saturation_midtones": [-0.5, 0.0, 0.3, 0.5, 1.0],
+    "saturation_highlights": [-0.5, 0.0, 0.3, 0.5, 1.0],
+    "shadows_weight": [0.0, 0.5, 1.0, 2.0, 4.0],
+    "highlights_weight": [0.0, 0.5, 1.0, 2.0, 4.0],
+    "white_fulcrum": [-1.0, -0.5, 0.0, 0.5, 1.0],
     # ----- toneequalizer: 9 axes (RFC-022 Tier 2; deepest stress test) -----
     # Each band gets a row spanning EV ± 1.5; the 5-value sweep covers the
     # photographically meaningful range for that band's typical use.

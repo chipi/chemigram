@@ -693,6 +693,48 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"distance": 0.7},
     ),
+    # #91 Bucket A.5 — colorbalancergb per-zone hue/sat + blending/balance.
+    # Direction-of-change for individual axes is tricky on a synthetic chart
+    # (per-zone hue at 0° hue angle on neutrals is essentially a no-op since
+    # there's no chroma to rotate). Verify the parameterized + apply path
+    # completes; visual-proof sweeps cover the photographic effect.
+    ("hue_shadows", "210deg"): ("grayscale", _check_render_completes(), {"hue_shadows": 210.0}),
+    ("hue_midtones", "30deg"): ("grayscale", _check_render_completes(), {"hue_midtones": 30.0}),
+    ("hue_highlights", "45deg"): (
+        "grayscale",
+        _check_render_completes(),
+        {"hue_highlights": 45.0},
+    ),
+    ("saturation_shadows", "boost"): (
+        "grayscale",
+        _check_render_completes(),
+        {"saturation_shadows": 0.4},
+    ),
+    ("saturation_midtones", "boost"): (
+        "grayscale",
+        _check_render_completes(),
+        {"saturation_midtones": 0.3},
+    ),
+    ("saturation_highlights", "boost"): (
+        "grayscale",
+        _check_render_completes(),
+        {"saturation_highlights": 0.3},
+    ),
+    ("shadows_weight", "high"): (
+        "grayscale",
+        _check_render_completes(),
+        {"shadows_weight": 2.0},
+    ),
+    ("highlights_weight", "high"): (
+        "grayscale",
+        _check_render_completes(),
+        {"highlights_weight": 2.0},
+    ),
+    ("white_fulcrum", "shifted"): (
+        "grayscale",
+        _check_render_completes(),
+        {"white_fulcrum": 0.5},
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline
