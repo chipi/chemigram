@@ -672,6 +672,27 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"clip_threshold": 0.95},
     ),
+    # dehaze (#90 Bucket A.2): hazeremoval module. Effect requires actual
+    # haze in the source (low-frequency atmospheric scatter); the synthetic
+    # ColorChecker / grayscale fixtures don't have haze to remove, so
+    # direction-of-change isn't measurable on these baselines. Verify the
+    # parameterized + multi-axis apply path completes; the photographic
+    # effect is covered by visual-proof sweeps and on-real-raws review.
+    ("dehaze", "strength_strong"): (
+        "grayscale",
+        _check_render_completes(),
+        {"strength": 0.6},
+    ),
+    ("dehaze", "strength_negative"): (
+        "grayscale",
+        _check_render_completes(),
+        {"strength": -0.4},
+    ),
+    ("dehaze", "distance_high"): (
+        "grayscale",
+        _check_render_completes(),
+        {"distance": 0.7},
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline

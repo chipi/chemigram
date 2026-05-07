@@ -556,6 +556,48 @@ def test_parameterized_highlights_clip_threshold_apply_completes(
         )
 
 
+def test_parameterized_dehaze_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Dehaze (hazeremoval) operates on the haze content of the image; the
+    synthetic chart fixture has no haze. We verify the parameterized +
+    multi-axis + masked apply path runs end-to-end at multiple values.
+    Closes #90 Bucket A.2 masked-coverage requirement."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("dehaze")
+    if entry is None:
+        pytest.fail("'dehaze' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'dehaze' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_dehaze")
+    cases = [
+        ("strong", {"strength": 0.6}),
+        ("negative", {"strength": -0.4}),  # adds atmospheric haze
+        ("distance_only", {"distance": 0.5}),
+        ("both", {"strength": 0.5, "distance": 0.4}),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"dehaze_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_grain_strength_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,
