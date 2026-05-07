@@ -417,7 +417,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-004 | Default masking provider — coarse vs SAM | Decided | ADR-058 (closes); superseded by ADR-076 (path retired) |
 | RFC-005 | Pipeline stage protocol — abstract now or YAGNI | Decided | ADR-052 (closes) |
 | RFC-006 | Same-module collision behavior | Decided | ADR-051 (closes) |
-| RFC-007 | modversion drift handling | Draft v0.1 | ADR (pending) |
+| RFC-007 | modversion drift handling | Decided | ADR-082 (closes) |
 | RFC-008 | Vocabulary discovery at scale | Draft v0.1 (speculative) | — |
 | RFC-009 | Mask provider protocol shape | Decided | ADR-057 (closes); superseded by ADR-076 (path retired) |
 | RFC-010 | MCP tool surface — parameter shapes and error contracts | Decided | ADR-056 (closes) |
@@ -517,6 +517,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-079 | `apply_primitive` `value` / `param` argument shape; hard-reject range validation (closes RFC-021) | Accepted |
 | ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
 | ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
+| ADR-082 | Modversion drift handling: warn-loud at load, hard-fail at apply (closes RFC-007) | Accepted |
 
 ---
 

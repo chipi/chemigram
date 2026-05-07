@@ -1,10 +1,10 @@
 # RFC-007 — modversion drift handling
 
-> Status · Draft v0.1
+> Status · Decided (2026-05-07)
 > TA anchor ·/constraints/modversion-pinning ·/components/synthesizer
-> Related · ADR-026
-> Closes into · ADR (pending) — specifies handling rules
-> Why this is an RFC · ADR-026 commits to vocabulary modversion-pinning per pack. But the run-time question — what does the engine do when a vocabulary entry's modversion doesn't match the running darktable's modversion — is genuinely open. Several strategies are possible (block, warn, transparent migration, opportunistic re-export). The choice affects user experience in version-mismatch situations and the maintenance burden on vocabulary contributors.
+> Related · ADR-026; closing ADR-082
+> Closes into · ADR-082 (warn-loud at load, hard-fail at apply via existing PatchError)
+> Why this is an RFC · ADR-026 commits to vocabulary modversion-pinning per pack. But the run-time question — what does the engine do when a vocabulary entry's modversion doesn't match the running darktable's modversion — was genuinely open. Several strategies were possible (block, warn, transparent migration, opportunistic re-export). Resolved 2026-05-07 with the post-Phase-4 reality of 11 Path C decoders making drift surface real: ADR-082 codifies warn-loud-at-load + hard-fail-at-apply via the existing PatchError backstop in `chemigram.core.parameterize.patch_op_params`. Strict mode (env var) upgrades load warnings to ManifestError for CI / production. Tier 3 (non-parameterized) modules rely on darktable's own render-time errors per ADR-008.
 
 ## The question
 

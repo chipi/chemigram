@@ -13,7 +13,7 @@
       "touches": ["exposure"],
       "tags": ["l1", "canon"],
       "description": "Test L1 entry; reuses expo_+0.5 dtstyle as a stand-in baseline.",
-      "modversions": {"exposure": 6},
+      "modversions": {"exposure": 7},
       "darktable_version": "5.4",
       "source": "test_pack",
       "license": "MIT"
@@ -26,7 +26,7 @@
       "touches": ["exposure", "temperature"],
       "tags": ["look", "neutral"],
       "description": "Test L2 look — exposure + warm-subtle WB.",
-      "modversions": {"exposure": 6, "temperature": 3},
+      "modversions": {"exposure": 7, "temperature": 4},
       "darktable_version": "5.4",
       "source": "test_pack",
       "license": "MIT"
@@ -39,7 +39,7 @@
       "touches": ["exposure"],
       "tags": ["exposure", "lift", "global"],
       "description": "Lift exposure +0.5 EV.",
-      "modversions": {"exposure": 6},
+      "modversions": {"exposure": 7},
       "darktable_version": "5.4",
       "source": "test_pack",
       "license": "MIT"
@@ -52,7 +52,7 @@
       "touches": ["exposure"],
       "tags": ["exposure", "lower", "global"],
       "description": "Lower exposure -0.5 EV.",
-      "modversions": {"exposure": 6},
+      "modversions": {"exposure": 7},
       "darktable_version": "5.4",
       "source": "test_pack",
       "license": "MIT"
@@ -65,7 +65,7 @@
       "touches": ["temperature"],
       "tags": ["wb", "warm", "global"],
       "description": "Warm white balance, subtle.",
-      "modversions": {"temperature": 3},
+      "modversions": {"temperature": 4},
       "darktable_version": "5.4",
       "source": "test_pack",
       "license": "MIT"

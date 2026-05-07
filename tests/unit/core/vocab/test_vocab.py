@@ -391,7 +391,7 @@ def test_entry_with_mask_spec_round_trips(tmp_path: Path) -> None:
                         "touches": ["exposure"],
                         "tags": ["mask", "gradient"],
                         "description": "Gradient top dampen.",
-                        "modversions": {"exposure": 6},
+                        "modversions": {"exposure": 7},
                         "darktable_version": "5.4",
                         "source": "test",
                         "license": "MIT",

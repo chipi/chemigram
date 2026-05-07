@@ -180,6 +180,14 @@ class VocabularyIndex:
         self._l1_entries = tuple(l1_entries)
         self._all_entries = tuple(by_name.values())
 
+        # Modversion drift detection (RFC-007 closure / ADR-082).
+        # Walks the loaded entries; warns on mismatches between manifest
+        # declared modversions and the parameterize registry's pinned
+        # versions. Strict mode (env var) raises ManifestError instead.
+        from chemigram.core.vocab._modversion_drift import emit_drift_signals
+
+        emit_drift_signals(list(self._all_entries))
+
     def _load_all_packs(
         self, pack_roots: list[Path]
     ) -> tuple[dict[str, VocabEntry], dict[str, Path], list[VocabEntry]]:
