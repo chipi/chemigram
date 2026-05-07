@@ -609,6 +609,49 @@ def test_parameterized_color_grading_apply_completes(
     )
 
 
+def test_parameterized_texture_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Texture (diffuse-or-sharpen) effect requires actual edges/detail in
+    the source; the synthetic chart has none. We verify the parameterized +
+    multi-axis + masked apply path runs end-to-end at multiple values.
+    Closes #92 Bucket A.6 masked-coverage requirement."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("texture")
+    if entry is None:
+        pytest.fail("'texture' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'texture' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_texture")
+    cases = [
+        ("first_strong", {"first": 0.6}),
+        ("first_smoothing", {"first": -0.4}),
+        ("second_only", {"second": 0.5}),
+        ("sharpness_only", {"sharpness": 0.7}),
+        ("all_three", {"first": 0.5, "second": 0.3, "sharpness": 0.4}),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"texture_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_dehaze_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

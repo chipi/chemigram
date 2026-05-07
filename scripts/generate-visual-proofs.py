@@ -150,6 +150,10 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     # ----- dehaze (hazeremoval): 2 axes (#90 Bucket A.2) -----
     "strength": [-0.4, 0.0, 0.2, 0.6, 1.0],
     "distance": [0.0, 0.2, 0.5, 0.8, 1.0],
+    # ----- texture (diffuse-or-sharpen): 3 axes (#92 Bucket A.6) -----
+    "first": [-0.5, -0.2, 0.0, 0.3, 0.7],
+    "second": [-0.3, 0.0, 0.3, 0.6, 1.0],
+    "sharpness": [-0.5, 0.0, 0.3, 0.6, 1.0],
     # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
     "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],

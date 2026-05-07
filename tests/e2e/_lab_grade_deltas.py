@@ -735,6 +735,27 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"white_fulcrum": 0.5},
     ),
+    # texture (#92 Bucket A.6): diffuse-or-sharpen module. Effect requires
+    # actual texture/edges in the source; the synthetic ColorChecker chart
+    # has flat patches with no fine detail to enhance, so direction-of-change
+    # is not measurable on the lab-grade fixture. Verify the parameterized +
+    # multi-axis apply path completes; visual-proof sweeps + on-real-raws
+    # review cover the photographic effect.
+    ("texture", "first_strong"): (
+        "grayscale",
+        _check_render_completes(),
+        {"first": 0.5},
+    ),
+    ("texture", "first_smoothing"): (
+        "grayscale",
+        _check_render_completes(),
+        {"first": -0.3},
+    ),
+    ("texture", "all_axes"): (
+        "grayscale",
+        _check_render_completes(),
+        {"first": 0.5, "second": 0.3, "sharpness": 0.4},
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline
