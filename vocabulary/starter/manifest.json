@@ -9,7 +9,7 @@
       "touches": ["temperature"],
       "tags": ["wb", "warm", "global"],
       "description": "Warm white balance, subtle.",
-      "modversions": {"temperature": 3},
+      "modversions": {"temperature": 4},
       "darktable_version": "5.4",
       "source": "starter",
       "license": "MIT"
@@ -22,7 +22,7 @@
       "touches": ["exposure", "temperature"],
       "tags": ["look", "neutral"],
       "description": "Neutral L2 look — exposure + warm-subtle WB baseline.",
-      "modversions": {"exposure": 6, "temperature": 3},
+      "modversions": {"exposure": 7, "temperature": 4},
       "darktable_version": "5.4",
       "source": "starter",
       "license": "MIT"
