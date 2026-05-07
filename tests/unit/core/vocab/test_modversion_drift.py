@@ -57,6 +57,7 @@ def test_pinned_modversions_includes_all_registered_decoders() -> None:
         "colorbalancergb",
         "colorequal",
         "crop",
+        "denoiseprofile",
         "diffuse",
         "exposure",
         "filmicrgb",

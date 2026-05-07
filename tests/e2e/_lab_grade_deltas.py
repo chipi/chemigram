@@ -830,6 +830,30 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
             "balance": 5.0,
         },
     ),
+    # denoise (#96): denoiseprofile module. Effect requires actual image
+    # noise to denoise; the synthetic ColorChecker has none. Verify the
+    # parameterized + multi-axis apply path completes; visual-proof
+    # sweeps + on-real-raws cover the photographic effect.
+    ("denoise", "strength_strong"): (
+        "grayscale",
+        _check_render_completes(),
+        {"denoise_strength": 5.0},
+    ),
+    ("denoise", "shadows_protect"): (
+        "grayscale",
+        _check_render_completes(),
+        {"denoise_shadows": 1.6},
+    ),
+    ("denoise", "all_axes"): (
+        "grayscale",
+        _check_render_completes(),
+        {
+            "denoise_strength": 3.0,
+            "denoise_shadows": 1.4,
+            "denoise_radius": 2.0,
+            "denoise_scattering": 1.0,
+        },
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline

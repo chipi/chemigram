@@ -173,6 +173,12 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "latitude": [0.0, 10.0, 25.0, 50.0],
     "saturation": [-50.0, 0.0, 25.0, 50.0],
     "balance": [-25.0, -10.0, 0.0, 10.0, 25.0],
+    # ----- denoise (denoiseprofile mv12): 4 axes (#96) -----
+    # Axis names use the denoise_ prefix to disambiguate from dehaze.strength etc.
+    "denoise_strength": [0.5, 1.0, 2.0, 5.0, 20.0],
+    "denoise_shadows": [0.0, 0.5, 1.0, 1.4, 1.8],
+    "denoise_radius": [0.0, 1.0, 3.0, 6.0, 10.0],
+    "denoise_scattering": [0.0, 1.0, 5.0, 10.0, 20.0],
     # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
     "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],

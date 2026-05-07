@@ -30,6 +30,7 @@ from chemigram.core.parameterize import (
     colorbalancergb,
     colorequal,
     crop,
+    denoiseprofile,
     diffuse,
     exposure,
     filmicrgb,
@@ -65,6 +66,7 @@ _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
     ("highlights", 4): highlights.patch,
     ("temperature", 4): temperature.patch,
     ("crop", 3): crop.patch,
+    ("denoiseprofile", 12): denoiseprofile.patch,
     ("sharpen", 1): sharpen.patch,
     ("toneequal", 2): toneequalizer.patch,
 }
@@ -110,6 +112,7 @@ __all__ = [
     "colorbalancergb",
     "colorequal",
     "crop",
+    "denoiseprofile",
     "diffuse",
     "exposure",
     "filmicrgb",

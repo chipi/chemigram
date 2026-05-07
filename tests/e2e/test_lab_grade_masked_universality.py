@@ -668,6 +668,55 @@ def test_parameterized_hsl_apply_completes(
     )
 
 
+def test_parameterized_denoise_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Denoise (#96) — verify the parameterized + multi-axis + masked
+    apply path runs end-to-end at multiple value combinations."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("denoise")
+    if entry is None:
+        pytest.fail("'denoise' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'denoise' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_denoise")
+    cases = [
+        ("strength_strong", {"denoise_strength": 5.0}),
+        ("shadows_protect", {"denoise_shadows": 1.6}),
+        ("radius_wider", {"denoise_radius": 3.0}),
+        ("scattering", {"denoise_scattering": 5.0}),
+        (
+            "all_axes",
+            {
+                "denoise_strength": 3.0,
+                "denoise_shadows": 1.4,
+                "denoise_radius": 2.0,
+                "denoise_scattering": 1.0,
+            },
+        ),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"denoise_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_filmic_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,
