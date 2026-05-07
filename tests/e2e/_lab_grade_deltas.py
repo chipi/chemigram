@@ -854,6 +854,32 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
             "denoise_scattering": 1.0,
         },
     ),
+    # lens correction (#95): lens module. Photographic effect requires
+    # populated lensfun camera/lens identifier strings (EXIF auto-binding
+    # follow-up); without those, the lensfun correction can't fire on the
+    # synthetic chart. Render-completes verifies the multi-axis apply
+    # path correctness; visual-proof + on-real-raws cover the photographic
+    # effect when EXIF binding lands.
+    ("lens_correction", "v_strength"): (
+        "grayscale",
+        _check_render_completes(),
+        {"lens_v_strength": 0.5},
+    ),
+    ("lens_correction", "tca_shift"): (
+        "grayscale",
+        _check_render_completes(),
+        {"lens_tca_r": 1.005, "lens_tca_b": 0.995},
+    ),
+    ("lens_correction", "all_strength_axes"): (
+        "grayscale",
+        _check_render_completes(),
+        {
+            "lens_scale": 1.0,
+            "lens_cor_distortion": 0.8,
+            "lens_cor_vignette": 0.6,
+            "lens_v_strength": 0.4,
+        },
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline

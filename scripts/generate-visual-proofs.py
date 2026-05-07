@@ -179,6 +179,21 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "denoise_shadows": [0.0, 0.5, 1.0, 1.4, 1.8],
     "denoise_radius": [0.0, 1.0, 3.0, 6.0, 10.0],
     "denoise_scattering": [0.0, 1.0, 5.0, 10.0, 20.0],
+    # ----- lens correction (lens mv10): 10 axes (#95) -----
+    # Axis names use lens_ prefix for disambiguation. Photographic effect
+    # depends on lensfun camera/lens identifier strings being populated
+    # (EXIF auto-binding follow-up); sweeps still verify the apply path
+    # bytes-correctness.
+    "lens_scale": [0.0, 1.0, 1.5, 2.0],
+    "lens_tca_r": [0.99, 0.995, 1.0, 1.005, 1.01],
+    "lens_tca_b": [0.99, 0.995, 1.0, 1.005, 1.01],
+    "lens_cor_distortion": [0.0, 0.3, 0.6, 1.0],
+    "lens_cor_vignette": [0.0, 0.3, 0.6, 1.0],
+    "lens_cor_ca_r": [-1.0, 0.0, 1.0],
+    "lens_cor_ca_b": [-1.0, 0.0, 1.0],
+    "lens_v_strength": [-0.5, 0.0, 0.5, 1.0],
+    "lens_v_radius": [0.5, 1.0, 2.0],
+    "lens_v_steepness": [0.5, 1.0, 2.5, 5.0],
     # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
     "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],

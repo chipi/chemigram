@@ -668,6 +668,56 @@ def test_parameterized_hsl_apply_completes(
     )
 
 
+def test_parameterized_lens_correction_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Lens correction (#95) — verify the parameterized + multi-axis +
+    masked apply path runs end-to-end at multiple value combinations.
+    Lensfun identifier strings (camera/lens) are empty in the baseline,
+    so darktable's lensfun-method correction won't fire photographically;
+    the apply path correctness is independent."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("lens_correction")
+    if entry is None:
+        pytest.fail("'lens_correction' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'lens_correction' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_lens_correction")
+    cases = [
+        ("v_strength", {"lens_v_strength": 0.5}),
+        ("tca_shift", {"lens_tca_r": 1.005, "lens_tca_b": 0.995}),
+        (
+            "all_strength_axes",
+            {
+                "lens_scale": 1.0,
+                "lens_cor_distortion": 0.8,
+                "lens_cor_vignette": 0.6,
+                "lens_v_strength": 0.4,
+            },
+        ),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"lens_correction_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_denoise_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,
