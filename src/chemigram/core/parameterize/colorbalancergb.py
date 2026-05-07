@@ -53,8 +53,17 @@ import struct
 # Struct format (little-endian): 32 floats + 1 uint32 (saturation_formula enum).
 _STRUCT_FORMAT = "<32fI"
 _STRUCT_SIZE = 132
-_SATURATION_GLOBAL_FIELD_INDEX = 19  # 20th field (1-indexed), field #20 in the struct
-_SATURATION_GLOBAL_OFFSET = 76  # byte offset of saturation_global in the packed blob
+
+# Parameterized axes (RFC-021 / RFC-022 Tier 2). Field indices in the
+# 33-tuple returned by decode(); byte offsets in the packed blob.
+_SATURATION_GLOBAL_FIELD_INDEX = 19  # offset 76 — global saturation
+_SATURATION_GLOBAL_OFFSET = 76
+_CHROMA_GLOBAL_FIELD_INDEX = 17  # offset 68 — global chroma
+_CHROMA_GLOBAL_OFFSET = 68
+_HUE_ANGLE_FIELD_INDEX = 23  # offset 92 — global hue rotation
+_HUE_ANGLE_OFFSET = 92
+_VIBRANCE_FIELD_INDEX = 29  # offset 116 — vibrance
+_VIBRANCE_OFFSET = 116
 
 # Pinned modversion for v1.6.0 / Phase 4 ship.
 SUPPORTED_MODVERSION = 5
@@ -82,19 +91,42 @@ def encode(fields: tuple[float | int, ...]) -> str:
     return struct.pack(_STRUCT_FORMAT, *fields).hex()
 
 
-def patch(op_params: str, *, saturation_global: float) -> str:
-    """Patch ``saturation_global`` in a 132-byte colorbalancergb blob.
+def patch(
+    op_params: str,
+    *,
+    saturation_global: float | None = None,
+    chroma_global: float | None = None,
+    hue_angle: float | None = None,
+    vibrance: float | None = None,
+) -> str:
+    """Patch any combination of colorbalancergb's parameterized axes.
 
-    Decodes the hex blob, replaces the ``saturation_global`` field at byte
-    offset 76 with the supplied value, re-encodes. Every other field is
-    preserved from the input.
+    Multi-axis partial-update: caller may supply any subset of the
+    declared parameters. Unspecified axes preserved from the input.
+    Every other field in the 132-byte struct (per-zone saturation,
+    brilliance, chroma per zone, grading angles, output gamma, the
+    ``saturation_formula`` enum, etc.) is always preserved.
+
+    The four parameterized axes per RFC-021 / RFC-022 Tier 2:
+
+    - ``saturation_global`` (offset 76; range [-1.0, +1.0]; -1.0 →
+      monochrome, +0.5 → strong boost). Replaces v1.5.x sat_kill /
+      sat_boost_moderate / sat_boost_strong.
+    - ``chroma_global``    (offset 68; range [-1.0, +1.0]; vibrance-like
+      chroma push that protects already-saturated pixels less than
+      vibrance does).
+    - ``hue_angle``        (offset 92; range [-180.0, +180.0]; degrees of
+      global hue rotation).
+    - ``vibrance``         (offset 116; range [-1.0, +1.0]; protects
+      saturated pixels). Replaces v1.5.x vibrance_+0.3.
 
     Args:
         op_params: hex-encoded source ``op_params`` (132 bytes / 264 hex
             chars).
-        saturation_global: new global saturation value. Range validation
-            is the caller's responsibility; this function applies whatever
-            it's given (manifest declares range [-1.0, +1.0]).
+        saturation_global: new global saturation, or None to preserve.
+        chroma_global: new global chroma, or None to preserve.
+        hue_angle: new hue-rotation angle in degrees, or None to preserve.
+        vibrance: new vibrance, or None to preserve.
 
     Returns:
         New hex-encoded ``op_params`` (132 bytes / 264 hex chars).
@@ -103,5 +135,12 @@ def patch(op_params: str, *, saturation_global: float) -> str:
         ValueError: input blob is not 132 bytes after hex-decode.
     """
     fields = list(decode(op_params))
-    fields[_SATURATION_GLOBAL_FIELD_INDEX] = float(saturation_global)
+    if saturation_global is not None:
+        fields[_SATURATION_GLOBAL_FIELD_INDEX] = float(saturation_global)
+    if chroma_global is not None:
+        fields[_CHROMA_GLOBAL_FIELD_INDEX] = float(chroma_global)
+    if hue_angle is not None:
+        fields[_HUE_ANGLE_FIELD_INDEX] = float(hue_angle)
+    if vibrance is not None:
+        fields[_VIBRANCE_FIELD_INDEX] = float(vibrance)
     return encode(tuple(fields))

@@ -20,6 +20,9 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - `blacks_lifted`, `blacks_crushed` — pull or crush deep shadows via sigmoid target
 - `whites_open` — extend white target
 
+**9-band tone equalizer (RFC-022 Tier 2)**
+- `toneequalizer` (parameterized, 9 axes; each in [-2.0, +2.0] EV, default 0.0). Bands: `noise`, `ultra_deep_blacks`, `deep_blacks`, `blacks`, `shadows`, `midtones`, `highlights`, `whites`, `speculars`. Pass any subset; unspecified bands stay at 0. Closes the "tonal-zone curves" gap previously listed under "What's missing".
+
 **Local tone (drawn-mask exposure)**
 - `gradient_top_dampen_highlights` — top-half EV reduction
 - `gradient_bottom_lift_shadows` — bottom-half EV lift
@@ -31,8 +34,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 
 - **Highlight dampen** as a global move (no inverse of `whites_open` shipped, though sigmoid's white target handles the math).
 - **Mid-tone luma**: nothing directly moves midtones globally. Closest is `exposure --value V`, which moves everything proportionally (a true mid-tone-only move would route through `colorbalancergb` mid-zone luma fields).
-- **Tonal-zone curves** like "lift only the bottom 25%" or "compress only the top 10%" — sigmoid only exposes black/white targets, not arbitrary control points. `toneequal` would close this gap (see §12).
-- **Sigmoid contrast / blacks / whites parameterization** — these still ship as discrete strengths. Phase 4 (per RFC-021) parameterizes them.
+- **Sigmoid `blacks_lifted` / `blacks_crushed` / `whites_open` parameterization** — these still ship as discrete entries. Each represents a *kind* of tonal move (different fields), not a magnitude on the same axis, so they may stay discrete by design.
 
 ---
 
@@ -44,9 +46,11 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - `temperature` (parameterized; multi-axis: `red_coeff`, `blue_coeff` in [0.5, 4.0] each; defaults 1.0). The first multi-parameter parameterized entry. Replaces the v1.5.x `wb_cool_subtle`. `wb_warm_subtle` remains in the starter pack as a discrete teaching artifact.
 - ⚠️ does not honor masks (darktable pipeline-position issue, see [`mask-applicable-controls.md`](guides/mask-applicable-controls.md#temperature))
 
-**Saturation (colorbalancergb)**
-- `saturation_global` (parameterized; range [-1.0, +1.0]; -1.0 → monochrome, +0.5 → strong boost). Replaces the v1.5.x discrete `sat_kill / sat_boost_moderate / sat_boost_strong` ladder.
-- `vibrance_+0.3` — gentle saturation that protects saturated pixels
+**Saturation / chroma / vibrance (colorbalancergb — all parameterized)**
+- `saturation_global` (range [-1.0, +1.0]; -1.0 → monochrome, +0.5 → strong boost). RFC-021; replaces v1.5.x sat_* ladder.
+- `vibrance` (range [-1.0, +1.0]). RFC-022 Tier 2; replaces v1.5.x `vibrance_+0.3`. Vibrance protects already-saturated pixels — gentler chroma push than saturation_global.
+- `chroma_global` (range [-1.0, +1.0]). RFC-022 Tier 2; less saturated-pixel protection than vibrance, more aggressive than saturation_global at equal magnitudes.
+- `hue_angle` (range [-180.0, +180.0] degrees). RFC-022 Tier 2; rotates every pixel's hue around the color wheel.
 
 **Per-zone chroma**
 - `chroma_boost_shadows`, `chroma_boost_midtones`, `chroma_boost_highlights` — boost color intensity in a tonal zone (not selective on hue)
@@ -59,7 +63,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 
 - **WB strength variants**: only `subtle` exists. No `wb_warm_medium`, `wb_warm_heavy`, `wb_cool_medium`, etc.
 - **Tint axis** (magenta ↔ green): the temperature module supports it, but no vocabulary primitive touches `tint`. Users who want to push toward magenta or green have no entry.
-- **Hue rotation**: the `colorbalancergb` 4-way is fixed at warm/cool axes (orange ↔ blue). No hue-shift primitive that targets, say, "shift greens toward teal" or "shift reds toward orange."
+- **Selective hue rotation** (HSL-style "shift greens toward teal"): not present. The Tier 2 `hue_angle` rotates *all* pixels uniformly, not a specific hue band.
 - **Mid-tone grade**: only shadows + highlights have warm/cool entries; midtones don't.
 - **Selective color** (HSL-style "only affect blues"): not present at all.
 - **Channel mixer / B&W conversion**: `channelmixerrgb` is in the planned-but-not-shipped list (issue #63).
@@ -74,9 +78,11 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - `bilat_clarity_strength` (parameterized; range [-1.0, 4.0]; default 0.0 = no clarity, 1.5 = pronounced). Replaces the v1.5.x discrete `clarity_strong` (the strength axis only). `clarity_painterly` remains discrete — different *kind* of clarity, not strength.
 - `clarity_painterly` — softer painterly local contrast
 
+**Edge-aware sharpening (RFC-022 Tier 2)**
+- `sharpen` (parameterized; range [0.0, 2.0]; default 0.0 = no sharpen, 0.5 = subtle, 1.0 = strong, 2.0 = aggressive). Unsharp-mask sharpening; radius preserved at darktable default 2.0 px.
+
 ### What's missing (fundamentals)
 
-- **Real sharpening**: no entries for darktable's `sharpen` / `diffuse-or-sharpen` modules. The existing `clarity_*` uses bilateral local contrast, which is a different operation from edge-aware sharpening.
 - **Noise reduction**: no entries for `denoiseprofile`, `nlmeans`, `bilat`-as-denoiser. Users with high-ISO files have no go-to.
 - **Luminance vs chrominance noise control**: derivative of the above.
 - **Hot-pixel removal, dust spotting**: not in scope (no entries; would need separate vocabulary subtype).
@@ -102,17 +108,16 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 
 **Vignette (post-process, decorative)**
 - `vignette --value V` — parameterized radial corner darkening (RFC-021); brightness in `[-1.0, +1.0]` (negative darkens corners; positive lifts). Replaces the v1.5.x discrete `vignette_subtle / medium / heavy` ladder.
-- Three intensity ladder; no inverted vignette or off-center variant
+
+**Crop (RFC-022 Tier 2)**
+- `crop --param cx=V cy=V cw=V ch=V` — parameterized crop rectangle in normalized coordinates [0.0, 1.0]; default cx=cy=0.0, cw=ch=1.0 (no crop). First workflow-primitive parameterized entry; aspect-ratio preserved at -1/-1 (free).
 
 ### What's missing entirely
 
 - **Lens correction** (`lens` module) — no entries despite darktable supporting it for thousands of lens profiles
-- **Crop / aspect ratio**: no entries; the `clipping` module is darktable-supported
 - **Rotation / perspective correction**: not in vocabulary
 - **Distortion correction** (barrel / pincushion): not in vocabulary
 - **Chromatic aberration removal** (`cacorrect`): not in vocabulary
-
-This entire category is missing — chemigram doesn't yet have any geometry-touching primitives.
 
 ---
 
@@ -218,18 +223,15 @@ The CLI mirrors most MCP tools verb-for-verb. Agent-only tools (no direct CLI):
 
 - **Workflow + versioning**: snapshot/branch/diff/tag/reset is comprehensive and Git-shaped. Cheap, reversible, content-addressed. This part feels finished.
 - **Engine architecture**: synthesizer, mask-binding, MCP/CLI parity, taste/brief/notes context, session transcripts — all the *plumbing* is solid.
-- **Parameterized continuous control** (RFC-021 / ADR-077..080, v1.6.0): two modules so far (`exposure`, `vignette`) accept any value at apply time. The architecture is in place; remaining Phase 4 modules ship at ~half-a-day each.
-- **Color grading via `colorbalancergb`**: 8 remaining entries cover vibrance, per-zone chroma, and warm/cool grade. (Saturation collapses into a parameterized entry in the next iteration.)
+- **Parameterized continuous control** (RFC-021/RFC-022 + ADR-077..080): 14 entries across all 8 Phase 4 magnitude-ladder modules + 4 Tier 2 modules (`crop`, `sharpen`, plus `colorbalancergb` extra axes — vibrance / chroma_global / hue_angle — and the 9-band `toneequalizer`). Single-axis, multi-axis (2-param `temperature`, 4-param `crop`), and 9-axis (`toneequalizer`) cases all proven on the same architecture.
+- **Color grading via `colorbalancergb`**: 4 parameterized axes (saturation_global, vibrance, chroma_global, hue_angle) plus 7 discrete entries for per-zone chroma + warm/cool grade.
 - **Drawn-mask masking**: works on every primitive (engine-tested), with three drawn-form geometries.
 
-### Where chemigram is thin today (post-v1.6.0)
+### Where chemigram is thin today (post-Tier 2)
 
-- **Sharpening / noise**: nothing. (Entire `sharpen`, `diffuse-or-sharpen`, `equalizer`, `denoiseprofile`, `nlmeans` family unrepresented.)
-- **Geometry / lens / crop**: nothing. (`clipping`, `ashift`, `flip`, `lens`, `liquify`, `retouch`, `spots` all untouched.)
-- **Tone equalizer / zone tone**: nothing. (`toneequal` is darktable's preferred local-tone tool; chemigram has no entry for it.)
+- **Noise reduction**: nothing. (`denoiseprofile`, `nlmeans`, `bilat`-as-denoiser unrepresented.)
+- **Lens / perspective**: nothing. (`lens` lensfun, `ashift`, `cacorrect` untouched.)
 - **Selective color (HSL)**: nothing. (`colorzones` would unlock "shift only blues toward teal" type moves.)
-- **WB**: only `subtle` strength; no tint axis. (Multi-axis parameterization in Phase 4 will unlock the temp + tint + WB-strength continuous control.)
-- **Sigmoid / clarity / grain / highlights**: shipped as discrete strengths still. (Phase 4 parameterizes each — see "What's next" below.)
 - **Looks / presets**: one entry (`look_neutral`).
 
 ### What's done (RFC-021 Phase 4 — in progress)
@@ -251,9 +253,9 @@ Each module is a single commit: decoder + manifest entry + 5-layer test coverage
 
 ### What's next
 
-**Phase 4 closed.** All 8 magnitude-ladder modules now collapse into parameterized entries: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` (multi-axis). The architecture is proven across single-axis and multi-axis cases; the test-coverage CI linter (ADR-080) enforces 5-layer discipline on every parameterized entry.
+**Phase 4 + RFC-022 Tier 2 both closed.** All 8 magnitude-ladder modules + 4 Tier 2 expansion modules ship parameterized: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` (Phase 4); `crop`, `sharpen`, colorbalancergb extras (`vibrance`, `chroma_global`, `hue_angle`), and `toneequalizer` (Tier 2). The architecture is proven across single-axis (sharpen, sigmoid_contrast etc.), 2-axis (temperature), 4-axis (crop), and 9-axis (toneequalizer) cases. The test-coverage CI linter (ADR-080) enforces 5-layer discipline on every parameterized entry.
 
-The next architectural question — bulk parameterization of brand-new modules (sharpen / toneequal / denoise / lens / crop) — is open in **RFC-022** (tiered baseline policy). The decision there determines whether the project commits to a complete parameterized foundation before further agent/session work, or stays incremental as session evidence surfaces specific gaps.
+The remaining gaps in this section ("noise reduction", "lens / perspective", "selective color HSL", "looks") are RFC-022 Tier 3 candidates — default-opaque under ADR-008, evidence-promoted from session gap-log signal as real photographic need surfaces. A "pause and observe" window is the natural next step before deciding which of these (if any) clears the cost/benefit bar.
 
 ### What "growing it" actually requires
 

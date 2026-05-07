@@ -46,7 +46,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (24 entries)
+## `expressive-baseline` pack (29 entries)
 
 ### `grain_strength`
 
@@ -162,6 +162,58 @@ _Open whites: target 300 (3x default)._
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker.jpg" alt="whites_open ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale.jpg" alt="whites_open grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker-masked.jpg" alt="whites_open ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale-masked.jpg" alt="whites_open grayscale masked" width="180"> |
 
+### `toneequalizer`
+
+_Parameterized 9-band tone equalizer (RFC-022 Tier 2; most complex multi-parameter ship). Pass --param NODE=V for any of: noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars. Each in [-2.0, +2.0] EV; default 0.0. Algorithm fields preserved at darktable defaults._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-colorchecker.jpg" alt="toneequalizer ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-grayscale.jpg" alt="toneequalizer grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-colorchecker-masked.jpg" alt="toneequalizer ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-grayscale-masked.jpg" alt="toneequalizer grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+### `sharpen`
+
+_Parameterized sharpening (RFC-022 Tier 2). Pass --value V; range [0.0, 2.0] (0.0 = no sharpen, 0.5 = subtle, 1.0 = strong, 2.0 = aggressive). Radius preserved at darktable default 2.0 px, threshold at 0.5._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/sharpen-colorchecker.jpg" alt="sharpen ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-grayscale.jpg" alt="sharpen grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-colorchecker-masked.jpg" alt="sharpen ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-grayscale-masked.jpg" alt="sharpen grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`amount`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+
+| `0.00` | `+0.50` | `+1.00` | `+1.50` | `+2.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/sharpen-sweep-0_00.jpg" alt="sharpen amount=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p0_50.jpg" alt="sharpen amount=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p1_00.jpg" alt="sharpen amount=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p1_50.jpg" alt="sharpen amount=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p2_00.jpg" alt="sharpen amount=+2.00" width="180"> |
+
+### `crop`
+
+_Parameterized crop (RFC-022 Tier 2). Pass --param cx=V cy=V cw=V ch=V — each in [0.0, 1.0]. Default 0,0,1,1 (no crop). cx/cy = top-left margin, cw/ch = bottom-right margin (so crop region is [cx..cw] x [cy..ch] in normalized coords). First workflow-primitive parameterized entry; aspect-ratio constraint preserved at -1/-1 (free)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/crop-colorchecker.jpg" alt="crop ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-grayscale.jpg" alt="crop grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-colorchecker-masked.jpg" alt="crop ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-grayscale-masked.jpg" alt="crop grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
 ### `bilat_clarity_strength`
 
 _Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry — different kind, not strength._
@@ -246,15 +298,67 @@ _(near-baseline diff in ColorChecker (masked): below visible threshold on this c
 |-|-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n1_00.jpg" alt="saturation_global saturation_global=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n0_50.jpg" alt="saturation_global saturation_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-0_00.jpg" alt="saturation_global saturation_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_25.jpg" alt="saturation_global saturation_global=+0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_50.jpg" alt="saturation_global saturation_global=+0.50" width="180"> |
 
-### `vibrance_+0.3`
+### `vibrance`
 
-_Global vibrance +0.3._
+_Parameterized vibrance on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. 0.3 = vibrance_+0.3-equivalent. Vibrance protects already-saturated pixels — gentler chroma push than saturation_global. Replaces v1.5.x vibrance_+0.3._
 
 | ColorChecker (global) | ColorChecker (centered ellipse mask) |
 |-|-|
-| <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker.jpg" alt="vibrance_+0.3 ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance_+0.3-colorchecker-masked.jpg" alt="vibrance_+0.3 ColorChecker masked" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/vibrance-colorchecker.jpg" alt="vibrance ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-colorchecker-masked.jpg" alt="vibrance ColorChecker masked" width="180"> |
 
 > **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`vibrance`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+
+| `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/vibrance-sweep-n0_50.jpg" alt="vibrance vibrance=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-0_00.jpg" alt="vibrance vibrance=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p0_30.jpg" alt="vibrance vibrance=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p0_60.jpg" alt="vibrance vibrance=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p1_00.jpg" alt="vibrance vibrance=+1.00" width="180"> |
+
+### `chroma_global`
+
+_Parameterized global chroma on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. Less saturated-pixel protection than vibrance, more aggressive than saturation_global at equal magnitudes._
+
+| ColorChecker (global) | ColorChecker (centered ellipse mask) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/chroma_global-colorchecker.jpg" alt="chroma_global ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-colorchecker-masked.jpg" alt="chroma_global ColorChecker masked" width="180"> |
+
+> **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`chroma_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+
+| `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-n0_50.jpg" alt="chroma_global chroma_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-0_00.jpg" alt="chroma_global chroma_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p0_30.jpg" alt="chroma_global chroma_global=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p0_60.jpg" alt="chroma_global chroma_global=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p1_00.jpg" alt="chroma_global chroma_global=+1.00" width="180"> |
+
+### `hue_angle`
+
+_Parameterized global hue rotation on colorbalancergb (RFC-022 Tier 2). Pass --value V in degrees; range [-180.0, +180.0]. Rotates every pixel's hue around the color wheel without changing saturation or luminance._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/hue_angle-colorchecker.jpg" alt="hue_angle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-grayscale.jpg" alt="hue_angle grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-colorchecker-masked.jpg" alt="hue_angle ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-grayscale-masked.jpg" alt="hue_angle grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`hue_angle`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+
+| `-90.00` | `-30.00` | `0.00` | `+30.00` | `+90.00` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-n90_00.jpg" alt="hue_angle hue_angle=-90.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-n30_00.jpg" alt="hue_angle hue_angle=-30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-0_00.jpg" alt="hue_angle hue_angle=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-p30_00.jpg" alt="hue_angle hue_angle=+30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-p90_00.jpg" alt="hue_angle hue_angle=+90.00" width="180"> |
 
 ### `grade_shadows_warm`
 

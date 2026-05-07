@@ -485,7 +485,8 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
     # were retired in v1.6.0+ when ``saturation_global`` shipped (RFC-021).
     # Their direction-of-change behaviors are now exercised at multiple
     # values via PARAMETERIZED_EFFECTS below.
-    "vibrance_+0.3": ("colorchecker", _check_chroma_increase(min_delta=0.5)),
+    # vibrance_+0.3 retired in v1.6+ → replaced by parameterized ``vibrance``
+    # entry; covered in PARAMETERIZED_EFFECTS below.
     "chroma_boost_shadows": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
     "chroma_boost_midtones": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
     "chroma_boost_highlights": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
@@ -678,6 +679,84 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         "grayscale",
         _check_render_completes(),
         {"red_coeff": 1.209, "blue_coeff": 2.137},
+    ),
+    # crop: workflow primitive (RFC-022 Tier 2). Crops the rendered image —
+    # no per-patch deterministic effect on the chart's color/luma signal,
+    # but a smaller rendered region. Direction-of-change isn't applicable;
+    # the lab-grade global slot just verifies the parameterized apply path
+    # completes at multiple crop rectangles.
+    ("crop", "center_80pct"): (
+        "colorchecker",
+        _check_render_completes(),
+        {"cx": 0.1, "cy": 0.1, "cw": 0.9, "ch": 0.9},
+    ),
+    ("crop", "top_half"): (
+        "colorchecker",
+        _check_render_completes(),
+        {"cx": 0.0, "cy": 0.0, "cw": 1.0, "ch": 0.5},
+    ),
+    # sharpen: brand-new module (RFC-022 Tier 2). Sharpening operates on
+    # edges; on flat chart patches there's no per-patch deterministic
+    # signal. Direction-of-change on real raws covers the photographic
+    # effect; the lab-grade global slot just verifies the parameterized
+    # apply path completes at multiple amounts.
+    ("sharpen", "amount_1.0"): (
+        "grayscale",
+        _check_render_completes(),
+        {"amount": 1.0},
+    ),
+    ("sharpen", "amount_0.5"): (
+        "grayscale",
+        _check_render_completes(),
+        {"amount": 0.5},
+    ),
+    # vibrance: replaces v1.5.x vibrance_+0.3 (RFC-022 Tier 2). Direction-
+    # of-change on color patches: +0.3 increases chroma but protects
+    # already-saturated pixels (so the delta is smaller than saturation_global
+    # at +0.3 would produce). Same chart-isolation shape as the retired
+    # vibrance_+0.3 test.
+    ("vibrance", "vibrance_+0.3"): (
+        "colorchecker",
+        _check_chroma_increase(min_delta=0.5),
+        {"vibrance": 0.3},
+    ),
+    # chroma_global: parameterized chroma push (RFC-022 Tier 2). Brand-new —
+    # no v1.5.x predecessor. Direction-of-change asserted same shape as
+    # vibrance.
+    ("chroma_global", "chroma_+0.3"): (
+        "colorchecker",
+        _check_chroma_increase(min_delta=0.3),
+        {"chroma_global": 0.3},
+    ),
+    # hue_angle: rotates pixel hues; per-patch delta on the chart is real
+    # but direction depends on each patch's starting hue. A 30° rotation
+    # changes the rendered colorchecker chroma magnitude only marginally;
+    # the per-patch hue shift is the photographic effect, not chroma. We
+    # use _check_render_completes — direction-of-change tests on real
+    # raws cover the actual hue rotation effect.
+    ("hue_angle", "rot_+30"): (
+        "colorchecker",
+        _check_render_completes(),
+        {"hue_angle": 30.0},
+    ),
+    # toneequalizer: 9-band tonal curve (RFC-022 Tier 2; most complex
+    # multi-parameter ship). Each node shifts a luminance band ±2 EV.
+    # The lab-grade global slot exercises 2 representative invocations:
+    # a "shadows up + highlights down" compression curve and a single-
+    # node midtones shift. Direction-of-change on the grayscale ramp
+    # tracks the per-band luma deltas, but the chart's discrete-patch
+    # quantization makes per-band assertions noisy — _check_render_completes
+    # confirms the apply path runs end-to-end at the multi-parameter
+    # extreme.
+    ("toneequalizer", "compress_curve"): (
+        "grayscale",
+        _check_render_completes(),
+        {"shadows": 1.0, "highlights": -1.0, "midtones": 0.0},
+    ),
+    ("toneequalizer", "midtones_lift"): (
+        "grayscale",
+        _check_render_completes(),
+        {"midtones": 0.5},
     ),
 }
 # fmt: on

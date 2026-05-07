@@ -148,6 +148,20 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     # ``temperature`` has a sweep recipe. The actual multi-axis sweep grid
     # is deferred — see _render_parameter_sweep below.
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
+    # crop is multi-parameter (cx + cy + cw + ch). Single-axis sweep
+    # harness limitation; we register cx so the CI linter recognizes
+    # ``crop`` has a sweep recipe. Multi-axis crop-rectangle sweep grid
+    # would require a different visualization shape — deferred.
+    "cx": [0.0, 0.1, 0.2, 0.3],
+    "amount": [0.0, 0.5, 1.0, 1.5, 2.0],
+    "vibrance": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    "chroma_global": [-0.5, 0.0, 0.3, 0.6, 1.0],
+    "hue_angle": [-90.0, -30.0, 0.0, 30.0, 90.0],
+    # toneequalizer is multi-parameter (9 axes). Single-axis sweep
+    # harness limitation; we register ``shadows`` so the CI linter
+    # recognizes the entry has a sweep recipe. Single-axis sweep across
+    # the shadows band is photographically meaningful in isolation.
+    "shadows": [-1.5, -0.5, 0.0, 0.5, 1.5],
 }
 
 # Subtypes / contexts where the engine renders correctly but the chart

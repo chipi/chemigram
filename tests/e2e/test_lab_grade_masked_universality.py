@@ -259,6 +259,183 @@ def test_mask_localizes_arbitrary_primitive(
         )
 
 
+def test_parameterized_toneequalizer_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Toneequalizer is the most complex multi-parameter ship (9 axes).
+    We exercise: full curve (all 9 nodes), partial-update (2 nodes), and
+    single-node-with-mask. Localization isn't asserted on chart fixtures
+    — toneequal x mask works mechanically but the per-band luma deltas
+    on flat patches are hard to disentangle from the mask's spatial
+    falloff.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("toneequalizer")
+    if entry is None:
+        pytest.fail("'toneequalizer' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'toneequalizer' loaded but parameters is None")
+
+    cases = [
+        # All 9 axes: synthetic compression curve
+        (
+            "full_compress",
+            {
+                "noise": -0.5,
+                "ultra_deep_blacks": -0.3,
+                "deep_blacks": -0.1,
+                "blacks": 0.1,
+                "shadows": 0.3,
+                "midtones": 0.0,
+                "highlights": -0.3,
+                "whites": -0.5,
+                "speculars": -0.7,
+            },
+        ),
+        # Partial-update: just shadows + highlights
+        ("shadows_highlights", {"shadows": 0.7, "highlights": -0.3}),
+        # Single-node + mask
+        ("midtones_only", {"midtones": 0.5}),
+    ]
+    out_dir = tmp_path_factory.mktemp("masked_param_toneequalizer")
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"toneequalizer_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_colorbalancergb_axes_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """The 3 colorbalancergb additional axes (vibrance, chroma_global,
+    hue_angle) ride the same shared decoder. We verify each parameterized
+    + masked apply path runs end-to-end. Localization isn't asserted at
+    the e2e tier — saturation_global already proves the colorbalancergb-
+    through-mask path in test_mask_localizes_arbitrary_primitive.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    cases = [
+        ("vibrance", {"vibrance": 0.5}),
+        ("chroma_global", {"chroma_global": 0.5}),
+        ("hue_angle", {"hue_angle": 30.0}),
+    ]
+    out_dir = tmp_path_factory.mktemp("masked_param_colorbalancergb_axes")
+    for entry_name, values in cases:
+        entry = vocab.lookup_by_name(entry_name)
+        if entry is None:
+            pytest.fail(f"{entry_name!r} parameterized entry not in loaded packs")
+        if entry.parameters is None:
+            pytest.fail(f"{entry_name!r} loaded but parameters is None")
+        applied = apply_entry(
+            baseline_xmp, entry, parameter_values=values, mask_spec=_CENTER_MASK_SPEC
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"{entry_name}_masked",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_sharpen_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Sharpen operates on edges, not flat chart patches — no spatial-
+    localization assertion is meaningful on the synthetic fixture. We
+    verify the parameterized + masked apply path runs end-to-end at
+    multiple amount values.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("sharpen")
+    if entry is None:
+        pytest.fail("'sharpen' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'sharpen' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_sharpen")
+    for v in (0.5, 1.0, 1.5):
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values={"amount": v},
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"sharpen_{v:.1f}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_crop_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Crop is a workflow primitive — masking it doesn't make photographic
+    sense (you'd just crop differently). We verify the parameterized apply
+    + mask path runs end-to-end at multiple crop rectangles to exercise
+    the multi-axis ship and confirm crop's mask binding doesn't crash.
+    """
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("crop")
+    if entry is None:
+        pytest.fail("'crop' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'crop' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_crop")
+    cases = [
+        ("center_80", {"cx": 0.1, "cy": 0.1, "cw": 0.9, "ch": 0.9}),
+        ("partial_left_only", {"cx": 0.05}),  # partial-update — only cx
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"crop_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_temperature_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

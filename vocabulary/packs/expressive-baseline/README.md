@@ -2,7 +2,7 @@
 
 The comprehensive baseline vocabulary pack for expressive taste articulation.
 
-24 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 12 authored programmatically via Path C struct reverse-engineering (ADR-073), 4 drawn-mask-bound via path 4a (ADR-076), and 8 parameterized via Path C decoders (ADR-077..080: `exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature` — Phase 4 closed v1.6.0+).
+29 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 11 authored programmatically via Path C struct reverse-engineering (ADR-073), 4 drawn-mask-bound via path 4a (ADR-076), and 14 parameterized via Path C decoders (ADR-077..080): the 8 Phase 4 magnitude-ladder collapses (`exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature`) plus the 6 RFC-022 Tier 2 expansions (`crop`, `sharpen`, `vibrance`, `chroma_global`, `hue_angle`, `toneequalizer`).
 
 ## Composition with `starter`
 

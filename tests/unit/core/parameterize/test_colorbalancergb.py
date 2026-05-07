@@ -20,10 +20,16 @@ from pathlib import Path
 import pytest
 
 from chemigram.core.parameterize.colorbalancergb import (
+    _CHROMA_GLOBAL_FIELD_INDEX,
+    _CHROMA_GLOBAL_OFFSET,
+    _HUE_ANGLE_FIELD_INDEX,
+    _HUE_ANGLE_OFFSET,
     _SATURATION_GLOBAL_FIELD_INDEX,
     _SATURATION_GLOBAL_OFFSET,
     _STRUCT_FORMAT,
     _STRUCT_SIZE,
+    _VIBRANCE_FIELD_INDEX,
+    _VIBRANCE_OFFSET,
     SUPPORTED_MODVERSION,
     decode,
     encode,
@@ -163,3 +169,88 @@ def test_decode_rejects_wrong_size_blob() -> None:
 
 def test_struct_format_matches_size() -> None:
     assert struct.calcsize(_STRUCT_FORMAT) == _STRUCT_SIZE
+
+
+# ---------------------------------------------------------------------------
+# Additional axes (RFC-022 Tier 2): vibrance, chroma_global, hue_angle.
+# Each axis is independently patchable; partial-update semantics.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("vibrance_value", [-1.0, -0.3, 0.0, 0.3, 1.0])
+def test_patch_sets_vibrance_only(vibrance_value: float) -> None:
+    """Patching vibrance leaves the other 3 axes at the source values."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_fields = decode(src)
+    out = patch(src, vibrance=vibrance_value)
+    fields = decode(out)
+    assert fields[_VIBRANCE_FIELD_INDEX] == pytest.approx(vibrance_value, abs=1e-5)
+    # Other parameterized axes preserved
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == src_fields[_SATURATION_GLOBAL_FIELD_INDEX]
+    assert fields[_CHROMA_GLOBAL_FIELD_INDEX] == src_fields[_CHROMA_GLOBAL_FIELD_INDEX]
+    assert fields[_HUE_ANGLE_FIELD_INDEX] == src_fields[_HUE_ANGLE_FIELD_INDEX]
+
+
+@pytest.mark.parametrize("chroma_value", [-1.0, -0.3, 0.0, 0.5, 1.0])
+def test_patch_sets_chroma_global_only(chroma_value: float) -> None:
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_fields = decode(src)
+    out = patch(src, chroma_global=chroma_value)
+    fields = decode(out)
+    assert fields[_CHROMA_GLOBAL_FIELD_INDEX] == pytest.approx(chroma_value, abs=1e-5)
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == src_fields[_SATURATION_GLOBAL_FIELD_INDEX]
+    assert fields[_VIBRANCE_FIELD_INDEX] == src_fields[_VIBRANCE_FIELD_INDEX]
+    assert fields[_HUE_ANGLE_FIELD_INDEX] == src_fields[_HUE_ANGLE_FIELD_INDEX]
+
+
+@pytest.mark.parametrize("hue_value", [-180.0, -30.0, 0.0, 30.0, 180.0])
+def test_patch_sets_hue_angle_only(hue_value: float) -> None:
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_fields = decode(src)
+    out = patch(src, hue_angle=hue_value)
+    fields = decode(out)
+    assert fields[_HUE_ANGLE_FIELD_INDEX] == pytest.approx(hue_value, abs=1e-5)
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == src_fields[_SATURATION_GLOBAL_FIELD_INDEX]
+    assert fields[_CHROMA_GLOBAL_FIELD_INDEX] == src_fields[_CHROMA_GLOBAL_FIELD_INDEX]
+    assert fields[_VIBRANCE_FIELD_INDEX] == src_fields[_VIBRANCE_FIELD_INDEX]
+
+
+def test_patch_sets_all_four_axes_simultaneously() -> None:
+    """Multi-axis patch: all 4 parameterized axes update in a single call."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    out = patch(
+        src,
+        saturation_global=0.4,
+        chroma_global=0.2,
+        hue_angle=15.0,
+        vibrance=0.3,
+    )
+    fields = decode(out)
+    assert fields[_SATURATION_GLOBAL_FIELD_INDEX] == pytest.approx(0.4, abs=1e-5)
+    assert fields[_CHROMA_GLOBAL_FIELD_INDEX] == pytest.approx(0.2, abs=1e-5)
+    assert fields[_HUE_ANGLE_FIELD_INDEX] == pytest.approx(15.0, abs=1e-5)
+    assert fields[_VIBRANCE_FIELD_INDEX] == pytest.approx(0.3, abs=1e-5)
+
+
+def test_patch_with_no_args_is_identity() -> None:
+    """All-None kwargs produces byte-identical output."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    assert patch(src) == src
+
+
+def test_field_offsets_match_struct_layout() -> None:
+    """Sanity: declared offsets are 4*field_index for the four axes."""
+    assert _SATURATION_GLOBAL_OFFSET == _SATURATION_GLOBAL_FIELD_INDEX * 4
+    assert _CHROMA_GLOBAL_OFFSET == _CHROMA_GLOBAL_FIELD_INDEX * 4
+    assert _HUE_ANGLE_OFFSET == _HUE_ANGLE_FIELD_INDEX * 4
+    assert _VIBRANCE_OFFSET == _VIBRANCE_FIELD_INDEX * 4
+
+
+def test_patch_preserves_saturation_formula_enum_across_all_axes() -> None:
+    """saturation_formula enum (offset 128) survives any combination of patches."""
+    src = _REFERENCE_OP_PARAMS_BY_LABEL["sat_kill"][0]
+    src_enum = decode(src)[-1]
+    patched_enum = decode(
+        patch(src, saturation_global=0.5, vibrance=-0.2, hue_angle=45.0, chroma_global=0.1)
+    )[-1]
+    assert src_enum == patched_enum == 1

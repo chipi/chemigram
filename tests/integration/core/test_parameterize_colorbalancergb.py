@@ -19,7 +19,13 @@ from pathlib import Path
 import pytest
 
 from chemigram.core.helpers import apply_entry
-from chemigram.core.parameterize.colorbalancergb import _SATURATION_GLOBAL_FIELD_INDEX, decode
+from chemigram.core.parameterize.colorbalancergb import (
+    _CHROMA_GLOBAL_FIELD_INDEX,
+    _HUE_ANGLE_FIELD_INDEX,
+    _SATURATION_GLOBAL_FIELD_INDEX,
+    _VIBRANCE_FIELD_INDEX,
+    decode,
+)
 from chemigram.core.vocab import load_packs
 from chemigram.core.xmp import parse_xmp, write_xmp
 
@@ -129,3 +135,82 @@ def test_apply_entry_with_saturation_and_mask_composes(baseline_xmp, saturation_
     ]
     assert len(masks_elems) == 1
     assert 'darktable:mask_type="' in masks_elems[0]
+
+
+# ---------------------------------------------------------------------------
+# Tier 2 additional axes: vibrance, chroma_global, hue_angle.
+# Each is a separate manifest entry whose ``parameters`` block declares
+# its own single axis. The decoder is shared.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def vibrance_entry():
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name("vibrance")
+    assert entry is not None
+    assert entry.parameters is not None
+    return entry
+
+
+@pytest.fixture
+def chroma_global_entry():
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name("chroma_global")
+    assert entry is not None
+    assert entry.parameters is not None
+    return entry
+
+
+@pytest.fixture
+def hue_angle_entry():
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name("hue_angle")
+    assert entry is not None
+    assert entry.parameters is not None
+    return entry
+
+
+@pytest.mark.parametrize("v", [-1.0, -0.3, 0.0, 0.3, 1.0])
+def test_apply_entry_vibrance_patches_op_params(baseline_xmp, vibrance_entry, v: float) -> None:
+    new_xmp = apply_entry(baseline_xmp, vibrance_entry, parameter_values={"vibrance": v})
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[_VIBRANCE_FIELD_INDEX] == pytest.approx(v, abs=1e-5)
+
+
+@pytest.mark.parametrize("v", [-1.0, -0.3, 0.0, 0.5, 1.0])
+def test_apply_entry_chroma_global_patches_op_params(
+    baseline_xmp, chroma_global_entry, v: float
+) -> None:
+    new_xmp = apply_entry(baseline_xmp, chroma_global_entry, parameter_values={"chroma_global": v})
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[_CHROMA_GLOBAL_FIELD_INDEX] == pytest.approx(v, abs=1e-5)
+
+
+@pytest.mark.parametrize("v", [-180.0, -30.0, 0.0, 30.0, 180.0])
+def test_apply_entry_hue_angle_patches_op_params(baseline_xmp, hue_angle_entry, v: float) -> None:
+    new_xmp = apply_entry(baseline_xmp, hue_angle_entry, parameter_values={"hue_angle": v})
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[_HUE_ANGLE_FIELD_INDEX] == pytest.approx(v, abs=1e-5)
+
+
+def test_apply_entry_vibrance_default_is_no_op(baseline_xmp, vibrance_entry) -> None:
+    """Default vibrance=0.0."""
+    new_xmp = apply_entry(baseline_xmp, vibrance_entry)
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    assert decode(plugins[-1].params)[_VIBRANCE_FIELD_INDEX] == pytest.approx(0.0, abs=1e-5)
+
+
+def test_apply_entry_hue_angle_default_is_no_op(baseline_xmp, hue_angle_entry) -> None:
+    """Default hue_angle=0.0 (no rotation)."""
+    new_xmp = apply_entry(baseline_xmp, hue_angle_entry)
+    plugins = [p for p in new_xmp.history if p.operation == "colorbalancergb"]
+    assert plugins
+    assert decode(plugins[-1].params)[_HUE_ANGLE_FIELD_INDEX] == pytest.approx(0.0, abs=1e-5)
