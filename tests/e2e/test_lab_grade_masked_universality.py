@@ -668,6 +668,57 @@ def test_parameterized_hsl_apply_completes(
     )
 
 
+def test_parameterized_filmic_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Filmic (#97) — verify the parameterized + multi-axis + masked
+    apply path runs end-to-end at multiple value combinations."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("filmic")
+    if entry is None:
+        pytest.fail("'filmic' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'filmic' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_filmic")
+    cases = [
+        ("contrast_strong", {"contrast": 2.0}),
+        ("saturation_boost", {"saturation": 20.0}),
+        ("output_power_low", {"output_power": 2.0}),
+        ("balance_shadows", {"balance": -10.0}),
+        (
+            "all_axes",
+            {
+                "grey_point_source": 20.0,
+                "black_point_source": -7.0,
+                "white_point_source": 5.0,
+                "output_power": 3.0,
+                "contrast": 1.4,
+                "saturation": 15.0,
+            },
+        ),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"filmic_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_texture_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

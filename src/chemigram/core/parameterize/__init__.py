@@ -32,6 +32,7 @@ from chemigram.core.parameterize import (
     crop,
     diffuse,
     exposure,
+    filmicrgb,
     grain,
     hazeremoval,
     highlights,
@@ -52,6 +53,7 @@ class PatchError(Exception):
 # silently corrupting bytes.
 _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
     ("exposure", 7): exposure.patch,
+    ("filmicrgb", 6): filmicrgb.patch,
     ("vignette", 4): vignette.patch,
     ("colorbalancergb", 5): colorbalancergb.patch,
     ("colorequal", 4): colorequal.patch,
@@ -110,6 +112,7 @@ __all__ = [
     "crop",
     "diffuse",
     "exposure",
+    "filmicrgb",
     "grain",
     "hazeremoval",
     "highlights",

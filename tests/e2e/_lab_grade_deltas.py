@@ -802,6 +802,34 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"bright_red": 0.2, "bright_yellow": -0.2},
     ),
+    # filmic (#97): modern darktable tone mapping. Like sigmoid, the
+    # photographic effect is measurable on the grayscale ramp (contrast
+    # affects midtone slope), but the relationship to a* / b* shifts is
+    # complex enough that render-completes is the safe lab-grade gate;
+    # visual-proof sweeps cover the photographic effect.
+    ("filmic", "contrast_strong"): (
+        "grayscale",
+        _check_render_completes(),
+        {"contrast": 2.0},
+    ),
+    ("filmic", "saturation_boost"): (
+        "grayscale",
+        _check_render_completes(),
+        {"saturation": 25.0},
+    ),
+    ("filmic", "all_axes"): (
+        "grayscale",
+        _check_render_completes(),
+        {
+            "grey_point_source": 18.45,
+            "black_point_source": -8.0,
+            "white_point_source": 4.0,
+            "output_power": 4.0,
+            "contrast": 1.5,
+            "saturation": 15.0,
+            "balance": 5.0,
+        },
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline
