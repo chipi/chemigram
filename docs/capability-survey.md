@@ -548,83 +548,89 @@ The 18 daily-use controls organized by Lightroom panel; mapped to chemigram capa
 | Blacks (deep-shadow point) | `toneequalizer --param deep_blacks=V` / `--param blacks=V`; plus `blacks_lifted` / `blacks_crushed` (discrete *kinds*) | ✅ |
 | Whites (white point) | `toneequalizer --param whites=V`; plus `whites_open` (discrete) | ✅ |
 | Highlights (highlight roll-off) | `highlights_clip_threshold --value V` + `toneequalizer --param highlights=V` + `gradient_top_dampen_highlights` (mask-bound) | ✅ |
-| **Tone Curve** (parametric / point curve) | — | ❌ — `tonecurve` module unrepresented; Tier 2 candidate per § 12. The 9-band `toneequalizer` covers most intents but isn't the same idiom. |
+| **Tone Curve** (parametric / point curve) | — | ❌ — `tonecurve` module unrepresented; tracked as #94 (520-byte spline-curve struct, needs darktable GUI baseline capture). The 9-band `toneequalizer` covers most intents but isn't the same idiom. |
 
-**Light: 6/7 fully covered, 1 missing.**
+**Light: 6/7 fully covered, 1 missing (#94 tone curve).**
 
 ### Color panel (4 controls)
 
 | Lightroom control | chemigram equivalent | Status |
 |---|---|---|
 | WB Temperature (Kelvin slider) | `temperature --param red_coeff=V --param blue_coeff=V` (RGB coeffs in [0.5, 4.0]; warmer = red↑, cooler = blue↑) | ⚠️ — *photographically* operational but the *units* differ. The agent reasons in RGB coefficients, not Kelvin. A `kelvin_delta` parameter with proper coefficient↔Kelvin conversion would close the UX gap. |
-| **WB Tint** (green ↔ magenta slider) | — | ❌ — temperature mv4 stores `red/green/blue/various` floats. Setting `green` ≠ 1.0 would shift along the green-magenta axis but no parameterized entry exposes it. |
+| WB Tint (green ↔ magenta slider) | `temperature --param green_coeff=V` (range [0.5, 4.0]; >1 = magenta-shifted, <1 = green-shifted) — shipped via #90 Bucket A.3 / commit `1a00254` | ✅ |
 | Vibrance | `vibrance --value V` (range [-1.0, +1.0]) | ✅ |
 | Saturation | `saturation_global --value V` (range [-1.0, +1.0]) | ✅ |
 
-**Color: 2/4 fully covered, 1 partial, 1 missing.**
+**Color: 3/4 fully covered, 1 partial (Kelvin units).**
 
 ### Color Mixer panel — HSL per color band (1 panel = 24 controls)
 
-Lightroom exposes Hue + Saturation + Luminance per 8 color bands (red / orange / yellow / green / aqua / blue / purple / magenta) = 24 sliders.
+Lightroom exposes Hue + Saturation + Luminance per 8 color bands (red / orange / yellow / green / aqua / blue / purple / magenta) = 24 sliders. **Shipped via RFC-023 / ADR-083 (commit `1b5db21`)** — backed by darktable's modern `colorequal` module (mv4, 128-byte flat struct), not the older `colorzones` spline-curve module.
 
 | Lightroom control | chemigram equivalent | Status |
 |---|---|---|
-| HSL per color band (24 axes) | — | ❌ — `colorzones` module unrepresented. **Tier 3 per ADR-081** (3 splines × 8 nodes = 24+ parameters; surface doesn't reduce cleanly to scalar `--value V`). Possible promotion shape: axis-collapsed entries (e.g., one parameterized entry per (band × axis) pair = 24 entries; or 8 entries with multi-parameter HSL per band). |
+| HSL Hue per color (8 axes) | `hsl_hue --param hue_<color>=V` (8 axes: hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta; each [-180, 180] degrees) | ✅ |
+| HSL Saturation per color (8 axes) | `hsl_saturation --param sat_<color>=V` (8 axes; each [-1.0, 1.0]) | ✅ |
+| HSL Luminance per color (8 axes) | `hsl_luminance --param bright_<color>=V` (8 axes; each [-1.0, 1.0]) | ✅ |
 
-**Color Mixer: 0/24 covered. Single largest user-visible gap against Lightroom daily use.**
+**Color Mixer: 24/24 covered.** Backed by `colorequal` mv4. The 5% spline-curve precision use case (Lightroom's HSL Range slider per-zone falloff) is tracked as #98 — discrete-only `colorzones` fallback if/when needed.
 
 ### Color Grading panel (multi-axis)
 
-Lightroom's color grading panel offers per-zone (shadows / midtones / highlights / global) hue + saturation wheels, plus per-zone luminance, plus global blending and balance.
+Lightroom's color grading panel offers per-zone (shadows / midtones / highlights / global) hue + saturation wheels, plus per-zone luminance, plus global blending and balance. **Bucket A.5 (#91 / commit `7eb4aab`) added 9 axes here.**
 
 | Lightroom control | chemigram equivalent | Status |
 |---|---|---|
-| Shadows: hue + saturation | `grade_shadows_warm` / `grade_shadows_cool` — discrete entries; only warm (orange) / cool (blue) axes; no continuous hue spin | ⚠️ partial — coarse-grained |
-| Midtones: hue + saturation | — | ❌ — no `grade_midtones_*` entries shipped |
-| Highlights: hue + saturation | `grade_highlights_warm` / `grade_highlights_cool` — discrete; same warm/cool-only limit | ⚠️ partial |
-| Global: hue rotation | `hue_angle --value V` (range [-180.0, +180.0] degrees; rotates *all* pixels uniformly) | ⚠️ partial — global only, not per-zone |
+| Shadows: hue + saturation | `hue_shadows` (parameterized [0, 360°]) + `saturation_shadows` (parameterized [-1, 1]) + discrete `grade_shadows_warm` / `grade_shadows_cool` | ✅ |
+| Midtones: hue + saturation | `hue_midtones` (parameterized [0, 360°]) + `saturation_midtones` (parameterized [-1, 1]) + discrete `grade_midtones_warm` / `grade_midtones_cool` (#90 Bucket A.4 / commit `72ff3e9`) | ✅ |
+| Highlights: hue + saturation | `hue_highlights` (parameterized [0, 360°]) + `saturation_highlights` (parameterized [-1, 1]) + discrete `grade_highlights_warm` / `grade_highlights_cool` | ✅ |
+| Global: hue rotation | `hue_angle --value V` (range [-180.0, +180.0] degrees; rotates *all* pixels uniformly) | ✅ |
 | Per-zone luminance | `brilliance_shadows`, `brilliance_midtones`, `brilliance_highlights`, `brilliance_global` (all parameterized; range [-1.0, +1.0]) | ✅ |
-| Global blending / balance | — | ❌ |
+| Blending (zone falloff) | `shadows_weight`, `highlights_weight` (parameterized [0, 4]) | ✅ |
+| Balance (shadow/highlight midpoint) | `white_fulcrum` (parameterized [-2, 2]) | ✅ |
 
-**Color Grading: 1 axis fully covered (per-zone luminance via brilliance × 4); 4 partial; 2 missing.**
+**Color Grading: 7/7 controls fully covered.**
 
 ### Effects panel (5 controls)
 
 | Lightroom control | chemigram equivalent | Status |
 |---|---|---|
-| Texture (mid-frequency detail) | `bilat_clarity_strength --value V` (bilateral local contrast — *same family*, photographically similar but not algorithmically identical to Lightroom's Texture which uses different mid-freq enhancement) | ⚠️ — close but not exact. Lightroom's Texture targets a narrower frequency band. |
+| Texture (mid-frequency detail) | `texture --param first=V --param second=V --param sharpness=V` via `diffuse-or-sharpen` (#92 Bucket A.6 / commit `c9dfe83`). Algorithm match for Lightroom's mid-frequency Texture work; `first` is the primary axis. | ✅ |
 | Clarity | `bilat_clarity_strength --value V` (parameterized) + `clarity_painterly` (different *kind* of clarity — softer; Tier 0) | ✅ |
-| **Dehaze** (atmospheric haze removal) | — | ❌ — `hazeremoval` darktable module unrepresented. Could be a Tier 2 candidate (small struct, scalar parameter). |
+| Dehaze (atmospheric haze removal) | `dehaze --param strength=V --param distance=V` via `hazeremoval` (#90 Bucket A.2 / commit `949516f`; range [-1, 1] for strength, negative *adds* atmospheric fog) | ✅ |
 | Vignette | `vignette --value V` (range [-1.0, +1.0]) | ✅ |
 | Grain | `grain_strength --value V` (range [0.0, 100.0]) | ✅ |
 
-**Effects: 3/5 fully covered, 1 partial, 1 missing.**
+**Effects: 5/5 covered.**
 
 ### Daily-use summary
 
-Aggregating across the 5 panels (treating Color Mixer as 1 panel-level capability and Color Grading as a multi-axis whole rather than per-axis):
+Aggregating across the 5 panels — Color Mixer's 24 sliders count as 24 controls now that they're individually addressable, and Color Grading's per-zone H/S/L axes count individually:
 
 | Panel | Controls | ✅ Full | ⚠️ Partial | ❌ Missing |
 |---|---|---|---|---|
-| Light | 7 | 6 | 0 | 1 (tone curve) |
-| Color | 4 | 2 | 1 (WB temp units) | 1 (WB tint) |
-| Color Mixer | 1 panel (24 axes) | 0 | 0 | 1 (whole panel) |
-| Color Grading | 6 axes | 1 (luminance) | 4 (warm/cool only) | 2 (mid grade, blend/balance) |
-| Effects | 5 | 3 | 1 (Texture algorithm) | 1 (Dehaze) |
-| **Total daily-use surface** | **23 distinct controls** | **12** | **6** | **5+** |
+| Light | 7 | 6 | 0 | 1 (#94 tone curve) |
+| Color | 4 | 3 | 1 (WB temp Kelvin units) | 0 |
+| Color Mixer | 24 | 24 | 0 | 0 |
+| Color Grading | 7 axes | 7 | 0 | 0 |
+| Effects | 5 | 5 | 0 | 0 |
+| **Total daily-use surface** | **47 distinct controls** | **45** | **1** | **1** |
+
+**Lightroom daily-use parity: 45/47 fully shipped + 1 partial (Kelvin units) + 1 deferred (#94 tone curve).**
 
 ### What this implies for next work
 
-The Lightroom daily-use lens reorders the §12 "biggest gaps" priority list. Three gaps stand out as **affecting every-photo workflow** for any user coming from Lightroom:
+Daily-use Lightroom parity is now ~95% closed. The remaining work splits into:
 
-1. **HSL per color (Color Mixer panel)** — 0/24 covered. Largest single discoverable gap. Tier 3 per ADR-081 but could be promoted via the axis-collapsed shape.
-2. **Tone Curve** — 0/1 covered. The toneequalizer covers most intents but the curve idiom is genuinely separate. Tier 2 candidate; same multi-node shape as toneequalizer.
-3. **Color Grading completeness** — only warm/cool discrete entries on shadows + highlights. Midtones missing entirely; per-zone hue spin missing. Tier 2 expansion (parameterized `grade_<zone>_hue` entries) would close this.
+1. **#94 tone curve** — last named gap. Deferred until darktable GUI baseline capture session.
+2. **WB Kelvin units** — `kelvin_delta` parameter wrapping the existing `red_coeff`/`green_coeff`/`blue_coeff` axes with photographic units. UX polish, not capability gap.
 
-Two smaller specific gaps:
+Beyond Lightroom-parity, the next stretch is **darktable-specific power**:
 
-4. **WB Tint axis** — temperature module supports it via the `green` field; no entry exposes it.
-5. **Dehaze** — single-axis Tier 2 candidate; ~half a day if `hazeremoval` struct is straightforward.
+3. **#95 lens correction** — wide-angle / fisheye / telephoto users need this; Tier 3 → Tier 2 promotion candidate
+4. **#96 denoise (`denoiseprofile`)** — high-ISO / night users; same promotion candidate
+5. **#97 filmic v6** — modern darktable tone pipeline (we ship sigmoid which covers ~80% of use); lower priority
+6. **#98 colorzones spline-curve HSL precision fallback** — 5% of HSL workflow that needs explicit per-zone falloff curves; discrete-only if/when surfaced
 
 One UX-shaped gap that's *engineering-shipped* but *agent-friendly broken*:
 

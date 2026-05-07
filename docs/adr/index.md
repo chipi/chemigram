@@ -97,6 +97,7 @@ ADRs come from two streams:
 | ADR-080 | Test-coverage policy for parameterized modules; hard CI gate (closes RFC-021) | Accepted |
 | ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
 | ADR-082 | Modversion drift handling: warn-loud at load, hard-fail at apply (closes RFC-007) | Accepted |
+| ADR-083 | HSL Color Mixer via colorequal (3 multi-axis entries); closes RFC-023, reclassifies HSL Tier 2 | Accepted |
 
 ## Conventions
 

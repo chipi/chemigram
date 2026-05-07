@@ -1,10 +1,10 @@
 # RFC-023 — HSL Color Mixer parity
 
-> Status · Draft v0.1
+> Status · Decided (2026-05-07)
 > Date · 2026-05-07
 > TA anchor ·/components/synthesizer ·/contracts/vocabulary-manifest ·/constraints/opaque-hex-blobs ·/components/parameterize
-> Related · ADR-008 (opaque-blob default; explicitly amended by ADR-081), RFC-021 / ADR-077..080 (parameterization architecture), RFC-022 / ADR-081 (parameterization tiering policy — this RFC argues an HSL-shaped Tier promotion), capability-survey.md § 13 (Lightroom daily-use mapping), #93 (the issue that opened this question)
-> Closes into · ADR-NNN (pending — picks the backing module + manifest shape; possible amendment to ADR-081 if Tier reclassification is warranted)
+> Related · ADR-008 (opaque-blob default; explicitly amended by ADR-081), RFC-021 / ADR-077..080 (parameterization architecture), RFC-022 / ADR-081 (parameterization tiering policy — this RFC ships an HSL Tier 2 module under that policy), capability-survey.md § 13 (Lightroom daily-use mapping), #93 (the issue that opened this question)
+> Closes into · ADR-083 (closes; picks `colorequal` mv4 + 3-multi-axis-entry shape; reclassifies HSL from Tier 3 to Tier 2)
 > Why this is an RFC · The Lightroom-parity capability survey (§ 13) flagged HSL Color Mixer as the largest remaining daily-use gap. The initial framing assumed HSL meant decoding `colorzones` — a 520-byte struct with 60 (x,y) spline-curve nodes — and that the work was qualitatively Tier 3 because of variable-curve complexity. Closer reading of darktable 5.4 reveals a second viable backing module — `colorequal` — whose struct is flat 24 scalar fields plus 7 globals. That changes the cost/risk shape enough that the question is no longer "do we ship a spline-curve decoder?" but "which darktable HSL module backs HSL parity, and what's the right vocabulary shape?" The answer shapes whether HSL is genuinely Tier 3 (the previous assumption) or actually Tier 2 (the new framing the `colorequal` discovery suggests). Worth arguing now rather than committing to one path implicitly.
 
 ---
