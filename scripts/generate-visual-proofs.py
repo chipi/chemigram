@@ -147,8 +147,9 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "clarity_strength": [-0.5, 0.0, 0.5, 1.5, 2.5],
     "grain_strength": [0.0, 8.0, 25.0, 50.0, 100.0],
     "clip_threshold": [0.5, 0.85, 0.95, 1.0, 1.5],
-    # ----- temperature: 2 axes (RFC-022 Tier 2) -----
+    # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
+    "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],
     "blue_coeff": [0.5, 1.0, 1.5, 2.137],
     # ----- crop: 4 axes (RFC-022 Tier 2) -----
     "cx": [0.0, 0.1, 0.2, 0.3],

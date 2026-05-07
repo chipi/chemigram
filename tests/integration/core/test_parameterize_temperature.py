@@ -14,6 +14,7 @@ import pytest
 from chemigram.core.helpers import apply_entry
 from chemigram.core.parameterize.temperature import (
     _BLUE_FIELD_INDEX,
+    _GREEN_FIELD_INDEX,
     _RED_FIELD_INDEX,
     decode,
 )
@@ -36,7 +37,8 @@ def temperature_entry():
     entry = index.lookup_by_name("temperature")
     assert entry is not None
     assert entry.parameters is not None
-    assert len(entry.parameters) == 2, "temperature is the multi-axis ship; expected 2 params"
+    # 3 axes after #90 Bucket A.3: red_coeff + green_coeff (Tint) + blue_coeff
+    assert len(entry.parameters) == 3, "temperature multi-axis: expected 3 params (R/G/B)"
     return entry
 
 
@@ -45,8 +47,10 @@ def temperature_entry():
     [
         {"red_coeff": 2.148},
         {"blue_coeff": 2.137},
+        {"green_coeff": 1.2},
         {"red_coeff": 2.0, "blue_coeff": 1.5},
-        {"red_coeff": 1.0, "blue_coeff": 1.0},
+        {"red_coeff": 1.0, "green_coeff": 1.0, "blue_coeff": 1.0},
+        {"red_coeff": 1.5, "green_coeff": 1.1, "blue_coeff": 0.9},
     ],
 )
 def test_apply_entry_with_multi_param_patches_op_params(
@@ -58,6 +62,8 @@ def test_apply_entry_with_multi_param_patches_op_params(
     fields = decode(plugins[-1].params)
     if "red_coeff" in values:
         assert fields[_RED_FIELD_INDEX] == pytest.approx(values["red_coeff"], abs=1e-5)
+    if "green_coeff" in values:
+        assert fields[_GREEN_FIELD_INDEX] == pytest.approx(values["green_coeff"], abs=1e-5)
     if "blue_coeff" in values:
         assert fields[_BLUE_FIELD_INDEX] == pytest.approx(values["blue_coeff"], abs=1e-5)
 
@@ -82,24 +88,37 @@ def test_apply_entry_round_trips_through_xmp_writer(
     assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.8, abs=1e-5)
 
 
-def test_apply_entry_partial_update_preserves_unspecified_axis(
+def test_apply_entry_partial_update_preserves_unspecified_axes(
     baseline_xmp, temperature_entry
 ) -> None:
-    """Supplying only red_coeff leaves blue at the dtstyle default."""
+    """Supplying only red_coeff leaves green and blue at dtstyle defaults."""
     new_xmp = apply_entry(baseline_xmp, temperature_entry, parameter_values={"red_coeff": 2.5})
     plugins = [p for p in new_xmp.history if p.operation == "temperature"]
     assert plugins
     fields = decode(plugins[-1].params)
     assert fields[_RED_FIELD_INDEX] == pytest.approx(2.5, abs=1e-5)
-    # blue_coeff was not supplied → preserved at dtstyle default 1.0
+    # green_coeff and blue_coeff were not supplied → preserved at dtstyle default 1.0
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+def test_apply_entry_tint_only_partial_update(baseline_xmp, temperature_entry) -> None:
+    """#90 Bucket A.3: supplying only green_coeff leaves red and blue at default."""
+    new_xmp = apply_entry(baseline_xmp, temperature_entry, parameter_values={"green_coeff": 1.15})
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.15, abs=1e-5)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
     assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
 
 
 def test_apply_entry_no_values_uses_dtstyle_default(baseline_xmp, temperature_entry) -> None:
-    """Default red=blue=1.0 (no shift)."""
+    """Default red=green=blue=1.0 (no shift)."""
     new_xmp = apply_entry(baseline_xmp, temperature_entry)
     plugins = [p for p in new_xmp.history if p.operation == "temperature"]
     assert plugins
     fields = decode(plugins[-1].params)
     assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
     assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)

@@ -132,8 +132,8 @@ def test_vocab_show_discrete_entry_parameters_is_none(runner: CliRunner) -> None
 
 
 def test_vocab_show_multi_axis_entry_includes_all_axes(runner: CliRunner) -> None:
-    """temperature ships 2 axes; toneequalizer ships 9."""
-    for name, expected_count in [("temperature", 2), ("toneequalizer", 9)]:
+    """temperature ships 3 axes (R/G/B incl. Tint per #90 Bucket A.3); toneequalizer ships 9."""
+    for name, expected_count in [("temperature", 3), ("toneequalizer", 9)]:
         result = runner.invoke(
             app,
             ["--json", "vocab", "show", name, "--pack", "expressive-baseline"],

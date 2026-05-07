@@ -691,6 +691,20 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
         _check_render_completes(),
         {"red_coeff": 1.209, "blue_coeff": 2.137},
     ),
+    # tint axis (#90 Bucket A.3): green coefficient ↑ → magenta-shifted,
+    # green ↓ → green-shifted. Same chromatic-adaptation caveat as
+    # red/blue: the global slot verifies the parameterized apply path;
+    # direction-of-change on real raws covers the photographic effect.
+    ("temperature", "tint_magenta"): (
+        "grayscale",
+        _check_render_completes(),
+        {"green_coeff": 1.2},
+    ),
+    ("temperature", "tint_green"): (
+        "grayscale",
+        _check_render_completes(),
+        {"green_coeff": 0.85},
+    ),
     # crop: workflow primitive (RFC-022 Tier 2). Crops the rendered image —
     # no per-patch deterministic effect on the chart's color/luma signal,
     # but a smaller rendered region. Direction-of-change isn't applicable;

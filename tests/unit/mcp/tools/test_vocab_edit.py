@@ -295,7 +295,8 @@ def test_list_vocabulary_parameters_is_none_for_discrete_entry() -> None:
 
 
 def test_list_vocabulary_includes_multi_parameter_entry() -> None:
-    """temperature is the first multi-parameter ship — both axes appear."""
+    """temperature is the first multi-parameter ship — all three RGB axes
+    appear (R/G/B; green added in #90 Bucket A.3 as Lightroom Tint)."""
     from chemigram.core.vocab import load_packs
     from chemigram.mcp.tools.vocab_edit import _serialize_entry
 
@@ -305,8 +306,12 @@ def test_list_vocabulary_includes_multi_parameter_entry() -> None:
     serialized = _serialize_entry(temperature)
 
     assert serialized["parameters"] is not None
-    assert len(serialized["parameters"]) == 2
-    assert {p["name"] for p in serialized["parameters"]} == {"red_coeff", "blue_coeff"}
+    assert len(serialized["parameters"]) == 3
+    assert {p["name"] for p in serialized["parameters"]} == {
+        "red_coeff",
+        "green_coeff",
+        "blue_coeff",
+    }
 
 
 def test_list_vocabulary_includes_nine_parameter_entry() -> None:

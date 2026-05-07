@@ -1,8 +1,9 @@
 """Round-trip and patching tests for the temperature Path C decoder.
 
 The first multi-parameter parameterized module (Phase 4 / RFC-021).
-``red_coeff`` and ``blue_coeff`` are independently patchable; ``green``,
-``various`` (often +inf), and ``preset`` are preserved.
+``red_coeff``, ``green_coeff`` (Lightroom Tint axis, #90 Bucket A.3) and
+``blue_coeff`` are independently patchable; ``various`` (often +inf) and
+``preset`` are preserved.
 """
 
 from __future__ import annotations
@@ -16,6 +17,8 @@ import pytest
 from chemigram.core.parameterize.temperature import (
     _BLUE_FIELD_INDEX,
     _BLUE_OFFSET,
+    _GREEN_FIELD_INDEX,
+    _GREEN_OFFSET,
     _RED_FIELD_INDEX,
     _RED_OFFSET,
     _STRUCT_FORMAT,
@@ -88,13 +91,39 @@ def test_patch_sets_blue_only(blue: float) -> None:
     assert fields[_RED_FIELD_INDEX] == pytest.approx(src_red, abs=1e-5)
 
 
-def test_patch_sets_both_coeffs() -> None:
-    """Multi-parameter patch: both axes update simultaneously."""
+@pytest.mark.parametrize("green", [0.5, 0.85, 1.0, 1.15, 4.0])
+def test_patch_sets_green_only(green: float) -> None:
+    """Patching only green_coeff (Lightroom Tint) leaves red & blue
+    unchanged. Closes #90 Bucket A.3."""
     src = _read_op_params(_SHIPPED_DTSTYLE)
+    src_red = decode(src)[_RED_FIELD_INDEX]
+    src_blue = decode(src)[_BLUE_FIELD_INDEX]
+    out = patch(src, green_coeff=green)
+    fields = decode(out)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(green, abs=1e-5)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(src_red, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(src_blue, abs=1e-5)
+
+
+def test_patch_sets_all_three_coeffs() -> None:
+    """Multi-parameter patch: red, green, blue update simultaneously."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, red_coeff=2.148, green_coeff=1.07, blue_coeff=1.209)
+    fields = decode(out)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(2.148, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.07, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.209, abs=1e-5)
+
+
+def test_patch_sets_both_coeffs() -> None:
+    """Two-axis legacy call still works: red+blue with green untouched."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    src_green = decode(src)[_GREEN_FIELD_INDEX]
     out = patch(src, red_coeff=2.148, blue_coeff=1.209)
     fields = decode(out)
     assert fields[_RED_FIELD_INDEX] == pytest.approx(2.148, abs=1e-5)
     assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.209, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(src_green, abs=1e-5)
 
 
 def test_patch_with_no_args_is_identity() -> None:
@@ -103,30 +132,31 @@ def test_patch_with_no_args_is_identity() -> None:
     assert patch(src) == src
 
 
-def test_patch_preserves_green_various_preset() -> None:
-    """green (offset 4), various (+inf at offset 12), preset (offset 16)
-    must survive any patch — green=1.0 and various=+inf are usually
-    sentinel values darktable's runtime relies on."""
+def test_patch_preserves_various_preset() -> None:
+    """various (+inf at offset 12), preset (offset 16) must survive any
+    patch — these are sentinel values darktable's runtime relies on.
+    (Green is now patchable as the Tint axis; was previously preserved.)"""
     src = _read_op_params(_SHIPPED_DTSTYLE)
     src_fields = decode(src)
-    patched_fields = decode(patch(src, red_coeff=2.5, blue_coeff=0.7))
-    assert patched_fields[1] == src_fields[1]  # green
+    patched_fields = decode(patch(src, red_coeff=2.5, green_coeff=1.1, blue_coeff=0.7))
     assert patched_fields[3] == src_fields[3]  # various
     assert patched_fields[4] == src_fields[4]  # preset
 
 
-def test_patch_preserves_bytes_outside_red_blue_fields() -> None:
-    """Bytes 4..7 (green) and 12..19 (various + preset) preserved verbatim."""
+def test_patch_preserves_bytes_outside_rgb_fields() -> None:
+    """Bytes 12..19 (various + preset) preserved verbatim regardless of
+    which RGB coefficients are patched."""
     src = _read_op_params(_SHIPPED_DTSTYLE)
     src_bytes = bytes.fromhex(src)
-    patched_bytes = bytes.fromhex(patch(src, red_coeff=3.0, blue_coeff=0.8))
-    # Green region [4..8)
-    assert src_bytes[4:8] == patched_bytes[4:8]
+    patched_bytes = bytes.fromhex(patch(src, red_coeff=3.0, green_coeff=1.2, blue_coeff=0.8))
     # Various + preset region [12..20)
     assert src_bytes[12:20] == patched_bytes[12:20]
-    # Red region [0..4) was patched
+    # All three RGB regions were patched
     assert src_bytes[_RED_OFFSET : _RED_OFFSET + 4] != patched_bytes[_RED_OFFSET : _RED_OFFSET + 4]
-    # Blue region [8..12) was patched
+    assert (
+        src_bytes[_GREEN_OFFSET : _GREEN_OFFSET + 4]
+        != patched_bytes[_GREEN_OFFSET : _GREEN_OFFSET + 4]
+    )
     assert (
         src_bytes[_BLUE_OFFSET : _BLUE_OFFSET + 4] != patched_bytes[_BLUE_OFFSET : _BLUE_OFFSET + 4]
     )

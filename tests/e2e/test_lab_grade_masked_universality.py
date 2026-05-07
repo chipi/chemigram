@@ -500,6 +500,10 @@ def test_parameterized_temperature_apply_completes(
         ("warmer", {"red_coeff": 2.148, "blue_coeff": 1.209}),
         ("cooler", {"red_coeff": 1.209, "blue_coeff": 2.137}),
         ("neutral_partial", {"red_coeff": 1.5}),  # partial-update — only red
+        # tint axis (#90 Bucket A.3): green ↑ → magenta, green ↓ → green.
+        ("tint_magenta", {"green_coeff": 1.2}),
+        ("tint_green", {"green_coeff": 0.85}),
+        ("warm_tinted", {"red_coeff": 1.5, "green_coeff": 1.1, "blue_coeff": 0.9}),
     ]
     for label, values in cases:
         applied = apply_entry(
