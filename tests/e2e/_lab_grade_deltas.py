@@ -501,6 +501,8 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
     # --- Direction of change: color grading (a*/b* shifts) ---
     "grade_shadows_warm": ("grayscale", _check_lab_b_shift("positive", min_magnitude=0.5)),
     "grade_shadows_cool": ("grayscale", _check_lab_b_shift("negative", min_magnitude=0.5)),
+    "grade_midtones_warm": ("grayscale", _check_lab_b_shift("positive", min_magnitude=0.4)),
+    "grade_midtones_cool": ("grayscale", _check_lab_b_shift("negative", min_magnitude=0.4)),
     "grade_highlights_warm": ("grayscale", _check_lab_b_shift("positive", min_magnitude=0.3)),
     "grade_highlights_cool": ("grayscale", _check_lab_b_shift("negative", min_magnitude=0.3)),
     # --- Spatial: mask-bound (gradient/ellipse/rectangle drawn forms per ADR-076) ---
