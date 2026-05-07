@@ -432,6 +432,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-020 | Command-line interface for Chemigram | Decided | ADR-069, ADR-070, ADR-071, ADR-072 (closes) |
 | RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
 | RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
+| RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Draft v0.1 | — |
 
 ### ADRs
 
