@@ -177,6 +177,24 @@
         {"name": "ev", "type": "float", "range": [-3.0, 3.0], "default": 0.0,
          "field": {"module": "exposure", "modversion": 7, "offset": 8, "encoding": "le_f32"}}
       ]},
+    {"name": "transform", "layer": "L3", "subtype": "ashift",
+      "path": "layers/L3/ashift/transform.dtstyle", "touches": ["ashift"],
+      "tags": ["transform", "perspective", "rotate", "fundamental", "global", "parameterized", "multi-axis"],
+      "description": "Parameterized perspective / transform (#101). Closes the Lightroom Transform panel parity gap via darktable's ashift module. 5 magnitude axes: --param transform_rotation=V (image rotation in degrees), --param transform_lensshift_v=V (vertical perspective / keystone), --param transform_lensshift_h=V (horizontal perspective), --param transform_shear=V, --param transform_aspect=V (post-transform aspect adjust; default 1.0). Axis names use transform_ prefix. Lens-tuning floats (focal length, crop factor, ortho-correction) and the user-drawn-lines storage are preserved verbatim — those are darktable-GUI-authored when needed.",
+      "modversions": {"ashift": 5}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "transform_rotation", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
+         "field": {"module": "ashift", "modversion": 5, "offset": 0, "encoding": "le_f32"}},
+        {"name": "transform_lensshift_v", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "ashift", "modversion": 5, "offset": 4, "encoding": "le_f32"}},
+        {"name": "transform_lensshift_h", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "ashift", "modversion": 5, "offset": 8, "encoding": "le_f32"}},
+        {"name": "transform_shear", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
+         "field": {"module": "ashift", "modversion": 5, "offset": 12, "encoding": "le_f32"}},
+        {"name": "transform_aspect", "type": "float", "range": [0.5, 2.0], "default": 1.0,
+         "field": {"module": "ashift", "modversion": 5, "offset": 28, "encoding": "le_f32"}}
+      ]},
     {"name": "lens_correction", "layer": "L3", "subtype": "lens",
       "path": "layers/L3/lens/lens_correction.dtstyle", "touches": ["lens"],
       "tags": ["lens", "optical", "correction", "fundamental", "global", "parameterized", "multi-axis"],
@@ -342,6 +360,18 @@
          "field": {"module": "hazeremoval", "modversion": 3, "offset": 0, "encoding": "le_f32"}},
         {"name": "distance", "type": "float", "range": [0.0, 1.0], "default": 0.2,
          "field": {"module": "hazeremoval", "modversion": 3, "offset": 4, "encoding": "le_f32"}}
+      ]},
+    {"name": "wb_kelvin_delta", "layer": "L3", "subtype": "wb",
+      "path": "layers/L3/temperature/wb_kelvin_delta.dtstyle", "touches": ["temperature"],
+      "tags": ["wb", "kelvin", "tint", "ux-wrapper", "photographic-units", "global", "parameterized", "multi-axis"],
+      "description": "WB Kelvin / tint UX wrapper (#102). Same temperature module as the temperature entry, but exposes photographic units instead of raw RGB coefficients. 2 axes: --param kelvin_delta=V (range [-3000, 3000]; positive = warmer) and --param tint_delta=V (range [-200, 200]; positive = magenta-shifted). Linear approximation: red_coeff *= 1 + kelvin_delta * 0.0001, blue_coeff inverse, green_coeff *= 1 + tint_delta * 0.0001. Daily-use accurate; not chromatic-adaptation-perfect. The temperature entry is preserved for users who want raw coefficient control. Note: kelvin_delta affects bytes 0 (red) AND 8 (blue); the manifest's field offset 0 is the primary-effect documentation; the decoder applies the inverse to blue automatically.",
+      "modversions": {"temperature": 4}, "darktable_version": "5.4",
+      "source": "expressive-baseline", "license": "MIT",
+      "parameters": [
+        {"name": "kelvin_delta", "type": "float", "range": [-3000.0, 3000.0], "default": 0.0,
+         "field": {"module": "temperature", "modversion": 4, "offset": 0, "encoding": "le_f32"}},
+        {"name": "tint_delta", "type": "float", "range": [-200.0, 200.0], "default": 0.0,
+         "field": {"module": "temperature", "modversion": 4, "offset": 4, "encoding": "le_f32"}}
       ]},
     {"name": "temperature", "layer": "L3", "subtype": "wb",
       "path": "layers/L3/temperature/temperature.dtstyle", "touches": ["temperature"],

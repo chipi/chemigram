@@ -26,6 +26,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from chemigram.core.parameterize import (
+    ashift,
     bilat,
     colorbalancergb,
     colorequal,
@@ -54,6 +55,7 @@ class PatchError(Exception):
 # Keys are pinned so a darktable modversion bump fails loud rather than
 # silently corrupting bytes.
 _PATCH_REGISTRY: dict[tuple[str, int], Callable[..., str]] = {
+    ("ashift", 5): ashift.patch,
     ("exposure", 7): exposure.patch,
     ("filmicrgb", 6): filmicrgb.patch,
     ("vignette", 4): vignette.patch,
@@ -110,6 +112,7 @@ def patch_op_params(
 
 __all__ = [
     "PatchError",
+    "ashift",
     "bilat",
     "colorbalancergb",
     "colorequal",

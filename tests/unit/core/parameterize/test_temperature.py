@@ -185,3 +185,96 @@ def test_decode_rejects_wrong_size_blob() -> None:
 
 def test_struct_format_matches_size() -> None:
     assert struct.calcsize(_STRUCT_FORMAT) == _STRUCT_SIZE
+
+
+# ---------------------------------------------------------------------------
+# #102 Kelvin UX wrapper — kelvin_delta / tint_delta photographic-units axes
+# ---------------------------------------------------------------------------
+
+
+def test_kelvin_delta_warmer_shifts_red_up_blue_down() -> None:
+    """Positive kelvin_delta = warmer image = red coefficient ↑, blue ↓."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)  # red=blue=green=1.0 baseline
+    out = patch(src, kelvin_delta=2000.0)
+    fields = decode(out)
+    # 1.0 * (1 + 2000 * 0.0001) = 1.2
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.2, abs=1e-5)
+    # 1.0 * (1 - 2000 * 0.0001) = 0.8
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.8, abs=1e-5)
+    # green unchanged
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+def test_kelvin_delta_cooler_shifts_red_down_blue_up() -> None:
+    """Negative kelvin_delta = cooler image."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, kelvin_delta=-1500.0)
+    fields = decode(out)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(0.85, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.15, abs=1e-5)
+
+
+def test_tint_delta_magenta_shifts_green_up() -> None:
+    """Positive tint_delta = magenta-shifted = green coefficient ↑."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, tint_delta=100.0)
+    fields = decode(out)
+    # 1.0 * (1 + 100 * 0.0001) = 1.01
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.01, abs=1e-5)
+    # red, blue unchanged
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+def test_tint_delta_green_shifts_green_down() -> None:
+    """Negative tint_delta = green-shifted = green coefficient ↓."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, tint_delta=-150.0)
+    fields = decode(out)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(0.985, abs=1e-5)
+
+
+def test_kelvin_delta_zero_is_identity() -> None:
+    """kelvin_delta=0 (or omitted) leaves all coefficients untouched."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    assert patch(src, kelvin_delta=0.0) == src
+    assert patch(src, kelvin_delta=0.0, tint_delta=0.0) == src
+
+
+def test_kelvin_delta_and_tint_delta_compose() -> None:
+    """Both deltas applied simultaneously."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, kelvin_delta=1000.0, tint_delta=50.0)
+    fields = decode(out)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.1, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.9, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.005, abs=1e-5)
+
+
+def test_explicit_coeff_overrides_kelvin_delta() -> None:
+    """When both red_coeff and kelvin_delta are supplied, the explicit
+    coefficient wins (last-write semantics)."""
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, kelvin_delta=2000.0, red_coeff=2.5)
+    fields = decode(out)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(2.5, abs=1e-5)
+    # blue still gets the kelvin_delta inverse since no explicit blue_coeff
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.8, abs=1e-5)
+
+
+def test_explicit_green_coeff_overrides_tint_delta() -> None:
+    src = _read_op_params(_SHIPPED_DTSTYLE)
+    out = patch(src, tint_delta=200.0, green_coeff=1.5)
+    fields = decode(out)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.5, abs=1e-5)
+
+
+def test_kelvin_delta_works_on_non_unit_baseline() -> None:
+    """When the source has non-1.0 coefficients (e.g. wb_warm_subtle's
+    red=2.148), kelvin_delta multiplies relatively."""
+    # wb_warm_subtle baseline: red=2.1485, blue=1.2094
+    src = "fc8009408fce9a3f8fce9a3f0000807f02000000"
+    out = patch(src, kelvin_delta=1000.0)  # +10% red, -10% blue
+    fields = decode(out)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(2.1485 * 1.1, abs=1e-3)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.2094 * 0.9, abs=1e-3)

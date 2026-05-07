@@ -880,6 +880,51 @@ PARAMETERIZED_EFFECTS: dict[tuple[str, str], tuple[str, LabCheck, dict[str, floa
             "lens_v_strength": 0.4,
         },
     ),
+    # transform (#101): ashift module. Geometric transformation; the chart's
+    # color signal isn't directly affected by rotation/keystone, but render-
+    # completes verifies the multi-axis apply path correctness on the
+    # 892-byte struct.
+    ("transform", "rotation"): (
+        "grayscale",
+        _check_render_completes(),
+        {"transform_rotation": 5.0},
+    ),
+    ("transform", "keystone"): (
+        "grayscale",
+        _check_render_completes(),
+        {"transform_lensshift_v": 0.3, "transform_lensshift_h": -0.2},
+    ),
+    ("transform", "all_axes"): (
+        "grayscale",
+        _check_render_completes(),
+        {
+            "transform_rotation": 3.0,
+            "transform_lensshift_v": 0.2,
+            "transform_lensshift_h": -0.1,
+            "transform_shear": 0.05,
+            "transform_aspect": 1.1,
+        },
+    ),
+    # wb_kelvin_delta (#102): UX wrapper on temperature module. Same caveat
+    # as the underlying temperature entry — chromatic-adaptation interaction
+    # in the display-referred path makes lab-grade direction-of-change on
+    # the chart unreliable. Render-completes verifies the kelvin_delta /
+    # tint_delta linear-approximation conversion path.
+    ("wb_kelvin_delta", "warmer"): (
+        "grayscale",
+        _check_render_completes(),
+        {"kelvin_delta": 2000.0},
+    ),
+    ("wb_kelvin_delta", "cooler"): (
+        "grayscale",
+        _check_render_completes(),
+        {"kelvin_delta": -1500.0},
+    ),
+    ("wb_kelvin_delta", "tint_only"): (
+        "grayscale",
+        _check_render_completes(),
+        {"tint_delta": 100.0},
+    ),
     # temperature: the first multi-parameter parameterized entry
     # (RFC-021 / Phase 4). Replaces v1.5.x wb_cool_subtle. Empirically
     # the temperature module's rendered a* shift on the empty-baseline

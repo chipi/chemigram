@@ -53,6 +53,7 @@ def test_pinned_modversions_includes_all_registered_decoders() -> None:
     """The drift-detection registry must list every Path C decoder."""
     pinned = _build_known_pinned_modversions()
     expected = {
+        "ashift",
         "bilat",
         "colorbalancergb",
         "colorequal",

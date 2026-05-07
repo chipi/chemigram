@@ -668,6 +668,99 @@ def test_parameterized_hsl_apply_completes(
     )
 
 
+def test_parameterized_wb_kelvin_delta_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """wb_kelvin_delta (#102) — verify the parameterized UX wrapper apply
+    path runs end-to-end. The decoder applies a linear approximation
+    converting kelvin_delta/tint_delta to RGB coefficient multiplications;
+    render-completes confirms the converted bytes flow through darktable
+    cleanly."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("wb_kelvin_delta")
+    if entry is None:
+        pytest.fail("'wb_kelvin_delta' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'wb_kelvin_delta' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_wb_kelvin_delta")
+    cases = [
+        ("warmer", {"kelvin_delta": 2000.0}),
+        ("cooler", {"kelvin_delta": -1500.0}),
+        ("tint_magenta", {"tint_delta": 100.0}),
+        ("tint_green", {"tint_delta": -100.0}),
+        ("combined", {"kelvin_delta": 1000.0, "tint_delta": 50.0}),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"wb_kelvin_delta_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
+def test_parameterized_transform_apply_completes(
+    baseline_xmp: Xmp,
+    vocab: VocabularyIndex,
+    configdir: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    darktable_binary: str,
+) -> None:
+    """Transform (#101) — verify the parameterized + multi-axis + masked
+    apply path runs end-to-end on the 892-byte ashift struct."""
+    _ = darktable_binary
+    from chemigram.core.helpers import apply_entry
+
+    entry = vocab.lookup_by_name("transform")
+    if entry is None:
+        pytest.fail("'transform' parameterized entry not in loaded packs")
+    if entry.parameters is None:
+        pytest.fail("'transform' loaded but parameters is None")
+
+    out_dir = tmp_path_factory.mktemp("masked_param_transform")
+    cases = [
+        ("rotation", {"transform_rotation": 5.0}),
+        ("keystone", {"transform_lensshift_v": 0.3, "transform_lensshift_h": -0.2}),
+        ("aspect", {"transform_aspect": 1.2}),
+        (
+            "all_axes",
+            {
+                "transform_rotation": 3.0,
+                "transform_lensshift_v": 0.2,
+                "transform_lensshift_h": -0.1,
+                "transform_shear": 0.05,
+                "transform_aspect": 1.1,
+            },
+        ),
+    ]
+    for label, values in cases:
+        applied = apply_entry(
+            baseline_xmp,
+            entry,
+            parameter_values=values,
+            mask_spec=_CENTER_MASK_SPEC,
+        )
+        _render_and_read(
+            applied=applied,
+            label=f"transform_{label}",
+            configdir=configdir,
+            out_dir=out_dir,
+        )
+
+
 def test_parameterized_lens_correction_apply_completes(
     baseline_xmp: Xmp,
     vocab: VocabularyIndex,

@@ -229,31 +229,36 @@ The CLI mirrors most MCP tools verb-for-verb. Agent-only tools (no direct CLI):
 
 - **Workflow + versioning**: snapshot/branch/diff/tag/reset is comprehensive and Git-shaped. Cheap, reversible, content-addressed. This part feels finished.
 - **Engine architecture**: synthesizer, mask-binding, MCP/CLI parity, taste/brief/notes context, session transcripts — all the *plumbing* is solid.
-- **Parameterized continuous control** (RFC-021/RFC-022 + ADR-077..082): **18 parameterized entries** across **11 modules** (every magnitude-ladder Phase 4 module + the 4 Tier 2 expansions + 4 brilliance axes). Single-axis, multi-axis (2-param `temperature`, 4-param `crop`), and 9-axis (`toneequalizer`) cases all proven on the same architecture. Discoverability via MCP `list_vocabulary` + CLI `vocab show` (#89).
+- **Parameterized continuous control** (RFC-021/RFC-022 + ADR-077..083): **38 parameterized entries** across **18 modules** as of v1.8.0 (every magnitude-ladder Phase 4 module + the original 4 Tier 2 expansions + 4 brilliance axes + 9 colorbalancergb Color Grading axes + dehaze + texture + 3 HSL multi-axis entries via colorequal + filmic + denoise + lens + transform + WB Kelvin UX wrapper). Single-axis, multi-axis (2/3/4 param), 8-axis HSL channels, 9-axis toneequalizer, 10-axis lens, and 24-axis HSL panel cases all proven on the same architecture. Discoverability via MCP `list_vocabulary` + CLI `vocab show` (#89).
 - **Tone control**: `exposure` (parameterized EV ±3) + `sigmoid_contrast` (parameterized) + `toneequalizer` (9-band parameterized) + `highlights_clip_threshold` (parameterized) + `blacks_lifted/crushed/whites_open` (discrete kinds) + 4 mask-bound exposure entries. The whole tonal surface is photographically operational.
 - **Color grading via `colorbalancergb`**: 8 parameterized axes (saturation_global, vibrance, chroma_global, hue_angle, brilliance × 4) plus 7 discrete entries for per-zone chroma + warm/cool grade.
 - **B&W conversion**: `bw_convert` / `bw_sky_drama` / `bw_foliage` via channelmixerrgb mv3 — closes #63 and the "channel mixer / B&W" gap from §2.
 - **Drawn-mask masking**: works on every primitive (engine-tested), with three drawn-form geometries (gradient / ellipse / rectangle).
 - **CI gates**: 5-layer parameterized coverage (ADR-080), manifest-modversion consistency (#85), runtime modversion drift detection (ADR-082) — three separate safety nets against the failure modes parameterization could introduce.
 
-### Where chemigram is thin today (post-v1.7.0)
+### Where chemigram is thin today (post-v1.8.0)
 
-The remaining gaps cluster into three categories:
+The "thin" list has narrowed dramatically. v1.8.0 closed the bulk of the Tier 3 watchlist plus the Tier 2 unauthored candidates from the v1.7.0 list:
 
-**Tier 3 modules per ADR-081** — default-opaque; promotion is evidence-driven via gap-log signal:
-- **Noise reduction** (`denoiseprofile`, `nlmeans`, `bilat`-as-denoiser): per-camera profile coupling violates Tier 2 cost-shape.
-- **Lens correction** (`lens`): lensfun-coupled per-lens-model database lookup.
-- **Selective color HSL** (`colorzones`): 24+ parameters, surface doesn't reduce cleanly to scalar `--value V`.
+**Closed in v1.8.0** (decoder shipped or partial-empirical):
+- ✅ **Selective color HSL** — closed via RFC-023 / ADR-083 → `colorequal` mv4 (3 multi-axis entries; 24 axes total).
+- ✅ **Noise reduction** — closed via #96 → `denoiseprofile` mv12 with constructed wavelet-curve baseline (verification under #100).
+- ✅ **Lens correction** — closed via #95 → `lens` mv10 with manual-override strength axes (EXIF auto-binding under #100).
+- ✅ **Diffuse-or-sharpen** — closed via #92 → `diffuse` mv2 (texture entry).
+- ✅ **Dehaze** — closed via #90 A.2 → `hazeremoval` mv3.
+- ✅ **Filmic v6** — closed via #97 → `filmicrgb` mv6 alongside the existing sigmoid.
+- ✅ **Rotation / perspective** — closed via #101 → `ashift` mv5 (transform entry).
+- ✅ **WB Kelvin UX** — closed via #102 → `wb_kelvin_delta` (UX wrapper on temperature).
+- ✅ **Color Grading completion** — closed via #91 (per-zone hue/sat × 3 + blending + balance) and #90 A.4 (midtones grade entries).
 
-**Tier 2 candidates not yet authored** — feasible by the existing pattern but no one's done it yet:
-- **Manual tone curve** (`tonecurve`): same multi-node-curve shape as `toneequalizer`.
-- **Diffuse-or-sharpen + equalizer**: the modern darktable sharpening family beyond the unsharp-mask `sharpen`.
-- **Rotation / perspective** (`flip`, `ashift`): small structs, scalar parameters.
-- **More L2 looks**: cinematic / film / decade / mood. Pure composition of existing primitives.
+**Still open** (the v1.9.0 horizon):
+- **Manual tone curve** (`tonecurve`) — the last Lightroom daily-use gap. Decoder is straightforward but the 520-byte spline-curve struct needs an empirical baseline from a darktable-GUI session. Tracked as #94, sequenced under #100.
+- **Discrete colorzones HSL precision fallback** — for the 5% HSL workflow that needs Lightroom's per-zone Range slider precision. Discrete-only; tracked as #98, sequenced under #100.
+- **Retouch / spot healing** (`retouch`, `spots`): stroke-based input doesn't reduce to a per-image vocabulary entry. Still the major portrait gap. Would need a fresh RFC; not on v1.8.0 critical path.
+- **AI / content-aware masks** (the manta's belly): explicitly conditional Phase 4 in IMPLEMENTATION.md; sibling project (`chemigram-masker-sam`) shape per BYOA discipline.
+- **Range masks** (color-range / luminance-range / depth-range): different architectural shape from drawn masks per ADR-076. Would need an RFC.
 
-**Truly novel-shape gaps** — would need their own RFC:
-- **Retouch / spot healing** (`retouch`, `spots`): stroke-based input doesn't reduce to a per-image vocabulary entry. *The* major portrait gap.
-- **AI / content-aware masks** (the manta's belly): explicitly conditional Phase 4 in IMPLEMENTATION.md; sibling project (`chemigram-masker-sam`) shape.
+**Tier classification post-v1.8.0:** ADR-081's Tier 3 examples list is now mostly stale (all of `lens`, `denoiseprofile`, `colorzones`-via-colorequal have been promoted or addressed). ADR-083 records the first formal Tier 3 → Tier 2 promotion (HSL via colorequal). The remaining named Tier 3 items (`tonecurve`, `colorzones`-as-discrete) are blocked on darktable-session work, not on cost-shape concerns.
 
 ### What's been shipped against this survey's vision (v1.6.0 → v1.7.0)
 
@@ -556,12 +561,12 @@ The 18 daily-use controls organized by Lightroom panel; mapped to chemigram capa
 
 | Lightroom control | chemigram equivalent | Status |
 |---|---|---|
-| WB Temperature (Kelvin slider) | `temperature --param red_coeff=V --param blue_coeff=V` (RGB coeffs in [0.5, 4.0]; warmer = red↑, cooler = blue↑) | ⚠️ — *photographically* operational but the *units* differ. The agent reasons in RGB coefficients, not Kelvin. A `kelvin_delta` parameter with proper coefficient↔Kelvin conversion would close the UX gap. |
-| WB Tint (green ↔ magenta slider) | `temperature --param green_coeff=V` (range [0.5, 4.0]; >1 = magenta-shifted, <1 = green-shifted) — shipped via #90 Bucket A.3 / commit `1a00254` | ✅ |
+| WB Temperature (Kelvin slider) | `wb_kelvin_delta --param kelvin_delta=V` (range [-3000, 3000]; positive = warmer) — shipped via #102 / commit `<TBD>` as a UX wrapper on the existing `temperature` decoder. The raw `temperature --param red_coeff=V --param blue_coeff=V` axes remain available for users who want direct coefficient control. | ✅ |
+| WB Tint (green ↔ magenta slider) | `wb_kelvin_delta --param tint_delta=V` (range [-200, 200]) shipped via #102; or `temperature --param green_coeff=V` for direct coefficient control (#90 Bucket A.3 / commit `1a00254`) | ✅ |
 | Vibrance | `vibrance --value V` (range [-1.0, +1.0]) | ✅ |
 | Saturation | `saturation_global --value V` (range [-1.0, +1.0]) | ✅ |
 
-**Color: 3/4 fully covered, 1 partial (Kelvin units).**
+**Color: 4/4 fully covered.**
 
 ### Color Mixer panel — HSL per color band (1 panel = 24 controls)
 
@@ -603,45 +608,48 @@ Lightroom's color grading panel offers per-zone (shadows / midtones / highlights
 
 **Effects: 5/5 covered.**
 
+### Transform panel (5 axes)
+
+Lightroom's Transform panel: rotation, vertical/horizontal perspective, shear, aspect adjust. Architectural / interior / flat-art photographers reach for this every shoot. **Bucket A.7 (#101 / commit `<TBD>`) ships via darktable's `ashift` module.**
+
+| Lightroom control | chemigram equivalent | Status |
+|---|---|---|
+| Rotate (degrees) | `transform --param transform_rotation=V` (range [-180, 180]°) | ✅ |
+| Vertical perspective (keystone) | `transform --param transform_lensshift_v=V` (range [-1, 1]) | ✅ |
+| Horizontal perspective | `transform --param transform_lensshift_h=V` (range [-1, 1]) | ✅ |
+| Shear | `transform --param transform_shear=V` (range [-1, 1]) | ✅ |
+| Aspect adjust | `transform --param transform_aspect=V` (range [0.5, 2.0]; default 1.0) | ✅ |
+
+**Transform: 5/5 covered.**
+
+Lens-tuning fields (focal length, crop factor, ortho-correction) and the user-drawn-lines reference storage are preserved verbatim — those are darktable-GUI-authored when the photographer wants line-based perspective correction; the `transform` entry covers the slider-based daily-use surface.
+
 ### Daily-use summary
 
-Aggregating across the 5 panels — Color Mixer's 24 sliders count as 24 controls now that they're individually addressable, and Color Grading's per-zone H/S/L axes count individually:
+Aggregating across the 5 panels — Color Mixer's 24 sliders count as 24 controls now that they're individually addressable, Color Grading's per-zone H/S/L axes count individually, and Transform is the final added panel post-#101:
 
 | Panel | Controls | ✅ Full | ⚠️ Partial | ❌ Missing |
 |---|---|---|---|---|
 | Light | 7 | 6 | 0 | 1 (#94 tone curve) |
-| Color | 4 | 3 | 1 (WB temp Kelvin units) | 0 |
+| Color | 4 | 4 | 0 | 0 |
 | Color Mixer | 24 | 24 | 0 | 0 |
 | Color Grading | 7 axes | 7 | 0 | 0 |
 | Effects | 5 | 5 | 0 | 0 |
-| **Total daily-use surface** | **47 distinct controls** | **45** | **1** | **1** |
+| Transform | 1 panel (5 axes) | 5 | 0 | 0 |
+| **Total daily-use surface** | **52 distinct controls** | **51** | **0** | **1** |
 
-**Lightroom daily-use parity: 45/47 fully shipped + 1 partial (Kelvin units) + 1 deferred (#94 tone curve).**
+**Lightroom daily-use parity: 51/52 fully shipped (98%) + 1 deferred (#94 tone curve, blocked on darktable-GUI baseline session per #100 umbrella).**
 
 ### What this implies for next work
 
-Daily-use Lightroom parity is now ~95% closed. The remaining work splits into:
+Daily-use Lightroom parity is essentially closed. The only remaining gap is **#94 tone curve**, which is blocked on the darktable-session empirical-baseline work tracked under #100. Everything else in the daily-use surface ships.
 
-1. **#94 tone curve** — last named gap. Deferred until darktable GUI baseline capture session.
-2. **WB Kelvin units** — `kelvin_delta` parameter wrapping the existing `red_coeff`/`green_coeff`/`blue_coeff` axes with photographic units. UX polish, not capability gap.
+Post-Lightroom-parity, the v1.9.0 horizon shifts to:
 
-Beyond Lightroom-parity, the next stretch is **darktable-specific power**:
-
-3. **#95 lens correction** — wide-angle / fisheye / telephoto users need this; Tier 3 → Tier 2 promotion candidate
-4. **#96 denoise (`denoiseprofile`)** — high-ISO / night users; same promotion candidate
-5. **#97 filmic v6** — modern darktable tone pipeline (we ship sigmoid which covers ~80% of use); lower priority
-6. **#98 colorzones spline-curve HSL precision fallback** — 5% of HSL workflow that needs explicit per-zone falloff curves; discrete-only if/when surfaced
-
-One UX-shaped gap that's *engineering-shipped* but *agent-friendly broken*:
-
-6. **WB Temperature in Kelvin units** — the agent reasons in RGB coefficients (red_coeff / blue_coeff) instead of Kelvin/Tint. A coefficient↔Kelvin conversion layer would let the agent take "warmer by 500K" as input.
-
-**The Lightroom-grounded next-batch shape, ordered by photographic frequency:**
-
-1. **Color Grading completion** (mid-tones grade × 2; per-zone hue parameterized) — closes the 4 partial / 2 missing in §13.4
-2. **Tone curve** (Tier 2; same shape as toneequalizer) — closes §13.1
-3. **Dehaze** (Tier 2; small struct) — closes §13.5
-4. **WB Tint** (parameterized) + **WB Kelvin/Tint conversion layer** — closes §13.2 + §13.6
+1. **#100 darktable-session empirical verification** — capture baselines for #94 (tone curve), #96 (denoise wavelet curves), #95 (lens EXIF auto-binding), #98 (colorzones HSL precision). The umbrella exists so there's one place to look when at the GUI.
+2. **AI-provider integrations** (per BYOA principle in CLAUDE.md) — sibling projects like `chemigram-masker-sam` for AI subject masking. Not core engine work; MCP-provider territory.
+3. **Range masks** (color-range, luminance-range, depth-range) — a separate architectural arc from drawn masks (per ADR-076). Would need a fresh RFC before any code lands.
+4. **Multi-photographer review phase** — ADR-081's promotion-threshold revisit. Triggered when distinct photographers run distinct sessions and the gap-log becomes load-bearing for vocabulary decisions. Premature today.
 5. **HSL color mixer** (Tier 3 promotion ADR; axis-collapsed shape) — the largest single gap; needs the most design
 
 Items 1–4 are routine Tier 2 expansion; item 5 is the next genuine RFC-shaped piece of work.

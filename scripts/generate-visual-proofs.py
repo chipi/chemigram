@@ -194,6 +194,15 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "lens_v_strength": [-0.5, 0.0, 0.5, 1.0],
     "lens_v_radius": [0.5, 1.0, 2.0],
     "lens_v_steepness": [0.5, 1.0, 2.5, 5.0],
+    # ----- transform (ashift mv5): 5 axes (#101) -----
+    "transform_rotation": [-15.0, -5.0, 0.0, 5.0, 15.0],
+    "transform_lensshift_v": [-0.5, -0.2, 0.0, 0.2, 0.5],
+    "transform_lensshift_h": [-0.5, -0.2, 0.0, 0.2, 0.5],
+    "transform_shear": [-0.3, 0.0, 0.3],
+    "transform_aspect": [0.7, 0.9, 1.0, 1.2, 1.5],
+    # ----- wb_kelvin_delta (#102): UX wrapper on temperature -----
+    "kelvin_delta": [-3000.0, -1500.0, 0.0, 1500.0, 3000.0],
+    "tint_delta": [-200.0, -100.0, 0.0, 100.0, 200.0],
     # ----- temperature: 3 axes (RFC-022 Tier 2 + #90 Bucket A.3 tint) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
     "green_coeff": [0.85, 0.95, 1.0, 1.15, 1.3],

@@ -122,3 +122,78 @@ def test_apply_entry_no_values_uses_dtstyle_default(baseline_xmp, temperature_en
     assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
     assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
     assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+# ---------------------------------------------------------------------------
+# #102 wb_kelvin_delta UX wrapper apply path
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def wb_kelvin_delta_entry():
+    index = load_packs(["starter", "expressive-baseline"])
+    entry = index.lookup_by_name("wb_kelvin_delta")
+    assert entry is not None
+    assert entry.parameters is not None
+    assert len(entry.parameters) == 2
+    return entry
+
+
+def test_apply_wb_kelvin_delta_warmer(baseline_xmp, wb_kelvin_delta_entry) -> None:
+    """kelvin_delta=2000 = warmer: red 1.0 → 1.2, blue 1.0 → 0.8."""
+    new_xmp = apply_entry(
+        baseline_xmp, wb_kelvin_delta_entry, parameter_values={"kelvin_delta": 2000.0}
+    )
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    assert plugins
+    fields = decode(plugins[-1].params)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.2, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.8, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+def test_apply_wb_kelvin_delta_cooler(baseline_xmp, wb_kelvin_delta_entry) -> None:
+    """Negative kelvin_delta = cooler."""
+    new_xmp = apply_entry(
+        baseline_xmp, wb_kelvin_delta_entry, parameter_values={"kelvin_delta": -2500.0}
+    )
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    fields = decode(plugins[-1].params)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(0.75, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.25, abs=1e-5)
+
+
+def test_apply_wb_kelvin_delta_tint_only(baseline_xmp, wb_kelvin_delta_entry) -> None:
+    """tint_delta only affects green coefficient."""
+    new_xmp = apply_entry(
+        baseline_xmp, wb_kelvin_delta_entry, parameter_values={"tint_delta": 100.0}
+    )
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    fields = decode(plugins[-1].params)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.01, abs=1e-5)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+
+
+def test_apply_wb_kelvin_delta_combined(baseline_xmp, wb_kelvin_delta_entry) -> None:
+    """kelvin_delta + tint_delta apply together."""
+    new_xmp = apply_entry(
+        baseline_xmp,
+        wb_kelvin_delta_entry,
+        parameter_values={"kelvin_delta": 1000.0, "tint_delta": 50.0},
+    )
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    fields = decode(plugins[-1].params)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.1, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(0.9, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.005, abs=1e-5)
+
+
+def test_apply_wb_kelvin_delta_no_values_is_identity(baseline_xmp, wb_kelvin_delta_entry) -> None:
+    """No values supplied = passthrough; default kelvin_delta=tint_delta=0."""
+    new_xmp = apply_entry(baseline_xmp, wb_kelvin_delta_entry)
+    plugins = [p for p in new_xmp.history if p.operation == "temperature"]
+    fields = decode(plugins[-1].params)
+    assert fields[_RED_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_GREEN_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)
+    assert fields[_BLUE_FIELD_INDEX] == pytest.approx(1.0, abs=1e-5)

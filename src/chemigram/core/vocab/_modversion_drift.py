@@ -53,6 +53,7 @@ def _build_known_pinned_modversions() -> dict[str, int]:
     Functions called at vocab-load time, not at import; safe to call
     repeatedly (cheap)."""
     from chemigram.core.parameterize import (
+        ashift,
         bilat,
         colorbalancergb,
         colorequal,
@@ -73,6 +74,7 @@ def _build_known_pinned_modversions() -> dict[str, int]:
     )
 
     return {
+        "ashift": ashift.SUPPORTED_MODVERSION,
         "bilat": bilat.SUPPORTED_MODVERSION,
         "colorbalancergb": colorbalancergb.SUPPORTED_MODVERSION,
         "colorequal": colorequal.SUPPORTED_MODVERSION,
