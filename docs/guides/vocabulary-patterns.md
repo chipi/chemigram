@@ -115,11 +115,15 @@ Stay away from aggressive `sigmoid_contrast` (>2.0), high `bilat_clarity_strengt
 ### "Monochromatic conversion (placeholder)"
 
 ```
-saturation_global --value -1.0   # global saturation -1.0 (drops all color)
+bw_convert                       # neutral B&W via channelmixerrgb (Rec. 709 luminance weights)
 sigmoid_contrast --value 2.5     # compensate for the contrast loss B&W typically wants
 ```
 
-This is the placeholder until the channelmixerrgb B&W trio (`bw_convert`, `bw_sky_drama`, `bw_foliage`) ships in v1.6.0 (#63). `saturation_global --value -1.0` desaturates without channel-aware luminance mapping, which is what the dedicated B&W entries will fix — different parts of the frame will read at different luminance values depending on color, and the dedicated entries will tune that.
+For different B&W *kinds* (different per-channel weights), reach for the variants:
+- `bw_sky_drama` — red-emphasis (R 0.5 / G 0.4 / B 0.1); lightens reds, darkens blues; classic "red filter" landscape look
+- `bw_foliage` — green-emphasis (R 0.1 / G 0.7 / B 0.2); separates foliage from neighboring tones for forest / botanical work
+
+`saturation_global --value -1.0` is also valid for "drop all color" but does so without channel-aware luminance mapping — different parts of the frame can read at unintuitive luminance values depending on input hue. The dedicated B&W entries are the better default; reach for `saturation_global --value -1.0` only when you want a no-frills desaturation.
 
 ---
 

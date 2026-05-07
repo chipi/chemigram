@@ -66,7 +66,7 @@ Vocabulary loaded: `starter` (4 entries) + `expressive-baseline` (35 entries) = 
 - **Selective hue rotation** (HSL-style "shift greens toward teal"): not present. The Tier 2 `hue_angle` rotates *all* pixels uniformly, not a specific hue band.
 - **Mid-tone grade**: only shadows + highlights have warm/cool entries; midtones don't.
 - **Selective color** (HSL-style "only affect blues"): not present at all.
-- **Channel mixer / B&W conversion**: `channelmixerrgb` is in the planned-but-not-shipped list (issue #63).
+- **Channel mixer / B&W conversion**: ✅ shipped — `bw_convert` (Rec. 709 neutral), `bw_sky_drama` (red-emphasis), `bw_foliage` (green-emphasis). Closes #63.
 
 ---
 
@@ -390,7 +390,7 @@ Categories:
 | `spots` | Spot healing / cloning | ❌ not yet |
 | `censorize` | Pixelation / blur for privacy | ❌ not yet |
 | `colorchecker` | Color calibration via reference chart | 🚫 out of scope (technical) |
-| `channelmixerrgb` | RGB channel mixer (modern) | ❌ planned (#63 — B&W trio) |
+| `channelmixerrgb` | RGB channel mixer (modern) | ✅ 3 B&W entries (`bw_convert`, `bw_sky_drama`, `bw_foliage`); plus 4 parameterized colorbalancergb axes coexist via the colorbalancergb module — channelmixerrgb's other axes (RGB matrix, illuminant) remain Tier 3 |
 | `colorbalancergb` | 4-way grade + saturation + chroma + brilliance | ✅ shipped — 11 entries (saturation, vibrance, chroma, grade) |
 | `tonecurve` | Manual RGB / Lab tone curve | ❌ not yet |
 | `toneequal` | Zone-based tone equalizer (darktable's preferred local tone tool) | ❌ not yet — major omission |

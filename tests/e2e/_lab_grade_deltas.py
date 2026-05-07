@@ -487,6 +487,12 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
     # values via PARAMETERIZED_EFFECTS below.
     # vibrance_+0.3 retired in v1.6+ → replaced by parameterized ``vibrance``
     # entry; covered in PARAMETERIZED_EFFECTS below.
+    # --- B&W trio (channelmixerrgb mv3 in destination=grey mode; closes #63) ---
+    # All three collapse chroma to ~0; they differ in luminance distribution
+    # but on the chart fixture the chroma-collapse is the dominant signal.
+    "bw_convert": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
+    "bw_sky_drama": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
+    "bw_foliage": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
     "chroma_boost_shadows": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
     "chroma_boost_midtones": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
     "chroma_boost_highlights": ("colorchecker", _check_chroma_increase(min_delta=0.3)),

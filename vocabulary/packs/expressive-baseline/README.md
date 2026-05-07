@@ -2,7 +2,7 @@
 
 The comprehensive baseline vocabulary pack for expressive taste articulation.
 
-29 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 11 authored programmatically via Path C struct reverse-engineering (ADR-073), 4 drawn-mask-bound via path 4a (ADR-076), and 14 parameterized via Path C decoders (ADR-077..080): the 8 Phase 4 magnitude-ladder collapses (`exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature`) plus the 6 RFC-022 Tier 2 expansions (`crop`, `sharpen`, `vibrance`, `chroma_global`, `hue_angle`, `toneequalizer`).
+32 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 14 authored programmatically via Path C struct reverse-engineering (ADR-073) — including the 3 channelmixerrgb B&W entries (`bw_convert`, `bw_sky_drama`, `bw_foliage`) — 4 drawn-mask-bound via path 4a (ADR-076), and 14 parameterized via Path C decoders (ADR-077..080): the 8 Phase 4 magnitude-ladder collapses (`exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature`) plus the 6 RFC-022 Tier 2 expansions (`crop`, `sharpen`, `vibrance`, `chroma_global`, `hue_angle`, `toneequalizer`).
 
 ## Composition with `starter`
 
@@ -95,6 +95,14 @@ Per-zone chroma:
 |-|-|-|-|
 | `grain_strength` | grain | grain, parameterized | Parameterized grain strength; `--value V` in [0.0, 100.0]. 8 = fine, 25 = medium, 50 = heavy. (RFC-021; replaces v1.5.x grain_fine / grain_medium / grain_heavy.) |
 
+### channelmixerrgb (3 — B&W conversion)
+
+| Name | Subtype | Tags | Description |
+|-|-|-|-|
+| `bw_convert` | channelmixerrgb | bw, monochrome, fundamental | Neutral B&W conversion via Rec. 709 luminance weights (R 0.2126 / G 0.7152 / B 0.0722). normalize_grey=true. |
+| `bw_sky_drama` | channelmixerrgb | bw, sky, drama | B&W with red-emphasis (R 0.5 / G 0.4 / B 0.1) — classic "red filter" landscape look that lightens reds and darkens blues, emphasizing clouds against sky. |
+| `bw_foliage` | channelmixerrgb | bw, foliage, green | B&W with green-emphasis (R 0.1 / G 0.7 / B 0.2) — separates foliage from neighboring tones for forest / botanical work. |
+
 ### vignette (3 — corner darkening)
 
 | Name | Subtype | Tags | Description |
@@ -160,7 +168,7 @@ Quick lookup by intent:
 - **`vignette`** — `vignette` (parameterized)
 - **`wb`** — `temperature` (parameterized, multi-axis), `wb_warm_subtle` (starter, discrete)
 - **`mask` / `gradient` / `radial` / `rectangle`** — see "Mask-bound entries" above
-- **`monochrome`** — `saturation_global --value -1.0` (a channelmixerrgb-based B&W trio is on the v1.6.0 milestone, #63)
+- **`monochrome`** — `bw_convert` (Rec. 709 neutral), `bw_sky_drama` (red-emphasis), `bw_foliage` (green-emphasis); `saturation_global --value -1.0` is the channel-unaware fallback
 
 For "for X intent, reach for Y composition" patterns, see [`docs/guides/vocabulary-patterns.md`](../../../docs/guides/vocabulary-patterns.md).
 
