@@ -128,13 +128,18 @@ _SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
 # See tests/fixtures/reference-targets/README.md for the layout.
 _EXTRA_CLIPPED_FIXTURE_SUBTYPES: set[str] = {"highlights", "grain"}
 
-# Per-parameter sweep values for the parameter-sweep gallery row. Maps
+# Per-parameter sweep values for the parameter-sweep gallery rows. Maps
 # a parameter name to the list of values to render. The first value
 # is treated as the "baseline" of the sweep (typically 0 / default).
 # When an entry's ``parameters`` block declares a parameter we know
-# how to sweep, the gallery emits a row showing the entry rendered at
-# each value side-by-side; otherwise no sweep row is emitted.
+# how to sweep, the gallery emits one row PER axis showing the entry
+# rendered at each value side-by-side. For multi-parameter entries
+# (RFC-022 Tier 2: temperature, crop, toneequalizer), each parameter
+# gets its own sweep row; the swept axis varies, others held at the
+# dtstyle's encoded defaults via the parameterized apply path's
+# partial-update semantics. Closes #84.
 _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
+    # ----- Single-axis Phase 4 entries -----
     "ev": [-1.0, -0.5, 0.0, 0.5, 1.0],
     "brightness": [-0.8, -0.5, -0.25, 0.0],
     "saturation_global": [-1.0, -0.5, 0.0, 0.25, 0.5],
@@ -142,26 +147,31 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     "clarity_strength": [-0.5, 0.0, 0.5, 1.5, 2.5],
     "grain_strength": [0.0, 8.0, 25.0, 50.0, 100.0],
     "clip_threshold": [0.5, 0.85, 0.95, 1.0, 1.5],
-    # temperature is multi-parameter (red_coeff + blue_coeff). The current
-    # sweep harness handles single-axis only; we register red_coeff so the
-    # CI linter (test_parameterized_module_coverage.py) recognizes
-    # ``temperature`` has a sweep recipe. The actual multi-axis sweep grid
-    # is deferred — see _render_parameter_sweep below.
+    # ----- temperature: 2 axes (RFC-022 Tier 2) -----
     "red_coeff": [0.5, 1.0, 1.5, 2.148],
-    # crop is multi-parameter (cx + cy + cw + ch). Single-axis sweep
-    # harness limitation; we register cx so the CI linter recognizes
-    # ``crop`` has a sweep recipe. Multi-axis crop-rectangle sweep grid
-    # would require a different visualization shape — deferred.
+    "blue_coeff": [0.5, 1.0, 1.5, 2.137],
+    # ----- crop: 4 axes (RFC-022 Tier 2) -----
     "cx": [0.0, 0.1, 0.2, 0.3],
+    "cy": [0.0, 0.1, 0.2, 0.3],
+    "cw": [0.7, 0.8, 0.9, 1.0],
+    "ch": [0.7, 0.8, 0.9, 1.0],
+    # ----- single-axis Tier 2 entries -----
     "amount": [0.0, 0.5, 1.0, 1.5, 2.0],
     "vibrance": [-0.5, 0.0, 0.3, 0.6, 1.0],
     "chroma_global": [-0.5, 0.0, 0.3, 0.6, 1.0],
     "hue_angle": [-90.0, -30.0, 0.0, 30.0, 90.0],
-    # toneequalizer is multi-parameter (9 axes). Single-axis sweep
-    # harness limitation; we register ``shadows`` so the CI linter
-    # recognizes the entry has a sweep recipe. Single-axis sweep across
-    # the shadows band is photographically meaningful in isolation.
+    # ----- toneequalizer: 9 axes (RFC-022 Tier 2; deepest stress test) -----
+    # Each band gets a row spanning EV ± 1.5; the 5-value sweep covers the
+    # photographically meaningful range for that band's typical use.
+    "noise": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "ultra_deep_blacks": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "deep_blacks": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "blacks": [-1.5, -0.5, 0.0, 0.5, 1.5],
     "shadows": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "midtones": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "highlights": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "whites": [-1.5, -0.5, 0.0, 0.5, 1.5],
+    "speculars": [-1.5, -0.5, 0.0, 0.5, 1.5],
 }
 
 # Subtypes / contexts where the engine renders correctly but the chart
@@ -372,62 +382,73 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
 def _render_parameter_sweep(
     entry, baseline, entry_dir: Path, configdir: Path, rendered: dict, baseline_paths: dict
 ) -> None:
-    """For parameterized entries (RFC-021), render the entry at multiple
-    parameter values side-by-side as a "parameter sweep" row in the
-    gallery. The values come from :data:`_PARAMETER_SWEEP_VALUES` keyed
-    by parameter name.
+    """For parameterized entries (RFC-021/RFC-022), render the entry at
+    multiple parameter values side-by-side as "parameter sweep" rows in
+    the gallery. The values come from :data:`_PARAMETER_SWEEP_VALUES`
+    keyed by parameter name.
 
     Single-parameter entries get a one-axis sweep across the declared
-    range. Multi-parameter entries: not yet supported (would need a 2-D
-    sweep grid; deferred until temperature ships).
+    range. Multi-parameter entries (RFC-022 Tier 2: temperature, crop,
+    toneequalizer) get one sweep row PER axis — the swept axis varies
+    across its sweep recipe; the other axes are held at their dtstyle
+    defaults via the parameterized apply path's partial-update semantics.
 
     Renders against the colorchecker target (the cleanest signal medium
     for tone deltas; vignette + grain etc. need different targets but
-    those modules aren't parameterized in v1.6.0).
+    those modules' sweep visualizations work fine on colorchecker).
+
+    Each rendered axis writes a separate ``_sweep`` record under
+    ``rendered[entry.name]["_sweeps"]`` (note: list, not dict). The
+    markdown emit walks the list and emits one block per axis.
     """
     if entry.parameters is None:
-        return
-    if len(entry.parameters) != 1:
-        # Multi-parameter sweep grid not yet implemented (v1.6.0 ships
-        # only single-axis parameterized entries).
-        return
-    spec = entry.parameters[0]
-    sweep_values = _PARAMETER_SWEEP_VALUES.get(spec.name)
-    if sweep_values is None:
-        # No sweep recipe for this parameter name; skip the gallery
-        # block (the entry still renders at its default in the main row).
         return
 
     # Render against colorchecker only — tone deltas read cleanly there.
     target_slug = "colorchecker"
     target_path = COLORCHECKER
 
-    rendered[entry.name].setdefault("_sweep", {"param": spec.name, "renders": []})
-    sweep_records: list[dict] = rendered[entry.name]["_sweep"]["renders"]
+    rendered[entry.name].setdefault("_sweeps", [])
+    sweeps: list[dict] = rendered[entry.name]["_sweeps"]
 
-    for v in sweep_values:
-        # Synthesize via the engine's parameterized apply path so we
-        # exercise the same code the user/agent calls at apply time.
-        try:
-            applied = apply_entry(baseline, entry, parameter_values={spec.name: v})
-        except Exception as exc:
-            print(f"  x sweep synthesize failed at {spec.name}={v}: {exc}", file=sys.stderr)
+    for spec in entry.parameters:
+        sweep_values = _PARAMETER_SWEEP_VALUES.get(spec.name)
+        if sweep_values is None:
+            # No sweep recipe for this parameter name; the entry still
+            # renders at its default in the main row.
             continue
-        v_label = f"{v:+.2f}" if v != 0 else "0.00"
-        v_slug = v_label.replace("+", "p").replace("-", "n").replace(".", "_")
-        xmp_path = entry_dir / f"_{entry.name}_sweep_{v_slug}.xmp"
-        out = entry_dir / f"{entry.name}-sweep-{v_slug}.jpg"
-        write_xmp(applied, xmp_path)
-        if _render_one(target_path, xmp_path, out, configdir):
-            sweep_records.append(
-                {
-                    "value": v,
-                    "label": v_label,
-                    "path": out,
-                    "diff": _mean_pixel_diff(out, baseline_paths[target_slug]),
-                }
-            )
-        xmp_path.unlink(missing_ok=True)
+
+        axis_records: list[dict] = []
+        for v in sweep_values:
+            # Synthesize via the engine's parameterized apply path so we
+            # exercise the same code the user/agent calls at apply time.
+            # Multi-parameter entries: only this axis is patched; the
+            # others stay at the dtstyle's encoded defaults.
+            try:
+                applied = apply_entry(baseline, entry, parameter_values={spec.name: v})
+            except Exception as exc:
+                print(f"  x sweep synthesize failed at {spec.name}={v}: {exc}", file=sys.stderr)
+                continue
+            v_label = f"{v:+.2f}" if v != 0 else "0.00"
+            v_slug = v_label.replace("+", "p").replace("-", "n").replace(".", "_")
+            # Include the axis name in the file slug so multi-parameter
+            # entries don't collide (same value across different axes).
+            xmp_path = entry_dir / f"_{entry.name}_sweep_{spec.name}_{v_slug}.xmp"
+            out = entry_dir / f"{entry.name}-sweep-{spec.name}-{v_slug}.jpg"
+            write_xmp(applied, xmp_path)
+            if _render_one(target_path, xmp_path, out, configdir):
+                axis_records.append(
+                    {
+                        "value": v,
+                        "label": v_label,
+                        "path": out,
+                        "diff": _mean_pixel_diff(out, baseline_paths[target_slug]),
+                    }
+                )
+            xmp_path.unlink(missing_ok=True)
+
+        if axis_records:
+            sweeps.append({"param": spec.name, "renders": axis_records})
 
 
 def _render_clipped_fixture(
@@ -698,18 +719,34 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
                 f"| {_img_md(clipped_masked, f'{entry.name} clipped-gradient masked')} |"
             )
 
-    # Parameter sweep row (RFC-021): for parameterized entries, show the
-    # entry rendered at multiple parameter values side-by-side.
-    sweep = outs.get("_sweep")
-    if sweep and sweep.get("renders"):
+    # Parameter sweep rows (RFC-021/RFC-022): for parameterized entries,
+    # show the entry rendered at multiple parameter values side-by-side.
+    # Multi-parameter entries get one sweep row per axis.
+    out.extend(_render_sweep_rows_md(entry, outs.get("_sweeps") or []))
+
+    out.append("")
+    return out
+
+
+def _render_sweep_rows_md(entry, sweeps: list[dict]) -> list[str]:
+    """Markdown lines for one entry's parameter-sweep rows. Each sweep
+    in the list emits one block (header + table); multi-parameter
+    entries thus emit one block per axis. The swept axis varies across
+    the recipe; other parameterized axes (if any) are held at the
+    dtstyle's encoded defaults via the parameterized apply path's
+    partial-update semantics."""
+    out: list[str] = []
+    for sweep in sweeps:
+        if not sweep.get("renders"):
+            continue
         out.append("")
         out.append(
             f"**Parameter sweep** (`{sweep['param']}`): "
             "rendered at multiple values via the parameterized apply path "
-            "(`--value V` / `--param NAME=V`):"
+            "(`--value V` / `--param NAME=V`); other parameterized axes "
+            "(if any) held at their dtstyle defaults."
         )
         out.append("")
-        # One column per swept value
         records = sweep["renders"]
         header = "| " + " | ".join(f"`{r['label']}`" for r in records) + " |"
         sep = "|" + "|".join(["-"] * len(records)) + "|"
@@ -723,8 +760,6 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
         out.append(header)
         out.append(sep)
         out.append(cells)
-
-    out.append("")
     return out
 
 

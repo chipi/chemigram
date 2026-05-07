@@ -70,11 +70,11 @@ _(near-baseline diff in grayscale (masked): grain texture is hard to see on flat
 |-|-|
 | <img src="../visual-proofs/expressive-baseline/grain_strength-clipped.jpg" alt="grain_strength clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-clipped-masked.jpg" alt="grain_strength clipped-gradient masked" width="180"> |
 
-**Parameter sweep** (`grain_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`grain_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `0.00` | `+8.00` | `+25.00` | `+50.00` | `+100.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-0_00.jpg" alt="grain_strength grain_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p8_00.jpg" alt="grain_strength grain_strength=+8.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p25_00.jpg" alt="grain_strength grain_strength=+25.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p50_00.jpg" alt="grain_strength grain_strength=+50.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-p100_00.jpg" alt="grain_strength grain_strength=+100.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-grain_strength-0_00.jpg" alt="grain_strength grain_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-grain_strength-p8_00.jpg" alt="grain_strength grain_strength=+8.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-grain_strength-p25_00.jpg" alt="grain_strength grain_strength=+25.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-grain_strength-p50_00.jpg" alt="grain_strength grain_strength=+50.00" width="180"> | <img src="../visual-proofs/expressive-baseline/grain_strength-sweep-grain_strength-p100_00.jpg" alt="grain_strength grain_strength=+100.00" width="180"> |
 
 ### `vignette`
 
@@ -90,11 +90,11 @@ _(near-baseline diff in ColorChecker (global): subtle vignette is small at the m
 
 _(near-baseline diff in grayscale (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
 
-**Parameter sweep** (`brightness`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`brightness`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.80` | `-0.50` | `-0.25` | `0.00` |
 |-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_80.jpg" alt="vignette brightness=-0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_50.jpg" alt="vignette brightness=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-n0_25.jpg" alt="vignette brightness=-0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-0_00.jpg" alt="vignette brightness=0.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/vignette-sweep-brightness-n0_80.jpg" alt="vignette brightness=-0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-brightness-n0_50.jpg" alt="vignette brightness=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-brightness-n0_25.jpg" alt="vignette brightness=-0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette-sweep-brightness-0_00.jpg" alt="vignette brightness=0.00" width="180"> |
 
 ### `highlights_clip_threshold`
 
@@ -118,11 +118,11 @@ _(near-baseline diff in grayscale (masked): this chart has no blown highlights t
 |-|-|
 | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-clipped.jpg" alt="highlights_clip_threshold clipped-gradient global" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-clipped-masked.jpg" alt="highlights_clip_threshold clipped-gradient masked" width="180"> |
 
-**Parameter sweep** (`clip_threshold`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`clip_threshold`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `+0.50` | `+0.85` | `+0.95` | `+1.00` | `+1.50` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_50.jpg" alt="highlights_clip_threshold clip_threshold=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_85.jpg" alt="highlights_clip_threshold clip_threshold=+0.85" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p0_95.jpg" alt="highlights_clip_threshold clip_threshold=+0.95" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p1_00.jpg" alt="highlights_clip_threshold clip_threshold=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-p1_50.jpg" alt="highlights_clip_threshold clip_threshold=+1.50" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-clip_threshold-p0_50.jpg" alt="highlights_clip_threshold clip_threshold=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-clip_threshold-p0_85.jpg" alt="highlights_clip_threshold clip_threshold=+0.85" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-clip_threshold-p0_95.jpg" alt="highlights_clip_threshold clip_threshold=+0.95" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-clip_threshold-p1_00.jpg" alt="highlights_clip_threshold clip_threshold=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/highlights_clip_threshold-sweep-clip_threshold-p1_50.jpg" alt="highlights_clip_threshold clip_threshold=+1.50" width="180"> |
 
 ### `sigmoid_contrast`
 
@@ -132,11 +132,11 @@ _Parameterized sigmoid tone-curve contrast (RFC-021). Pass --value V (CLI) or va
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-colorchecker.jpg" alt="sigmoid_contrast ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-grayscale.jpg" alt="sigmoid_contrast grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-colorchecker-masked.jpg" alt="sigmoid_contrast ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-grayscale-masked.jpg" alt="sigmoid_contrast grayscale masked" width="180"> |
 
-**Parameter sweep** (`contrast`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`contrast`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `+0.50` | `+1.00` | `+1.50` | `+2.00` | `+2.50` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p0_50.jpg" alt="sigmoid_contrast contrast=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p1_00.jpg" alt="sigmoid_contrast contrast=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p1_50.jpg" alt="sigmoid_contrast contrast=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p2_00.jpg" alt="sigmoid_contrast contrast=+2.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-p2_50.jpg" alt="sigmoid_contrast contrast=+2.50" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-contrast-p0_50.jpg" alt="sigmoid_contrast contrast=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-contrast-p1_00.jpg" alt="sigmoid_contrast contrast=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-contrast-p1_50.jpg" alt="sigmoid_contrast contrast=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-contrast-p2_00.jpg" alt="sigmoid_contrast contrast=+2.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sigmoid_contrast-sweep-contrast-p2_50.jpg" alt="sigmoid_contrast contrast=+2.50" width="180"> |
 
 ### `blacks_lifted`
 
@@ -176,6 +176,60 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
+**Parameter sweep** (`noise`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-noise-n1_50.jpg" alt="toneequalizer noise=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-noise-n0_50.jpg" alt="toneequalizer noise=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-noise-0_00.jpg" alt="toneequalizer noise=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-noise-p0_50.jpg" alt="toneequalizer noise=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-noise-p1_50.jpg" alt="toneequalizer noise=+1.50" width="180"> |
+
+**Parameter sweep** (`ultra_deep_blacks`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-ultra_deep_blacks-n1_50.jpg" alt="toneequalizer ultra_deep_blacks=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-ultra_deep_blacks-n0_50.jpg" alt="toneequalizer ultra_deep_blacks=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-ultra_deep_blacks-0_00.jpg" alt="toneequalizer ultra_deep_blacks=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-ultra_deep_blacks-p0_50.jpg" alt="toneequalizer ultra_deep_blacks=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-ultra_deep_blacks-p1_50.jpg" alt="toneequalizer ultra_deep_blacks=+1.50" width="180"> |
+
+**Parameter sweep** (`deep_blacks`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-deep_blacks-n1_50.jpg" alt="toneequalizer deep_blacks=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-deep_blacks-n0_50.jpg" alt="toneequalizer deep_blacks=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-deep_blacks-0_00.jpg" alt="toneequalizer deep_blacks=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-deep_blacks-p0_50.jpg" alt="toneequalizer deep_blacks=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-deep_blacks-p1_50.jpg" alt="toneequalizer deep_blacks=+1.50" width="180"> |
+
+**Parameter sweep** (`blacks`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-blacks-n1_50.jpg" alt="toneequalizer blacks=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-blacks-n0_50.jpg" alt="toneequalizer blacks=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-blacks-0_00.jpg" alt="toneequalizer blacks=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-blacks-p0_50.jpg" alt="toneequalizer blacks=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-blacks-p1_50.jpg" alt="toneequalizer blacks=+1.50" width="180"> |
+
+**Parameter sweep** (`shadows`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-shadows-n1_50.jpg" alt="toneequalizer shadows=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-shadows-n0_50.jpg" alt="toneequalizer shadows=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-shadows-0_00.jpg" alt="toneequalizer shadows=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-shadows-p0_50.jpg" alt="toneequalizer shadows=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-shadows-p1_50.jpg" alt="toneequalizer shadows=+1.50" width="180"> |
+
+**Parameter sweep** (`midtones`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-midtones-n1_50.jpg" alt="toneequalizer midtones=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-midtones-n0_50.jpg" alt="toneequalizer midtones=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-midtones-0_00.jpg" alt="toneequalizer midtones=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-midtones-p0_50.jpg" alt="toneequalizer midtones=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-midtones-p1_50.jpg" alt="toneequalizer midtones=+1.50" width="180"> |
+
+**Parameter sweep** (`highlights`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-highlights-n1_50.jpg" alt="toneequalizer highlights=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-highlights-n0_50.jpg" alt="toneequalizer highlights=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-highlights-0_00.jpg" alt="toneequalizer highlights=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-highlights-p0_50.jpg" alt="toneequalizer highlights=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-highlights-p1_50.jpg" alt="toneequalizer highlights=+1.50" width="180"> |
+
+**Parameter sweep** (`whites`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-whites-n1_50.jpg" alt="toneequalizer whites=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-whites-n0_50.jpg" alt="toneequalizer whites=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-whites-0_00.jpg" alt="toneequalizer whites=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-whites-p0_50.jpg" alt="toneequalizer whites=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-whites-p1_50.jpg" alt="toneequalizer whites=+1.50" width="180"> |
+
+**Parameter sweep** (`speculars`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-1.50` | `-0.50` | `0.00` | `+0.50` | `+1.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-speculars-n1_50.jpg" alt="toneequalizer speculars=-1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-speculars-n0_50.jpg" alt="toneequalizer speculars=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-speculars-0_00.jpg" alt="toneequalizer speculars=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-speculars-p0_50.jpg" alt="toneequalizer speculars=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/toneequalizer-sweep-speculars-p1_50.jpg" alt="toneequalizer speculars=+1.50" width="180"> |
+
 ### `sharpen`
 
 _Parameterized sharpening (RFC-022 Tier 2). Pass --value V; range [0.0, 2.0] (0.0 = no sharpen, 0.5 = subtle, 1.0 = strong, 2.0 = aggressive). Radius preserved at darktable default 2.0 px, threshold at 0.5._
@@ -192,11 +246,11 @@ _(near-baseline diff in ColorChecker (masked): below visible threshold on this c
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`amount`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`amount`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `0.00` | `+0.50` | `+1.00` | `+1.50` | `+2.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/sharpen-sweep-0_00.jpg" alt="sharpen amount=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p0_50.jpg" alt="sharpen amount=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p1_00.jpg" alt="sharpen amount=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p1_50.jpg" alt="sharpen amount=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-p2_00.jpg" alt="sharpen amount=+2.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/sharpen-sweep-amount-0_00.jpg" alt="sharpen amount=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-amount-p0_50.jpg" alt="sharpen amount=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-amount-p1_00.jpg" alt="sharpen amount=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-amount-p1_50.jpg" alt="sharpen amount=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen-sweep-amount-p2_00.jpg" alt="sharpen amount=+2.00" width="180"> |
 
 ### `crop`
 
@@ -214,6 +268,30 @@ _(near-baseline diff in ColorChecker (masked): below visible threshold on this c
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
+**Parameter sweep** (`cx`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `0.00` | `+0.10` | `+0.20` | `+0.30` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/crop-sweep-cx-0_00.jpg" alt="crop cx=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cx-p0_10.jpg" alt="crop cx=+0.10" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cx-p0_20.jpg" alt="crop cx=+0.20" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cx-p0_30.jpg" alt="crop cx=+0.30" width="180"> |
+
+**Parameter sweep** (`cy`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `0.00` | `+0.10` | `+0.20` | `+0.30` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/crop-sweep-cy-0_00.jpg" alt="crop cy=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cy-p0_10.jpg" alt="crop cy=+0.10" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cy-p0_20.jpg" alt="crop cy=+0.20" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cy-p0_30.jpg" alt="crop cy=+0.30" width="180"> |
+
+**Parameter sweep** (`cw`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `+0.70` | `+0.80` | `+0.90` | `+1.00` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/crop-sweep-cw-p0_70.jpg" alt="crop cw=+0.70" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cw-p0_80.jpg" alt="crop cw=+0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cw-p0_90.jpg" alt="crop cw=+0.90" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-cw-p1_00.jpg" alt="crop cw=+1.00" width="180"> |
+
+**Parameter sweep** (`ch`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `+0.70` | `+0.80` | `+0.90` | `+1.00` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/crop-sweep-ch-p0_70.jpg" alt="crop ch=+0.70" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-ch-p0_80.jpg" alt="crop ch=+0.80" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-ch-p0_90.jpg" alt="crop ch=+0.90" width="180"> | <img src="../visual-proofs/expressive-baseline/crop-sweep-ch-p1_00.jpg" alt="crop ch=+1.00" width="180"> |
+
 ### `bilat_clarity_strength`
 
 _Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry — different kind, not strength._
@@ -228,11 +306,11 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`clarity_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`clarity_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.50` | `+1.50` | `+2.50` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-n0_50.jpg" alt="bilat_clarity_strength clarity_strength=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-0_00.jpg" alt="bilat_clarity_strength clarity_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p0_50.jpg" alt="bilat_clarity_strength clarity_strength=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p1_50.jpg" alt="bilat_clarity_strength clarity_strength=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-p2_50.jpg" alt="bilat_clarity_strength clarity_strength=+2.50" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-clarity_strength-n0_50.jpg" alt="bilat_clarity_strength clarity_strength=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-clarity_strength-0_00.jpg" alt="bilat_clarity_strength clarity_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-clarity_strength-p0_50.jpg" alt="bilat_clarity_strength clarity_strength=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-clarity_strength-p1_50.jpg" alt="bilat_clarity_strength clarity_strength=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/bilat_clarity_strength-sweep-clarity_strength-p2_50.jpg" alt="bilat_clarity_strength clarity_strength=+2.50" width="180"> |
 
 ### `clarity_painterly`
 
@@ -258,11 +336,11 @@ _(near-baseline diff in ColorChecker (masked): below visible threshold on this c
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`ev`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`ev`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-1.00` | `-0.50` | `0.00` | `+0.50` | `+1.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/exposure-sweep-n1_00.jpg" alt="exposure ev=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-n0_50.jpg" alt="exposure ev=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-0_00.jpg" alt="exposure ev=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p0_50.jpg" alt="exposure ev=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-p1_00.jpg" alt="exposure ev=+1.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/exposure-sweep-ev-n1_00.jpg" alt="exposure ev=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-ev-n0_50.jpg" alt="exposure ev=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-ev-0_00.jpg" alt="exposure ev=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-ev-p0_50.jpg" alt="exposure ev=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/exposure-sweep-ev-p1_00.jpg" alt="exposure ev=+1.00" width="180"> |
 
 ### `temperature`
 
@@ -278,6 +356,18 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
+**Parameter sweep** (`red_coeff`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `+0.50` | `+1.00` | `+1.50` | `+2.15` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/temperature-sweep-red_coeff-p0_50.jpg" alt="temperature red_coeff=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-red_coeff-p1_00.jpg" alt="temperature red_coeff=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-red_coeff-p1_50.jpg" alt="temperature red_coeff=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-red_coeff-p2_15.jpg" alt="temperature red_coeff=+2.15" width="180"> |
+
+**Parameter sweep** (`blue_coeff`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `+0.50` | `+1.00` | `+1.50` | `+2.14` |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/temperature-sweep-blue_coeff-p0_50.jpg" alt="temperature blue_coeff=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-blue_coeff-p1_00.jpg" alt="temperature blue_coeff=+1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-blue_coeff-p1_50.jpg" alt="temperature blue_coeff=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/temperature-sweep-blue_coeff-p2_14.jpg" alt="temperature blue_coeff=+2.14" width="180"> |
+
 ### `saturation_global`
 
 _Parameterized global saturation in colorbalancergb (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (-1.0 = fully desaturated / monochrome; +0.5 = strong boost). Replaces the v1.5.x discrete sat_kill / sat_boost_moderate / sat_boost_strong entries with a single continuous-magnitude primitive._
@@ -292,11 +382,11 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`saturation_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`saturation_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-1.00` | `-0.50` | `0.00` | `+0.25` | `+0.50` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n1_00.jpg" alt="saturation_global saturation_global=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-n0_50.jpg" alt="saturation_global saturation_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-0_00.jpg" alt="saturation_global saturation_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_25.jpg" alt="saturation_global saturation_global=+0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-p0_50.jpg" alt="saturation_global saturation_global=+0.50" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-saturation_global-n1_00.jpg" alt="saturation_global saturation_global=-1.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-saturation_global-n0_50.jpg" alt="saturation_global saturation_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-saturation_global-0_00.jpg" alt="saturation_global saturation_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-saturation_global-p0_25.jpg" alt="saturation_global saturation_global=+0.25" width="180"> | <img src="../visual-proofs/expressive-baseline/saturation_global-sweep-saturation_global-p0_50.jpg" alt="saturation_global saturation_global=+0.50" width="180"> |
 
 ### `vibrance`
 
@@ -312,11 +402,11 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`vibrance`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`vibrance`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/vibrance-sweep-n0_50.jpg" alt="vibrance vibrance=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-0_00.jpg" alt="vibrance vibrance=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p0_30.jpg" alt="vibrance vibrance=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p0_60.jpg" alt="vibrance vibrance=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-p1_00.jpg" alt="vibrance vibrance=+1.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/vibrance-sweep-vibrance-n0_50.jpg" alt="vibrance vibrance=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-vibrance-0_00.jpg" alt="vibrance vibrance=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-vibrance-p0_30.jpg" alt="vibrance vibrance=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-vibrance-p0_60.jpg" alt="vibrance vibrance=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/vibrance-sweep-vibrance-p1_00.jpg" alt="vibrance vibrance=+1.00" width="180"> |
 
 ### `chroma_global`
 
@@ -332,11 +422,11 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`chroma_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`chroma_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-n0_50.jpg" alt="chroma_global chroma_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-0_00.jpg" alt="chroma_global chroma_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p0_30.jpg" alt="chroma_global chroma_global=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p0_60.jpg" alt="chroma_global chroma_global=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-p1_00.jpg" alt="chroma_global chroma_global=+1.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-chroma_global-n0_50.jpg" alt="chroma_global chroma_global=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-chroma_global-0_00.jpg" alt="chroma_global chroma_global=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-chroma_global-p0_30.jpg" alt="chroma_global chroma_global=+0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-chroma_global-p0_60.jpg" alt="chroma_global chroma_global=+0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/chroma_global-sweep-chroma_global-p1_00.jpg" alt="chroma_global chroma_global=+1.00" width="180"> |
 
 ### `hue_angle`
 
@@ -354,11 +444,11 @@ _(near-baseline diff in ColorChecker (masked): below visible threshold on this c
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
-**Parameter sweep** (`hue_angle`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`):
+**Parameter sweep** (`hue_angle`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-90.00` | `-30.00` | `0.00` | `+30.00` | `+90.00` |
 |-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-n90_00.jpg" alt="hue_angle hue_angle=-90.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-n30_00.jpg" alt="hue_angle hue_angle=-30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-0_00.jpg" alt="hue_angle hue_angle=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-p30_00.jpg" alt="hue_angle hue_angle=+30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-p90_00.jpg" alt="hue_angle hue_angle=+90.00" width="180"> |
+| <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-hue_angle-n90_00.jpg" alt="hue_angle hue_angle=-90.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-hue_angle-n30_00.jpg" alt="hue_angle hue_angle=-30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-hue_angle-0_00.jpg" alt="hue_angle hue_angle=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-hue_angle-p30_00.jpg" alt="hue_angle hue_angle=+30.00" width="180"> | <img src="../visual-proofs/expressive-baseline/hue_angle-sweep-hue_angle-p90_00.jpg" alt="hue_angle hue_angle=+90.00" width="180"> |
 
 ### `grade_shadows_warm`
 
