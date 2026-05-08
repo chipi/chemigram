@@ -433,6 +433,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
 | RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
 | RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Decided | ADR-083 (closes) |
+| RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Draft v0.1 | — |
 
 ### ADRs
 
