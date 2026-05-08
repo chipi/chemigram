@@ -146,5 +146,6 @@ def test_apply_rejects_unknown_form(baseline_xmp, expo_dtstyle) -> None:
 
 
 def test_apply_rejects_missing_form(baseline_xmp, expo_dtstyle) -> None:
-    with pytest.raises(ValueError, match="missing/invalid 'dt_form'"):
+    """A spec with neither dt_form nor range_filter must fail (ADR-085)."""
+    with pytest.raises(ValueError, match="at least one of 'dt_form' or 'range_filter'"):
         apply_with_drawn_mask(baseline_xmp, expo_dtstyle, {"dt_params": {}})

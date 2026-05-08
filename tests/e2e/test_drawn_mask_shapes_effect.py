@@ -26,13 +26,13 @@ from pathlib import Path
 
 from PIL import Image
 
-from chemigram.core.helpers import apply_with_drawn_mask
+from chemigram.core.helpers import apply_entry
 from chemigram.core.pipeline import render
 from chemigram.core.versioning import ImageRepo
 from chemigram.core.versioning.ops import snapshot
-from chemigram.core.vocab import load_starter
+from chemigram.core.vocab import load_packs
 from chemigram.core.workspace import Workspace, init_workspace_root
-from chemigram.core.xmp import parse_xmp, synthesize_xmp, write_xmp
+from chemigram.core.xmp import parse_xmp, write_xmp
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _BASELINE_XMP = _REPO_ROOT / "src" / "chemigram" / "core" / "_baseline_v1.xmp"
@@ -99,19 +99,18 @@ def test_drawn_mask_creates_spatial_variance_vs_uniform(
     ws = _build_workspace(tmp_path, test_raw, configdir)
     baseline_xmp = parse_xmp(_BASELINE_XMP)
 
-    expo = load_starter().lookup_by_name("expo_+0.5")
+    expo = load_packs(["expressive-baseline"]).lookup_by_name("exposure")
     assert expo is not None
-    expo_dtstyle = expo.dtstyle
 
-    # B: uniform expo_+0.5 applied (no mask, replaces baseline's exposure)
-    b_xmp = synthesize_xmp(baseline_xmp, [expo_dtstyle])
+    # B: uniform expo at +0.5 EV applied (no mask, replaces baseline's exposure)
+    b_xmp = apply_entry(baseline_xmp, expo, parameter_values={"ev": 0.5})
     b_xmp_path = tmp_path / "b.xmp"
     b_out = tmp_path / "b.jpg"
     write_xmp(b_xmp, b_xmp_path)
     b_bytes = _render(b_xmp_path, ws.raw_path, b_out, configdir)
     b_img = _pixel_grid(b_bytes)
 
-    # C: same expo_+0.5 with a small ellipse mask in upper-left
+    # C: same exposure +0.5 EV with a small ellipse mask in upper-left
     spec = {
         "dt_form": "ellipse",
         "dt_params": {
@@ -122,7 +121,7 @@ def test_drawn_mask_creates_spatial_variance_vs_uniform(
             "border": 0.05,
         },
     }
-    c_xmp = apply_with_drawn_mask(baseline_xmp, expo_dtstyle, spec)
+    c_xmp = apply_entry(baseline_xmp, expo, parameter_values={"ev": 0.5}, mask_spec=spec)
     c_xmp_path = tmp_path / "c.xmp"
     c_out = tmp_path / "c.jpg"
     write_xmp(c_xmp, c_xmp_path)

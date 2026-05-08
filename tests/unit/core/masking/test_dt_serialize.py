@@ -228,6 +228,231 @@ def test_encode_blendop_rejects_wrong_size_template() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Parametric (range_filter) mask encoder — RFC-024 / ADR-085
+# ---------------------------------------------------------------------------
+
+
+def test_parametric_luminance_only_sets_mask_mode_5() -> None:
+    """Parametric-only (no drawn): mask_mode = ENABLED | CONDITIONAL = 5."""
+    from chemigram.core.masking.dt_serialize import (
+        DEVELOP_MASK_CONDITIONAL,
+        DEVELOP_MASK_ENABLED,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance",
+        range_min=0.0,
+        range_max=0.3,
+    )
+    assert len(out) == _BLEND_PARAMS_SIZE
+    (mask_mode,) = struct.unpack_from("<I", out, _OFFSET_MASK_MODE)
+    assert mask_mode == (DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL)
+    assert mask_mode == 5
+
+
+def test_parametric_drawn_and_parametric_sets_mask_mode_7() -> None:
+    """Drawn + parametric (when mask_id is supplied): mask_mode = 7."""
+    from chemigram.core.masking.dt_serialize import (
+        DEVELOP_MASK_CONDITIONAL,
+        DEVELOP_MASK_ENABLED,
+        DEVELOP_MASK_MASK,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance",
+        range_min=0.0,
+        range_max=0.3,
+        mask_id=12345,
+    )
+    (mask_mode,) = struct.unpack_from("<I", out, _OFFSET_MASK_MODE)
+    expected = DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL
+    assert mask_mode == expected
+    assert mask_mode == 7
+    # mask_id must be set
+    from chemigram.core.masking.dt_serialize import _OFFSET_MASK_ID
+
+    (mask_id,) = struct.unpack_from("<I", out, _OFFSET_MASK_ID)
+    assert mask_id == 12345
+
+
+def test_parametric_blendif_sets_correct_channel_bit() -> None:
+    """The blendif bitmask must have bit channel_id set; inverted has +16 too."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLENDIF,
+        DEVELOP_BLENDIF_GRAY_in,
+        DEVELOP_BLENDIF_H_in,
+        encode_blendop_with_parametric_mask,
+    )
+
+    # luminance: channel 0
+    out = encode_blendop_with_parametric_mask(range_kind="luminance", range_min=0.0, range_max=0.3)
+    (blendif,) = struct.unpack_from("<I", out, _OFFSET_BLENDIF)
+    assert blendif == (1 << DEVELOP_BLENDIF_GRAY_in)
+
+    # color_h: channel 8
+    out = encode_blendop_with_parametric_mask(range_kind="color_h", range_min=0.55, range_max=0.65)
+    (blendif,) = struct.unpack_from("<I", out, _OFFSET_BLENDIF)
+    assert blendif == (1 << DEVELOP_BLENDIF_H_in)
+
+    # luminance inverted: channels 0 + 16
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance", range_min=0.0, range_max=0.3, invert=True
+    )
+    (blendif,) = struct.unpack_from("<I", out, _OFFSET_BLENDIF)
+    assert blendif == ((1 << DEVELOP_BLENDIF_GRAY_in) | (1 << (DEVELOP_BLENDIF_GRAY_in + 16)))
+
+
+def test_parametric_control_points_map_min_max_feather_correctly() -> None:
+    """{min=0.2, max=0.5, feather=0.05} -> [0.15, 0.20, 0.50, 0.55]."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLENDIF_PARAMETERS,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance", range_min=0.2, range_max=0.5, feather=0.05
+    )
+    # luminance = channel 0, so control points are at offset 68 + 0*16 = 68
+    pts = struct.unpack_from("<ffff", out, _OFFSET_BLENDIF_PARAMETERS)
+    assert pts == pytest.approx((0.15, 0.20, 0.50, 0.55))
+
+
+def test_parametric_control_points_clamp_to_zero_one() -> None:
+    """Feather extending past [0, 1] must clamp."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLENDIF_PARAMETERS,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance", range_min=0.0, range_max=1.0, feather=0.1
+    )
+    pts = struct.unpack_from("<ffff", out, _OFFSET_BLENDIF_PARAMETERS)
+    assert pts == pytest.approx((0.0, 0.0, 1.0, 1.0))  # clamped
+
+
+def test_parametric_color_h_writes_to_offset_for_channel_8() -> None:
+    """color_h is channel 8; control points at offset 68 + 8*16 = 196.
+    Channel 0 (luminance) must remain at default [0, 0, 1, 1]."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLENDIF_PARAMETERS,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="color_h", range_min=0.55, range_max=0.65, feather=0.05
+    )
+    # Channel 8 control points
+    pts_8 = struct.unpack_from("<ffff", out, _OFFSET_BLENDIF_PARAMETERS + 8 * 16)
+    assert pts_8 == pytest.approx((0.50, 0.55, 0.65, 0.70))
+    # Channel 0 must still be default [0, 0, 1, 1]
+    pts_0 = struct.unpack_from("<ffff", out, _OFFSET_BLENDIF_PARAMETERS)
+    assert pts_0 == pytest.approx((0.0, 0.0, 1.0, 1.0))
+
+
+def test_parametric_color_kind_sets_blend_cst_to_hsl() -> None:
+    """color_* kinds must set blend_cst = IOP_CS_HSL = 5; luminance leaves it."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLEND_CST,
+        IOP_CS_HSL,
+        encode_blendop_with_parametric_mask,
+    )
+
+    # color_h sets blend_cst to HSL
+    out = encode_blendop_with_parametric_mask(range_kind="color_h", range_min=0.55, range_max=0.65)
+    (blend_cst,) = struct.unpack_from("<i", out, _OFFSET_BLEND_CST)
+    assert blend_cst == IOP_CS_HSL
+
+    # luminance leaves blend_cst at base default (4 = Lab in our default blendop)
+    out = encode_blendop_with_parametric_mask(range_kind="luminance", range_min=0.0, range_max=0.3)
+    (blend_cst,) = struct.unpack_from("<i", out, _OFFSET_BLEND_CST)
+    assert blend_cst == 4  # default in _DEFAULT_BLENDOP_BYTES
+
+
+def test_parametric_mask_combine_hardcoded_to_zero() -> None:
+    """ADR-085: mask_combine = 0 (AND/intersect) for v1.9.0."""
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_MASK_COMBINE,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(
+        range_kind="luminance", range_min=0.0, range_max=0.3, mask_id=99
+    )
+    (combine,) = struct.unpack_from("<I", out, _OFFSET_MASK_COMBINE)
+    assert combine == 0
+
+
+def test_parametric_preserves_other_byte_regions() -> None:
+    """Encoding a parametric mask must not touch bytes outside the
+    explicit set: mask_mode (0..4), opacity (16..20), mask_combine
+    (20..24), mask_id (24..28; only when drawn), blendif (28..32),
+    blendif_parameters[channel_id] (variable), blend_cst (4..8; only
+    for color kinds).
+
+    Everything else stays at the default. This is the discriminator
+    for unintended struct churn.
+    """
+    from chemigram.core.masking.dt_serialize import (
+        _OFFSET_BLENDIF,
+        _OFFSET_BLENDIF_PARAMETERS,
+        _OFFSET_MASK_COMBINE,
+        encode_blendop_with_parametric_mask,
+    )
+
+    out = encode_blendop_with_parametric_mask(range_kind="luminance", range_min=0.2, range_max=0.5)
+    # Build the set of byte indices that ARE allowed to differ
+    allowed_diffs: set[int] = set()
+    allowed_diffs.update(range(_OFFSET_MASK_MODE, _OFFSET_MASK_MODE + 4))
+    allowed_diffs.update(range(_OFFSET_OPACITY, _OFFSET_OPACITY + 4))
+    allowed_diffs.update(range(_OFFSET_MASK_COMBINE, _OFFSET_MASK_COMBINE + 4))
+    allowed_diffs.update(range(_OFFSET_BLENDIF, _OFFSET_BLENDIF + 4))
+    # Channel 0 (luminance) control points: offset 68, 16 bytes
+    allowed_diffs.update(range(_OFFSET_BLENDIF_PARAMETERS, _OFFSET_BLENDIF_PARAMETERS + 16))
+
+    diffs = [
+        i
+        for i in range(_BLEND_PARAMS_SIZE)
+        if out[i] != _DEFAULT_BLENDOP_BYTES[i] and i not in allowed_diffs
+    ]
+    assert not diffs, f"unexpected byte changes at offsets {diffs}"
+
+
+def test_parametric_rejects_unknown_kind() -> None:
+    from chemigram.core.masking.dt_serialize import encode_blendop_with_parametric_mask
+
+    with pytest.raises(ValueError, match="unknown range_kind"):
+        encode_blendop_with_parametric_mask(range_kind="bogus", range_min=0.0, range_max=0.5)
+
+
+def test_parametric_rejects_min_greater_than_max() -> None:
+    from chemigram.core.masking.dt_serialize import encode_blendop_with_parametric_mask
+
+    with pytest.raises(ValueError, match=r"range_min.*> range_max"):
+        encode_blendop_with_parametric_mask(range_kind="luminance", range_min=0.7, range_max=0.3)
+
+
+def test_parametric_rejects_out_of_range_bounds() -> None:
+    from chemigram.core.masking.dt_serialize import encode_blendop_with_parametric_mask
+
+    with pytest.raises(ValueError, match="range_min must be in"):
+        encode_blendop_with_parametric_mask(range_kind="luminance", range_min=-0.1, range_max=0.5)
+    with pytest.raises(ValueError, match="range_max must be in"):
+        encode_blendop_with_parametric_mask(range_kind="luminance", range_min=0.0, range_max=1.5)
+
+
+def test_parametric_rejects_excessive_feather() -> None:
+    from chemigram.core.masking.dt_serialize import encode_blendop_with_parametric_mask
+
+    with pytest.raises(ValueError, match="feather must be in"):
+        encode_blendop_with_parametric_mask(
+            range_kind="luminance", range_min=0.0, range_max=0.5, feather=0.7
+        )
+
+
+# ---------------------------------------------------------------------------
 # XMP blob encoding (matches dt_exif_xmp_encode)
 # ---------------------------------------------------------------------------
 

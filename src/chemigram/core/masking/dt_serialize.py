@@ -82,8 +82,35 @@ _BLEND_PARAMS_SIZE: Final = 420
 # Field byte offsets in dt_develop_blend_params_t (verified against
 # src/develop/blend.h struct layout + decoded DEFAULT_BLENDOP)
 _OFFSET_MASK_MODE: Final = 0
+_OFFSET_BLEND_CST: Final = 4
 _OFFSET_OPACITY: Final = 16
+_OFFSET_MASK_COMBINE: Final = 20
 _OFFSET_MASK_ID: Final = 24
+_OFFSET_BLENDIF: Final = 28
+# Per-channel parametric mask control points: 4 floats * 16 channels = 64 floats
+_OFFSET_BLENDIF_PARAMETERS: Final = 68
+# Per-channel boost factors: 16 floats (left at default for all v1.9.0 use)
+_OFFSET_BLENDIF_BOOST_FACTORS: Final = 324
+
+
+# ---------------------------------------------------------------------------
+# Parametric mask channel IDs (subset relevant for v1.9.0; ADR-085)
+# Full enum lives in darktable's dt_develop_blendif_channels_t.
+# ---------------------------------------------------------------------------
+
+# Universal: channel 0 is luminance/gray regardless of module color space.
+# (DEVELOP_BLENDIF_GRAY_in == DEVELOP_BLENDIF_L_in == 0 by aliasing in the
+# darktable enum.)
+DEVELOP_BLENDIF_GRAY_in: Final = 0
+
+# HSL color-space channels (when blend_cst is set to IOP_CS_HSL):
+DEVELOP_BLENDIF_H_in: Final = 8  # hue
+DEVELOP_BLENDIF_S_in: Final = 9  # saturation
+DEVELOP_BLENDIF_l_in: Final = 10  # lightness
+
+# darktable iop colorspace constant for HSL (dt_iop_colorspace_type_t).
+# Verified: existing default blendop has blend_cst=4 (Lab); HSL=5.
+IOP_CS_HSL: Final = 5
 
 
 # ---------------------------------------------------------------------------
@@ -311,6 +338,146 @@ def encode_blendop_with_drawn_mask(
     struct.pack_into("<I", out, _OFFSET_MASK_MODE, mask_mode)
     struct.pack_into("<f", out, _OFFSET_OPACITY, float(opacity))
     struct.pack_into("<I", out, _OFFSET_MASK_ID, mask_id & 0xFFFFFFFF)
+    return bytes(out)
+
+
+# ---------------------------------------------------------------------------
+# Parametric mask encoder (RFC-024 / ADR-085)
+# ---------------------------------------------------------------------------
+
+# Map agent-facing range_filter.kind to (channel_id, is_color_kind)
+_RANGE_KIND_TO_CHANNEL: Final[dict[str, int]] = {
+    "luminance": DEVELOP_BLENDIF_GRAY_in,
+    "color_h": DEVELOP_BLENDIF_H_in,
+    "color_s": DEVELOP_BLENDIF_S_in,
+    "color_l": DEVELOP_BLENDIF_l_in,
+}
+_COLOR_KINDS: Final = frozenset({"color_h", "color_s", "color_l"})
+
+
+def _range_to_control_points(
+    *, range_min: float, range_max: float, feather: float
+) -> tuple[float, float, float, float]:
+    """Map agent-facing {min, max, feather} to darktable's 4-control-point
+    trapezoid mask shape.
+
+    Returns ``(low_min, low_max, high_min, high_max)``:
+
+    - Below low_min: outside (mask = 0)
+    - low_min..low_max: ramp up (0 -> 1)
+    - low_max..high_min: inside (mask = 1)
+    - high_min..high_max: ramp down (1 -> 0)
+    - Above high_max: outside (mask = 0)
+
+    Default per-channel value is [0, 0, 1, 1] = "always pass."
+    """
+    if not 0.0 <= range_min <= 1.0:
+        raise ValueError(f"range_min must be in [0, 1], got {range_min}")
+    if not 0.0 <= range_max <= 1.0:
+        raise ValueError(f"range_max must be in [0, 1], got {range_max}")
+    if range_min > range_max:
+        raise ValueError(f"range_min ({range_min}) > range_max ({range_max})")
+    if not 0.0 <= feather <= 0.5:
+        raise ValueError(f"feather must be in [0, 0.5], got {feather}")
+    low_min = max(0.0, range_min - feather)
+    low_max = range_min
+    high_min = range_max
+    high_max = min(1.0, range_max + feather)
+    return low_min, low_max, high_min, high_max
+
+
+def encode_blendop_with_parametric_mask(
+    *,
+    range_kind: str,
+    range_min: float,
+    range_max: float,
+    feather: float = 0.05,
+    invert: bool = False,
+    mask_id: int | None = None,
+    opacity: float = 100.0,
+    base_blendop: bytes = _DEFAULT_BLENDOP_BYTES,
+) -> bytes:
+    """Patch the default blendop blob to bind a parametric (range) mask.
+
+    Closes RFC-024 / ADR-085. Supports three composition modes:
+
+    - ``mask_id is None``: parametric only. mask_mode = ENABLED | CONDITIONAL = 5.
+    - ``mask_id is not None``: drawn AND parametric. mask_mode = 7.
+      Caller must also encode the corresponding form into masks_history.
+    - (Drawn-only is handled by :func:`encode_blendop_with_drawn_mask`.)
+
+    Args:
+        range_kind: One of ``"luminance"``, ``"color_h"``, ``"color_s"``,
+            ``"color_l"``. Selects the channel and (for color kinds) the
+            HSL color space.
+        range_min: Mask region lower bound, [0, 1].
+        range_max: Mask region upper bound, [0, 1].
+        feather: Ramp width applied to both edges of the band, [0, 0.5].
+            Default 0.05.
+        invert: If ``True``, the mask covers OUTSIDE the range. Implemented
+            via darktable's per-channel invert bit (channel_id + 16) in
+            the ``blendif`` bitmask.
+        mask_id: If not None, this is the drawn form's mask_id; mask_mode
+            becomes drawn+parametric (=7) and mask_combine stays at 0
+            (AND = intersection per ADR-085).
+        opacity: 0..100; default 100.
+        base_blendop: 420-byte template (default = canonical defaults).
+
+    Returns:
+        420 bytes ready for ``_encode_blendop_blob`` (gz+base64).
+
+    Raises:
+        ValueError: range_kind unknown; range bounds out of [0, 1];
+            range_min > range_max; feather out of range; opacity out of
+            [0, 100]; base_blendop wrong size.
+    """
+    if range_kind not in _RANGE_KIND_TO_CHANNEL:
+        raise ValueError(
+            f"unknown range_kind {range_kind!r}; one of: {sorted(_RANGE_KIND_TO_CHANNEL)}"
+        )
+    if len(base_blendop) != _BLEND_PARAMS_SIZE:
+        raise ValueError(
+            f"base_blendop must be {_BLEND_PARAMS_SIZE} bytes, got {len(base_blendop)}"
+        )
+    if not 0.0 <= opacity <= 100.0:
+        raise ValueError(f"opacity must be in [0, 100], got {opacity}")
+
+    channel_id = _RANGE_KIND_TO_CHANNEL[range_kind]
+    low_min, low_max, high_min, high_max = _range_to_control_points(
+        range_min=range_min, range_max=range_max, feather=feather
+    )
+
+    out = bytearray(base_blendop)
+
+    # mask_mode: ENABLED | CONDITIONAL (5) for parametric-only, plus MASK
+    # bit (3 -> 7) when composing with a drawn form.
+    if mask_id is None:
+        mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL
+    else:
+        mask_mode = DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL
+        struct.pack_into("<I", out, _OFFSET_MASK_ID, mask_id & 0xFFFFFFFF)
+    struct.pack_into("<I", out, _OFFSET_MASK_MODE, mask_mode)
+    struct.pack_into("<f", out, _OFFSET_OPACITY, float(opacity))
+
+    # mask_combine = 0 (AND/intersect; ADR-085 hardcode for v1.9.0).
+    struct.pack_into("<I", out, _OFFSET_MASK_COMBINE, 0)
+
+    # blendif bitmask: set the channel bit (and the +16 invert bit if asked).
+    blendif = 1 << channel_id
+    if invert:
+        blendif |= 1 << (channel_id + 16)
+    struct.pack_into("<I", out, _OFFSET_BLENDIF, blendif)
+
+    # blendif_parameters: 4 floats per channel at offset
+    # _OFFSET_BLENDIF_PARAMETERS + channel_id * 16.
+    field_offset = _OFFSET_BLENDIF_PARAMETERS + channel_id * 16
+    struct.pack_into("<ffff", out, field_offset, low_min, low_max, high_min, high_max)
+
+    # blend_cst: HSL for color_* kinds; leave at base default for luminance
+    # (channel 0 is universal, works regardless of color space).
+    if range_kind in _COLOR_KINDS:
+        struct.pack_into("<i", out, _OFFSET_BLEND_CST, IOP_CS_HSL)
+
     return bytes(out)
 
 

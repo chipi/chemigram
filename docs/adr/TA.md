@@ -433,7 +433,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-021 | Parameterized vocabulary magnitudes (Path C default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
 | RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
 | RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Decided | ADR-083 (closes) |
-| RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Draft v0.1 | — |
+| RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Decided | ADR-085 (closes; depth + subject deferred to RFC-026) |
 | RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
 | RFC-026 | AI-derived mask provider scaffolding (subject / depth / content-aware spots) | Draft v0.1 | — |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
@@ -525,6 +525,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-082 | Modversion drift handling: warn-loud at load, hard-fail at apply (closes RFC-007) | Accepted |
 | ADR-083 | HSL Color Mixer via colorequal (3 multi-axis entries); closes RFC-023, reclassifies HSL Tier 2 | Accepted |
 | ADR-084 | Apply-time mask spec semantics + path shape addition; closes RFC-029, formalizes build-by-words inline mask construction | Accepted |
+| ADR-085 | Parametric mask encoding via blendif; range_filter mask_spec field; AND composition with drawn masks (closes RFC-024) | Accepted |
 
 ---
 

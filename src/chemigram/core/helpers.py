@@ -308,38 +308,58 @@ def apply_with_drawn_mask(
     mask_id_seed: int | None = None,
     opacity: float = 100.0,
 ) -> Xmp:
-    """Synthesize a new XMP applying ``dtstyle`` with a drawn mask bound.
+    """Synthesize a new XMP applying ``dtstyle`` with a mask bound.
 
-    Replaces the failing PNG-file path: instead of writing a PNG to
-    ``<workspace>/masks/`` (which darktable never reads), this encodes
-    the mask directly as a darktable drawn form in the XMP's
-    ``masks_history`` and modifies the entry's ``blendop_params`` to
-    bind the form via ``mask_id``.
+    Handles three valid mask compositions per ADR-085:
+
+    1. **Drawn only**: ``mask_spec`` has ``dt_form`` / ``dt_params`` →
+       writes the form into ``masks_history`` and binds via mask_id.
+       ``mask_mode = ENABLED | MASK = 3``.
+    2. **Parametric only** (range filter): ``mask_spec`` has
+       ``range_filter`` (no ``dt_form``) → no ``masks_history``; just
+       patches ``blendop_params`` with the parametric mask fields.
+       ``mask_mode = ENABLED | CONDITIONAL = 5``.
+    3. **Drawn + parametric** (intersection): ``mask_spec`` has both
+       ``dt_form`` and ``range_filter`` → writes the form to
+       ``masks_history`` AND patches the parametric fields. The edit
+       applies to the AND of the two masks. ``mask_mode = 7``,
+       ``mask_combine = 0`` (intersection per ADR-085).
 
     Args:
         baseline: The current XMP to apply onto.
         dtstyle: A ``DtstyleEntry`` (typically ``vocab_entry.dtstyle``);
             its plugins' ``blendop_params`` are patched to bind the mask.
-        mask_spec: ``{"dt_form": "gradient"|"ellipse"|"rectangle",
-            "dt_params": {<form-kwargs>}}``.
-        mask_id_seed: Optional explicit mask_id; default is a hash of the
-            spec + content for determinism within a session.
+        mask_spec: One of the three forms above. Schema:
+
+            ``{"dt_form": "gradient"|"ellipse"|"rectangle"|"path",``
+            `` "dt_params": {<form-kwargs>},``
+            `` "range_filter": {"kind": "luminance"|"color_h"|"color_s"|"color_l",``
+            ``                  "min": <0..1>, "max": <0..1>,``
+            ``                  "feather": <0..0.5>, "invert": <bool>}}``
+
+            ``dt_form`` and ``range_filter`` are both optional; at
+            least one must be present. See ``mask-shapes-from-words.md``
+            and RFC-024 / ADR-085 for parameter semantics.
+        mask_id_seed: Optional explicit mask_id (drawn-mask path only;
+            ignored for parametric-only). Default is a hash of the
+            spec for determinism within a session.
         opacity: 0..100; default 100.
 
     Returns:
-        A new :class:`Xmp` with: (a) every plugin's ``blendop_params``
-        patched to bind the mask, (b) ``masks_history`` injected into
-        ``raw_extra_fields`` with the form encoded.
+        A new :class:`Xmp` with the requested mask + edit applied.
 
     Raises:
-        ValueError: ``mask_spec`` is malformed or names an unknown form.
+        ValueError: ``mask_spec`` is malformed, names an unknown form,
+            or has neither ``dt_form`` nor ``range_filter``.
+        TypeError: ``dtstyle`` is not a DtstyleEntry.
     """
     import dataclasses
 
     from chemigram.core.dtstyle import DtstyleEntry
     from chemigram.core.masking.dt_serialize import (
-        build_form_from_spec,
-        build_masks_history_xml,
+        _decode_default_blendop_blob,
+        _encode_blendop_blob,
+        encode_blendop_with_parametric_mask,
         patch_blendop_params_string,
     )
     from chemigram.core.xmp import synthesize_xmp
@@ -347,32 +367,91 @@ def apply_with_drawn_mask(
     if not isinstance(dtstyle, DtstyleEntry):
         raise TypeError(f"dtstyle must be a DtstyleEntry, got {type(dtstyle).__name__}")
 
-    if mask_id_seed is None:
-        # Deterministic per spec — high range to avoid colliding with any
-        # ids darktable would naturally allocate (those start at 1).
+    has_drawn = "dt_form" in mask_spec
+    range_filter = mask_spec.get("range_filter")
+    has_parametric = range_filter is not None
+    if not has_drawn and not has_parametric:
+        raise ValueError("mask_spec must have at least one of 'dt_form' or 'range_filter'")
+
+    # Compute deterministic mask_id only when we have a drawn form.
+    if has_drawn and mask_id_seed is None:
         from hashlib import blake2b
 
         h = blake2b(repr(sorted(mask_spec.items())).encode(), digest_size=4).digest()
         mask_id_seed = 0x10000000 | int.from_bytes(h, "big")
 
-    form = build_form_from_spec(mask_id_seed, mask_spec)
-    masks_history_xml = build_masks_history_xml([form])
+    # ---------------------------------------------------------------
+    # Patch every plugin's blendop_params with the right mask binding.
+    # ---------------------------------------------------------------
 
-    # Patch every plugin's blendop_params to bind this mask
+    def _patch_plugin_blendop(blendop_str: str) -> str:
+        """Decode → patch → re-encode one plugin's blendop_params."""
+        if blendop_str.startswith("gz"):
+            raw = _decode_default_blendop_blob(blendop_str)
+        else:
+            raw = bytes.fromhex(blendop_str)
+
+        if has_parametric:
+            assert isinstance(range_filter, dict)
+            patched = encode_blendop_with_parametric_mask(
+                range_kind=str(range_filter["kind"]),
+                range_min=float(range_filter["min"]),
+                range_max=float(range_filter["max"]),
+                feather=float(range_filter.get("feather", 0.05)),
+                invert=bool(range_filter.get("invert", False)),
+                mask_id=mask_id_seed if has_drawn else None,
+                opacity=opacity,
+                base_blendop=raw,
+            )
+        else:
+            # Drawn-only path: same as before, via the existing helper.
+            return patch_blendop_params_string(
+                blendop_str, mask_id=mask_id_seed or 0, opacity=opacity
+            )
+        return _encode_blendop_blob(patched)
+
     patched_plugins = tuple(
-        dataclasses.replace(
-            p,
-            blendop_params=patch_blendop_params_string(
-                p.blendop_params, mask_id=mask_id_seed, opacity=opacity
-            ),
-        )
+        dataclasses.replace(p, blendop_params=_patch_plugin_blendop(p.blendop_params))
         for p in dtstyle.plugins
     )
     patched_dtstyle = dataclasses.replace(dtstyle, plugins=patched_plugins)
 
     new_xmp = synthesize_xmp(baseline, [patched_dtstyle])
 
-    # Replace any existing masks_history elem; otherwise append it.
+    # ---------------------------------------------------------------
+    # Inject masks_history (drawn-form path only; parametric carries
+    # everything inline in blendop_params).
+    # ---------------------------------------------------------------
+
+    if has_drawn:
+        assert mask_id_seed is not None
+        return _inject_masks_history_for_drawn(new_xmp, mask_spec=mask_spec, mask_id=mask_id_seed)
+
+    # Parametric-only: no masks_history; the new_xmp already has the
+    # patched blendop_params, that's all darktable needs.
+    return new_xmp
+
+
+def _inject_masks_history_for_drawn(
+    new_xmp: Xmp, *, mask_spec: dict[str, Any], mask_id: int
+) -> Xmp:
+    """Inject the drawn-form ``masks_history`` element into the synthesized
+    XMP (replacing any existing one, or appending). Helper for
+    :func:`apply_with_drawn_mask`'s drawn-path branches."""
+    import dataclasses
+
+    from chemigram.core.masking.dt_serialize import (
+        build_form_from_spec,
+        build_masks_history_xml,
+    )
+
+    drawn_spec = {
+        "dt_form": mask_spec["dt_form"],
+        "dt_params": mask_spec.get("dt_params", {}),
+    }
+    form = build_form_from_spec(mask_id, drawn_spec)
+    masks_history_xml = build_masks_history_xml([form])
+
     new_extra: list[tuple[str, str, str]] = []
     replaced = False
     for kind, qname, value in new_xmp.raw_extra_fields:

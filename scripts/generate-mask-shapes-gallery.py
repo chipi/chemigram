@@ -213,6 +213,108 @@ ENTRIES: list[GalleryEntry] = [
             },
         },
     ),
+    # ----- range_filter examples (RFC-024 / ADR-085) ----------------
+    GalleryEntry(
+        slug="range-luminance-shadows-only",
+        phrase='Parametric only: "all dark pixels" (luminance shadows)',
+        description=(
+            "range_filter only (no dt_form). Affects the dark third "
+            "of the tonal range anywhere in the image."
+        ),
+        spec={
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.0,
+                "max": 0.3,
+                "feather": 0.05,
+            },
+        },
+    ),
+    GalleryEntry(
+        slug="range-luminance-highlights-only",
+        phrase='Parametric only: "all bright pixels" (luminance highlights)',
+        description=(
+            "range_filter only. Affects the upper third of the tonal "
+            "range — useful for highlight recovery / dampening."
+        ),
+        spec={
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.7,
+                "max": 1.0,
+                "feather": 0.05,
+            },
+        },
+    ),
+    GalleryEntry(
+        slug="range-luminance-shadows-inverted",
+        phrase='Inverted: "everything except shadows"',
+        description=(
+            "range_filter with invert=true. Same shadow band, but "
+            "pixels OUTSIDE that band get the mask (= midtones + highlights)."
+        ),
+        spec={
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.0,
+                "max": 0.3,
+                "feather": 0.05,
+                "invert": True,
+            },
+        },
+    ),
+    GalleryEntry(
+        slug="range-drawn-bottom-half-shadows",
+        phrase='Drawn + parametric: "shadows in the bottom half"',
+        description=(
+            "Drawn gradient (bottom half) + luminance shadows filter. "
+            "Edit applies only where BOTH conditions are true: pixel "
+            "is in bottom half AND pixel is dark. The user's mental "
+            "model of refining a drawn mask down to specific pixels."
+        ),
+        spec={
+            "dt_form": "gradient",
+            "dt_params": {
+                "anchor_x": 0.5,
+                "anchor_y": 0.5,
+                "rotation": 180.0,
+                "compression": 0.5,
+                "state": 2,
+            },
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.0,
+                "max": 0.4,
+                "feather": 0.05,
+            },
+        },
+    ),
+    GalleryEntry(
+        slug="range-drawn-ellipse-highlights",
+        phrase='Drawn + parametric: "highlights inside subject ellipse"',
+        description=(
+            "Drawn ellipse + luminance highlights filter. Brightens "
+            "only the bright pixels inside the subject region — "
+            "useful for catching catchlights without blowing out the "
+            "midtones."
+        ),
+        spec={
+            "dt_form": "ellipse",
+            "dt_params": {
+                "center_x": 0.5,
+                "center_y": 0.5,
+                "radius_x": 0.4,
+                "radius_y": 0.4,
+                "border": 0.05,
+            },
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.6,
+                "max": 1.0,
+                "feather": 0.05,
+            },
+        },
+    ),
 ]
 
 

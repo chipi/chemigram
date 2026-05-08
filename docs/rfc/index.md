@@ -36,7 +36,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-021 | Parameterized vocabulary magnitudes (Path C as default for continuous-magnitude modules) | Decided | ADR-077, ADR-078, ADR-079, ADR-080 (closes) |
 | RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
 | RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Decided | ADR-083 (closes) |
-| RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Draft v0.1 | — |
+| RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Decided | ADR-085 (closes; depth + subject deferred to RFC-026) |
 | RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
 | RFC-026 | AI-derived mask provider scaffolding (subject / depth / content-aware spots) | Draft v0.1 | — |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |

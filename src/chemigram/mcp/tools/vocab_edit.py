@@ -285,13 +285,15 @@ _MASK_SPEC_SCHEMA = {
             "type": "string",
             "enum": ["gradient", "ellipse", "rectangle", "path"],
             "description": (
-                "Drawn-form kind. 'gradient' for smooth top/bottom/left/right "
-                "transitions; 'ellipse' for circular subject regions; "
-                "'rectangle' for hard-edged rectangular regions; 'path' for "
-                "arbitrary N-vertex closed polygons (AI subject silhouettes "
-                "per RFC-026, programmatic outlines, etc.). See "
-                "docs/guides/mask-shapes-from-words.md for the "
-                "spatial-English-to-parameter mapping (RFC-029 / ADR-084)."
+                "Drawn-form kind (spatial mask). 'gradient' for smooth "
+                "top/bottom/left/right transitions; 'ellipse' for circular "
+                "subject regions; 'rectangle' for hard-edged rectangular "
+                "regions; 'path' for arbitrary N-vertex closed polygons "
+                "(AI subject silhouettes per RFC-026, programmatic outlines, "
+                "etc.). See docs/guides/mask-shapes-from-words.md for the "
+                "spatial-English-to-parameter mapping (RFC-029 / ADR-084). "
+                "Optional when range_filter is set; together they "
+                "intersect (drawn AND parametric)."
             ),
         },
         "dt_params": {
@@ -306,9 +308,69 @@ _MASK_SPEC_SCHEMA = {
                 "docs/guides/mask-shapes-from-words.md for example phrases."
             ),
         },
+        "range_filter": {
+            "type": "object",
+            "description": (
+                "Pixel-level refinement (RFC-024 / ADR-085). Filters the "
+                "spatial mask down to pixels matching a luminance or "
+                "color-channel range. Examples: 'in this gradient, only "
+                "the dark pixels' = drawn gradient + range_filter "
+                "{kind: 'luminance', min: 0.0, max: 0.3}. 'only the blue "
+                "hues' = range_filter {kind: 'color_h', min: 0.55, max: "
+                "0.7}. Used alone (no dt_form) for global content-derived "
+                "masks; combined with dt_form for spatial+content "
+                "intersection."
+            ),
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": ["luminance", "color_h", "color_s", "color_l"],
+                    "description": (
+                        "Channel selector. 'luminance' = brightness "
+                        "(universal, works in any color space). "
+                        "'color_h' = HSL hue [0..1]. 'color_s' = HSL "
+                        "saturation. 'color_l' = HSL lightness. Color "
+                        "kinds set blend_cst to HSL automatically."
+                    ),
+                },
+                "min": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Band lower bound, [0..1].",
+                },
+                "max": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Band upper bound, [0..1].",
+                },
+                "feather": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 0.5,
+                    "description": (
+                        "Ramp width applied to both edges of the band. "
+                        "Default 0.05 (small soft transition)."
+                    ),
+                },
+                "invert": {
+                    "type": "boolean",
+                    "description": (
+                        "If true, OUTSIDE the range becomes the mask "
+                        "(useful for SUBTRACT semantics)."
+                    ),
+                },
+            },
+            "required": ["kind", "min", "max"],
+        },
     },
-    "required": ["dt_form", "dt_params"],
     "additionalProperties": False,
+    "description": (
+        "Mask spec. Must have at least one of 'dt_form' (spatial) or "
+        "'range_filter' (parametric). Three valid combinations: drawn "
+        "only, parametric only, drawn+parametric (intersection)."
+    ),
 }
 
 

@@ -138,6 +138,74 @@ When RFC-026 lands, the AI provider returns a polygon for "the fish" / "the pers
 - `border` (default `0.02`): feathering uniform on all sides.
 - Minimum 3 vertices. Typical AI-subject masks have 50–500 vertices after Douglas-Peucker simplification at the provider boundary (RFC-026).
 
+## Refining masks with range filters (RFC-024 / ADR-085)
+
+The shapes above describe the *region* of an image to affect. Sometimes that's not enough — the photographer wants "the bottom third *but only the dark pixels*" or "the subject *but only the warm tones*." Pixel-level refinement happens via the optional `range_filter` field on `mask_spec`.
+
+```jsonc
+mask_spec = {
+    // Spatial component (optional)
+    "dt_form": "gradient",
+    "dt_params": {"anchor_y": 0.67, "rotation": 180, "compression": 0.5, "state": 2},
+
+    // Pixel-level refinement (optional)
+    "range_filter": {
+        "kind": "luminance",     // or "color_h" / "color_s" / "color_l"
+        "min": 0.0,              // band lower bound, [0..1]
+        "max": 0.3,              // band upper bound, [0..1]
+        "feather": 0.05,         // ramp width on each edge
+        "invert": false          // true = OUTSIDE the range becomes the mask
+    }
+}
+```
+
+### Three valid combinations
+
+| `dt_form` | `range_filter` | What you get |
+|-|-|-|
+| present | absent | drawn mask only — affects the spatial region (RFC-029 / ADR-084) |
+| absent | present | parametric mask only — affects all pixels matching the range, anywhere |
+| present | present | drawn AND parametric (intersection) — affects pixels matching the range, *within* the spatial region |
+
+The third combination is the workflow you usually want: "lift the bottom third's shadows" = drawn gradient bottom-third + luminance shadows filter. The drawn mask localizes; the range filter selects which pixels in that locale receive the edit.
+
+### range_filter.kind options
+
+| `kind` | What it filters on | Notes |
+|-|-|-|
+| `luminance` | Pixel brightness, [0..1] | Universal — works in any color space. Most common. |
+| `color_h` | HSL hue, [0..1] (red≈0, green≈0.33, blue≈0.66) | Sets blend_cst to HSL automatically |
+| `color_s` | HSL saturation, [0..1] | Mute saturated colors / preserve only desaturated, etc. |
+| `color_l` | HSL lightness | Different from luminance; HSL-specific lightness channel |
+
+### range_filter.{min, max, feather} mapping
+
+The agent provides a band; the encoder constructs a 4-control-point trapezoid:
+
+- Below `min - feather`: outside (mask = 0)
+- `min - feather → min`: ramp up (0 → 1)
+- `min → max`: inside (mask = 1)
+- `max → max + feather`: ramp down (1 → 0)
+- Above `max + feather`: outside (mask = 0)
+
+`feather: 0` gives hard edges (rare); `feather: 0.05`–`0.10` gives natural soft transitions; `feather: 0` with sharp `min == max` is essentially a single-tone selection.
+
+### Example refinement phrases
+
+| Phrase | Spec |
+|-|-|
+| "Lift the bottom third's shadows" | `{dt_form: "gradient", dt_params: {anchor_y: 0.67, rotation: 180, compression: 0.5, state: 2}, range_filter: {kind: "luminance", min: 0.0, max: 0.3, feather: 0.05}}` |
+| "Brighten the highlights of the subject" | `{dt_form: "ellipse", dt_params: {center_x: 0.5, center_y: 0.5, radius_x: 0.3, radius_y: 0.3, border: 0.08}, range_filter: {kind: "luminance", min: 0.7, max: 1.0, feather: 0.05}}` |
+| "Deepen the blue tones in the upper half" | `{dt_form: "gradient", dt_params: {anchor_y: 0.5, rotation: 0, compression: 0.5, state: 2}, range_filter: {kind: "color_h", min: 0.55, max: 0.7, feather: 0.05}}` |
+| "Mute the saturated reds in the photo" (no spatial mask) | `{range_filter: {kind: "color_s", min: 0.6, max: 1.0, feather: 0.05}}` (parametric only — no `dt_form`) |
+| "Affect everything *except* the shadows" (invert) | `{range_filter: {kind: "luminance", min: 0.0, max: 0.3, feather: 0.05, invert: true}}` |
+
+### When to combine vs. when to use just one
+
+- **Just `dt_form`**: when the intent is purely spatial — "the bottom third," "around the subject," "the upper-left corner."
+- **Just `range_filter`**: when the intent is purely tonal/color — "all the dark pixels," "all the blues," regardless of where they are.
+- **Both**: when the intent is "this region's specific pixels" — the most common Lightroom range-mask use case. Compose with AND (intersection); the edit applies only where both conditions are true.
+
 ## Visual reference
 
 Each row below renders **exposure +1.0** through one shape from the table above, against the synthetic grayscale ramp. The brightened region reveals where the mask is on; everything else stays at the ramp's baseline tone.
@@ -163,6 +231,11 @@ Per-shape renders:
 | "Subject upper-left rule-of-thirds" (ellipse) | center=(0.33, 0.33), radius=0.2 - subject region at top-left intersection. | ![upper-left-thirds-ellipse](../visual-proofs/mask-shapes/upper-left-thirds-ellipse.jpg) |
 | "Diagonal, top-left dim" (gradient, light bottom-right) | rotation=225, diagonal axis. Light side bottom-right. | ![diagonal-bottom-right-light-gradient](../visual-proofs/mask-shapes/diagonal-bottom-right-light-gradient.jpg) |
 | Centered triangle (path) | 3-vertex closed polygon. RFC-026 substrate; same wire AI subject masks will use. | ![centered-triangle-path](../visual-proofs/mask-shapes/centered-triangle-path.jpg) |
+| Parametric only: "all dark pixels" (luminance shadows) | range_filter only (no dt_form). Affects the dark third of the tonal range anywhere in the image. | ![range-luminance-shadows-only](../visual-proofs/mask-shapes/range-luminance-shadows-only.jpg) |
+| Parametric only: "all bright pixels" (luminance highlights) | range_filter only. Affects the upper third of the tonal range — useful for highlight recovery / dampening. | ![range-luminance-highlights-only](../visual-proofs/mask-shapes/range-luminance-highlights-only.jpg) |
+| Inverted: "everything except shadows" | range_filter with invert=true. Same shadow band, but pixels OUTSIDE that band get the mask (= midtones + highlights). | ![range-luminance-shadows-inverted](../visual-proofs/mask-shapes/range-luminance-shadows-inverted.jpg) |
+| Drawn + parametric: "shadows in the bottom half" | Drawn gradient (bottom half) + luminance shadows filter. Edit applies only where BOTH conditions are true: pixel is in bottom half AND pixel is dark. The user's mental model of refining a drawn mask down to specific pixels. | ![range-drawn-bottom-half-shadows](../visual-proofs/mask-shapes/range-drawn-bottom-half-shadows.jpg) |
+| Drawn + parametric: "highlights inside subject ellipse" | Drawn ellipse + luminance highlights filter. Brightens only the bright pixels inside the subject region — useful for catching catchlights without blowing out the midtones. | ![range-drawn-ellipse-highlights](../visual-proofs/mask-shapes/range-drawn-ellipse-highlights.jpg) |
 
 These renders are produced by `scripts/generate-mask-shapes-gallery.py`. Refresh after changing the spec table above; CI does not regenerate them automatically.
 

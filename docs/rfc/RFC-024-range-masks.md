@@ -1,118 +1,155 @@
 # RFC-024 — Range masks (color-range / luminance-range / depth-range / subject)
 
-> Status · Draft v0.1
+> Status · Decided
 > Date · 2026-05-08
-> TA anchor ·/components/synthesizer ·/contracts/per-image-repo ·/constraints/opaque-hex-blobs ·/components/masking
-> Related · ADR-076 (drawn-mask only architecture; this RFC argues to extend), ADR-007 (BYOA principle), RFC-009 / ADR-057 (historical mask-provider Protocol — closed; this RFC may reintroduce a different shape), capability-survey.md § 7 (local adjustments — range masks are the named gap), #105 (the issue that opened this question)
-> Closes into · ADR-NNN (pending — the architectural shape decision); possible MCP-provider scaffolding ADR depending on the chosen path
-> Why this is an RFC · ADR-076 settled the v1.5.0 mask architecture as drawn-only after the PNG-mask path was discovered to be a silent no-op. The closing observation was that a future content-aware masker would need to produce drawn-form geometry (or its own equivalent of `masks_history` content), and the schema would extend in place. v1.8.0 closed the bulk of Lightroom-parity work; the largest remaining workflow gap is the *other* masking surface — color-range / luminance-range / depth-range / subject. The "extend in place" claim from ADR-076 needs to be argued now: which extension path, what semantics, what cost. Three viable paths exist with materially different cost/value shapes; an RFC is the right form for the deliberation.
+> TA anchor · /components/masking · /contracts/per-image-repo · /constraints/opaque-hex-blobs
+> Related · ADR-076 (drawn-mask only architecture; this RFC formalizes the parametric extension), ADR-007 (BYOA principle), RFC-026 (AI mask provider scaffolding; subject + depth deferred there), RFC-029 / ADR-084 (compositional masks at apply time; this RFC adds the *refinement* dimension on top of the spatial dimension), capability-survey.md § 7 (local adjustments — range masks are the named gap), #105 (the issue that opened this question)
+> Closes into · ADR-085 (parametric mask encoding via blendif; range_filter schema; AND composition with drawn masks)
+> Why this is an RFC · ADR-076 settled the v1.5.0 mask architecture as drawn-only and noted that future content-derived masks would need to land as bytes darktable's mask system actually consumes. v1.8.0 closed Lightroom-parity for *spatial* masking; the largest remaining gap is *content-derived* masking — "affect only the dark pixels," "affect only the blue hues" — which Lightroom calls **range masks**. Four flavors (color, luminance, depth, subject) have materially different cost shapes: color and luminance are darktable-native parametric paths (bytes-only extension); depth and subject need ML at inference time (BYOA-shaped). The genuine open question this RFC argued: **what's the architectural shape that handles all four?** The answer below: a **hybrid** — parametric mask encoding for the two darktable-native cases (Tier 2 expansion), with depth and subject deferred to RFC-026 (BYOA provider scaffolding). The byte-level work is bounded; the schema integration with RFC-029's drawn-mask compose path is the load-bearing decision.
 
 ---
 
 ## The question
 
-Lightroom's masking has two dimensions chemigram doesn't currently address. ADR-076 ships drawn masks (gradient / ellipse / rectangle), which cover the "I want to affect this region" use case. The other dimension is **content-derived masks**: the photographer says "affect everything that's blue" or "affect just the bright parts" and the engine computes the mask from image content, not user-drawn geometry.
+Lightroom's masking has two dimensions chemigram doesn't currently address. ADR-076 ships drawn masks (gradient / ellipse / rectangle), and ADR-084 / RFC-029 closed the agent-facing build-by-words spatial workflow. Both cover the "I want to affect this region" case. The other dimension is **content-derived masks**: the photographer says "affect everything that's blue" or "affect just the bright parts" and the engine computes the mask from image content, not user-drawn geometry.
 
-Four named flavors of content-derived mask, in roughly ascending cost order:
+Four named flavors of content-derived mask:
 
-1. **Color-range mask.** Pick a hue range; pixels in that range are "in the mask," everything else is "out." Lightroom's HSL Range slider (within the HSL panel) is conceptually adjacent. darktable supports this natively as a parametric mask in `blendop_params`.
+1. **Color-range mask.** Pick a hue range; pixels in that range are "in the mask," everything else is "out." darktable supports this natively as a parametric mask in `blendop_params`.
 2. **Luminance-range mask.** Pick a tonal band (shadows / midtones / highlights); affect only that band. Same darktable parametric-mask path; different field set.
-3. **Depth-range mask.** Pick a depth band ("near" / "far"). Requires a depth map per image — either from camera (some cameras emit one) or computed by an ML model. Not natively supported by darktable; would need a depth-aware preprocessor.
-4. **Subject mask** (= AI-subject mask in Lightroom). Pick the subject; affect only it. This is the `chemigram-masker-sam` arc per ADR-007 / ADR-076's closing comment.
+3. **Depth-range mask.** Pick a depth band ("near" / "far"). Requires a depth map per image. Not natively supported; needs a depth-aware preprocessor.
+4. **Subject mask.** Pick the subject; affect only it. Needs a SAM-class model.
 
-The genuinely open question: **what's the architectural shape that handles all four?** The answer lands somewhere on a spectrum between "extend `dt_serialize` to emit darktable-native parametric masks" (cheap, but only covers (1) and (2)) and "ship a full MCP-provider scaffolding for ML-derived masks" (covers (3) and (4) but reintroduces a Protocol-shaped surface ADR-076 explicitly rejected).
+The genuinely open question argued: **what's the architectural shape that handles all four under a coherent vocabulary surface?** The cheap answer (extend `dt_serialize` to emit darktable-native parametric masks) covers (1) and (2) but not (3) and (4). The expensive answer (full MCP-provider scaffolding for ML-derived masks) covers (3) and (4) but reintroduces a Protocol-shaped surface ADR-076 explicitly rejected. Hybrid — parametric for (1) and (2), provider scaffolding for (3) and (4) — is the right shape, but the schema integration with RFC-029's drawn-mask path is the design choice.
 
 ---
 
 ## Use cases
 
-1. **Photographer wants the sky bluer without affecting other blues in the frame.** HSL hue alone affects all blues; a color-range mask isolates the sky's specific blue band. Composition with a drawn-mask gradient at the horizon would then localize further.
-2. **Photographer wants to lift just the shadow band of a high-contrast scene.** `toneequalizer --param shadows=...` already partially solves this (per-zone tonal control). Luminance-range mask is the photographer's mental model: "select the dark pixels, then apply X." Same outcome, different framing — but a mask-binding lets the user compose with arbitrary primitives, not just toneequalizer.
-3. **Photographer wants to brighten the subject of a portrait without affecting the background.** Today: drawn radial mask (centered ellipse). Future: AI-subject mask gets the subject silhouette exactly. The Lightroom user reaches for the AI-subject mask far more often than the radial.
-4. **Photographer wants to dehaze just the distant mountains.** Depth-range mask (far) + dehaze primitive. Depth needs a depth map; provider territory.
-5. **Compositional mask: AI-subject AND drawn-radial centered.** Lightroom lets you AND/OR/SUBTRACT range + drawn masks. The compositional surface is real workflow value.
+1. **Photographer wants the sky bluer without affecting other blues in the frame.** HSL hue alone affects all blues. Color-range mask (HSL hue band) isolates the sky's specific blue range. Composition with a drawn-mask gradient at the horizon further localizes — "the blue pixels in the upper third."
+2. **Photographer wants to lift just the shadow band of a high-contrast scene.** Luminance-range mask on the bottom 30% of tones; bound to an exposure +0.5 EV move. Lightroom's "Luminance Range" panel does exactly this.
+3. **The user's mental model — refine spatial mask with pixel filter.** "Brighten just the *dark* pixels in the bottom third of the photo." Drawn gradient (bottom third) + luminance-range filter (shadows). The drawn mask defines the *region*; the parametric mask refines *which pixels in that region* receive the edit.
+4. **Color-range refinement of a drawn ellipse.** "Reduce saturation only in the warm tones around the subject." Drawn ellipse + color-range filter (hue near red/orange).
+5. **Subject + depth (deferred to RFC-026).** "Brighten just the foreground person." Subject mask. Out of scope for this RFC; the architectural arc is BYOA-shaped, drafted in RFC-026.
 
 ---
 
 ## Goals
 
-- **Pick the architectural shape** that handles color-range, luminance-range, depth-range, and subject masks under a coherent vocabulary surface.
-- **Honor ADR-076's structural lesson** (don't re-introduce dead Protocol infrastructure for paths that don't connect to pixels). Whatever scaffolding ships needs a real consumer.
-- **Stay byte-level-correct.** Like the drawn-mask path, parametric masks should serialize through a `dt_serialize`-equivalent codec that produces darktable-readable bytes. AI-derived raster masks have to land as drawn-form geometry (silhouette polygons) per ADR-076's pixel-truth observation.
-- **Preserve composition with drawn masks.** Range + drawn AND/OR/SUBTRACT is the dominant photographer workflow.
-- **Bound the modversion-drift surface.** Each parametric-mask field added to the byte serializer adds drift exposure. Same backstop policy as ADR-082 applies.
+- **Pick the architectural shape** that handles color-range and luminance-range now; subject and depth land via RFC-026's provider scaffolding when ready.
+- **Honor ADR-076's structural lesson.** Provider Protocol exists for the AI cases (RFC-026); native byte-encoding for the darktable-native cases (this RFC).
+- **Stay byte-level-correct.** Range masks serialize through the same `dt_serialize` codec that handles drawn forms. Same modversion-drift policy (ADR-082) applies.
+- **Compose with drawn masks via AND** — that's the dominant photographer workflow ("the dark pixels in this gradient"). Other compose modes (OR / SUBTRACT / invert) deferred until evidence demands them.
+- **Bound the modversion-drift surface.** Each field added to the byte serializer adds drift exposure; ADR-082's warn-loud-at-load + hard-fail-at-apply backstop applies to parametric mask fields too.
 
 ---
 
 ## Constraints
 
-- **ADR-076** (`/components/masking`): the drawn-mask architecture is the current ground truth. This RFC argues an extension; the v1.5.0 surface remains a strict subset of whatever ships.
-- **ADR-007** (BYOA): no AI dependencies in `chemigram.core`. AI-subject and depth masks live in sibling projects (`chemigram-masker-sam`, hypothetical depth provider).
-- **ADR-008 (amended by ADR-081)**: `blendop_params` is opaque except where parameterization is registered. Parametric masks live inside `blendop_params`; extending the codec amends the opacity boundary for that specific subset.
-- **CLAUDE.md three foundational disciplines**: agent-only-writer (mask configuration via tool calls); darktable-does-the-photography (parametric mask math runs in darktable); BYOA (AI providers are sibling projects).
-- **TA/components/masking**: `chemigram.core.masking.dt_serialize` already serializes drawn forms; parametric extension goes here.
-- **TA/contracts/per-image-repo**: `mask_spec` is the entry-level mask binding shape; range-mask extensions go here too.
+- **ADR-076** (`/components/masking`): drawn-mask architecture is ground truth; this RFC adds parametric as a refinement layer, not a replacement.
+- **ADR-007** (BYOA): no AI dependencies in `chemigram.core`. Subject + depth (which need ML) live in RFC-026 sibling-provider territory.
+- **ADR-008 (amended by ADR-081)**: `blendop_params` is opaque except where parameterization is registered. Parametric masks live inside `blendop_params`; this RFC + ADR-085 register the specific byte regions.
+- **ADR-033** (narrow MCP tool surface): no new tools. Extension is purely schema (a new `range_filter` field on `mask_spec`).
+- **ADR-084 / RFC-029**: inline `mask_spec` is the canonical apply-time path. The `range_filter` field plugs into the same struct.
+- **CLAUDE.md three foundational disciplines**: agent-only-writer (range filter set via tool calls); darktable-does-the-photography (parametric mask math runs in darktable); BYOA (AI providers in RFC-026 sibling projects).
 
 ---
 
-## Proposed approach
+## Decision
 
-**Hybrid: native parametric for color-range and luminance-range; deferred to a separate provider RFC for depth-range and subject masks.**
+**Hybrid: parametric mask encoding for color-range + luminance-range; AI subject + depth deferred to RFC-026.**
 
-Three concrete decisions:
+Three concrete pieces:
 
-### 1. Native parametric masks for color-range + luminance-range (Tier 2-shaped ship)
+### 1. Parametric mask byte encoder
 
-Extend `chemigram.core.masking.dt_serialize` with encoders for darktable's parametric-mask `blendop_params` fields. The mask binding extends `mask_spec` with two new shapes:
+Extend `chemigram.core.masking.dt_serialize` with a parametric-mask encoder that writes into `blendop_params`. Verified offsets (against darktable 5.4.1's `dt_develop_blend_params_t`):
+
+```
+offset  20: mask_combine          uint32
+offset  28: blendif               uint32   (bitmask: which channels active + invert flags)
+offset  68: blendif_parameters    float[64]  (4 control points × 16 channels)
+offset 324: blendif_boost_factors float[16]
+```
+
+Per-channel parameters at offset `68 + channel_id * 16` are 4 floats: `[low_min, low_max, high_min, high_max]` defining a trapezoid mask:
+
+- Below `low_min`: outside (mask=0)
+- `low_min → low_max`: ramp up (0 → 1)
+- `low_max → high_min`: inside (mask=1)
+- `high_min → high_max`: ramp down (1 → 0)
+- Above `high_max`: outside (mask=0)
+
+Default per-channel value is `[0, 0, 1, 1]` (= "always pass"). We only modify the channels we filter on; everything else stays default.
+
+### 2. `range_filter` mask_spec field
+
+The `mask_spec` schema gains an optional `range_filter` sibling to `dt_form` / `dt_params`:
 
 ```python
 mask_spec = {
-    "kind": "color_range",          # vs. existing "drawn"
-    "channel": "h",                 # h / s / l (hue, saturation, lightness)
-    "min": 0.5, "max": 0.65,        # range over the channel's [0..1]
-    "feather": 0.05,
-}
-mask_spec = {
-    "kind": "luminance_range",
-    "min": 0.0, "max": 0.3,         # 0 = blackest pixels, 1 = brightest
-    "feather": 0.1,
+    # Spatial (RFC-029, optional)
+    "dt_form": "gradient",
+    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.67, "rotation": 180.0, ...},
+
+    # NEW: pixel-level refinement (this RFC)
+    "range_filter": {
+        "kind": "luminance",   # or "color_h", "color_s", "color_l"
+        "min": 0.0,            # band lower bound, [0..1]
+        "max": 0.3,            # band upper bound
+        "feather": 0.05,       # ramp width (applied to both edges)
+        "invert": false,       # if true, OUTSIDE the range becomes the mask
+    },
 }
 ```
 
-The decoder emits the corresponding darktable parametric-mask byte fields inside `blendop_params`; no `masks_history` element is needed (parametric masks are inline, unlike drawn forms). The `apply_with_drawn_mask` helper grows a sibling `apply_with_parametric_mask` (or generalizes — TBD at implementation time).
+Three valid combinations of `dt_form` and `range_filter`:
 
-**Tier classification**: Tier 2 under ADR-081's policy. Flat scalar struct; bytes-level operation; cost matches the magnitude-ladder modules.
+| dt_form | range_filter | Result |
+|-|-|-|
+| present | absent | drawn mask only (RFC-029 / ADR-084) |
+| absent | present | parametric mask only (e.g., "all dark pixels in the photo") |
+| present | present | drawn AND parametric (e.g., "dark pixels in the bottom third") |
 
-### 2. Compositional masks (range + drawn)
-
-`mask_spec` grows a `compose:` field that lists multiple sub-specs with AND/OR/SUBTRACT operators:
+The encoder maps `{min, max, feather}` to the 4 control points:
 
 ```python
-mask_spec = {
-    "compose": "and",
-    "specs": [
-        {"kind": "color_range", "channel": "h", "min": 0.5, "max": 0.65},
-        {"kind": "drawn", "dt_form": "gradient", "dt_params": {...}},
-    ],
-}
+low_min  = max(0.0, min - feather)
+low_max  = min
+high_min = max
+high_max = min(1.0, max + feather)
 ```
 
-Per darktable's parametric+drawn mask interaction in `blend.c`, the engine composes parametric and drawn masks via the `mask_id` linking + parametric-band fields. The compose syntax serializes to the exact byte combination darktable expects.
+`invert: true` flips the channel's bit at position `+16` in the `blendif` bitmask (darktable's invert convention).
 
-### 3. Subject + depth: defer to a follow-up RFC
+### 3. mask_mode / mask_combine wire-up
 
-These need ML models at inference time. The MCP-provider scaffolding shape that lands them is a separate architectural arc — bigger than range masks, and the right shape (raster vs. silhouette polygons) depends on what the provider produces and what darktable accepts. RFC-026 (placeholder) drafts that surface.
+Three mask_mode values (all OR'd with `DEVELOP_MASK_ENABLED = 1`):
 
-The interim story for users who want subject/depth masks: drawn-radial / drawn-rectangle approximations with the existing mask shapes. Lightroom users grumble but ship.
+| Combination | mask_mode | mask_combine |
+|-|-|-|
+| Drawn only | `1 \| 2 = 3` | unchanged (default 0) |
+| Parametric only | `1 \| 4 = 5` | unchanged |
+| Drawn + parametric (AND) | `1 \| 2 \| 4 = 7` | `0` (default = AND/intersect) |
+
+Other `mask_combine` values (OR, SUBTRACT, INVERT) are out of scope. Hardcoded to `0` for v1.9.0; future RFC can expose them if photographer evidence demands.
+
+### Color-space handling
+
+Channel IDs in darktable's parametric mask are color-space-dependent. For the four `range_filter.kind` values:
+
+| `kind` | Channel ID | Color space | Notes |
+|-|-|-|-|
+| `luminance` | 0 | RGB or Lab | aliased: GRAY_in (RGB) = L_in (Lab) = 0 |
+| `color_h` | 8 | HSL | requires `blend_cst = HSL` (TBD numeric) |
+| `color_s` | 9 | HSL | as above |
+| `color_l` | 10 | HSL | as above |
+
+Luminance is universal — channel 0 is always brightness regardless of module color-space. Color-range needs `blend_cst` set to the HSL constant; the encoder picks it based on `kind`.
 
 ### Vocabulary surface
 
-Range-mask entries land in the existing manifest schema with the new `mask_spec.kind` values. Examples:
-
-- `color_range_blue_sky` — color-range mask isolating the typical sky-blue hue band; bound to an entry that lifts brilliance_highlights and saturation_blue.
-- `luminance_range_shadows_lift` — luminance-range mask on the bottom 30% of tones; bound to an exposure +0.5 EV move.
-
-The starter / expressive-baseline packs ship 3-5 range-mask entries to seed the surface; Phase 2 grows from session evidence.
+Range-mask vocabulary entries land in the existing manifest schema with `range_filter` set in `mask_spec`. Phase 2 grows from session evidence; the v1.9.0 ship may include 2-3 representative entries (e.g., `luminance_range_shadows_lift`, `luminance_range_highlights_dampen`).
 
 ---
 
@@ -120,68 +157,85 @@ The starter / expressive-baseline packs ship 3-5 range-mask entries to seed the 
 
 ### Alt 1: Native parametric for ALL four (color / luminance / depth / subject)
 
-Rejected. Color-range and luminance-range are darktable-native parametric paths — extending `dt_serialize` is bounded and matches Tier 2 cost-shape. Depth-range and subject masks are NOT darktable-native; depth needs an external depth map or ML; subject needs a SAM-class model. Treating them as "just more parametric mask kinds" hides the BYOA architectural shift and produces a misleading Tier 2-shaped issue when they're actually Tier 3-or-bigger.
+Rejected. Color and luminance are darktable-native parametric paths — extending `dt_serialize` is bounded (Tier 2 cost-shape). Depth and subject are NOT darktable-native; depth needs an external depth map or ML; subject needs a SAM-class model. Treating them as "just more parametric mask kinds" hides the BYOA architectural shift and produces a misleading Tier 2-shaped issue when they're actually Tier 3+.
 
 ### Alt 2: MCP-provider scaffolding for ALL four
 
-Rejected. The provider Protocol that ADR-076 retired produced PNG bytes that darktable can't read. Reintroducing a provider Protocol for color-range + luminance-range — when those operate on bytes darktable already knows — re-creates the dead-infrastructure problem. The provider shape is correct for AI / depth (where computation happens outside the engine); it's overkill for color-range / luminance-range (where computation happens inside darktable's parametric mask system).
+Rejected. The Protocol that ADR-076 retired produced PNG bytes darktable can't read. Reintroducing a provider Protocol for color and luminance ranges — when those operate on bytes darktable already consumes — re-creates the dead-infrastructure problem. The provider shape is correct for AI / depth (computation outside the engine); overkill for parametric masks (computation inside darktable).
 
-### Alt 3: AI-subject-only first, color-range / luminance-range later
+### Alt 3: AI-subject-only first; defer color and luminance
 
-Rejected. AI-subject is the dominant Lightroom workflow gap, but the architectural surface it needs (provider scaffolding) is materially bigger than what color-range / luminance-range need. Shipping AI first would force every subsequent range-mask decision through the provider lens, which is wrong for the darktable-native cases. Ship the cheap-and-correct path first; the bigger architectural lift earns its own RFC.
+Rejected. AI-subject is the dominant Lightroom workflow gap, but the architectural surface it needs (provider scaffolding) is materially bigger. Shipping AI first would force every subsequent range-mask decision through the provider lens, which is wrong for the darktable-native cases. Ship the cheap path first; the bigger lift earns its own RFC (RFC-026, drafted).
 
 ### Alt 4: Drawn-mask approximations forever (don't ship parametric at all)
 
-Rejected. Color-range and luminance-range are real photographer workflow today (Lightroom HSL Range, Lightroom Shadow/Highlight masking). The drawn-mask approximations (gradient + ellipse + rectangle) approximate the *region*, not the *content selection*. A blue-sky color-range mask is a fundamentally different operation from a gradient at the horizon — they sometimes overlap photographically but the mental model and the workflow are distinct.
+Rejected. Color-range and luminance-range are real photographer workflow today (Lightroom's HSL Range, Lightroom's Shadow/Highlight masking). The drawn-mask approximations approximate the *region*, not the *content selection*. A "blue-sky" color-range mask is a fundamentally different operation from a gradient at the horizon — they sometimes overlap photographically, but the mental model and workflow are distinct.
 
 ### Alt 5: Defer until v1.10.0+
 
-Rejected. v1.9.0 is the natural slot — Lightroom-parity is the named theme of the post-v1.8.0 horizon (per capability-survey § 13 + § 10). Range masks are the largest remaining named gap. Deferring further pushes against the "Lightroom-parity is the v1.8/v1.9 theme" framing without a corresponding gain.
+Rejected. v1.9.0 is the natural slot — the spatial side just shipped (RFC-029 / ADR-084). The user's mental model ("further refine selection within a drawn mask") is exactly the workflow this RFC addresses. Deferring would push against the post-v1.8.0 Lightroom-parity theme without corresponding gain.
+
+### Alt 6: Expose mask_combine fully (AND / OR / SUBTRACT / INVERT)
+
+Considered. darktable's `mask_combine` field supports four composition modes. Rejected for v1.9.0 because (a) AND is the dominant photographer workflow (~95% of Lightroom mask compositions per general usage patterns); (b) exposing all four expands the schema in ways that are hard to revert; (c) photographer evidence from real sessions can drive a future RFC if AND-only proves limiting. v1.9.0 hardcodes `mask_combine = 0`; future RFC may revisit.
+
+### Alt 7: Lift range bounds to vocabulary parameters (per RFC-021)
+
+Considered. A `luminance_range_shadows_lift` entry could be parameterized over `min` / `max` / `feather` so the photographer dials in their image's specific shadow band. Plausible, but defers to a future expansion — v1.9.0 ships range-mask entries with hardcoded bounds; if real sessions demand per-image tuning, parameterization can layer on via RFC-021's mechanism.
 
 ---
 
 ## Trade-offs
 
-- **Compositional surface complexity.** `mask_spec.compose` introduces a small expression language (AND / OR / SUBTRACT over sub-specs). This grows the schema. Mitigated: the compositions darktable's `blend.c` actually supports are limited; the schema mirrors them, doesn't invent new shapes.
-- **Two-layer mask-binding code.** `apply_with_drawn_mask` plus `apply_with_parametric_mask` (or a generalized `apply_with_mask` that branches on `kind`). Mitigated: implementation-detail; the user-facing `apply_primitive` just dispatches by the spec's `kind`.
-- **Range-mask vocabulary entries are camera-and-image-dependent.** A "blue sky color-range" with hue range [0.55, 0.65] suits one image's sky and not another's. Range entries become more like *templates* than canonical primitives. The starter pack should ship a few representative ones; per-image tuning happens at apply time via `--param`-ish overrides (TBD whether range bounds should be parameterizable).
-- **darktable's parametric-mask byte format may evolve.** ADR-082's modversion-drift policy applies; same warn-loud-at-load + hard-fail-at-apply backstop. The parametric encoder pins the supported version per ADR-077.
-- **Subject + depth deferred.** Lightroom users reaching for AI-subject masks won't find them in v1.9.0. Mitigated: the gap is named (this RFC explicitly defers it to RFC-026); workaround documented (drawn-radial approximations).
+- **Schema surface grows.** `mask_spec` gains a `range_filter` field. Mitigated: it's a single optional field with a small dict shape; the schema stays flat and discoverable. Documented in `mask-shapes-from-words.md`.
+- **mask_combine hardcoded to AND.** Photographer who wants SUBTRACT ("everywhere EXCEPT the bright pixels") has to express it via the `invert` field on `range_filter` (which inverts the parametric mask, equivalent to drawn AND NOT-parametric). Acceptable; covers ~all real workflows.
+- **Color-range needs blend_cst handling.** The encoder must set `blend_cst` to HSL for `color_*` kinds. Adds a small color-space-aware branch. Mitigated: there's only one branch (luminance vs color); the color-space constant is a single value.
+- **Range-mask entries are camera/image-dependent.** A "blue-sky" hue range tuned to one image won't match another's sky. Phase 2 evidence will tell us whether to parameterize bounds.
+- **modversion drift surface grows.** Each parametric field added is exposure to darktable-version churn. Same backstop policy as ADR-082.
+- **AI subject + depth still deferred.** Lightroom users reaching for AI-subject masks won't find them in v1.9.0. Mitigated: workaround is drawn-radial approximations + RFC-026's provider scaffolding when it ships.
 
 ---
 
-## Open questions
+## Open questions resolved during deliberation
 
-- **Parametric mask byte layout.** Need to read darktable 5.4.1 `src/develop/blend.c` end-to-end to map the exact `blendop_params` byte fields for color-range and luminance-range masks. Should be a contained reverse-engineering pass; nothing in the RFC blocks it.
-- **mask_spec composition syntax.** Should compose be a list of `(operator, sub-spec)` pairs (sequential application) or a tree (`{op: "and", left: {...}, right: {...}}`)? Tree handles nested compositions cleanly; flat list is simpler. Lean: flat list with operators between, mirroring how Lightroom's UI presents the "added" / "intersected" / "subtracted" mask stack.
-- **Range bounds parameterization.** `color_range_blue_sky` could be parameterized over hue min/max so the photographer dials in their image's specific sky. Adds a parameter axis to a non-parameterized-today mask kind. Worth doing? Lean: yes — but defer to the closing ADR; not a blocker.
-- **Tier 1 vs Tier 2 classification.** Range masks are Tier 2 expansion (per the cost-shape guidance in ADR-081). The closing ADR should cite that classification explicitly so the work doesn't accidentally cross into Tier 3.
-- **Test coverage shape.** 5-layer per ADR-080 covers parameterized vocabulary entries. Range masks aren't parameterized in the same way. Need a parallel coverage rubric (per-kind unit / integration / lab-grade-on-real-raws since the synthetic chart doesn't have hue gradients to mask). Probably worth a short coverage extension ADR alongside the architectural ADR.
-- **Real-raw fixture for visual proofs.** The HSL skip-list pattern (#103) — color-range masks need real-raw input for the same reason. The iguana fixture serves both.
+1. ~~Native vs provider for which kinds?~~ → **Native for color + luminance (this RFC); provider for depth + subject (RFC-026).**
+2. ~~Compose syntax (tree vs flat)?~~ → **Neither.** Composition with drawn masks is via the `range_filter` sibling field — the schema is flat, single-level. Future RFC can introduce explicit compose syntax if multi-mask AND/OR demands it.
+3. ~~mask_spec schema integration?~~ → **`range_filter` as an optional sibling to `dt_form` / `dt_params`.** Three valid combinations (drawn only, parametric only, both AND-composed). No new top-level schema kinds.
+4. ~~mask_combine modes?~~ → **AND only for v1.9.0** (hardcoded `mask_combine = 0`). Other modes deferred until evidence.
+5. ~~Tier classification?~~ → **Tier 2.** Bytes-level operation; bounded byte regions; matches the parameterized vocabulary cost-shape.
+6. ~~Range bounds parameterization?~~ → **Defer.** v1.9.0 ships hardcoded bounds; revisit per Phase 2 evidence.
+7. ~~Test coverage shape?~~ → **5-layer per ADR-080**, with the lab-grade tier using a real-raw fixture (charts have insufficient hue/luminance variation to validate range filtering). Synthetic grayscale ramp suffices for luminance_range; color_range needs a real raw with hue diversity.
 
 ---
 
 ## How this closes
 
-This RFC closes into:
+**ADR-085 — Parametric mask encoding via blendif; range_filter mask_spec field; AND composition with drawn masks.**
 
-- **A primary ADR** specifying the hybrid architectural choice — native parametric for color-range / luminance-range, deferred RFC for depth + subject. Records the mask_spec extension, the compose syntax, and the ADR-076 amendment.
-- **A possible amendment to ADR-080** clarifying the test-coverage policy for parametric-mask vocabulary entries (the 5-layer gate's "lab-grade global" layer needs a real-raw fixture for content-dependent masks).
-- **A placeholder RFC-026** for AI-subject + depth-range provider scaffolding — drafts the BYOA-shaped extension at the right architectural level.
+Settles:
+
+- Byte offsets for `mask_combine` (20), `blendif` (28), `blendif_parameters` (68), `blendif_boost_factors` (324)
+- The `range_filter` schema shape: `{kind, min, max, feather, invert}` with `kind ∈ {luminance, color_h, color_s, color_l}`
+- The `{min, max, feather}` → 4-control-point mapping
+- mask_mode wiring (drawn-only=3, parametric-only=5, both=7) and mask_combine=0 hardcode
+- Color-space handling for color_* kinds (blend_cst = HSL)
+- ADR-076 amendment: parametric masks are a registered byte region inside `blendop_params`, complementing (not replacing) the drawn-form mask architecture
+- Test-coverage extension: 5-layer per ADR-080 with real-raw fixture for color_range (luminance_range can use synthetic chart)
 
 ---
 
 ## Links
 
-- TA/components/masking — current home of `dt_serialize` (drawn-form encoders)
+- TA/components/masking — current home of `dt_serialize`
 - TA/contracts/per-image-repo — `mask_spec` schema
 - TA/constraints/opaque-hex-blobs — ADR-008's amended boundary
 - ADR-007 — BYOA principle (relevant for the deferred AI-subject path)
-- ADR-076 — drawn-mask only architecture (this RFC argues to extend)
-- ADR-077..080 — parameterization architecture (range masks may inherit pieces)
+- ADR-076 — drawn-mask only architecture (this RFC formalizes the parametric extension)
+- ADR-077..080 — parameterization architecture
 - ADR-081 — Tier 2 cost-shape guidance
-- ADR-082 — modversion-drift handling (backstop for the parametric-mask byte serializer)
-- RFC-009 (closed by ADR-057, retired by ADR-076) — historical mask-provider Protocol
+- ADR-082 — modversion-drift handling (backstop for parametric mask byte serializer)
+- ADR-084 — apply-time mask spec semantics (RFC-029; spatial side; this RFC adds the refinement dimension)
+- RFC-026 — AI mask provider scaffolding (subject + depth deferred there)
 - capability-survey.md § 7 — local adjustments / range masks named gap
-- Issue #105 — the issue that opened this question
-- Future RFC-026 — AI-subject + depth-range provider scaffolding (placeholder)
+- darktable 5.4.1 `src/develop/blend.h` — `dt_develop_blend_params_t` source struct
+- Issue #105 — opened the question
