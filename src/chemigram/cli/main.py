@@ -20,6 +20,7 @@ from chemigram.cli.commands import (
     gap_log,
     lifecycle,
     render,
+    session_log,
     status,
     versioning,
     vocab,
@@ -42,6 +43,11 @@ app.add_typer(
     gap_log.app,
     name="gap-log",
     help="Read-side analytics for vocabulary_gaps.jsonl (Phase 2 use-driven feedback).",
+)
+app.add_typer(
+    session_log.app,
+    name="session-log",
+    help="Read-side analytics for per-image session JSONL transcripts.",
 )
 app.command(
     name="status",
