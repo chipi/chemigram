@@ -7,16 +7,38 @@
       "layer": "L3",
       "subtype": "grain",
       "path": "layers/L3/grain/grain_strength.dtstyle",
-      "touches": ["grain"],
-      "tags": ["grain", "fundamental", "global", "parameterized"],
+      "touches": [
+        "grain"
+      ],
+      "tags": [
+        "grain",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized grain strength (RFC-021). Pass --value V; range [0.0, 100.0]. 8 = grain_fine-equivalent, 25 = grain_medium-equivalent, 50 = grain_heavy-equivalent. Replaces the v1.5.x discrete grain_fine / grain_medium / grain_heavy entries with a single continuous-magnitude primitive.",
-      "modversions": {"grain": 2},
+      "modversions": {
+        "grain": 2
+      },
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
       "parameters": [
-        {"name": "grain_strength", "type": "float", "range": [0.0, 100.0], "default": 0.0,
-         "field": {"module": "grain", "modversion": 2, "offset": 8, "encoding": "le_f32"}}
+        {
+          "name": "grain_strength",
+          "type": "float",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "grain",
+            "modversion": 2,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        }
       ]
     },
     {
@@ -24,16 +46,38 @@
       "layer": "L3",
       "subtype": "vignette",
       "path": "layers/L3/vignette/vignette.dtstyle",
-      "touches": ["vignette"],
-      "tags": ["vignette", "fundamental", "global", "parameterized"],
+      "touches": [
+        "vignette"
+      ],
+      "tags": [
+        "vignette",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized vignette (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (negative darkens corners; positive lifts). Replaces the v1.5.x discrete vignette_subtle / vignette_medium / vignette_heavy entries with a single continuous-magnitude primitive.",
-      "modversions": {"vignette": 4},
+      "modversions": {
+        "vignette": 4
+      },
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
       "parameters": [
-        {"name": "brightness", "type": "float", "range": [-1.0, 1.0], "default": -0.25,
-         "field": {"module": "vignette", "modversion": 4, "offset": 8, "encoding": "le_f32"}}
+        {
+          "name": "brightness",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": -0.25,
+          "field": {
+            "module": "vignette",
+            "modversion": 4,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        }
       ]
     },
     {
@@ -41,737 +85,3443 @@
       "layer": "L3",
       "subtype": "highlights",
       "path": "layers/L3/highlights/highlights_clip_threshold.dtstyle",
-      "touches": ["highlights"],
-      "tags": ["highlights", "fundamental", "global", "parameterized"],
+      "touches": [
+        "highlights"
+      ],
+      "tags": [
+        "highlights",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized highlight-recovery clip threshold (RFC-021). Pass --value V; range [0.0, 2.0]: lower = more aggressive recovery (0.95 = subtle, 0.85 = strong, 0.5 = aggressive). Default 1.0 (darktable default; recovers only above 1.0). Replaces the v1.5.x discrete highlights_recovery_subtle / highlights_recovery_strong entries.",
-      "modversions": {"highlights": 4},
+      "modversions": {
+        "highlights": 4
+      },
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
       "parameters": [
-        {"name": "clip_threshold", "type": "float", "range": [0.0, 2.0], "default": 1.0,
-         "field": {"module": "highlights", "modversion": 4, "offset": 16, "encoding": "le_f32"}}
+        {
+          "name": "clip_threshold",
+          "type": "float",
+          "range": [
+            0.0,
+            2.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "highlights",
+            "modversion": 4,
+            "offset": 16,
+            "encoding": "le_f32"
+          }
+        }
       ]
     },
-    {"name": "sigmoid_contrast", "layer": "L3", "subtype": "sigmoid",
-      "path": "layers/L3/sigmoid/sigmoid_contrast.dtstyle", "touches": ["sigmoid"],
-      "tags": ["tone", "contrast", "fundamental", "global", "parameterized"],
+    {
+      "name": "sigmoid_contrast",
+      "layer": "L3",
+      "subtype": "sigmoid",
+      "path": "layers/L3/sigmoid/sigmoid_contrast.dtstyle",
+      "touches": [
+        "sigmoid"
+      ],
+      "tags": [
+        "tone",
+        "contrast",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized sigmoid tone-curve contrast (RFC-021). Pass --value V (CLI) or value: V (MCP); range [0.5, 5.0] (1.0 = mild s-curve, 1.5 = darktable default / no curve change, 2.5 = aggressive s-curve). Replaces the v1.5.x discrete contrast_low / contrast_high entries with a single continuous-magnitude primitive.",
-      "modversions": {"sigmoid": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "sigmoid": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "contrast", "type": "float", "range": [0.5, 5.0], "default": 1.5,
-         "field": {"module": "sigmoid", "modversion": 3, "offset": 0, "encoding": "le_f32"}}
-      ]},
-    {"name": "blacks_lifted", "layer": "L3", "subtype": "sigmoid",
-      "path": "layers/L3/sigmoid/blacks_lifted.dtstyle", "touches": ["sigmoid"],
-      "tags": ["tone", "blacks", "lift", "global"],
+        {
+          "name": "contrast",
+          "type": "float",
+          "range": [
+            0.5,
+            5.0
+          ],
+          "default": 1.5,
+          "field": {
+            "module": "sigmoid",
+            "modversion": 3,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "blacks_lifted",
+      "layer": "L3",
+      "subtype": "sigmoid",
+      "path": "layers/L3/sigmoid/blacks_lifted.dtstyle",
+      "touches": [
+        "sigmoid"
+      ],
+      "tags": [
+        "tone",
+        "blacks",
+        "lift",
+        "global"
+      ],
       "description": "Lift target black to 0.5.",
-      "modversions": {"sigmoid": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "blacks_crushed", "layer": "L3", "subtype": "sigmoid",
-      "path": "layers/L3/sigmoid/blacks_crushed.dtstyle", "touches": ["sigmoid"],
-      "tags": ["tone", "blacks", "crush", "global"],
+      "modversions": {
+        "sigmoid": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "blacks_crushed",
+      "layer": "L3",
+      "subtype": "sigmoid",
+      "path": "layers/L3/sigmoid/blacks_crushed.dtstyle",
+      "touches": [
+        "sigmoid"
+      ],
+      "tags": [
+        "tone",
+        "blacks",
+        "crush",
+        "global"
+      ],
       "description": "Crush blacks: target 0.001 + skew -0.3.",
-      "modversions": {"sigmoid": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "whites_open", "layer": "L3", "subtype": "sigmoid",
-      "path": "layers/L3/sigmoid/whites_open.dtstyle", "touches": ["sigmoid"],
-      "tags": ["tone", "whites", "open", "global"],
+      "modversions": {
+        "sigmoid": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "whites_open",
+      "layer": "L3",
+      "subtype": "sigmoid",
+      "path": "layers/L3/sigmoid/whites_open.dtstyle",
+      "touches": [
+        "sigmoid"
+      ],
+      "tags": [
+        "tone",
+        "whites",
+        "open",
+        "global"
+      ],
       "description": "Open whites: target 300 (3x default).",
-      "modversions": {"sigmoid": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "bw_convert", "layer": "L3", "subtype": "channelmixerrgb",
-      "path": "layers/L3/channelmixerrgb/bw_convert.dtstyle", "touches": ["channelmixerrgb"],
-      "tags": ["bw", "monochrome", "fundamental", "global"],
+      "modversions": {
+        "sigmoid": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "bw_convert",
+      "layer": "L3",
+      "subtype": "channelmixerrgb",
+      "path": "layers/L3/channelmixerrgb/bw_convert.dtstyle",
+      "touches": [
+        "channelmixerrgb"
+      ],
+      "tags": [
+        "bw",
+        "monochrome",
+        "fundamental",
+        "global"
+      ],
       "description": "Neutral B&W conversion via channelmixerrgb (Rec. 709 luminance weights: R 0.2126, G 0.7152, B 0.0722). normalize_grey=true so weights sum-normalize. Closes the v1.4.0 milestone B&W trio (#63).",
-      "modversions": {"channelmixerrgb": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "bw_sky_drama", "layer": "L3", "subtype": "channelmixerrgb",
-      "path": "layers/L3/channelmixerrgb/bw_sky_drama.dtstyle", "touches": ["channelmixerrgb"],
-      "tags": ["bw", "monochrome", "sky", "drama", "global"],
-      "description": "B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues — classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true.",
-      "modversions": {"channelmixerrgb": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "bw_foliage", "layer": "L3", "subtype": "channelmixerrgb",
-      "path": "layers/L3/channelmixerrgb/bw_foliage.dtstyle", "touches": ["channelmixerrgb"],
-      "tags": ["bw", "monochrome", "foliage", "green", "global"],
-      "description": "B&W with foliage mix (green-emphasis: R 0.1 / G 0.7 / B 0.2). Lightens greens — separates foliage from neighboring tones; useful for forest / botanical work where green is the dominant subject. normalize_grey=true.",
-      "modversions": {"channelmixerrgb": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "toneequalizer", "layer": "L3", "subtype": "toneequalizer",
-      "path": "layers/L3/toneequalizer/toneequalizer.dtstyle", "touches": ["toneequal"],
-      "tags": ["tone", "fundamental", "global", "parameterized", "multi-axis"],
+      "modversions": {
+        "channelmixerrgb": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "bw_sky_drama",
+      "layer": "L3",
+      "subtype": "channelmixerrgb",
+      "path": "layers/L3/channelmixerrgb/bw_sky_drama.dtstyle",
+      "touches": [
+        "channelmixerrgb"
+      ],
+      "tags": [
+        "bw",
+        "monochrome",
+        "sky",
+        "drama",
+        "global"
+      ],
+      "description": "B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues \u2014 classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true.",
+      "modversions": {
+        "channelmixerrgb": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "bw_foliage",
+      "layer": "L3",
+      "subtype": "channelmixerrgb",
+      "path": "layers/L3/channelmixerrgb/bw_foliage.dtstyle",
+      "touches": [
+        "channelmixerrgb"
+      ],
+      "tags": [
+        "bw",
+        "monochrome",
+        "foliage",
+        "green",
+        "global"
+      ],
+      "description": "B&W with foliage mix (green-emphasis: R 0.1 / G 0.7 / B 0.2). Lightens greens \u2014 separates foliage from neighboring tones; useful for forest / botanical work where green is the dominant subject. normalize_grey=true.",
+      "modversions": {
+        "channelmixerrgb": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "toneequalizer",
+      "layer": "L3",
+      "subtype": "toneequalizer",
+      "path": "layers/L3/toneequalizer/toneequalizer.dtstyle",
+      "touches": [
+        "toneequal"
+      ],
+      "tags": [
+        "tone",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized 9-band tone equalizer (RFC-022 Tier 2; most complex multi-parameter ship). Pass --param NODE=V for any of: noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars. Each in [-2.0, +2.0] EV; default 0.0. Algorithm fields preserved at darktable defaults.",
-      "modversions": {"toneequal": 2}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "toneequal": 2
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "noise", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 0, "encoding": "le_f32"}},
-        {"name": "ultra_deep_blacks", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 4, "encoding": "le_f32"}},
-        {"name": "deep_blacks", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 8, "encoding": "le_f32"}},
-        {"name": "blacks", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 12, "encoding": "le_f32"}},
-        {"name": "shadows", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 16, "encoding": "le_f32"}},
-        {"name": "midtones", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 20, "encoding": "le_f32"}},
-        {"name": "highlights", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 24, "encoding": "le_f32"}},
-        {"name": "whites", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 28, "encoding": "le_f32"}},
-        {"name": "speculars", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "toneequal", "modversion": 2, "offset": 32, "encoding": "le_f32"}}
-      ]},
-    {"name": "sharpen", "layer": "L3", "subtype": "sharpen",
-      "path": "layers/L3/sharpen/sharpen.dtstyle", "touches": ["sharpen"],
-      "tags": ["sharpen", "detail", "fundamental", "global", "parameterized"],
+        {
+          "name": "noise",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "ultra_deep_blacks",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "deep_blacks",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "blacks",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "shadows",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 16,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "midtones",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 20,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "highlights",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 24,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "whites",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 28,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "speculars",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "toneequal",
+            "modversion": 2,
+            "offset": 32,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "sharpen",
+      "layer": "L3",
+      "subtype": "sharpen",
+      "path": "layers/L3/sharpen/sharpen.dtstyle",
+      "touches": [
+        "sharpen"
+      ],
+      "tags": [
+        "sharpen",
+        "detail",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized sharpening (RFC-022 Tier 2). Pass --value V; range [0.0, 2.0] (0.0 = no sharpen, 0.5 = subtle, 1.0 = strong, 2.0 = aggressive). Radius preserved at darktable default 2.0 px, threshold at 0.5.",
-      "modversions": {"sharpen": 1}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "sharpen": 1
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "amount", "type": "float", "range": [0.0, 2.0], "default": 0.0,
-         "field": {"module": "sharpen", "modversion": 1, "offset": 4, "encoding": "le_f32"}}
-      ]},
-    {"name": "crop", "layer": "L3", "subtype": "crop",
-      "path": "layers/L3/crop/crop.dtstyle", "touches": ["crop"],
-      "tags": ["crop", "workflow", "parameterized", "multi-axis"],
-      "description": "Parameterized crop (RFC-022 Tier 2). Pass --param cx=V cy=V cw=V ch=V — each in [0.0, 1.0]. Default 0,0,1,1 (no crop). cx/cy = top-left margin, cw/ch = bottom-right margin (so crop region is [cx..cw] x [cy..ch] in normalized coords). First workflow-primitive parameterized entry; aspect-ratio constraint preserved at -1/-1 (free).",
-      "modversions": {"crop": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "amount",
+          "type": "float",
+          "range": [
+            0.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "sharpen",
+            "modversion": 1,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "crop",
+      "layer": "L3",
+      "subtype": "crop",
+      "path": "layers/L3/crop/crop.dtstyle",
+      "touches": [
+        "crop"
+      ],
+      "tags": [
+        "crop",
+        "workflow",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized crop (RFC-022 Tier 2). Pass --param cx=V cy=V cw=V ch=V \u2014 each in [0.0, 1.0]. Default 0,0,1,1 (no crop). cx/cy = top-left margin, cw/ch = bottom-right margin (so crop region is [cx..cw] x [cy..ch] in normalized coords). First workflow-primitive parameterized entry; aspect-ratio constraint preserved at -1/-1 (free).",
+      "modversions": {
+        "crop": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "cx", "type": "float", "range": [0.0, 1.0], "default": 0.0,
-         "field": {"module": "crop", "modversion": 3, "offset": 0, "encoding": "le_f32"}},
-        {"name": "cy", "type": "float", "range": [0.0, 1.0], "default": 0.0,
-         "field": {"module": "crop", "modversion": 3, "offset": 4, "encoding": "le_f32"}},
-        {"name": "cw", "type": "float", "range": [0.0, 1.0], "default": 1.0,
-         "field": {"module": "crop", "modversion": 3, "offset": 8, "encoding": "le_f32"}},
-        {"name": "ch", "type": "float", "range": [0.0, 1.0], "default": 1.0,
-         "field": {"module": "crop", "modversion": 3, "offset": 12, "encoding": "le_f32"}}
-      ]},
-    {"name": "bilat_clarity_strength", "layer": "L3", "subtype": "localcontrast",
-      "path": "layers/L3/localcontrast/bilat_clarity_strength.dtstyle", "touches": ["bilat"],
-      "tags": ["clarity", "fundamental", "global", "parameterized"],
-      "description": "Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry — different kind, not strength.",
-      "modversions": {"bilat": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "cx",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "crop",
+            "modversion": 3,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "cy",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "crop",
+            "modversion": 3,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "cw",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "crop",
+            "modversion": 3,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "ch",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "crop",
+            "modversion": 3,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "bilat_clarity_strength",
+      "layer": "L3",
+      "subtype": "localcontrast",
+      "path": "layers/L3/localcontrast/bilat_clarity_strength.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "clarity",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
+      "description": "Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry \u2014 different kind, not strength.",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "clarity_strength", "type": "float", "range": [-1.0, 4.0], "default": 0.0,
-         "field": {"module": "bilat", "modversion": 3, "offset": 12, "encoding": "le_f32"}}
-      ]},
-    {"name": "clarity_painterly", "layer": "L3", "subtype": "localcontrast",
-      "path": "layers/L3/localcontrast/clarity_painterly.dtstyle", "touches": ["bilat"],
-      "tags": ["clarity", "painterly", "soft", "global"],
+        {
+          "name": "clarity_strength",
+          "type": "float",
+          "range": [
+            -1.0,
+            4.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "bilat",
+            "modversion": 3,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "clarity_painterly",
+      "layer": "L3",
+      "subtype": "localcontrast",
+      "path": "layers/L3/localcontrast/clarity_painterly.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "clarity",
+        "painterly",
+        "soft",
+        "global"
+      ],
       "description": "Soft painterly local contrast (detail 0.4).",
-      "modversions": {"bilat": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "clarity_etched", "layer": "L3", "subtype": "localcontrast",
-      "path": "layers/L3/localcontrast/clarity_etched.dtstyle", "touches": ["bilat"],
-      "tags": ["clarity", "etched", "high-bite", "global"],
-      "description": "L3 discrete kind — etched / over-defined clarity (#110). bilat_clarity_strength=2.0 (high local-contrast bite).",
-      "modversions": {"bilat": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "clarity_dreamy", "layer": "L3", "subtype": "localcontrast",
-      "path": "layers/L3/localcontrast/clarity_dreamy.dtstyle", "touches": ["bilat"],
-      "tags": ["clarity", "dreamy", "soft", "global"],
-      "description": "L3 discrete kind — soft / dreamy clarity (#110). bilat_clarity_strength=-0.5 (negative bite — softens local contrast).",
-      "modversions": {"bilat": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "sharpen_edge_only", "layer": "L3", "subtype": "sharpen",
-      "path": "layers/L3/sharpen/sharpen_edge_only.dtstyle", "touches": ["sharpen"],
-      "tags": ["sharpen", "edge", "discrete", "global"],
-      "description": "L3 discrete kind — edge-only sharpening (#110). amount=0.6 with default radius (2.0 px) and threshold (0.5). Threshold gates sharpening to detected edges only.",
-      "modversions": {"sharpen": 1}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "sharpen_overall", "layer": "L3", "subtype": "sharpen",
-      "path": "layers/L3/sharpen/sharpen_overall.dtstyle", "touches": ["sharpen"],
-      "tags": ["sharpen", "overall", "discrete", "global"],
-      "description": "L3 discrete kind — whole-image sharpening with bite (#110). amount=1.2 (strong).",
-      "modversions": {"sharpen": 1}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "vignette_subtle", "layer": "L3", "subtype": "vignette",
-      "path": "layers/L3/vignette/vignette_subtle.dtstyle", "touches": ["vignette"],
-      "tags": ["vignette", "subtle", "discrete", "global"],
-      "description": "L3 discrete kind — gentle peripheral darkening (#110). brightness=-0.15.",
-      "modversions": {"vignette": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "vignette_strong", "layer": "L3", "subtype": "vignette",
-      "path": "layers/L3/vignette/vignette_strong.dtstyle", "touches": ["vignette"],
-      "tags": ["vignette", "strong", "dramatic", "discrete", "global"],
-      "description": "L3 discrete kind — pronounced peripheral darkening (#110). brightness=-0.5.",
-      "modversions": {"vignette": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "exposure", "layer": "L3", "subtype": "exposure",
-      "path": "layers/L3/exposure/exposure.dtstyle", "touches": ["exposure"],
-      "tags": ["exposure", "fundamental", "global", "parameterized"],
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "clarity_etched",
+      "layer": "L3",
+      "subtype": "localcontrast",
+      "path": "layers/L3/localcontrast/clarity_etched.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "clarity",
+        "etched",
+        "high-bite",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 etched / over-defined clarity (#110). bilat_clarity_strength=2.0 (high local-contrast bite).",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "clarity_dreamy",
+      "layer": "L3",
+      "subtype": "localcontrast",
+      "path": "layers/L3/localcontrast/clarity_dreamy.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "clarity",
+        "dreamy",
+        "soft",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 soft / dreamy clarity (#110). bilat_clarity_strength=-0.5 (negative bite \u2014 softens local contrast).",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "sharpen_edge_only",
+      "layer": "L3",
+      "subtype": "sharpen",
+      "path": "layers/L3/sharpen/sharpen_edge_only.dtstyle",
+      "touches": [
+        "sharpen"
+      ],
+      "tags": [
+        "sharpen",
+        "edge",
+        "discrete",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 edge-only sharpening (#110). amount=0.6 with default radius (2.0 px) and threshold (0.5). Threshold gates sharpening to detected edges only.",
+      "modversions": {
+        "sharpen": 1
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "sharpen_overall",
+      "layer": "L3",
+      "subtype": "sharpen",
+      "path": "layers/L3/sharpen/sharpen_overall.dtstyle",
+      "touches": [
+        "sharpen"
+      ],
+      "tags": [
+        "sharpen",
+        "overall",
+        "discrete",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 whole-image sharpening with bite (#110). amount=1.2 (strong).",
+      "modversions": {
+        "sharpen": 1
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "vignette_subtle",
+      "layer": "L3",
+      "subtype": "vignette",
+      "path": "layers/L3/vignette/vignette_subtle.dtstyle",
+      "touches": [
+        "vignette"
+      ],
+      "tags": [
+        "vignette",
+        "subtle",
+        "discrete",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 gentle peripheral darkening (#110). brightness=-0.15.",
+      "modversions": {
+        "vignette": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "vignette_strong",
+      "layer": "L3",
+      "subtype": "vignette",
+      "path": "layers/L3/vignette/vignette_strong.dtstyle",
+      "touches": [
+        "vignette"
+      ],
+      "tags": [
+        "vignette",
+        "strong",
+        "dramatic",
+        "discrete",
+        "global"
+      ],
+      "description": "L3 discrete kind \u2014 pronounced peripheral darkening (#110). brightness=-0.5.",
+      "modversions": {
+        "vignette": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "exposure",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/exposure/exposure.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "exposure",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized exposure compensation (RFC-021). Pass --value V (CLI) or value: V (MCP) in EV stops; range [-3.0, +3.0]. Replaces the v1.5.x discrete expo_+0.3 / expo_+0.5 / expo_-0.3 / expo_-0.5 / shadows_global_+/- entries with a single continuous-magnitude primitive.",
-      "modversions": {"exposure": 7}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "ev", "type": "float", "range": [-3.0, 3.0], "default": 0.0,
-         "field": {"module": "exposure", "modversion": 7, "offset": 8, "encoding": "le_f32"}}
-      ]},
-    {"name": "transform", "layer": "L3", "subtype": "ashift",
-      "path": "layers/L3/ashift/transform.dtstyle", "touches": ["ashift"],
-      "tags": ["transform", "perspective", "rotate", "fundamental", "global", "parameterized", "multi-axis"],
-      "description": "Parameterized perspective / transform (#101). Closes the Lightroom Transform panel parity gap via darktable's ashift module. 5 magnitude axes: --param transform_rotation=V (image rotation in degrees), --param transform_lensshift_v=V (vertical perspective / keystone), --param transform_lensshift_h=V (horizontal perspective), --param transform_shear=V, --param transform_aspect=V (post-transform aspect adjust; default 1.0). Axis names use transform_ prefix. Lens-tuning floats (focal length, crop factor, ortho-correction) and the user-drawn-lines storage are preserved verbatim — those are darktable-GUI-authored when needed.",
-      "modversions": {"ashift": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "ev",
+          "type": "float",
+          "range": [
+            -3.0,
+            3.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "exposure",
+            "modversion": 7,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transform",
+      "layer": "L3",
+      "subtype": "ashift",
+      "path": "layers/L3/ashift/transform.dtstyle",
+      "touches": [
+        "ashift"
+      ],
+      "tags": [
+        "transform",
+        "perspective",
+        "rotate",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized perspective / transform (#101). Closes the Lightroom Transform panel parity gap via darktable's ashift module. 5 magnitude axes: --param transform_rotation=V (image rotation in degrees), --param transform_lensshift_v=V (vertical perspective / keystone), --param transform_lensshift_h=V (horizontal perspective), --param transform_shear=V, --param transform_aspect=V (post-transform aspect adjust; default 1.0). Axis names use transform_ prefix. Lens-tuning floats (focal length, crop factor, ortho-correction) and the user-drawn-lines storage are preserved verbatim \u2014 those are darktable-GUI-authored when needed.",
+      "modversions": {
+        "ashift": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "transform_rotation", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "ashift", "modversion": 5, "offset": 0, "encoding": "le_f32"}},
-        {"name": "transform_lensshift_v", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "ashift", "modversion": 5, "offset": 4, "encoding": "le_f32"}},
-        {"name": "transform_lensshift_h", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "ashift", "modversion": 5, "offset": 8, "encoding": "le_f32"}},
-        {"name": "transform_shear", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "ashift", "modversion": 5, "offset": 12, "encoding": "le_f32"}},
-        {"name": "transform_aspect", "type": "float", "range": [0.5, 2.0], "default": 1.0,
-         "field": {"module": "ashift", "modversion": 5, "offset": 28, "encoding": "le_f32"}}
-      ]},
-    {"name": "lens_correction", "layer": "L3", "subtype": "lens",
-      "path": "layers/L3/lens/lens_correction.dtstyle", "touches": ["lens"],
-      "tags": ["lens", "optical", "correction", "fundamental", "global", "parameterized", "multi-axis"],
+        {
+          "name": "transform_rotation",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "ashift",
+            "modversion": 5,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "transform_lensshift_v",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "ashift",
+            "modversion": 5,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "transform_lensshift_h",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "ashift",
+            "modversion": 5,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "transform_shear",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "ashift",
+            "modversion": 5,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "transform_aspect",
+          "type": "float",
+          "range": [
+            0.5,
+            2.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "ashift",
+            "modversion": 5,
+            "offset": 28,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lens_correction",
+      "layer": "L3",
+      "subtype": "lens",
+      "path": "layers/L3/lens/lens_correction.dtstyle",
+      "touches": [
+        "lens"
+      ],
+      "tags": [
+        "lens",
+        "optical",
+        "correction",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized lens correction (#95). 10 manual-override magnitude axes via darktable's lens module: --param lens_scale=V (output scaling), --param lens_tca_r=V / lens_tca_b=V (manual TCA shifts; 1.0 = no shift), --param lens_cor_distortion=V / lens_cor_vignette=V / lens_cor_ca_r=V / lens_cor_ca_b=V (per-correction-type strengths for embedded-metadata method), --param lens_v_strength=V / lens_v_radius=V / lens_v_steepness=V (manual vignette correction). NOTE: this entry's photographic effect requires lensfun identifier strings (camera/lens) and shooting metadata (focal/aperture/distance) to be populated. EXIF auto-binding for these is a follow-up; until then, the entry is most useful for overriding strength sliders on a darktable-GUI-authored baseline.",
-      "modversions": {"lens": 10}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "lens": 10
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "lens_scale", "type": "float", "range": [0.0, 4.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 12, "encoding": "le_f32"}},
-        {"name": "lens_tca_r", "type": "float", "range": [0.99, 1.01], "default": 1.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 296, "encoding": "le_f32"}},
-        {"name": "lens_tca_b", "type": "float", "range": [0.99, 1.01], "default": 1.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 300, "encoding": "le_f32"}},
-        {"name": "lens_cor_distortion", "type": "float", "range": [0.0, 1.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 304, "encoding": "le_f32"}},
-        {"name": "lens_cor_vignette", "type": "float", "range": [0.0, 1.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 308, "encoding": "le_f32"}},
-        {"name": "lens_cor_ca_r", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 312, "encoding": "le_f32"}},
-        {"name": "lens_cor_ca_b", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 316, "encoding": "le_f32"}},
-        {"name": "lens_v_strength", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 336, "encoding": "le_f32"}},
-        {"name": "lens_v_radius", "type": "float", "range": [0.0, 3.0], "default": 1.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 340, "encoding": "le_f32"}},
-        {"name": "lens_v_steepness", "type": "float", "range": [0.0, 5.0], "default": 1.0,
-         "field": {"module": "lens", "modversion": 10, "offset": 344, "encoding": "le_f32"}}
-      ]},
-    {"name": "denoise", "layer": "L3", "subtype": "denoiseprofile",
-      "path": "layers/L3/denoiseprofile/denoise.dtstyle", "touches": ["denoiseprofile"],
-      "tags": ["denoise", "noise-reduction", "fundamental", "global", "parameterized", "multi-axis"],
+        {
+          "name": "lens_scale",
+          "type": "float",
+          "range": [
+            0.0,
+            4.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_tca_r",
+          "type": "float",
+          "range": [
+            0.99,
+            1.01
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 296,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_tca_b",
+          "type": "float",
+          "range": [
+            0.99,
+            1.01
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 300,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_cor_distortion",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 304,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_cor_vignette",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 308,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_cor_ca_r",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 312,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_cor_ca_b",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 316,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_v_strength",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 336,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_v_radius",
+          "type": "float",
+          "range": [
+            0.0,
+            3.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 340,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "lens_v_steepness",
+          "type": "float",
+          "range": [
+            0.0,
+            5.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "lens",
+            "modversion": 10,
+            "offset": 344,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "denoise",
+      "layer": "L3",
+      "subtype": "denoiseprofile",
+      "path": "layers/L3/denoiseprofile/denoise.dtstyle",
+      "touches": [
+        "denoiseprofile"
+      ],
+      "tags": [
+        "denoise",
+        "noise-reduction",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized denoising via darktable's denoiseprofile module (#96). NLMEANS (non-local-means) mode with 4 magnitude axes: --param denoise_strength=V (primary noise slider; range [0.001, 1000.0]), --param denoise_shadows=V (preserve shadow noise vs detail; range [0.0, 1.8]), --param denoise_radius=V (patch size; range [0.0, 12.0]), --param denoise_scattering=V (search-zone spread; range [0.0, 20.0]). Axis names carry the denoise_ prefix to disambiguate from same-named axes on other modules (e.g. dehaze.strength). Per-channel noise calibration a[3]/b[3] auto-populated by darktable from camera+ISO database. WAVELETS mode would need an empirically-captured wavelet-curve baseline (tracked under #100 / task C); for now NLMEANS ships clean and lines up with Lightroom's patch-similarity Noise Reduction.",
-      "modversions": {"denoiseprofile": 12}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "denoiseprofile": 12
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "denoise_strength", "type": "float", "range": [0.001, 1000.0], "default": 1.0,
-         "field": {"module": "denoiseprofile", "modversion": 12, "offset": 8, "encoding": "le_f32"}},
-        {"name": "denoise_shadows", "type": "float", "range": [0.0, 1.8], "default": 1.0,
-         "field": {"module": "denoiseprofile", "modversion": 12, "offset": 12, "encoding": "le_f32"}},
-        {"name": "denoise_radius", "type": "float", "range": [0.0, 12.0], "default": 1.0,
-         "field": {"module": "denoiseprofile", "modversion": 12, "offset": 0, "encoding": "le_f32"}},
-        {"name": "denoise_scattering", "type": "float", "range": [0.0, 20.0], "default": 0.0,
-         "field": {"module": "denoiseprofile", "modversion": 12, "offset": 20, "encoding": "le_f32"}}
-      ]},
-    {"name": "filmic", "layer": "L3", "subtype": "filmicrgb",
-      "path": "layers/L3/filmicrgb/filmic.dtstyle", "touches": ["filmicrgb"],
-      "tags": ["tone-mapping", "filmic", "fundamental", "global", "parameterized", "multi-axis"],
+        {
+          "name": "denoise_strength",
+          "type": "float",
+          "range": [
+            0.001,
+            1000.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "denoiseprofile",
+            "modversion": 12,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "denoise_shadows",
+          "type": "float",
+          "range": [
+            0.0,
+            1.8
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "denoiseprofile",
+            "modversion": 12,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "denoise_radius",
+          "type": "float",
+          "range": [
+            0.0,
+            12.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "denoiseprofile",
+            "modversion": 12,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "denoise_scattering",
+          "type": "float",
+          "range": [
+            0.0,
+            20.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "denoiseprofile",
+            "modversion": 12,
+            "offset": 20,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "filmic",
+      "layer": "L3",
+      "subtype": "filmicrgb",
+      "path": "layers/L3/filmicrgb/filmic.dtstyle",
+      "touches": [
+        "filmicrgb"
+      ],
+      "tags": [
+        "tone-mapping",
+        "filmic",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized filmic v6 tone mapping (#97). Modern darktable tone-mapping; ships parallel to sigmoid (~80% of tone-mapping use cases). 8 magnitude axes: grey_point_source (default 18.45%), black_point_source (default -8.0 EV), white_point_source (default 4.0 EV), output_power (default 4.0 gamma), latitude (default 0.01), contrast (default 1.0), saturation (default 0.0), balance (default 0.0). Curve mode enums (shadows/highlights/preserve_color/version/spline_version) are pinned at darktable defaults; author discrete entries for non-default modes.",
-      "modversions": {"filmicrgb": 6}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "filmicrgb": 6
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "grey_point_source", "type": "float", "range": [0.1, 50.0], "default": 18.45,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 0, "encoding": "le_f32"}},
-        {"name": "black_point_source", "type": "float", "range": [-16.0, -0.1], "default": -8.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 4, "encoding": "le_f32"}},
-        {"name": "white_point_source", "type": "float", "range": [0.1, 16.0], "default": 4.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 8, "encoding": "le_f32"}},
-        {"name": "output_power", "type": "float", "range": [0.5, 8.0], "default": 4.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 48, "encoding": "le_f32"}},
-        {"name": "latitude", "type": "float", "range": [0.0, 100.0], "default": 0.01,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 52, "encoding": "le_f32"}},
-        {"name": "contrast", "type": "float", "range": [0.0, 5.0], "default": 1.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 56, "encoding": "le_f32"}},
-        {"name": "saturation", "type": "float", "range": [-100.0, 100.0], "default": 0.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 60, "encoding": "le_f32"}},
-        {"name": "balance", "type": "float", "range": [-50.0, 50.0], "default": 0.0,
-         "field": {"module": "filmicrgb", "modversion": 6, "offset": 64, "encoding": "le_f32"}}
-      ]},
-    {"name": "texture", "layer": "L3", "subtype": "diffuse",
-      "path": "layers/L3/diffuse/texture.dtstyle", "touches": ["diffuse"],
-      "tags": ["texture", "detail", "fundamental", "global", "parameterized", "multi-axis"],
+        {
+          "name": "grey_point_source",
+          "type": "float",
+          "range": [
+            0.1,
+            50.0
+          ],
+          "default": 18.45,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "black_point_source",
+          "type": "float",
+          "range": [
+            -16.0,
+            -0.1
+          ],
+          "default": -8.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "white_point_source",
+          "type": "float",
+          "range": [
+            0.1,
+            16.0
+          ],
+          "default": 4.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "output_power",
+          "type": "float",
+          "range": [
+            0.5,
+            8.0
+          ],
+          "default": 4.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 48,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "default": 0.01,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 52,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "contrast",
+          "type": "float",
+          "range": [
+            0.0,
+            5.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 56,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "saturation",
+          "type": "float",
+          "range": [
+            -100.0,
+            100.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 60,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "balance",
+          "type": "float",
+          "range": [
+            -50.0,
+            50.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "filmicrgb",
+            "modversion": 6,
+            "offset": 64,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "texture",
+      "layer": "L3",
+      "subtype": "diffuse",
+      "path": "layers/L3/diffuse/texture.dtstyle",
+      "touches": [
+        "diffuse"
+      ],
+      "tags": [
+        "texture",
+        "detail",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized texture (#92 Bucket A.6). Lightroom-style Texture via darktable's diffuse-or-sharpen module. Three axes: --param first=V (finest detail scale, primary Texture axis; range [-1.0, 1.0]), --param second=V (next-up scale; range [-1.0, 1.0]), --param sharpness=V (global sharpening; range [-1.0, 1.0]). Negative values smooth, positive enhance. All default 0.0. Closes the Lightroom Texture parity gap.",
-      "modversions": {"diffuse": 2}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "diffuse": 2
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "first", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "diffuse", "modversion": 2, "offset": 40, "encoding": "le_f32"}},
-        {"name": "second", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "diffuse", "modversion": 2, "offset": 44, "encoding": "le_f32"}},
-        {"name": "sharpness", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "diffuse", "modversion": 2, "offset": 4, "encoding": "le_f32"}}
-      ]},
-    {"name": "hsl_saturation", "layer": "L3", "subtype": "colorequal",
-      "path": "layers/L3/colorequal/hsl_saturation.dtstyle", "touches": ["colorequal"],
-      "tags": ["hsl", "saturation", "color-mixer", "fundamental", "global", "parameterized", "multi-axis"],
-      "description": "Parameterized HSL Saturation row (RFC-023). Lightroom HSL Color Mixer Saturation parity via darktable's colorequal module. 8 per-color axes (sat_red, sat_orange, sat_yellow, sat_green, sat_cyan, sat_blue, sat_lavender, sat_magenta); each range [-1.0, 1.0]; default 0.0. Negative desaturates that color zone (e.g. sat_orange=-0.3 → mute skin tones); positive boosts. Compose with hsl_hue and hsl_luminance for the full HSL Color Mixer.",
-      "modversions": {"colorequal": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "first",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "diffuse",
+            "modversion": 2,
+            "offset": 40,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "second",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "diffuse",
+            "modversion": 2,
+            "offset": 44,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sharpness",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "diffuse",
+            "modversion": 2,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hsl_saturation",
+      "layer": "L3",
+      "subtype": "colorequal",
+      "path": "layers/L3/colorequal/hsl_saturation.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "tags": [
+        "hsl",
+        "saturation",
+        "color-mixer",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized HSL Saturation row (RFC-023). Lightroom HSL Color Mixer Saturation parity via darktable's colorequal module. 8 per-color axes (sat_red, sat_orange, sat_yellow, sat_green, sat_cyan, sat_blue, sat_lavender, sat_magenta); each range [-1.0, 1.0]; default 0.0. Negative desaturates that color zone (e.g. sat_orange=-0.3 \u2192 mute skin tones); positive boosts. Compose with hsl_hue and hsl_luminance for the full HSL Color Mixer.",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "sat_red", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 28, "encoding": "le_f32"}},
-        {"name": "sat_orange", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 32, "encoding": "le_f32"}},
-        {"name": "sat_yellow", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 36, "encoding": "le_f32"}},
-        {"name": "sat_green", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 40, "encoding": "le_f32"}},
-        {"name": "sat_cyan", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 44, "encoding": "le_f32"}},
-        {"name": "sat_blue", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 48, "encoding": "le_f32"}},
-        {"name": "sat_lavender", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 52, "encoding": "le_f32"}},
-        {"name": "sat_magenta", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 56, "encoding": "le_f32"}}
-      ]},
-    {"name": "hsl_hue", "layer": "L3", "subtype": "colorequal",
-      "path": "layers/L3/colorequal/hsl_hue.dtstyle", "touches": ["colorequal"],
-      "tags": ["hsl", "hue", "color-mixer", "fundamental", "global", "parameterized", "multi-axis"],
-      "description": "Parameterized HSL Hue row (RFC-023). Lightroom HSL Color Mixer Hue parity via colorequal. 8 per-color hue-shift axes (hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta); each range [-180.0, 180.0] degrees; default 0.0. Shifts that color zone toward an adjacent hue (e.g. hue_green=15.0 → foliage warmer toward yellow).",
-      "modversions": {"colorequal": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "sat_red",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 28,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_orange",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 32,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_yellow",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 36,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_green",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 40,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_cyan",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 44,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_blue",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 48,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_lavender",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 52,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "sat_magenta",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 56,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hsl_hue",
+      "layer": "L3",
+      "subtype": "colorequal",
+      "path": "layers/L3/colorequal/hsl_hue.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "tags": [
+        "hsl",
+        "hue",
+        "color-mixer",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized HSL Hue row (RFC-023). Lightroom HSL Color Mixer Hue parity via colorequal. 8 per-color hue-shift axes (hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta); each range [-180.0, 180.0] degrees; default 0.0. Shifts that color zone toward an adjacent hue (e.g. hue_green=15.0 \u2192 foliage warmer toward yellow).",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "hue_red", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 60, "encoding": "le_f32"}},
-        {"name": "hue_orange", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 64, "encoding": "le_f32"}},
-        {"name": "hue_yellow", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 68, "encoding": "le_f32"}},
-        {"name": "hue_green", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 72, "encoding": "le_f32"}},
-        {"name": "hue_cyan", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 76, "encoding": "le_f32"}},
-        {"name": "hue_blue", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 80, "encoding": "le_f32"}},
-        {"name": "hue_lavender", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 84, "encoding": "le_f32"}},
-        {"name": "hue_magenta", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 88, "encoding": "le_f32"}}
-      ]},
-    {"name": "hsl_luminance", "layer": "L3", "subtype": "colorequal",
-      "path": "layers/L3/colorequal/hsl_luminance.dtstyle", "touches": ["colorequal"],
-      "tags": ["hsl", "luminance", "brightness", "color-mixer", "fundamental", "global", "parameterized", "multi-axis"],
-      "description": "Parameterized HSL Luminance row (RFC-023). Lightroom HSL Color Mixer Luminance parity via colorequal. 8 per-color brightness axes (bright_red, bright_orange, bright_yellow, bright_green, bright_cyan, bright_blue, bright_lavender, bright_magenta); each range [-1.0, 1.0]; default 0.0. Negative darkens that color zone (e.g. bright_blue=-0.3 → deeper sky); positive lightens.",
-      "modversions": {"colorequal": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "hue_red",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 60,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_orange",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 64,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_yellow",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 68,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_green",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 72,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_cyan",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 76,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_blue",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 80,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_lavender",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 84,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "hue_magenta",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 88,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hsl_luminance",
+      "layer": "L3",
+      "subtype": "colorequal",
+      "path": "layers/L3/colorequal/hsl_luminance.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "tags": [
+        "hsl",
+        "luminance",
+        "brightness",
+        "color-mixer",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized HSL Luminance row (RFC-023). Lightroom HSL Color Mixer Luminance parity via colorequal. 8 per-color brightness axes (bright_red, bright_orange, bright_yellow, bright_green, bright_cyan, bright_blue, bright_lavender, bright_magenta); each range [-1.0, 1.0]; default 0.0. Negative darkens that color zone (e.g. bright_blue=-0.3 \u2192 deeper sky); positive lightens.",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "bright_red", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 92, "encoding": "le_f32"}},
-        {"name": "bright_orange", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 96, "encoding": "le_f32"}},
-        {"name": "bright_yellow", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 100, "encoding": "le_f32"}},
-        {"name": "bright_green", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 104, "encoding": "le_f32"}},
-        {"name": "bright_cyan", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 108, "encoding": "le_f32"}},
-        {"name": "bright_blue", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 112, "encoding": "le_f32"}},
-        {"name": "bright_lavender", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 116, "encoding": "le_f32"}},
-        {"name": "bright_magenta", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorequal", "modversion": 4, "offset": 120, "encoding": "le_f32"}}
-      ]},
-    {"name": "dehaze", "layer": "L3", "subtype": "hazeremoval",
-      "path": "layers/L3/hazeremoval/dehaze.dtstyle", "touches": ["hazeremoval"],
-      "tags": ["dehaze", "atmosphere", "fundamental", "global", "parameterized", "multi-axis"],
+        {
+          "name": "bright_red",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 92,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_orange",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 96,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_yellow",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 100,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_green",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 104,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_cyan",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 108,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_blue",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 112,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_lavender",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 116,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_magenta",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 120,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dehaze",
+      "layer": "L3",
+      "subtype": "hazeremoval",
+      "path": "layers/L3/hazeremoval/dehaze.dtstyle",
+      "touches": [
+        "hazeremoval"
+      ],
+      "tags": [
+        "dehaze",
+        "atmosphere",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "Parameterized dehaze (#90 Bucket A.2). Lightroom-style Dehaze via darktable's hazeremoval module. Two axes: --param strength=V (range [-1.0, 1.0]; positive removes haze, negative adds atmospheric fog) and --param distance=V (range [0.0, 1.0]; depth-falloff). Closes the Lightroom Dehaze parity gap.",
-      "modversions": {"hazeremoval": 3}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "hazeremoval": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "strength", "type": "float", "range": [-1.0, 1.0], "default": 0.2,
-         "field": {"module": "hazeremoval", "modversion": 3, "offset": 0, "encoding": "le_f32"}},
-        {"name": "distance", "type": "float", "range": [0.0, 1.0], "default": 0.2,
-         "field": {"module": "hazeremoval", "modversion": 3, "offset": 4, "encoding": "le_f32"}}
-      ]},
-    {"name": "wb_kelvin_delta", "layer": "L3", "subtype": "wb",
-      "path": "layers/L3/temperature/wb_kelvin_delta.dtstyle", "touches": ["temperature"],
-      "tags": ["wb", "kelvin", "tint", "ux-wrapper", "photographic-units", "global", "parameterized", "multi-axis"],
+        {
+          "name": "strength",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.2,
+          "field": {
+            "module": "hazeremoval",
+            "modversion": 3,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "distance",
+          "type": "float",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "default": 0.2,
+          "field": {
+            "module": "hazeremoval",
+            "modversion": 3,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "wb_kelvin_delta",
+      "layer": "L3",
+      "subtype": "wb",
+      "path": "layers/L3/temperature/wb_kelvin_delta.dtstyle",
+      "touches": [
+        "temperature"
+      ],
+      "tags": [
+        "wb",
+        "kelvin",
+        "tint",
+        "ux-wrapper",
+        "photographic-units",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
       "description": "WB Kelvin / tint UX wrapper (#102). Same temperature module as the temperature entry, but exposes photographic units instead of raw RGB coefficients. 2 axes: --param kelvin_delta=V (range [-3000, 3000]; positive = warmer) and --param tint_delta=V (range [-200, 200]; positive = magenta-shifted). Linear approximation: red_coeff *= 1 + kelvin_delta * 0.0001, blue_coeff inverse, green_coeff *= 1 + tint_delta * 0.0001. Daily-use accurate; not chromatic-adaptation-perfect. The temperature entry is preserved for users who want raw coefficient control. Note: kelvin_delta affects bytes 0 (red) AND 8 (blue); the manifest's field offset 0 is the primary-effect documentation; the decoder applies the inverse to blue automatically.",
-      "modversions": {"temperature": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "kelvin_delta", "type": "float", "range": [-3000.0, 3000.0], "default": 0.0,
-         "field": {"module": "temperature", "modversion": 4, "offset": 0, "encoding": "le_f32"}},
-        {"name": "tint_delta", "type": "float", "range": [-200.0, 200.0], "default": 0.0,
-         "field": {"module": "temperature", "modversion": 4, "offset": 4, "encoding": "le_f32"}}
-      ]},
-    {"name": "temperature", "layer": "L3", "subtype": "wb",
-      "path": "layers/L3/temperature/temperature.dtstyle", "touches": ["temperature"],
-      "tags": ["wb", "fundamental", "global", "parameterized", "multi-axis"],
-      "description": "Parameterized white balance (RFC-021; first multi-parameter ship). Three axes: --param red_coeff=V (warmer image: red↑), --param green_coeff=V (Lightroom Tint axis: green↑ → magenta-shifted, green↓ → green-shifted), --param blue_coeff=V (cooler image: blue↑). Range [0.5, 4.0] each; all default 1.0 (no shift). Replaces the v1.5.x discrete wb_cool_subtle entry. green_coeff added in #90 Bucket A.3 to close the Lightroom Tint parity gap. Starter's wb_warm_subtle remains as a discrete teaching artifact; production use of WB shifts should prefer this parameterized entry.",
-      "modversions": {"temperature": 4}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "kelvin_delta",
+          "type": "float",
+          "range": [
+            -3000.0,
+            3000.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "temperature",
+            "modversion": 4,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "tint_delta",
+          "type": "float",
+          "range": [
+            -200.0,
+            200.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "temperature",
+            "modversion": 4,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "temperature",
+      "layer": "L3",
+      "subtype": "wb",
+      "path": "layers/L3/temperature/temperature.dtstyle",
+      "touches": [
+        "temperature"
+      ],
+      "tags": [
+        "wb",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "Parameterized white balance (RFC-021; first multi-parameter ship). Three axes: --param red_coeff=V (warmer image: red\u2191), --param green_coeff=V (Lightroom Tint axis: green\u2191 \u2192 magenta-shifted, green\u2193 \u2192 green-shifted), --param blue_coeff=V (cooler image: blue\u2191). Range [0.5, 4.0] each; all default 1.0 (no shift). Replaces the v1.5.x discrete wb_cool_subtle entry. green_coeff added in #90 Bucket A.3 to close the Lightroom Tint parity gap. Starter's wb_warm_subtle remains as a discrete teaching artifact; production use of WB shifts should prefer this parameterized entry.",
+      "modversions": {
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "red_coeff", "type": "float", "range": [0.5, 4.0], "default": 1.0,
-         "field": {"module": "temperature", "modversion": 4, "offset": 0, "encoding": "le_f32"}},
-        {"name": "green_coeff", "type": "float", "range": [0.5, 4.0], "default": 1.0,
-         "field": {"module": "temperature", "modversion": 4, "offset": 4, "encoding": "le_f32"}},
-        {"name": "blue_coeff", "type": "float", "range": [0.5, 4.0], "default": 1.0,
-         "field": {"module": "temperature", "modversion": 4, "offset": 8, "encoding": "le_f32"}}
-      ]},
-    {"name": "saturation_global", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/saturation_global.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["saturation", "fundamental", "global", "parameterized"],
+        {
+          "name": "red_coeff",
+          "type": "float",
+          "range": [
+            0.5,
+            4.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "temperature",
+            "modversion": 4,
+            "offset": 0,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "green_coeff",
+          "type": "float",
+          "range": [
+            0.5,
+            4.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "temperature",
+            "modversion": 4,
+            "offset": 4,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "blue_coeff",
+          "type": "float",
+          "range": [
+            0.5,
+            4.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "temperature",
+            "modversion": 4,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "saturation_global",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_global.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "saturation",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized global saturation in colorbalancergb (RFC-021). Pass --value V (CLI) or value: V (MCP); range [-1.0, +1.0] (-1.0 = fully desaturated / monochrome; +0.5 = strong boost). Replaces the v1.5.x discrete sat_kill / sat_boost_moderate / sat_boost_strong entries with a single continuous-magnitude primitive.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "saturation_global", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 76, "encoding": "le_f32"}}
-      ]},
-    {"name": "vibrance", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/vibrance.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["vibrance", "fundamental", "global", "parameterized"],
-      "description": "Parameterized vibrance on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. 0.3 = vibrance_+0.3-equivalent. Vibrance protects already-saturated pixels — gentler chroma push than saturation_global. Replaces v1.5.x vibrance_+0.3.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "saturation_global",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 76,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "vibrance",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/vibrance.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "vibrance",
+        "fundamental",
+        "global",
+        "parameterized"
+      ],
+      "description": "Parameterized vibrance on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. 0.3 = vibrance_+0.3-equivalent. Vibrance protects already-saturated pixels \u2014 gentler chroma push than saturation_global. Replaces v1.5.x vibrance_+0.3.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "vibrance", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 116, "encoding": "le_f32"}}
-      ]},
-    {"name": "chroma_global", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/chroma_global.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["chroma", "global", "parameterized"],
+        {
+          "name": "vibrance",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 116,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "chroma_global",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/chroma_global.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "chroma",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized global chroma on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. Less saturated-pixel protection than vibrance, more aggressive than saturation_global at equal magnitudes.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "chroma_global", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 68, "encoding": "le_f32"}}
-      ]},
-    {"name": "hue_angle", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/hue_angle.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["hue", "global", "parameterized"],
+        {
+          "name": "chroma_global",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 68,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hue_angle",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_angle.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "hue",
+        "global",
+        "parameterized"
+      ],
       "description": "Parameterized global hue rotation on colorbalancergb (RFC-022 Tier 2). Pass --value V in degrees; range [-180.0, +180.0]. Rotates every pixel's hue around the color wheel without changing saturation or luminance.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "hue_angle", "type": "float", "range": [-180.0, 180.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 92, "encoding": "le_f32"}}
-      ]},
-    {"name": "brilliance_global", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/brilliance_global.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["brilliance", "global", "parameterized"],
-      "description": "Parameterized global brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Brilliance shapes per-zone luminance — the global axis moves all zones together. Per-zone variants (highlights/midtones/shadows) target specific tonal ranges.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "hue_angle",
+          "type": "float",
+          "range": [
+            -180.0,
+            180.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 92,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "brilliance_global",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_global.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "brilliance",
+        "global",
+        "parameterized"
+      ],
+      "description": "Parameterized global brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Brilliance shapes per-zone luminance \u2014 the global axis moves all zones together. Per-zone variants (highlights/midtones/shadows) target specific tonal ranges.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "brilliance_global", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 96, "encoding": "le_f32"}}
-      ]},
-    {"name": "brilliance_highlights", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/brilliance_highlights.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["brilliance", "highlights", "parameterized"],
-      "description": "Parameterized highlight-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the highlight tonal zone — useful for selectively brightening or compressing high-key areas without affecting shadows / midtones.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "brilliance_global",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 96,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "brilliance_highlights",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_highlights.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "brilliance",
+        "highlights",
+        "parameterized"
+      ],
+      "description": "Parameterized highlight-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the highlight tonal zone \u2014 useful for selectively brightening or compressing high-key areas without affecting shadows / midtones.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "brilliance_highlights", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 100, "encoding": "le_f32"}}
-      ]},
-    {"name": "brilliance_midtones", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/brilliance_midtones.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["brilliance", "midtones", "parameterized"],
-      "description": "Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the midtone tonal zone — selectively shapes the body of the tonal distribution.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "brilliance_highlights",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 100,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "brilliance_midtones",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_midtones.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "brilliance",
+        "midtones",
+        "parameterized"
+      ],
+      "description": "Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the midtone tonal zone \u2014 selectively shapes the body of the tonal distribution.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "brilliance_midtones", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 104, "encoding": "le_f32"}}
-      ]},
-    {"name": "brilliance_shadows", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/brilliance_shadows.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["brilliance", "shadows", "parameterized"],
-      "description": "Parameterized shadow-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the shadow tonal zone — selectively lifts or deepens dark areas without affecting highlights / midtones.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+        {
+          "name": "brilliance_midtones",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 104,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "brilliance_shadows",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/brilliance_shadows.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "brilliance",
+        "shadows",
+        "parameterized"
+      ],
+      "description": "Parameterized shadow-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the shadow tonal zone \u2014 selectively lifts or deepens dark areas without affecting highlights / midtones.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "brilliance_shadows", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 108, "encoding": "le_f32"}}
-      ]},
-    {"name": "hue_shadows", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/hue_shadows.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["hue", "shadows", "color-grading", "parameterized"],
+        {
+          "name": "brilliance_shadows",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 108,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hue_shadows",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_shadows.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "hue",
+        "shadows",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone hue rotation for shadows (#91 Bucket A.5; Lightroom Color Grading shadows wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "hue_shadows", "type": "float", "range": [0.0, 360.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 8, "encoding": "le_f32"}}
-      ]},
-    {"name": "hue_midtones", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/hue_midtones.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["hue", "midtones", "color-grading", "parameterized"],
+        {
+          "name": "hue_shadows",
+          "type": "float",
+          "range": [
+            0.0,
+            360.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 8,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hue_midtones",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_midtones.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "hue",
+        "midtones",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone hue rotation for midtones (#91 Bucket A.5; Lightroom Color Grading midtones wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "hue_midtones", "type": "float", "range": [0.0, 360.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 20, "encoding": "le_f32"}}
-      ]},
-    {"name": "hue_highlights", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/hue_highlights.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["hue", "highlights", "color-grading", "parameterized"],
+        {
+          "name": "hue_midtones",
+          "type": "float",
+          "range": [
+            0.0,
+            360.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 20,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hue_highlights",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/hue_highlights.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "hue",
+        "highlights",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone hue rotation for highlights (#91 Bucket A.5; Lightroom Color Grading highlights wheel). Pass --value V; range [0.0, 360.0] degrees. Default 0.0.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "hue_highlights", "type": "float", "range": [0.0, 360.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 32, "encoding": "le_f32"}}
-      ]},
-    {"name": "saturation_shadows", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/saturation_shadows.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["saturation", "shadows", "color-grading", "parameterized"],
+        {
+          "name": "hue_highlights",
+          "type": "float",
+          "range": [
+            0.0,
+            360.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 32,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "saturation_shadows",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_shadows.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "saturation",
+        "shadows",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone saturation for shadows (#91 Bucket A.5; pairs with hue_shadows for full Lightroom shadow-zone color-grading control). Pass --value V; range [-1.0, +1.0].",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "saturation_shadows", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 88, "encoding": "le_f32"}}
-      ]},
-    {"name": "saturation_midtones", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/saturation_midtones.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["saturation", "midtones", "color-grading", "parameterized"],
+        {
+          "name": "saturation_shadows",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 88,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "saturation_midtones",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_midtones.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "saturation",
+        "midtones",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone saturation for midtones (#91 Bucket A.5). Pass --value V; range [-1.0, +1.0].",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "saturation_midtones", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 84, "encoding": "le_f32"}}
-      ]},
-    {"name": "saturation_highlights", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/saturation_highlights.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["saturation", "highlights", "color-grading", "parameterized"],
+        {
+          "name": "saturation_midtones",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 84,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "saturation_highlights",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/saturation_highlights.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "saturation",
+        "highlights",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized per-zone saturation for highlights (#91 Bucket A.5). Pass --value V; range [-1.0, +1.0].",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "saturation_highlights", "type": "float", "range": [-1.0, 1.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 80, "encoding": "le_f32"}}
-      ]},
-    {"name": "shadows_weight", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/shadows_weight.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["blending", "shadows", "color-grading", "parameterized"],
+        {
+          "name": "saturation_highlights",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 80,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shadows_weight",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/shadows_weight.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "blending",
+        "shadows",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized shadow-zone falloff weight (#91 Bucket A.5; Lightroom Color Grading 'Blending' bottom). Pass --value V; range [0.0, 4.0]; default 1.0. Higher = more aggressive zone overlap.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "shadows_weight", "type": "float", "range": [0.0, 4.0], "default": 1.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 48, "encoding": "le_f32"}}
-      ]},
-    {"name": "highlights_weight", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/highlights_weight.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["blending", "highlights", "color-grading", "parameterized"],
+        {
+          "name": "shadows_weight",
+          "type": "float",
+          "range": [
+            0.0,
+            4.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 48,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "highlights_weight",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/highlights_weight.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "blending",
+        "highlights",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized highlights-zone falloff weight (#91 Bucket A.5; Lightroom Color Grading 'Blending' top). Pass --value V; range [0.0, 4.0]; default 1.0.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "highlights_weight", "type": "float", "range": [0.0, 4.0], "default": 1.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 56, "encoding": "le_f32"}}
-      ]},
-    {"name": "white_fulcrum", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/white_fulcrum.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["balance", "color-grading", "parameterized"],
+        {
+          "name": "highlights_weight",
+          "type": "float",
+          "range": [
+            0.0,
+            4.0
+          ],
+          "default": 1.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 56,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "white_fulcrum",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/white_fulcrum.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "balance",
+        "color-grading",
+        "parameterized"
+      ],
       "description": "Parameterized shadow/highlight balance point (#91 Bucket A.5; Lightroom Color Grading 'Balance' slider). Pass --value V; range [-2.0, 2.0]; default 0.0 (neutral midpoint). Negative shifts the split toward shadows; positive toward highlights.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
       "parameters": [
-        {"name": "white_fulcrum", "type": "float", "range": [-2.0, 2.0], "default": 0.0,
-         "field": {"module": "colorbalancergb", "modversion": 5, "offset": 52, "encoding": "le_f32"}}
-      ]},
-    {"name": "grade_shadows_warm", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_shadows_warm.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "shadows", "warm"],
+        {
+          "name": "white_fulcrum",
+          "type": "float",
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorbalancergb",
+            "modversion": 5,
+            "offset": 52,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "grade_shadows_warm",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_shadows_warm.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "shadows",
+        "warm"
+      ],
       "description": "Warm shadows (orange tint, hue 30 deg, chroma 0.3).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_shadows_cool", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_shadows_cool.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "shadows", "cool"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_shadows_cool",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_shadows_cool.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "shadows",
+        "cool"
+      ],
       "description": "Cool shadows (blue tint, hue 210 deg, chroma 0.3).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_highlights_warm", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_highlights_warm.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "highlights", "warm"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_highlights_warm",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_highlights_warm.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "highlights",
+        "warm"
+      ],
       "description": "Warm highlights (orange tint, hue 45 deg, chroma 0.2).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_highlights_cool", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_highlights_cool.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "highlights", "cool"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_highlights_cool",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_highlights_cool.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "highlights",
+        "cool"
+      ],
       "description": "Cool highlights (blue tint, hue 200 deg, chroma 0.2).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_midtones_warm", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_midtones_warm.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "midtones", "warm"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_midtones_warm",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_midtones_warm.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "midtones",
+        "warm"
+      ],
       "description": "Warm midtones (orange tint, hue 35 deg, chroma 0.25).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_midtones_cool", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_midtones_cool.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "midtones", "cool"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_midtones_cool",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_midtones_cool.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "midtones",
+        "cool"
+      ],
       "description": "Cool midtones (blue tint, hue 215 deg, chroma 0.25).",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "grade_split_warm_cool", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/grade_split_warm_cool.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["grade", "split-tone", "warm", "cool", "discrete"],
-      "description": "L3 discrete kind — classic split-toning composite (#110). Combines grade_shadows_cool (blue tint, hue 210 deg / chroma 0.3) with grade_highlights_warm (orange tint, hue 45 deg / chroma 0.2) in one entry. The signature 'cinematic' split-tone in a single primitive.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "chroma_boost_shadows", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/chroma_boost_shadows.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["chroma", "shadows", "boost"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "grade_split_warm_cool",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/grade_split_warm_cool.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "grade",
+        "split-tone",
+        "warm",
+        "cool",
+        "discrete"
+      ],
+      "description": "L3 discrete kind \u2014 classic split-toning composite (#110). Combines grade_shadows_cool (blue tint, hue 210 deg / chroma 0.3) with grade_highlights_warm (orange tint, hue 45 deg / chroma 0.2) in one entry. The signature 'cinematic' split-tone in a single primitive.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "chroma_boost_shadows",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/chroma_boost_shadows.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "chroma",
+        "shadows",
+        "boost"
+      ],
       "description": "Boost shadow chroma +0.3.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "chroma_boost_midtones", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/chroma_boost_midtones.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["chroma", "midtones", "boost"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "chroma_boost_midtones",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/chroma_boost_midtones.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "chroma",
+        "midtones",
+        "boost"
+      ],
       "description": "Boost mid-tone chroma +0.3.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-    {"name": "chroma_boost_highlights", "layer": "L3", "subtype": "colorbalancergb",
-      "path": "layers/L3/colorbalancergb/chroma_boost_highlights.dtstyle", "touches": ["colorbalancergb"],
-      "tags": ["chroma", "highlights", "boost"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "chroma_boost_highlights",
+      "layer": "L3",
+      "subtype": "colorbalancergb",
+      "path": "layers/L3/colorbalancergb/chroma_boost_highlights.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "chroma",
+        "highlights",
+        "boost"
+      ],
       "description": "Boost highlight chroma +0.3.",
-      "modversions": {"colorbalancergb": 5}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT"},
-
-    {"name": "gradient_top_dampen_highlights", "layer": "L3", "subtype": "exposure",
-      "path": "layers/L3/masked/gradient_top_dampen_highlights.dtstyle", "touches": ["exposure"],
-      "tags": ["mask", "gradient", "highlights", "dampen"],
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "gradient_top_dampen_highlights",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/masked/gradient_top_dampen_highlights.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "gradient",
+        "highlights",
+        "dampen"
+      ],
       "description": "Dampen top-half highlights via -0.5 EV through a top-bright gradient.",
-      "modversions": {"exposure": 7}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
-      "mask_spec":{"dt_form": "gradient",
-                    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 0.0, "compression": 0.5}}},
-
-    {"name": "gradient_bottom_lift_shadows", "layer": "L3", "subtype": "exposure",
-      "path": "layers/L3/masked/gradient_bottom_lift_shadows.dtstyle", "touches": ["exposure"],
-      "tags": ["mask", "gradient", "shadows", "lift"],
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "gradient",
+        "dt_params": {
+          "anchor_x": 0.5,
+          "anchor_y": 0.5,
+          "rotation": 0.0,
+          "compression": 0.5
+        }
+      }
+    },
+    {
+      "name": "gradient_bottom_lift_shadows",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/masked/gradient_bottom_lift_shadows.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "gradient",
+        "shadows",
+        "lift"
+      ],
       "description": "Lift bottom-half shadows via +0.4 EV through a bottom-bright gradient.",
-      "modversions": {"exposure": 7}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
-      "mask_spec":{"dt_form": "gradient",
-                    "dt_params": {"anchor_x": 0.5, "anchor_y": 0.5, "rotation": 180.0, "compression": 0.5}}},
-
-    {"name": "radial_subject_lift", "layer": "L3", "subtype": "exposure",
-      "path": "layers/L3/masked/radial_subject_lift.dtstyle", "touches": ["exposure"],
-      "tags": ["mask", "radial", "subject", "lift"],
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "gradient",
+        "dt_params": {
+          "anchor_x": 0.5,
+          "anchor_y": 0.5,
+          "rotation": 180.0,
+          "compression": 0.5
+        }
+      }
+    },
+    {
+      "name": "radial_subject_lift",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/masked/radial_subject_lift.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "radial",
+        "subject",
+        "lift"
+      ],
       "description": "Lift +0.6 EV in a centered radial mask region (subject emphasis).",
-      "modversions": {"exposure": 7}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
-      "mask_spec":{"dt_form": "ellipse",
-                    "dt_params": {"center_x": 0.5, "center_y": 0.5, "radius_x": 0.2, "radius_y": 0.2, "border": 0.1}}},
-
-    {"name": "rectangle_subject_band_dim", "layer": "L3", "subtype": "exposure",
-      "path": "layers/L3/masked/rectangle_subject_band_dim.dtstyle", "touches": ["exposure"],
-      "tags": ["mask", "rectangle", "band", "dim"],
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "ellipse",
+        "dt_params": {
+          "center_x": 0.5,
+          "center_y": 0.5,
+          "radius_x": 0.2,
+          "radius_y": 0.2,
+          "border": 0.1
+        }
+      }
+    },
+    {
+      "name": "rectangle_subject_band_dim",
+      "layer": "L3",
+      "subtype": "exposure",
+      "path": "layers/L3/masked/rectangle_subject_band_dim.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "rectangle",
+        "band",
+        "dim"
+      ],
       "description": "Dim -0.3 EV in a horizontal mid-band rectangle (de-emphasize a horizon line).",
-      "modversions": {"exposure": 7}, "darktable_version": "5.4",
-      "source": "expressive-baseline", "license": "MIT",
-      "mask_spec":{"dt_form": "rectangle",
-                    "dt_params": {"x0": 0.0, "y0": 0.4, "x1": 1.0, "y1": 0.6, "border": 0.05}}},
-    {"name": "look_portrait", "layer": "L2", "subtype": "look",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "rectangle",
+        "dt_params": {
+          "x0": 0.0,
+          "y0": 0.4,
+          "x1": 1.0,
+          "y1": 0.6,
+          "border": 0.05
+        }
+      }
+    },
+    {
+      "name": "look_portrait",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_portrait.dtstyle",
-      "touches": ["exposure", "sigmoid", "colorbalancergb"],
-      "tags": ["look", "portrait", "skin", "gentle"],
-      "description": "L2 look — gentle skin-protective composition. exposure +0.2 EV, sigmoid_contrast 1.2 (soft s-curve), colorbalancergb saturation_global=-0.1 + vibrance=+0.2 (mild chroma push that protects saturated pixels). Targets portraiture; avoid stacking with aggressive contrast or clarity.",
-      "modversions": {"exposure": 7, "sigmoid": 3, "colorbalancergb": 5},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_landscape", "layer": "L2", "subtype": "look",
+      "touches": [
+        "exposure",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "portrait",
+        "skin",
+        "gentle"
+      ],
+      "description": "L2 look \u2014 gentle skin-protective composition. exposure +0.2 EV, sigmoid_contrast 1.2 (soft s-curve), colorbalancergb saturation_global=-0.1 + vibrance=+0.2 (mild chroma push that protects saturated pixels). Targets portraiture; avoid stacking with aggressive contrast or clarity.",
+      "modversions": {
+        "exposure": 7,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_landscape.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "bilat"],
-      "tags": ["look", "landscape", "vibrant", "dramatic"],
-      "description": "L2 look — vibrant dramatic landscape composition. sigmoid_contrast 2.0 (strong s-curve), colorbalancergb saturation_global=+0.3 + vibrance=+0.2, bilat_clarity_strength 1.0 (definite local-contrast pop). Aggressive — pull back via sigmoid to ~1.5 if it feels harsh.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "bilat": 3},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_vintage_film", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "landscape",
+        "vibrant",
+        "dramatic"
+      ],
+      "description": "L2 look \u2014 vibrant dramatic landscape composition. sigmoid_contrast 2.0 (strong s-curve), colorbalancergb saturation_global=+0.3 + vibrance=+0.2, bilat_clarity_strength 1.0 (definite local-contrast pop). Aggressive \u2014 pull back via sigmoid to ~1.5 if it feels harsh.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_vintage_film",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_vintage_film.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "grain", "temperature"],
-      "tags": ["look", "vintage", "film", "nostalgia"],
-      "description": "L2 look — nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-curve), colorbalancergb saturation_global=-0.2 (slight desaturation), grain_strength 25 (medium film grain), temperature warm shift (red 2.148 / blue 1.209). Pairs well with grade_shadows_warm.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_cinematic_teal_orange", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "grain",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "vintage",
+        "film",
+        "nostalgia"
+      ],
+      "description": "L2 look \u2014 nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-curve), colorbalancergb saturation_global=-0.2 (slight desaturation), grain_strength 25 (medium film grain), temperature warm shift (red 2.148 / blue 1.209). Pairs well with grade_shadows_warm.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "grain": 2,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_cinematic_teal_orange",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_cinematic_teal_orange.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb"],
-      "tags": ["look", "cinematic", "teal-orange", "blockbuster"],
-      "description": "L2 look — Hollywood blockbuster teal-and-orange grade (#104). sigmoid_contrast 1.4 + colorbalancergb hue_shadows=210 deg / saturation_shadows=+0.3 (teal) + hue_highlights=30 deg / saturation_highlights=+0.2 (orange) + saturation_global=+0.1.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_film_kodachrome", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "cinematic",
+        "teal-orange",
+        "blockbuster"
+      ],
+      "description": "L2 look \u2014 Hollywood blockbuster teal-and-orange grade (#104). sigmoid_contrast 1.4 + colorbalancergb hue_shadows=210 deg / saturation_shadows=+0.3 (teal) + hue_highlights=30 deg / saturation_highlights=+0.2 (orange) + saturation_global=+0.1.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_film_kodachrome",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_film_kodachrome.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "grain", "temperature"],
-      "tags": ["look", "film", "kodachrome", "warm"],
-      "description": "L2 look — Kodachrome film simulation (#104). sigmoid_contrast 1.4 + temperature warm (red 2.148 / blue 1.209 = wb_warm_subtle) + saturation_global=+0.2 + grain_strength=8.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_film_portra", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "grain",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "film",
+        "kodachrome",
+        "warm"
+      ],
+      "description": "L2 look \u2014 Kodachrome film simulation (#104). sigmoid_contrast 1.4 + temperature warm (red 2.148 / blue 1.209 = wb_warm_subtle) + saturation_global=+0.2 + grain_strength=8.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "grain": 2,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_film_portra",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_film_portra.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "grain", "temperature"],
-      "tags": ["look", "film", "portra", "portrait", "skin"],
-      "description": "L2 look — Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s-curve) + temperature subtle warm (red 1.5 / blue 1.3) + saturation_global=-0.1 + grain_strength=15. Compose with hsl_saturation --param sat_orange=+0.05 if you want the canonical Portra skin-warmth boost on real raws.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_high_key_portrait", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "grain",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "film",
+        "portra",
+        "portrait",
+        "skin"
+      ],
+      "description": "L2 look \u2014 Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s-curve) + temperature subtle warm (red 1.5 / blue 1.3) + saturation_global=-0.1 + grain_strength=15. Compose with hsl_saturation --param sat_orange=+0.05 if you want the canonical Portra skin-warmth boost on real raws.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "grain": 2,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_high_key_portrait",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_high_key_portrait.dtstyle",
-      "touches": ["exposure", "sigmoid", "colorbalancergb"],
-      "tags": ["look", "portrait", "high-key", "bright", "soft"],
-      "description": "L2 look — high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05.",
-      "modversions": {"exposure": 7, "sigmoid": 3, "colorbalancergb": 5},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_low_key_portrait", "layer": "L2", "subtype": "look",
+      "touches": [
+        "exposure",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "portrait",
+        "high-key",
+        "bright",
+        "soft"
+      ],
+      "description": "L2 look \u2014 high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05.",
+      "modversions": {
+        "exposure": 7,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_low_key_portrait",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_low_key_portrait.dtstyle",
-      "touches": ["exposure", "sigmoid", "colorbalancergb"],
-      "tags": ["look", "portrait", "low-key", "dark", "dramatic"],
-      "description": "L2 look — low-key portrait (#104). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.1.",
-      "modversions": {"exposure": 7, "sigmoid": 3, "colorbalancergb": 5},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_moody_dramatic", "layer": "L2", "subtype": "look",
+      "touches": [
+        "exposure",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "portrait",
+        "low-key",
+        "dark",
+        "dramatic"
+      ],
+      "description": "L2 look \u2014 low-key portrait (#104). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.1.",
+      "modversions": {
+        "exposure": 7,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_moody_dramatic",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_moody_dramatic.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "grain"],
-      "tags": ["look", "moody", "dramatic", "editorial"],
-      "description": "L2 look — moody / dramatic editorial (#104). sigmoid_contrast 2.0 (strong s-curve) + colorbalancergb saturation_global=-0.3 + vibrance=+0.1 + grain_strength=25.",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_70s_film", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "grain"
+      ],
+      "tags": [
+        "look",
+        "moody",
+        "dramatic",
+        "editorial"
+      ],
+      "description": "L2 look \u2014 moody / dramatic editorial (#104). sigmoid_contrast 2.0 (strong s-curve) + colorbalancergb saturation_global=-0.3 + vibrance=+0.1 + grain_strength=25.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "grain": 2
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_70s_film",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_70s_film.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "grain", "temperature"],
-      "tags": ["look", "decade", "70s", "film", "nostalgia"],
-      "description": "L2 look — 1970s film aesthetic (#104). temperature warm (red 2.0 / blue 1.4) + sigmoid_contrast 1.1 (gentle s-curve) + saturation_global=-0.1 + grain_strength=35 (medium grain).",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "grain": 2, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_90s_grain", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "grain",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "decade",
+        "70s",
+        "film",
+        "nostalgia"
+      ],
+      "description": "L2 look \u2014 1970s film aesthetic (#104). temperature warm (red 2.0 / blue 1.4) + sigmoid_contrast 1.1 (gentle s-curve) + saturation_global=-0.1 + grain_strength=35 (medium grain).",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "grain": 2,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_90s_grain",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_90s_grain.dtstyle",
-      "touches": ["sigmoid", "grain", "temperature"],
-      "tags": ["look", "decade", "90s", "film", "grunge"],
-      "description": "L2 look — 1990s film aesthetic (#104). sigmoid_contrast 1.6 + temperature subtle cool (red 1.2 / blue 2.0) + grain_strength=50 (heavy grain).",
-      "modversions": {"sigmoid": 3, "grain": 2, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"},
-    {"name": "look_2000s_digital", "layer": "L2", "subtype": "look",
+      "touches": [
+        "sigmoid",
+        "grain",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "decade",
+        "90s",
+        "film",
+        "grunge"
+      ],
+      "description": "L2 look \u2014 1990s film aesthetic (#104). sigmoid_contrast 1.6 + temperature subtle cool (red 1.2 / blue 2.0) + grain_strength=50 (heavy grain).",
+      "modversions": {
+        "sigmoid": 3,
+        "grain": 2,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_2000s_digital",
+      "layer": "L2",
+      "subtype": "look",
       "path": "layers/L2/look/look_2000s_digital.dtstyle",
-      "touches": ["sigmoid", "colorbalancergb", "temperature"],
-      "tags": ["look", "decade", "2000s", "digital", "saturated"],
-      "description": "L2 look — early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 + temperature subtle cool (red 1.1 / blue 1.6) + saturation_global=+0.4 (oversaturated digital signature).",
-      "modversions": {"sigmoid": 3, "colorbalancergb": 5, "temperature": 4},
-      "darktable_version": "5.4", "source": "expressive-baseline", "license": "MIT"}
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "temperature"
+      ],
+      "tags": [
+        "look",
+        "decade",
+        "2000s",
+        "digital",
+        "saturated"
+      ],
+      "description": "L2 look \u2014 early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 + temperature subtle cool (red 1.1 / blue 1.6) + saturation_global=+0.4 (oversaturated digital signature).",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "temperature": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_subject_lift_dark_only",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_subject_lift_dark_only.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "compositional",
+        "subject",
+        "shadows",
+        "lift"
+      ],
+      "description": "L2 look \u2014 lift only the *dark pixels* in a centered subject region. Drawn ellipse around the subject + luminance shadows filter. Composes RFC-029 drawn mask + RFC-024 range_filter. The user's mental model: 'in this drawn mask, only affect the dark pixels.'",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "ellipse",
+        "dt_params": {
+          "center_x": 0.5,
+          "center_y": 0.5,
+          "radius_x": 0.3,
+          "radius_y": 0.3,
+          "border": 0.08
+        },
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.0,
+          "max": 0.4,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "look_sky_blue_deepen",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_sky_blue_deepen.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "mask",
+        "compositional",
+        "sky",
+        "color_range",
+        "deepen"
+      ],
+      "description": "L2 look \u2014 deepen sky blues in the upper half. Drawn gradient (top half) + color_h filter on cyan-blue range. Composes RFC-029 + RFC-024. Real-world workflow: dramatic sky without affecting foreground or non-blue elements above the horizon.",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "gradient",
+        "dt_params": {
+          "anchor_x": 0.5,
+          "anchor_y": 0.5,
+          "rotation": 0.0,
+          "compression": 0.5,
+          "state": 2
+        },
+        "range_filter": {
+          "kind": "color_h",
+          "min": 0.55,
+          "max": 0.7,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "look_horizon_warm_glow",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_horizon_warm_glow.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "compositional",
+        "horizon",
+        "warm",
+        "glow"
+      ],
+      "description": "L2 look \u2014 lift warm tones near the horizon. Horizontal gradient anchored at midline + color_h filter on warm tones (orange/red). Sunset / golden-hour enhancement without affecting cool tones.",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "gradient",
+        "dt_params": {
+          "anchor_x": 0.5,
+          "anchor_y": 0.55,
+          "rotation": 0.0,
+          "compression": 0.4,
+          "state": 2
+        },
+        "range_filter": {
+          "kind": "color_h",
+          "min": 0.0,
+          "max": 0.15,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "look_subject_brighten_highlights",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_subject_brighten_highlights.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "compositional",
+        "subject",
+        "highlights",
+        "brighten"
+      ],
+      "description": "L2 look \u2014 brighten only the bright pixels in the subject region. Drawn ellipse + luminance highlights filter. Catchlights, skin highlights, sparkle without blowing out midtones.",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "dt_form": "ellipse",
+        "dt_params": {
+          "center_x": 0.5,
+          "center_y": 0.45,
+          "radius_x": 0.25,
+          "radius_y": 0.3,
+          "border": 0.08
+        },
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.6,
+          "max": 1.0,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "look_dark_pixels_global_lift",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_dark_pixels_global_lift.dtstyle",
+      "touches": [
+        "exposure"
+      ],
+      "tags": [
+        "mask",
+        "parametric",
+        "shadows",
+        "global",
+        "lift"
+      ],
+      "description": "L2 look \u2014 lift dark pixels globally (no spatial mask). Pure parametric range_filter \u2014 luminance shadows. Useful when the intent is purely tonal: 'open up all the dark areas in the image, regardless of where they are.' Demonstrates the parametric-only path of RFC-024 / ADR-085.",
+      "modversions": {
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.0,
+          "max": 0.3,
+          "feather": 0.05
+        }
+      }
+    }
   ]
 }
