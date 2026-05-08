@@ -48,7 +48,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (69 entries)
+## `expressive-baseline` pack (76 entries)
 
 ### `grain_strength`
 
@@ -63,6 +63,8 @@ _(near-baseline diff in ColorChecker (global): grain texture is hard to see on f
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
+
+_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -172,6 +174,8 @@ _Neutral B&W conversion via channelmixerrgb (Rec. 709 luminance weights: R 0.212
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
 ### `bw_sky_drama`
 
 _B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues — classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true._
@@ -205,6 +209,8 @@ _Parameterized 9-band tone equalizer (RFC-022 Tier 2; most complex multi-paramet
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`noise`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -351,6 +357,78 @@ _Soft painterly local contrast (detail 0.4)._
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/clarity_painterly-colorchecker.jpg" alt="clarity_painterly ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-grayscale.jpg" alt="clarity_painterly grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-colorchecker-masked.jpg" alt="clarity_painterly ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_painterly-grayscale-masked.jpg" alt="clarity_painterly grayscale masked" width="180"> |
+
+### `clarity_etched`
+
+_L3 discrete kind — etched / over-defined clarity (#110). bilat_clarity_strength=2.0 (high local-contrast bite)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/clarity_etched-colorchecker.jpg" alt="clarity_etched ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_etched-grayscale.jpg" alt="clarity_etched grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_etched-colorchecker-masked.jpg" alt="clarity_etched ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_etched-grayscale-masked.jpg" alt="clarity_etched grayscale masked" width="180"> |
+
+### `clarity_dreamy`
+
+_L3 discrete kind — soft / dreamy clarity (#110). bilat_clarity_strength=-0.5 (negative bite — softens local contrast)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/clarity_dreamy-colorchecker.jpg" alt="clarity_dreamy ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_dreamy-grayscale.jpg" alt="clarity_dreamy grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_dreamy-colorchecker-masked.jpg" alt="clarity_dreamy ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/clarity_dreamy-grayscale-masked.jpg" alt="clarity_dreamy grayscale masked" width="180"> |
+
+### `sharpen_edge_only`
+
+_L3 discrete kind — edge-only sharpening (#110). amount=0.6 with default radius (2.0 px) and threshold (0.5). Threshold gates sharpening to detected edges only._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/sharpen_edge_only-colorchecker.jpg" alt="sharpen_edge_only ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_edge_only-grayscale.jpg" alt="sharpen_edge_only grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_edge_only-colorchecker-masked.jpg" alt="sharpen_edge_only ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_edge_only-grayscale-masked.jpg" alt="sharpen_edge_only grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+### `sharpen_overall`
+
+_L3 discrete kind — whole-image sharpening with bite (#110). amount=1.2 (strong)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/sharpen_overall-colorchecker.jpg" alt="sharpen_overall ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_overall-grayscale.jpg" alt="sharpen_overall grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_overall-colorchecker-masked.jpg" alt="sharpen_overall ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/sharpen_overall-grayscale-masked.jpg" alt="sharpen_overall grayscale masked" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+### `vignette_subtle`
+
+_L3 discrete kind — gentle peripheral darkening (#110). brightness=-0.15._
+
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette_subtle-colorchecker.jpg" alt="vignette_subtle ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_subtle-grayscale.jpg" alt="vignette_subtle grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
+
+_(near-baseline diff in ColorChecker (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
+
+_(near-baseline diff in grayscale (global): subtle vignette is small at the modest gallery render size; effect is concentrated at the very corners of the frame)_
+
+### `vignette_strong`
+
+_L3 discrete kind — pronounced peripheral darkening (#110). brightness=-0.5._
+
+| ColorChecker (global) | Grayscale (global) |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/vignette_strong-colorchecker.jpg" alt="vignette_strong ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/vignette_strong-grayscale.jpg" alt="vignette_strong grayscale global" width="180"> |
+
+> 🚫 **Masked variant suppressed**: see [mask-applicable-controls](mask-applicable-controls.md#vignette) for why drawn-mask binding doesn't render usefully for this module.
 
 ### `exposure`
 
@@ -779,6 +857,8 @@ _Parameterized global chroma on colorbalancergb (RFC-022 Tier 2). Pass --value V
 
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`chroma_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -797,7 +877,7 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`hue_angle`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -819,6 +899,8 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`brilliance_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -838,8 +920,6 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
-
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`brilliance_highlights`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -861,8 +941,6 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
-
 **Parameter sweep** (`brilliance_midtones`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -881,6 +959,8 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`brilliance_shadows`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -898,6 +978,8 @@ _Parameterized per-zone hue rotation for shadows (#91 Bucket A.5; Lightroom Colo
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
@@ -963,8 +1045,6 @@ _Parameterized per-zone saturation for shadows (#91 Bucket A.5; pairs with hue_s
 
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
-
 **Parameter sweep** (`saturation_shadows`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.50` | `+1.00` |
@@ -1023,8 +1103,6 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
-
 **Parameter sweep** (`shadows_weight`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `0.00` | `+0.50` | `+1.00` | `+2.00` | `+4.00` |
@@ -1043,7 +1121,7 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`highlights_weight`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -1062,8 +1140,6 @@ _Parameterized shadow/highlight balance point (#91 Bucket A.5; Lightroom Color G
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
@@ -1120,6 +1196,14 @@ _Cool midtones (blue tint, hue 215 deg, chroma 0.25)._
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/grade_midtones_cool-colorchecker.jpg" alt="grade_midtones_cool ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_midtones_cool-grayscale.jpg" alt="grade_midtones_cool grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_midtones_cool-colorchecker-masked.jpg" alt="grade_midtones_cool ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_midtones_cool-grayscale-masked.jpg" alt="grade_midtones_cool grayscale masked" width="180"> |
+
+### `grade_split_warm_cool`
+
+_L3 discrete kind — classic split-toning composite (#110). Combines grade_shadows_cool (blue tint, hue 210 deg / chroma 0.3) with grade_highlights_warm (orange tint, hue 45 deg / chroma 0.2) in one entry. The signature 'cinematic' split-tone in a single primitive._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/grade_split_warm_cool-colorchecker.jpg" alt="grade_split_warm_cool ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_split_warm_cool-grayscale.jpg" alt="grade_split_warm_cool grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_split_warm_cool-colorchecker-masked.jpg" alt="grade_split_warm_cool ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/grade_split_warm_cool-grayscale-masked.jpg" alt="grade_split_warm_cool grayscale masked" width="180"> |
 
 ### `chroma_boost_shadows`
 
