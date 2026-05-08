@@ -98,11 +98,19 @@ def show(
 
     entry = index.lookup_by_name(name)
     if entry is None:
+        # "did you mean" — surface the closest available names so a typo
+        # doesn't require the user to re-list the whole vocabulary.
+        import difflib
+
+        all_names = [e.name for e in index.list_all()]
+        suggestions = difflib.get_close_matches(name, all_names, n=3, cutoff=0.6)
+        suggestion_text = f" did you mean: {', '.join(suggestions)}?" if suggestions else ""
         writer.error(
-            f"vocabulary entry not found: {name}",
+            f"vocabulary entry not found: {name}.{suggestion_text}",
             ExitCode.NOT_FOUND,
             name=name,
             packs=packs,
+            suggestions=suggestions,
         )
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 

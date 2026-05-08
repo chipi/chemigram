@@ -88,6 +88,42 @@ def test_vocab_show_unknown_entry_exits_three(runner: CliRunner) -> None:
     assert "not found" in result.stderr.lower()
 
 
+def test_vocab_show_unknown_entry_offers_did_you_mean_suggestion(
+    runner: CliRunner,
+) -> None:
+    """#107 ergonomics polish: typo'd vocab names get close-match suggestions
+    instead of a bare 'not found' so the user doesn't need to re-list the
+    whole vocabulary to find the right name."""
+    # 'wb_warm' is one char short of 'wb_warm_subtle' — should suggest it.
+    result = runner.invoke(app, ["vocab", "show", "wb_warm"])
+    assert result.exit_code == ExitCode.NOT_FOUND.value
+    assert "did you mean" in result.stderr.lower()
+    assert "wb_warm_subtle" in result.stderr
+
+
+def test_vocab_show_unknown_entry_no_suggestions_when_far_off(
+    runner: CliRunner,
+) -> None:
+    """Far-off names produce no suggestions; the error message is clean."""
+    result = runner.invoke(app, ["vocab", "show", "completely_unrelated_xyzabc"])
+    assert result.exit_code == ExitCode.NOT_FOUND.value
+    # No "did you mean" cluttering the error text when there's nothing close.
+    assert "did you mean" not in result.stderr.lower()
+
+
+def test_vocab_show_unknown_entry_json_includes_suggestions(
+    runner: CliRunner,
+) -> None:
+    """JSON mode surfaces the suggestions array for programmatic callers."""
+    result = runner.invoke(app, ["--json", "vocab", "show", "wb_warm"])
+    assert result.exit_code == ExitCode.NOT_FOUND.value
+    err_lines = [line for line in result.stderr.splitlines() if line.strip()]
+    payload = json.loads(err_lines[-1])
+    assert payload["event"] == "error"
+    assert payload["status"] == "error"
+    assert "wb_warm_subtle" in payload.get("suggestions", [])
+
+
 def test_vocab_show_unknown_json_emits_error_event(runner: CliRunner) -> None:
     result = runner.invoke(app, ["--json", "vocab", "show", "no_such_entry"])
     assert result.exit_code == ExitCode.NOT_FOUND.value
