@@ -436,7 +436,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Draft v0.1 | — |
 | RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
 | RFC-026 | AI-derived mask provider scaffolding (subject / depth / content-aware spots) | Draft v0.1 | — |
-| RFC-029 | Compositional masks at apply time (build-by-words and reusable mask ids) | Draft v0.1 | — |
+| RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
 
 ### ADRs
 
@@ -524,6 +524,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
 | ADR-082 | Modversion drift handling: warn-loud at load, hard-fail at apply (closes RFC-007) | Accepted |
 | ADR-083 | HSL Color Mixer via colorequal (3 multi-axis entries); closes RFC-023, reclassifies HSL Tier 2 | Accepted |
+| ADR-084 | Apply-time mask spec semantics + path shape addition; closes RFC-029, formalizes build-by-words inline mask construction | Accepted |
 
 ---
 

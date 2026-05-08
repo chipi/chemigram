@@ -98,6 +98,7 @@ ADRs come from two streams:
 | ADR-081 | Parameterization tiering policy; closes RFC-022, explicitly amends ADR-008 | Accepted |
 | ADR-082 | Modversion drift handling: warn-loud at load, hard-fail at apply (closes RFC-007) | Accepted |
 | ADR-083 | HSL Color Mixer via colorequal (3 multi-axis entries); closes RFC-023, reclassifies HSL Tier 2 | Accepted |
+| ADR-084 | Apply-time mask spec semantics + path shape addition; closes RFC-029, formalizes build-by-words inline mask construction | Accepted |
 
 ## Conventions
 

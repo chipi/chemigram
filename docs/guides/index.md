@@ -10,6 +10,7 @@ Day-to-day usage:
 - [**Vocabulary patterns**](vocabulary-patterns.md) — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
 - [**Visual proofs**](visual-proofs.md) — auto-generated before/after gallery for every vocabulary entry, rendered against the synthetic ColorChecker + grayscale chart in isolation. For human visual validation that each primitive does what its description claims.
 - [**Mask-applicable controls**](mask-applicable-controls.md) — what every vocabulary primitive does through a drawn mask: the engine path, a per-module compatibility matrix, and how to mask an arbitrary primitive (CLI / authoring / Python).
+- [**Mask shapes from words**](mask-shapes-from-words.md) — the spatial-English-to-`mask_spec` mapping. "Bottom third" → gradient with anchor at 0.67. RFC-029 / ADR-084 build-by-words reference.
 - [**Recipes / common how-do-I**](recipes.md) — cross-cutting tasks: reset to baseline, find by tag, export multiple sizes, replay a session
 
 CLI reference (the scripting / agent-loop surface):

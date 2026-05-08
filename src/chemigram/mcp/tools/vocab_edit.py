@@ -283,15 +283,27 @@ _MASK_SPEC_SCHEMA = {
     "properties": {
         "dt_form": {
             "type": "string",
-            "enum": ["gradient", "ellipse", "rectangle"],
-            "description": "Drawn-form kind. See docs/guides/mask-applicable-controls.md.",
+            "enum": ["gradient", "ellipse", "rectangle", "path"],
+            "description": (
+                "Drawn-form kind. 'gradient' for smooth top/bottom/left/right "
+                "transitions; 'ellipse' for circular subject regions; "
+                "'rectangle' for hard-edged rectangular regions; 'path' for "
+                "arbitrary N-vertex closed polygons (AI subject silhouettes "
+                "per RFC-026, programmatic outlines, etc.). See "
+                "docs/guides/mask-shapes-from-words.md for the "
+                "spatial-English-to-parameter mapping (RFC-029 / ADR-084)."
+            ),
         },
         "dt_params": {
             "type": "object",
             "description": (
                 "Form-specific parameters. Coordinates are normalized "
-                "image coords [0, 1]. See chemigram.core.masking.dt_serialize "
-                "for the per-form parameter list."
+                "image coords [0, 1]. gradient: anchor_x, anchor_y, "
+                "rotation (deg, 0=horizontal-light-on-top, 90=vertical), "
+                "compression, state. ellipse: center_x, center_y, "
+                "radius_x, radius_y, border. rectangle: x0, y0, x1, y1, "
+                "border. path: vertices=[[x,y],...], border. See "
+                "docs/guides/mask-shapes-from-words.md for example phrases."
             ),
         },
     },
@@ -306,10 +318,17 @@ register_tool(
         "Apply a vocabulary primitive to the current XMP and snapshot the "
         "result. Composes three orthogonal axes: (1) entry's manifest "
         "mask_spec is honored automatically; (2) caller-supplied mask_spec "
-        "overrides the manifest one (ADR-076); (3) caller-supplied value "
-        "patches the entry's op_params per its parameters declaration "
-        "(RFC-021 / ADR-077). Scalar value is shorthand for single-parameter "
-        'entries; dict value (e.g., {"temp": 0.4, "tint": -0.1}) for multi-parameter.'
+        "overrides the manifest one (ADR-076) — use this for build-by-words "
+        "mask construction (e.g., 'bottom third', 'circle on subject'); "
+        "see docs/guides/mask-shapes-from-words.md for the "
+        "spatial-vocabulary-to-parameter mapping (RFC-029 / ADR-084); "
+        "(3) caller-supplied value patches the entry's op_params per its "
+        "parameters declaration (RFC-021 / ADR-077). Scalar value is "
+        "shorthand for single-parameter entries; dict value "
+        '(e.g., {"temp": 0.4, "tint": -0.1}) for multi-parameter. '
+        "Tip: same mask_spec across multiple apply_primitive calls binds to "
+        "the same mask_id in darktable (deterministic hash) — no need to "
+        "track mask handles."
     ),
     input_schema={
         "type": "object",
