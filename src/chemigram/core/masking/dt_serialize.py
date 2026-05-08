@@ -16,7 +16,11 @@ This module encodes:
 
 - :func:`encode_gradient_mask_points` — ``dt_masks_point_gradient_t``
 - :func:`encode_ellipse_mask_points` — ``dt_masks_point_ellipse_t``
-- :func:`encode_rectangle_path_points` — N ``dt_masks_point_path_t`` corners
+- :func:`encode_path_form_points` — N ``dt_masks_point_path_t`` corners
+  for arbitrary closed polygons (AI-detected silhouettes per RFC-026,
+  human-supplied outlines, etc.)
+- :func:`encode_rectangle_path_points` — 4-corner rectangle wrapper
+  over the generic path-form encoder
 - :func:`encode_blendop_with_drawn_mask` — modify the default 420-byte
   ``dt_develop_blend_params_t`` blob to bind a drawn mask by id
 
@@ -32,6 +36,7 @@ from __future__ import annotations
 import base64
 import struct
 import zlib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final
 
@@ -156,18 +161,21 @@ def encode_ellipse_mask_points(
     )
 
 
-def encode_rectangle_path_points(
+def encode_path_form_points(
+    vertices: Sequence[tuple[float, float]],
     *,
-    x0: float,
-    y0: float,
-    x1: float,
-    y1: float,
     border: float = 0.02,
 ) -> bytes:
-    """4 ``dt_masks_point_path_t`` corners forming a rectangle.
+    """N ``dt_masks_point_path_t`` corners forming a closed Bézier path.
 
-    Approximates a rectangle mask via a closed Bézier path with 4
-    sharp corners. ``border`` controls the feathering distance.
+    Generic encoder for arbitrary N-vertex closed polygons used as
+    ``DT_MASKS_PATH`` forms. Each vertex emits a sharp corner
+    (degenerate Bézier handles: ctrl1 = ctrl2 = corner). ``border``
+    controls the feathering distance, applied uniformly to every side.
+
+    Vertices are in normalized image-space coordinates ([0, 1] in both
+    axes). The path is implicitly closed — darktable connects the last
+    vertex back to the first when rendering the mask.
 
     Each ``dt_masks_point_path_t`` is:
         float corner[2];      // anchor
@@ -176,16 +184,17 @@ def encode_rectangle_path_points(
         float border[2];      // border width per side
         uint32 state;         // corner kind
 
-    For sharp corners we set ctrl1=ctrl2=corner (degenerate handles).
+    Use cases:
+    - 4-vertex rectangle (via :func:`encode_rectangle_path_points`)
+    - AI-detected subject silhouettes (RFC-026 path), with vertex
+      counts typically in the 50-1000 range after Douglas-Peucker
+      simplification at the provider boundary
+    - Any human-supplied polygon outline
     """
-    points = [
-        (x0, y0),
-        (x1, y0),
-        (x1, y1),
-        (x0, y1),
-    ]
+    if len(vertices) < 3:
+        raise ValueError(f"path form needs at least 3 vertices, got {len(vertices)}")
     out = b""
-    for cx, cy in points:
+    for cx, cy in vertices:
         out += struct.pack(
             "<ff ff ff ff I",
             cx,
@@ -199,6 +208,26 @@ def encode_rectangle_path_points(
             DT_MASKS_POINT_STATE_NORMAL,
         )
     return out
+
+
+def encode_rectangle_path_points(
+    *,
+    x0: float,
+    y0: float,
+    x1: float,
+    y1: float,
+    border: float = 0.02,
+) -> bytes:
+    """4 ``dt_masks_point_path_t`` corners forming a rectangle.
+
+    Thin wrapper over :func:`encode_path_form_points` that builds the
+    4-corner closed Bézier path for a rectangle. Kept as a distinct
+    convenience because rectangles are a high-traffic mask shape.
+    """
+    return encode_path_form_points(
+        [(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+        border=border,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -418,6 +447,37 @@ def build_rectangle_form(
     )
 
 
+def build_path_form(
+    *,
+    mask_id: int,
+    vertices: Sequence[tuple[float, float]],
+    border: float = 0.02,
+    name: str = "",
+) -> DrawnMaskForm:
+    """Convenience: build an N-vertex closed-path ``DrawnMaskForm``.
+
+    The general-purpose path-form builder. Use for arbitrary polygon
+    outlines — AI-detected subject silhouettes (RFC-026), human-supplied
+    polygons, programmatic mask construction. For the 4-vertex
+    rectangle special case, prefer :func:`build_rectangle_form` for
+    clarity (both produce equivalent forms).
+
+    ``vertices`` are in normalized image-space coordinates ([0, 1] in
+    both axes). The path is closed implicitly. ``border`` controls
+    feathering, uniform on all sides.
+    """
+    points = encode_path_form_points(vertices, border=border)
+    return DrawnMaskForm(
+        mask_id=mask_id,
+        mask_type=DT_MASKS_PATH,
+        mask_version=DT_MASKS_VERSION,
+        mask_name=name,
+        mask_points=points,
+        mask_nb=len(vertices),
+        mask_src=empty_mask_src(),
+    )
+
+
 # darktable XMP namespaces (must match the rest of the chemigram XMP writer)
 _NS_RDF: Final = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 _NS_DARKTABLE: Final = "http://darktable.sf.net/"
@@ -454,8 +514,10 @@ def build_form_from_spec(mask_id: int, spec: dict[str, object]) -> DrawnMaskForm
         return build_ellipse_form(mask_id=mask_id, **params)  # type: ignore[arg-type]
     if form_name == "rectangle":
         return build_rectangle_form(mask_id=mask_id, **params)  # type: ignore[arg-type]
+    if form_name == "path":
+        return build_path_form(mask_id=mask_id, **params)  # type: ignore[arg-type]
     raise ValueError(
-        f"unknown mask_spec dt_form {form_name!r}; one of: gradient, ellipse, rectangle"
+        f"unknown mask_spec dt_form {form_name!r}; one of: gradient, ellipse, rectangle, path"
     )
 
 

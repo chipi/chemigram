@@ -22,6 +22,7 @@ from chemigram.core.masking.dt_serialize import (
     encode_ellipse_mask_points,
     encode_gradient_mask_points,
     encode_mask_blob_for_xmp,
+    encode_path_form_points,
     encode_rectangle_path_points,
 )
 
@@ -95,6 +96,79 @@ def test_rectangle_path_corners_in_order() -> None:
         cx, cy = struct.unpack_from("<ff", blob, i * 36)
         corners.append((cx, cy))
     assert corners == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+
+
+# ---------------------------------------------------------------------------
+# generic N-vertex path-form encoder (RFC-026 substrate)
+# ---------------------------------------------------------------------------
+
+
+def test_path_form_encodes_triangle() -> None:
+    """3-vertex path: minimum legal polygon."""
+    vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
+    blob = encode_path_form_points(vertices)
+    assert len(blob) == 3 * 36
+
+
+def test_path_form_rejects_under_three_vertices() -> None:
+    """A 'closed' polygon needs at least 3 corners."""
+    with pytest.raises(ValueError, match="at least 3 vertices"):
+        encode_path_form_points([(0.0, 0.0), (1.0, 1.0)])
+    with pytest.raises(ValueError, match="at least 3 vertices"):
+        encode_path_form_points([])
+
+
+def test_path_form_round_trips_arbitrary_polygon() -> None:
+    """Vertex coords must round-trip through the struct cleanly."""
+    vertices = [
+        (0.1, 0.2),
+        (0.7, 0.15),
+        (0.85, 0.5),
+        (0.6, 0.9),
+        (0.2, 0.85),
+        (0.05, 0.55),
+    ]
+    blob = encode_path_form_points(vertices, border=0.03)
+    assert len(blob) == len(vertices) * 36
+    decoded_flat = []
+    expected_flat = []
+    for i, (vx, vy) in enumerate(vertices):
+        cx, cy = struct.unpack_from("<ff", blob, i * 36)
+        decoded_flat.extend([cx, cy])
+        expected_flat.extend([vx, vy])
+    assert decoded_flat == pytest.approx(expected_flat)
+
+
+def test_path_form_uses_degenerate_handles_for_sharp_corners() -> None:
+    """ctrl1 = ctrl2 = corner ⇒ sharp corners (no Bézier curvature)."""
+    vertices = [(0.2, 0.2), (0.8, 0.3), (0.5, 0.9)]
+    blob = encode_path_form_points(vertices)
+    for i, (cx, cy) in enumerate(vertices):
+        c_x, c_y, h1_x, h1_y, h2_x, h2_y = struct.unpack_from("<ffffff", blob, i * 36)
+        assert (c_x, c_y) == pytest.approx((cx, cy))
+        assert (h1_x, h1_y) == pytest.approx((cx, cy))  # ctrl1 = corner
+        assert (h2_x, h2_y) == pytest.approx((cx, cy))  # ctrl2 = corner
+
+
+def test_path_form_writes_uniform_per_side_border() -> None:
+    """Border parameter applies uniformly to every vertex's per-side floats."""
+    vertices = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]
+    blob = encode_path_form_points(vertices, border=0.07)
+    for i in range(len(vertices)):
+        b1, b2 = struct.unpack_from("<ff", blob, i * 36 + 24)
+        assert (b1, b2) == pytest.approx((0.07, 0.07))
+
+
+def test_rectangle_encoder_delegates_to_path_form() -> None:
+    """encode_rectangle_path_points and encode_path_form_points produce
+    identical bytes for the same 4-corner closed polygon — proves the
+    rectangle encoder is now a thin wrapper, no behavior drift."""
+    via_rect = encode_rectangle_path_points(x0=0.1, y0=0.2, x1=0.8, y1=0.9, border=0.04)
+    via_path = encode_path_form_points(
+        [(0.1, 0.2), (0.8, 0.2), (0.8, 0.9), (0.1, 0.9)],
+        border=0.04,
+    )
+    assert via_rect == via_path
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +295,71 @@ def test_build_rectangle_form_has_four_path_points() -> None:
     assert form.mask_type == DT_MASKS_PATH
     assert form.mask_nb == 4
     assert len(form.mask_points) == 4 * 36
+
+
+def test_build_path_form_with_six_vertex_polygon() -> None:
+    """Generic N-vertex path form (RFC-026 substrate)."""
+    from chemigram.core.masking.dt_serialize import DT_MASKS_PATH, build_path_form
+
+    vertices = [
+        (0.1, 0.2),
+        (0.7, 0.15),
+        (0.85, 0.5),
+        (0.6, 0.9),
+        (0.2, 0.85),
+        (0.05, 0.55),
+    ]
+    form = build_path_form(mask_id=42, vertices=vertices, name="hexagon")
+    assert form.mask_id == 42
+    assert form.mask_type == DT_MASKS_PATH
+    assert form.mask_nb == 6
+    assert form.mask_name == "hexagon"
+    assert len(form.mask_points) == 6 * 36
+
+
+def test_build_path_form_handles_large_subject_silhouette() -> None:
+    """A 500-vertex polygon (typical AI-subject mask after Douglas-Peucker
+    simplification) should encode without issue."""
+    import math
+
+    from chemigram.core.masking.dt_serialize import build_path_form
+
+    # Synthesize a 500-vertex circle approximation.
+    n = 500
+    vertices = [
+        (0.5 + 0.4 * math.cos(2 * math.pi * i / n), 0.5 + 0.4 * math.sin(2 * math.pi * i / n))
+        for i in range(n)
+    ]
+    form = build_path_form(mask_id=1, vertices=vertices)
+    assert form.mask_nb == n
+    assert len(form.mask_points) == n * 36
+
+
+def test_build_form_from_spec_dispatches_to_path() -> None:
+    """The vocab-spec dispatcher must accept dt_form: 'path' for RFC-026."""
+    from chemigram.core.masking.dt_serialize import (
+        DT_MASKS_PATH,
+        build_form_from_spec,
+    )
+
+    spec = {
+        "dt_form": "path",
+        "dt_params": {
+            "vertices": [(0.2, 0.2), (0.8, 0.3), (0.5, 0.9)],
+            "border": 0.03,
+        },
+    }
+    form = build_form_from_spec(mask_id=7, spec=spec)
+    assert form.mask_type == DT_MASKS_PATH
+    assert form.mask_nb == 3
+
+
+def test_build_form_from_spec_rejects_unknown_form_listing_path() -> None:
+    """The error message must list 'path' as a valid form name."""
+    from chemigram.core.masking.dt_serialize import build_form_from_spec
+
+    with pytest.raises(ValueError, match="path"):
+        build_form_from_spec(mask_id=1, spec={"dt_form": "bogus", "dt_params": {}})
 
 
 def test_masks_history_xml_round_trip() -> None:
