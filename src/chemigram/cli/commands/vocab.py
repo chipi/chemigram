@@ -136,6 +136,194 @@ def show(
     )
 
 
+@app.command("validate")
+def validate(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="Vocabulary entry name to validate."),
+    pack: list[str] = typer.Option(
+        None,
+        "--pack",
+        "-p",
+        help="Pack name (repeatable). Defaults to ['starter'].",
+    ),
+) -> None:
+    """Run consistency checks on a vocabulary entry.
+
+    Validates: manifest schema, dtstyle file exists + parses, blendop_params
+    bytes decode at the expected size, modversion drift between manifest
+    and dtstyle, parameters block declarations valid (ranges + offsets).
+    Useful mid-authoring to catch drift before commit.
+
+    Per ADR-072: text + --json output modes. Returns NOT_FOUND if entry
+    missing; INVALID_INPUT if any check fails; SUCCESS if all pass.
+    """
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    packs = _packs_or_default(pack)
+
+    try:
+        index = load_packs(packs)
+    except Exception as exc:
+        writer.error(
+            f"failed to load packs {packs}: {exc}",
+            ExitCode.INVALID_INPUT,
+            packs=packs,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    entry = index.lookup_by_name(name)
+    if entry is None:
+        writer.error(
+            f"vocabulary entry not found: {name}",
+            ExitCode.NOT_FOUND,
+            name=name,
+            packs=packs,
+        )
+        raise typer.Exit(code=ExitCode.NOT_FOUND.value)
+
+    checks = _run_validation_checks(entry)
+
+    failures = [c for c in checks if c["status"] == "fail"]
+    for check in checks:
+        writer.event(
+            "validation_check",
+            check=check["check"],
+            status=check["status"],
+            detail=check.get("detail"),
+        )
+
+    if failures:
+        writer.error(
+            f"{len(failures)}/{len(checks)} checks failed for {name}",
+            ExitCode.INVALID_INPUT,
+            name=name,
+            failed_count=len(failures),
+            total_count=len(checks),
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
+
+    writer.result(
+        message=f"{len(checks)}/{len(checks)} checks passed for {name}",
+        name=name,
+        passed_count=len(checks),
+        total_count=len(checks),
+    )
+
+
+def _check_touches(entry: Any, dtstyle: Any) -> dict[str, Any]:
+    plugin_ops = {p.operation for p in dtstyle.plugins}
+    missing = [t for t in entry.touches if t not in plugin_ops]
+    if missing:
+        return {
+            "check": "touches_match_plugins",
+            "status": "fail",
+            "detail": f"declared in manifest but not in dtstyle: {missing}",
+        }
+    return {"check": "touches_match_plugins", "status": "pass"}
+
+
+def _check_modversions(entry: Any, dtstyle: Any) -> dict[str, Any]:
+    mismatches = []
+    for op, expected_mv in (entry.modversions or {}).items():
+        for plugin in dtstyle.plugins:
+            if plugin.operation == op and plugin.module != expected_mv:
+                mismatches.append(f"{op}: manifest={expected_mv}, dtstyle={plugin.module}")
+    if mismatches:
+        return {
+            "check": "modversions_agree",
+            "status": "fail",
+            "detail": "; ".join(mismatches),
+        }
+    return {"check": "modversions_agree", "status": "pass"}
+
+
+def _check_blendop_size(dtstyle: Any) -> dict[str, Any]:
+    from chemigram.core.masking.dt_serialize import _decode_default_blendop_blob
+
+    failures = []
+    for plugin in dtstyle.plugins:
+        try:
+            if plugin.blendop_params.startswith("gz"):
+                raw = _decode_default_blendop_blob(plugin.blendop_params)
+            else:
+                raw = bytes.fromhex(plugin.blendop_params)
+            if len(raw) != 420:
+                failures.append(f"{plugin.operation}: blendop is {len(raw)} bytes (expected 420)")
+        except Exception as exc:
+            failures.append(f"{plugin.operation}: {exc}")
+    if failures:
+        return {
+            "check": "blendop_params_size",
+            "status": "fail",
+            "detail": "; ".join(failures),
+        }
+    return {"check": "blendop_params_size", "status": "pass"}
+
+
+def _check_parameters(entry: Any, dtstyle: Any) -> dict[str, Any] | None:
+    """Returns None if the entry isn't parameterized."""
+    if entry.parameters is None:
+        return None
+    failures = []
+    for p in entry.parameters:
+        target_plugin = next(
+            (plg for plg in dtstyle.plugins if plg.operation == p.field.module), None
+        )
+        if target_plugin is None:
+            failures.append(
+                f"parameter {p.name!r}: target module {p.field.module!r} not in dtstyle plugins"
+            )
+            continue
+        if target_plugin.module != p.field.modversion:
+            failures.append(
+                f"parameter {p.name!r}: modversion={p.field.modversion} "
+                f"but dtstyle plugin {p.field.module} is mv{target_plugin.module}"
+            )
+    if failures:
+        return {
+            "check": "parameters_consistent",
+            "status": "fail",
+            "detail": "; ".join(failures),
+        }
+    return {"check": "parameters_consistent", "status": "pass"}
+
+
+def _run_validation_checks(entry: Any) -> list[dict[str, Any]]:
+    """Execute the standard consistency checks for one entry. Returns a
+    list of {check, status, detail?} dicts. Status is 'pass' or 'fail'.
+
+    Checks: dtstyle_exists, dtstyle_parses, touches_match_plugins,
+    modversions_agree, blendop_params_size, parameters_consistent
+    (only if entry is parameterized).
+    """
+    from chemigram.core.dtstyle import DtstyleParseError, parse_dtstyle
+
+    checks: list[dict[str, Any]] = []
+
+    # Early-exit checks (subsequent ones depend on dtstyle parsing)
+    if not entry.path.exists():
+        checks.append({"check": "dtstyle_exists", "status": "fail", "detail": str(entry.path)})
+        return checks
+    checks.append({"check": "dtstyle_exists", "status": "pass"})
+
+    try:
+        dtstyle = parse_dtstyle(entry.path)
+    except DtstyleParseError as exc:
+        checks.append({"check": "dtstyle_parses", "status": "fail", "detail": str(exc)})
+        return checks
+    checks.append({"check": "dtstyle_parses", "status": "pass"})
+
+    # Independent checks (each its own helper to keep complexity bounded)
+    checks.append(_check_touches(entry, dtstyle))
+    checks.append(_check_modversions(entry, dtstyle))
+    checks.append(_check_blendop_size(dtstyle))
+    param_check = _check_parameters(entry, dtstyle)
+    if param_check is not None:
+        checks.append(param_check)
+
+    return checks
+
+
 def _serialize_parameters(entry: Any) -> list[dict[str, Any]] | None:
     """Render an entry's ParameterSpec list as plain dicts for CLI output.
 

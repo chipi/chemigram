@@ -14,6 +14,7 @@ import typer
 from chemigram.cli._context import CliContext
 from chemigram.cli.commands import (
     binding,
+    cache,
     context,
     edit,
     export,
@@ -48,6 +49,11 @@ app.add_typer(
     session_log.app,
     name="session-log",
     help="Read-side analytics for per-image session JSONL transcripts.",
+)
+app.add_typer(
+    cache.app,
+    name="cache",
+    help="Manage the per-image render preview cache (list / size / clear).",
 )
 app.command(
     name="status",
