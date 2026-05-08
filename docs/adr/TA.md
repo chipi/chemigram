@@ -436,6 +436,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Draft v0.1 | — |
 | RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
 | RFC-026 | AI-derived mask provider scaffolding (subject / depth / content-aware spots) | Draft v0.1 | — |
+| RFC-029 | Compositional masks at apply time (build-by-words and reusable mask ids) | Draft v0.1 | — |
 
 ### ADRs
 
