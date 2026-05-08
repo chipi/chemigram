@@ -320,10 +320,16 @@ The project is currently in **Phase 2** (vocabulary maturation):
 
 - **Phase 0** (validation) — closed green, 8 findings logged into ADRs
 - **Doc system** — complete (PRDs, RFCs, ADRs, references all populated)
-- **Phase 1** (minimum viable loop) — ✅ **closed at v1.0.0**. All six slices shipped: parser/XMP/synthesizer/render/EXIF (v0.1.0), versioning + masks (v0.2.0), MCP server + 27 tools + workspace + prompts (v0.3.0), masking provider + mask-bound L3 (v0.4.0), context + session transcripts (v0.5.0), starter vocabulary + Mode A v2 + 1.0.0 (v1.0.0). 13 of 17 RFCs closed: RFC-001/002/003/004/005/006/009/010/011/013/014/015/016 → ADR-050..061; RFC-016 closes via ADR-043/044/045.
-- **Phase 2** (vocabulary maturation) — **in progress (use-driven)**. Intermittent, not slice-and-gate. The work shape: run real sessions, log gaps via `log_vocabulary_gap`, periodically open darktable to capture missing primitives as `.dtstyle` files, drop into `~/.chemigram/vocabulary/personal/`. Markers: ~30–60 personal entries after 3 months. Phase 2 ends when the architecture itself can't satisfy a class of need (triggers Phase 3, 4, or 5).
+- **Phase 1** (minimum viable loop) — ✅ **closed at v1.0.0**.
+- **Phase 1.1–1.5** (validation + CLI + expressive-baseline + mask cleanup) — ✅ **closed v1.1–v1.5** (ADR-062..076).
+- **Phase 1.6** (parameterized vocabulary, RFC-021 → ADR-077..080) — ✅ **closed v1.6.0**. 18 parameterized entries, 11 modules.
+- **Phase 1.7** (Tier 2 + Bucket A; RFC-022 → ADR-081) — ✅ **closed v1.7.0**.
+- **Phase 1.8** (HSL via colorequal; RFC-023 → ADR-083; Lightroom daily-use parity 51/52) — ✅ **closed v1.8.0**.
+- **Phase 1.9** (mask + retouch architecture trilogy; RFC-024/025/026/029 → ADR-084..087) — ✅ **closed v1.9.0**. 83 vocabulary entries, 1811 tests.
+- **Phase 2** (vocabulary maturation) — **in progress (use-driven)**. Intermittent, not slice-and-gate. The work shape: run real sessions, log gaps via `log_vocabulary_gap`, periodically open darktable to capture missing primitives as `.dtstyle` files, drop into `~/.chemigram/vocabulary/personal/`. Markers: ~30–60 personal entries after 3 months.
+- **Phase 4** (content-aware masking) — Phase 1 ✅ closed v1.9.0 (LLM-vision via RFC-026 / ADR-086); Phase 2 (RFC-030 deployed sibling-provider scaffolding) drafted, deferred.
 
-If you're doing implementation work, Phase 1 is closed; you're either maintaining Phase 1 (bug fixes, polish, doc updates) or starting Phase 2 work (authoring vocabulary entries, running sessions, logging findings). The Phase 2 framing is in `IMPLEMENTATION.md` § "Phase 2 — Vocabulary maturation"; the personal-vocabulary growth pattern is in `vocabulary/starter/README.md`.
+If you're doing implementation work, Phase 1 + the v1.6–v1.9 mask + Lightroom-parity sub-phases are closed; you're either maintaining shipped functionality (bug fixes, polish, doc updates) or starting Phase 2 work (authoring vocabulary entries, running sessions, logging findings) or RFC-027/RFC-028/RFC-030 work when those unfreeze. The Phase 2 framing is in `IMPLEMENTATION.md` § "Phase 2 — Vocabulary maturation"; the personal-vocabulary growth pattern is in `vocabulary/starter/README.md`.
 
 If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions now are ADRs (closing remaining open RFCs as evidence comes in) or new PRDs (when scope expands).
 

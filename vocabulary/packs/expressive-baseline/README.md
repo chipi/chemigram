@@ -2,7 +2,14 @@
 
 The comprehensive baseline vocabulary pack for expressive taste articulation.
 
-32 entries calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter). 14 authored programmatically via Path C struct reverse-engineering (ADR-073) — including the 3 channelmixerrgb B&W entries (`bw_convert`, `bw_sky_drama`, `bw_foliage`) — 4 drawn-mask-bound via path 4a (ADR-076), and 14 parameterized via Path C decoders (ADR-077..080): the 8 Phase 4 magnitude-ladder collapses (`exposure`, `vignette`, `saturation_global`, `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature`) plus the 6 RFC-022 Tier 2 expansions (`crop`, `sharpen`, `vibrance`, `chroma_global`, `hue_angle`, `toneequalizer`).
+**81 entries (post-v1.9.0)** calibrated to darktable 5.4.1, covering the parameter dimensions identified in the taste-library research (Van Gogh, Rembrandt, Picasso, Adams, Capa, Leiter) plus the v1.6–v1.9 expansions. Composition:
+
+- **18 parameterized** primitives across 11 modules (Path C; RFC-021 / ADR-077..080) — `exposure`, `vignette`, `colorbalancergb` (saturation_global / vibrance / chroma_global / hue_angle / brilliance × 4), `sigmoid_contrast`, `bilat_clarity_strength`, `grain_strength`, `highlights_clip_threshold`, `temperature`, `crop`, `sharpen`, `toneequalizer`, `dehaze`, plus v1.7+ Bucket A additions and the v1.8 HSL via `colorequal`.
+- **L2 looks (13)** — the original `look_neutral`, plus 4 portrait/landscape/vintage looks, plus the **9 cinematic looks** (#104), plus the **5 compositional-mask L2 looks** added in v1.9.0 that exercise drawn + parametric range_filter intersection (`look_subject_lift_dark_only`, `look_sky_blue_deepen`, `look_horizon_warm_glow`, `look_subject_brighten_highlights`, `look_dark_pixels_global_lift`).
+- **Mask-bound L3 entries (4)** — `gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows`, `radial_subject_lift`, `rectangle_subject_band_dim`. The new compositional looks above demonstrate the v1.9.0 mask trilogy (RFC-024/025/026/029).
+- **L3 discrete kinds** — channelmixerrgb B&W trio + 7 clarity/sharpen/vignette/split-grade variants (#110) + the existing magnitude-ladder discretes preserved as Tier 0 teaching artifacts.
+
+The companion **`apply_spot` MCP tool** (RFC-025 / ADR-087) ships alongside the pack — sister to `apply_primitive` for spot heal/clone retouch (no vocabulary entry required; the tool IS the primitive surface for that class).
 
 ## Composition with `starter`
 
@@ -13,7 +20,7 @@ from chemigram.core.vocab import load_packs
 vocab = load_packs(["starter", "expressive-baseline"])
 ```
 
-The starter pack stays minimal (4 entries — exposure ±0.5, warm-subtle WB, neutral L2 look) as a teaching artifact. The expressive-baseline pack ships the comprehensive set needed for actual artist-profile work.
+The starter pack stays minimal (2 entries — `wb_warm_subtle` + `look_neutral`) as a teaching artifact post-v1.6.0 (the original discrete `expo_+0.5` / `expo_-0.5` were collapsed into the parameterized `exposure` entry that lives in expressive-baseline). The expressive-baseline pack ships the comprehensive set needed for actual artist-profile work.
 
 ## Path A vs Path B authoring
 

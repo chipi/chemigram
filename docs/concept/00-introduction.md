@@ -155,15 +155,17 @@ The vocabulary used across the package. When in doubt about what a term means, f
 
 ### Masks
 
-**Mask** — a spatial selection that restricts an effect to part of the frame. Two kinds in Chemigram (per ADR-076): parametric and drawn. (The earlier raster-PNG path was retired in v1.5.0 — darktable doesn't read external PNGs for raster masks.)
+**Mask** — a spatial selection that restricts an effect to part of the frame. As of v1.9.0 Chemigram supports four mask sources, all serializing to bytes darktable's mask system consumes (per ADR-076): drawn, parametric, retouch, and LLM-vision-derived. (The earlier raster-PNG path was retired in v1.5.0 — darktable doesn't read external PNGs for raster masks.)
 
-**Parametric mask** — a mask defined by pixel-value conditions (luminance range, hue range, etc.) in `blendop_params`. Content-agnostic.
+**Parametric mask (RFC-024 / ADR-085, v1.9.0)** — a mask defined by pixel-value conditions in `blendop_params`. The agent-facing surface is `mask_spec.range_filter` with `kind ∈ {luminance, color_h, color_s, color_l}`. Content-agnostic at the geometry level; intersects with drawn masks for "drawn AND parametric" composition.
 
-**Drawn mask** — a mask defined by geometric primitives (gradient, ellipse, rectangle, path) encoded into `<darktable:masks_history>` and bound to plugins via `blendop_params.mask_id`. Either pre-authored by the photographer in darktable's GUI, or declared in a vocabulary entry's `mask_spec` and serialized at apply time.
+**Drawn mask (RFC-029 / ADR-084)** — a mask defined by geometric primitives (gradient, ellipse, rectangle, path) encoded into `<darktable:masks_history>` and bound to plugins via `blendop_params.mask_id`. Constructed inline from `mask_spec.dt_form` + `dt_params` at apply time — see `mask-shapes-from-words.md` for the spatial-English-to-parameter mapping.
 
-**`mask_spec`** — a vocabulary-entry field declaring drawn-form geometry. Shape: `{"dt_form": "gradient" | "ellipse" | "rectangle", "dt_params": {...}}`. Presence triggers the drawn-mask apply path. See `04`/6.2.
+**`mask_spec`** — a vocabulary-entry field (or apply-time argument) carrying mask geometry. Shape: optional `dt_form` + `dt_params` (drawn) + optional `range_filter` (parametric). Three valid combinations: drawn only, parametric only, both AND-composed. See `04`/6.2.
 
-**Content-aware masking (Phase 4)** — pixel-precise organic masks (e.g., subject silhouettes) come from a future sibling project that produces darktable drawn-form geometry. Not available in v1.5.0; the `apply_with_drawn_mask` seam is ready when it ships. See `04`/6.4.
+**Retouch / spot heal/clone (RFC-025 / ADR-087, v1.9.0)** — pixel-replacement primitive class via the `apply_spot` MCP tool, sister to `apply_primitive`. HEAL + CLONE algorithms on circle geometry; single form per call. AI auto-spot detection deferred to RFC-030.
+
+**Content-aware masking (RFC-026 / ADR-086, v1.9.0)** — coarse subject masks via the chat-client's vision-capable LLM (Claude.ai / ChatGPT / Claude Code). Conversation-native, zero deployment. Pixel-precise silhouettes and depth masks deferred to RFC-030's deployed sibling-provider scaffolding.
 
 ### Context files
 
@@ -237,14 +239,18 @@ If you find a contradiction between the package and a brief, the package is corr
 | Phase 0 validation done | ✅ Closed green (8 findings logged) |
 | Doc system populated | ✅ Complete (PRDs, RFCs, ADRs in `docs/prd`, `docs/rfc`, `docs/adr`) |
 | Phase 1 complete | ✅ Yes — Slices 1–6 shipped (v0.1.0 through v1.0.0). Issues #1–#29 closed; thirteen RFCs closed (ADR-050..061). |
-| Phase 1.1 complete | ✅ Yes — Comprehensive validation milestone shipped at v1.1.0. 519 tests, real-darktable e2e suite, three engine bugs root-caused and fixed (ADR-062). Issues #30–#38 closed. |
-| Phase 1.2 (planned) | Vocabulary expansion to ~40 entries via the new `expressive-baseline` pack. Unblocks Path B (new-instance addition) in the synthesizer. RFC-018 → ADR-063 + ADR-064. Targeted at v1.2.0. |
+| Phase 1.1–1.5 complete | ✅ Yes — comprehensive validation, engine unblock, CLI, expressive-baseline authoring, mask architecture cleanup (ADR-062..076). |
+| Phase 1.6 complete | ✅ Yes (v1.6.0) — parameterized vocabulary (RFC-021 → ADR-077..080). 18 parameterized entries across 11 modules. |
+| Phase 1.7 complete | ✅ Yes (v1.7.0) — Tier 2 expansion + Lightroom-parity Bucket A (RFC-022 → ADR-081). |
+| Phase 1.8 complete | ✅ Yes (v1.8.0) — HSL via colorequal (RFC-023 → ADR-083); Lightroom daily-use parity 51/52 (98%). |
+| Phase 1.9 complete | ✅ Yes (v1.9.0) — mask + retouch architecture trilogy (RFC-024/025/026/029 → ADR-084..087). 83 vocabulary entries, 1811 tests, `apply_spot` MCP tool, compositional masks (drawn + parametric range_filter + LLM-vision provider + retouch). |
+| Phase 2 (vocab maturation) | In progress — use-driven, not slice-and-gate. |
 
 For the canonical phase plan and history, see `docs/IMPLEMENTATION.md`.
 
-Phase 1 is closed at **v1.0.0**: the engine ships a working agent loop end-to-end. **v1.1.0** adds a comprehensive-validation milestone — a capability matrix walked through 8 sub-issues with real-darktable e2e coverage, finding and fixing three engine bugs that integration-stub tests had missed. **Phase 1.2** (planned for v1.2.0) closes the engine's last shipping gap — Path B in the synthesizer — and ships the 35-entry `expressive-baseline` vocabulary pack covering the taste-library artist profiles. Phase 2 (use-driven personal-vocabulary growth) begins after that, on top of a real comprehensive baseline rather than from five entries. Mode A connects via MCP, the bundled `CoarseAgentProvider` produces masks via the calling agent's vision, the context layer reads tastes/brief/notes and writes back through propose-and-confirm, session transcripts capture every turn, and a small starter vocabulary pack ships with `pip install chemigram`.
+Phase 1 closed at **v1.0.0**: the engine ships a working agent loop end-to-end. v1.1–v1.5 hardened the engine, added the CLI, authored the expressive-baseline pack, and cleaned up the mask architecture (drawn-only, ADR-076). v1.6–v1.8 closed Lightroom daily-use parity (51/52 controls). **v1.9.0** closed the mask + retouch architecture trilogy: spatial masks (RFC-029 / ADR-084), parametric range filters (RFC-024 / ADR-085), LLM-vision-as-provider for content-derived masks (RFC-026 / ADR-086), and spot heal/clone (RFC-025 / ADR-087). The deployed sibling-provider precision tier (RFC-030) is drafted and deferred.
 
-**Phase 2 (vocabulary maturation)** is now in progress. It's a use-phase, not a build-phase: the photographer runs real Mode A sessions, the agent flags gaps via `log_vocabulary_gap`, and a vocabulary-authoring evening per month grows the personal vocabulary pack. See `docs/IMPLEMENTATION.md` Phase 2 section for the work shape and `vocabulary/starter/README.md` for the personal-vocabulary growth pattern.
+**Phase 2 (vocabulary maturation)** is in progress. It's a use-phase, not a build-phase: the photographer runs real Mode A sessions, the agent flags gaps via `log_vocabulary_gap`, and a vocabulary-authoring evening per month grows the personal vocabulary pack. See `docs/IMPLEMENTATION.md` Phase 2 section for the work shape and `vocabulary/starter/README.md` for the personal-vocabulary growth pattern.
 
 ---
 

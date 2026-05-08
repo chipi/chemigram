@@ -205,8 +205,12 @@ Per `04`'s BYOA principle, AI capabilities are not bundled with Chemigram. They'
 
 | Property | Detail |
 |-|-|
-| v1.5.0 | Drawn-form geometry baked into vocabulary entries' `mask_spec`. Three forms supported: gradient, ellipse, rectangle. Encoded directly into the XMP's `masks_history` at apply time; no AI involved. See ADR-076. |
-| Phase 4 | Sibling project (working name `chemigram-masker-sam`) producing darktable-compatible drawn-form geometry from natural-language prompts. Wire format is the same darktable schema the geometric primitives use today — not PNG bytes. The apply path stays unchanged when content-aware masking lands. |
+| v1.5.0 | Drawn-form geometry baked into vocabulary entries' `mask_spec`. Three forms initially: gradient, ellipse, rectangle. Encoded into the XMP's `masks_history` at apply time. See ADR-076. |
+| v1.9.0 — drawn shapes | `dt_form: "path"` added (N-vertex closed polygons) per RFC-026 substrate; agent-facing build-by-words workflow per RFC-029 / ADR-084 (`mask-shapes-from-words.md`). |
+| v1.9.0 — parametric range filters | `mask_spec.range_filter` field with `kind ∈ {luminance, color_h, color_s, color_l}` per RFC-024 / ADR-085. Encoded into `blendif` byte fields in `blendop_params`. Composes with drawn masks via AND-intersection. |
+| v1.9.0 — retouch | `apply_spot` MCP tool (sister to `apply_primitive`) for heal/clone at a coordinate. Form-array op_params encoding per RFC-025 / ADR-087. |
+| v1.9.0 — LLM-vision provider | The chat-client's vision-capable LLM (Claude.ai / ChatGPT / Claude Code) sees `render_preview` JPEGs and constructs `mask_spec` from spatial reasoning. Zero deployment cost. RFC-026 / ADR-086. |
+| RFC-030 (deferred) | Deployed sibling-provider scaffolding for the precision tier — SAM-class subject masks, MiDaS-class depth, content-aware spot detectors. Unfreezes when LLM-vision precision becomes the bottleneck. |
 | Out of scope | PNG-based mask interchange. The earlier `MaskingProvider` Protocol (returning PNG bytes) was retired in v1.5.0 — verified that darktable never reads external PNGs for raster masks. |
 
 ### Mode B evaluators (future)

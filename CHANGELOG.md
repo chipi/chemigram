@@ -8,6 +8,173 @@ per ADR-041.
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-05-08
+
+**Mask + retouch architecture trilogy — structurally complete.**
+
+v1.9.0 closes RFC-024 (parametric range masks), RFC-025 (spot heal/clone),
+RFC-026 (LLM-vision-as-provider for AI masks), and RFC-029 (compositional
+masks at apply time / build-by-words). Photographers can now compose
+spatial masks (drawn shapes), parametric range filters (luminance + HSL
+color), LLM-vision-derived content masks (chat-client native), and spot
+heal/clone retouch — all through one unified `mask_spec` wire and one new
+MCP tool. RFC-030 (deployed sibling-provider scaffolding for the precision
+tier) is drafted and deferred.
+
+### Stats
+
+- Tests: 1451 → **1811** (+360)
+- ADRs: 83 → **87** (ADR-084..087)
+- RFCs Decided: 23 → **27** (RFC-024 / RFC-025 / RFC-026 / RFC-029)
+- Vocabulary entries: 78 → **83** (+5 compositional-mask L2 looks)
+- New MCP tool: **`apply_spot`** (sister to `apply_primitive`)
+- New CLI verbs: `vocab validate`, `cache {list, size, clear}`
+
+### The mask trilogy
+
+#### RFC-029 / ADR-084 — Compositional masks at apply time (build-by-words)
+
+The wire (`apply_primitive` accepts inline `mask_spec`) was already
+shipped pre-v1.9.0 but undiscoverable. v1.9.0 formalizes it as the
+canonical agent-facing pattern: photographer says "lift the bottom
+third"; agent translates to `{dt_form: "gradient", dt_params: {anchor_y:
+0.67, rotation: 180, compression: 0.5}}` and applies.
+
+- New docs guide `docs/guides/mask-shapes-from-words.md` with 30+
+  phrase→spec examples covering halves/thirds, hard-edged regions,
+  ellipses at rule-of-thirds, diagonals, and polygons.
+- Path geometry added — `dt_form: "path"` with N-vertex closed polygons
+  (RFC-026 substrate; AI subject masks land here when they ship).
+- 12 visual proofs against the synthetic grayscale ramp.
+- 5 e2e tests verifying named shapes produce the expected spatial
+  signature through real darktable.
+- Lint test ensures every guide example round-trips through the
+  encoder.
+
+The deterministic-hash `mask_id` provides reuse semantics for free —
+same spec across N apply calls = same mask in darktable's
+`masks_history`. No `make_mask` tool needed.
+
+#### RFC-024 / ADR-085 — Parametric range-filter masks
+
+`mask_spec` gains optional `range_filter` field:
+
+```jsonc
+{
+  "dt_form": "ellipse",                            // spatial (optional)
+  "dt_params": {...},
+  "range_filter": {                                 // pixel-level (optional)
+    "kind": "luminance" | "color_h" | "color_s" | "color_l",
+    "min": 0.0, "max": 0.3, "feather": 0.05, "invert": false
+  }
+}
+```
+
+- Encoded into darktable's `blendif` byte fields (4 control points per
+  channel; 16 channel slots; 64 total floats).
+- HSL color kinds set `blend_cst` to `IOP_CS_HSL` automatically.
+- Three valid combinations: drawn only, parametric only, drawn +
+  parametric (intersection — the canonical "dark pixels in this
+  region" workflow).
+- `mask_combine` hardcoded to AND for v1.9.0; OR / SUBTRACT / INVERT
+  deferred.
+- 13 unit tests + 3 e2e tests verifying the wire end-to-end.
+- 5 visual-proof JPEGs in the gallery showing parametric-only and
+  composite refinement.
+
+#### RFC-026 / ADR-086 — LLM-vision-as-provider for AI masks
+
+Reframed from RFC-026 v0.1's deployed-provider-only architecture:
+the chat-client (Claude.ai / ChatGPT / Claude Code) already has vision
+in the conversation. The agent calls `render_preview`, the LLM sees the
+JPEG, and constructs `mask_spec` from spatial reasoning. **Zero deployment
+cost**; covers ~70% of content-derived masking workflows.
+
+- New docs guide `docs/guides/llm-vision-for-masks.md` with 6 workflow
+  patterns: subject region, polygon trace, sky/foreground split,
+  color-range estimation, subject-vs-background routing, iterative
+  refinement.
+- Honest limitations called out (single-strand hair, dense spot
+  enumeration, per-pixel depth — those route to RFC-030).
+- Zero new MCP tools; the wire was already there.
+- Deployed-provider precision tier moved to **RFC-030** (Draft,
+  deferred) — unfreezes when LLM-vision precision becomes the
+  bottleneck on real workflows.
+
+#### RFC-025 / ADR-087 — Retouch byte encoding + `apply_spot` MCP tool
+
+The largest portrait gap from capability-survey § 10 closes.
+Photographers can now remove sensor dust, blemishes, distracting
+elements, and clone source regions — all via one MCP call.
+
+- New MCP tool `apply_spot(image_id, kind, x, y, radius, source_x?,
+  source_y?)` — sister to `apply_primitive` for the structurally
+  different primitive class of pixel replacement.
+- Byte encoders verified against darktable 5.4.1 `src/iop/retouch.c`:
+  13260-byte op_params (300-form fixed array of 44 bytes each +
+  60-byte global tail), 16-byte circle mask form, 8-byte clone mask_src.
+- v1.9.0 scope: HEAL + CLONE on CIRCLE geometry, single form per call.
+  AI auto-detection (multi-form batched) routes to RFC-030.
+- 12 unit tests + 4 e2e tests against real darktable.
+- ADR-033's narrow MCP surface preserved with this single addition.
+
+### Compositional-mask L2 looks (5 new entries)
+
+Pre-baked vocabulary demonstrating the full mask trilogy:
+
+| Entry | Composition |
+|-|-|
+| `look_subject_lift_dark_only` | Drawn ellipse + luminance shadows filter |
+| `look_sky_blue_deepen` | Gradient (top half) + color_h cyan-blue range |
+| `look_horizon_warm_glow` | Horizontal gradient + color_h warm tones |
+| `look_subject_brighten_highlights` | Drawn ellipse + luminance highlights filter |
+| `look_dark_pixels_global_lift` | Pure parametric range_filter (no spatial mask) |
+
+### CLI ergonomics
+
+- `chemigram vocab validate <name>` — runs 6 consistency checks per entry
+  (manifest, dtstyle exists + parses, modversions agree, blendop bytes
+  decode, parameters match dtstyle plugins). Useful mid-authoring.
+- `chemigram cache {list, size, clear}` — preview cache management
+  (sister to gap-log / session-log; `--since`, `--image`, `--yes`).
+- 26 new CLI integration tests (18 vocab + 8 cache).
+
+### Drift cleanup
+
+Comprehensive doc-alignment pass following the trilogy ship:
+
+- CLAUDE.md PNG-mask references retired (ADR-021 historical) and
+  per-image-repo layout updated (the dead `masks/` directory removed).
+- RFC-024's 11 cross-references updated to the RFC-026 / RFC-030 split.
+- capability-survey § 10 + § 13 reflect today's closures.
+- mask-applicable-controls.md gains `range_filter` + `apply_spot`
+  sections.
+- `apply_with_drawn_mask` renamed to `apply_with_mask` (backcompat
+  alias preserved); after ADR-085 the function handles drawn /
+  parametric / drawn+parametric.
+- Concept package (00, 03, 04) updated with v1.9.0 mask architecture.
+- README + docs/index + IMPLEMENTATION + PA + CONTRIBUTING + pack
+  READMEs all aligned.
+
+### Backward compatibility
+
+- `apply_with_drawn_mask` retained as a module-level alias for
+  `apply_with_mask`; existing callers continue to work.
+- All v1.8.0 mask-bound vocabulary entries continue to function; the
+  `mask_spec` schema is purely additive (added `range_filter`,
+  `dt_form: "path"`).
+- CLI verbs and MCP tools are additive only.
+
+### Deferred to future releases
+
+- RFC-027 (multi-photographer review phase plan) — not yet drafted.
+- RFC-028 (pack management / vendor packs) — not yet drafted.
+- RFC-030 (deployed sibling-provider scaffolding) — Draft v0.1.
+- Recipe book, onboarding guide, architecture diagrams, fuzz tests.
+- `#94` manual tone curve, `#95` lens EXIF auto-binding, `#96` denoise
+  wavelet baseline, `#98` colorzones HSL precision — all under the
+  `#100` darktable-session umbrella.
+
 ## [1.8.0] — 2026-05-07
 
 **Lightroom daily-use parity — 51/52 controls (98%) across 6 panels.**

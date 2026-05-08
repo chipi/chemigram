@@ -1,6 +1,6 @@
 # Starter Vocabulary
 
-The vocabulary pack that ships with `pip install chemigram`. **Deliberately small** — four entries, generic by design — so the agent loop works out of the box. Phase 2 grows the vocabulary from real session evidence, not from imagined upfront completeness; the gaps surfaced via `log_vocabulary_gap` are the seed for new entries.
+The vocabulary pack that ships with `pip install chemigram`. **Deliberately small** — two entries, generic by design — so the agent loop works out of the box. Phase 2 grows the vocabulary from real session evidence, not from imagined upfront completeness; the gaps surfaced via `log_vocabulary_gap` are the seed for new entries. Post-v1.6.0 the original `expo_+0.5` / `expo_-0.5` discrete entries were collapsed into the parameterized `exposure` primitive (RFC-021 / ADR-077..080) which lives in the `expressive-baseline` pack — see that pack's README for the full inventory.
 
 See `docs/concept/04-architecture.md` § 5 (layer model) for the L1/L2/L3 architecture, and `docs/prd/PRD-003-vocabulary-as-voice.md` for the design rationale.
 
@@ -8,12 +8,10 @@ See `docs/concept/04-architecture.md` § 5 (layer model) for the L1/L2/L3 archit
 
 | Name | Layer | Touches | Mask | Description |
 |-|-|-|-|-|
-| `expo_+0.5` | L3 | exposure | — | Lift exposure +0.5 EV (global) |
-| `expo_-0.5` | L3 | exposure | — | Lower exposure -0.5 EV (global) |
 | `wb_warm_subtle` | L3 | temperature | — | Subtle warm white balance shift |
 | `look_neutral` | L2 | exposure + temperature | — | Neutral L2 baseline (exposure + warm-subtle WB) |
 
-Mask-bound starter entries are out for now: the original `tone_lifted_shadows_subject` was retired in v1.5.0 alongside the PNG-mask architecture (ADR-076). Drawn-form mask-bound entries (gradient / ellipse / rectangle) live in the `expressive-baseline` pack; the starter pack stays minimal until evidence motivates a starter-level mask-bound primitive.
+For exposure / contrast / saturation / clarity / vignette / dehaze / HSL / etc., load the `expressive-baseline` pack alongside (`load_packs(["starter", "expressive-baseline"])`). Mask-bound entries (drawn / parametric / compositional) and the `apply_spot` MCP tool for spot heal/clone (RFC-025 / ADR-087) ship via expressive-baseline; the starter pack stays minimal until session evidence motivates a starter-level addition.
 
 ## What's not shipped
 

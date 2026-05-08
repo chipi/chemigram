@@ -13,7 +13,7 @@
 
 A craft-research project. The agent reads your taste, you describe intent, the agent edits via a vocabulary of named moves on top of darktable. Sessions accumulate; the project gets richer over time.
 
-**v1.0.0 shipped April 2026** — Phase 1 closed. Phase 2 (use-driven vocabulary maturation) in progress.
+**v1.9.0 shipped May 2026** — Phase 1 closed at v1.0.0; v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%); v1.9.0 closed the mask + retouch architecture trilogy (RFC-024/025/026/029 + ADR-084..087). Phase 2 (use-driven vocabulary maturation) in progress; 83 vocabulary entries shipped.
 
 ---
 
@@ -68,7 +68,7 @@ Four engine subsystems plus two adapter layers:
 
 1. **Vocabulary** — manifest-driven `.dtstyle` primitives, layered L1 / L2 / L3 (camera baseline / look / creative); mask-bound entries declare drawn-form geometry in `mask_spec`.
 2. **Versioning** — content-addressed DAG of XMP snapshots. Branches, tags, the works.
-3. **Masking** — drawn-form geometry (gradient/ellipse/rectangle) encoded directly into darktable's XMP `masks_history`. Per ADR-076 (v1.5.0) there is no PNG-based masker; content-aware masking arrives in Phase 4 as a sibling project producing the same drawn-form wire format.
+3. **Masking** — drawn-form geometry (gradient/ellipse/rectangle/path) encoded into darktable's XMP `masks_history`; parametric range filters (luminance + HSL color) via blendif bytes; LLM-vision-as-provider for content-derived masks (RFC-026 / ADR-086) using the chat-client's vision capability; spot heal/clone via the `apply_spot` MCP tool (RFC-025 / ADR-087). Per ADR-076 (v1.5.0) the PNG-based masker was retired; content-aware masking is now layered: byte-level for darktable-native cases, LLM-vision for coarse subject identification, deployed sibling providers (RFC-030 deferred) for the precision tier.
 4. **Context** — multi-scope tastes (`_default.md` + genre files), per-image `brief.md` and `notes.md`, JSONL session transcripts, vocabulary gaps.
 5. **MCP server** — 22 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
 6. **CLI** (v1.3.0+) — `chemigram` binary, mirroring the MCP tool surface verb-for-verb. Subprocess-callable for batch processing, custom agent loops, and CI scripts.
@@ -88,7 +88,7 @@ Same engine, same vocabulary, same workspace state on disk. The choice between M
 
 **The Claude Code analogy is real, not metaphorical.** Coding assistants found a working shape: project context, agent loop, accumulated state, version control, iterative tools, propose-and-confirm. Chemigram applies that exact shape to photo work. A photo is a project. `tastes/_default.md` is `CLAUDE.md`. Vocabulary primitives are filesystem tools. Snapshots are commits. The shape transfers.
 
-**The substrate exists.** darktable provides the rendering, color science, masks, modules — already mature, already OSS. MCP provides the agent protocol. SAM (and successors) provide AI segmentation when content-aware masking lands as a sibling project. Every piece needed is available. The novel contribution is the integration layer and the agent's behavioral patterns — bounded engineering, not research uncertainty.
+**The substrate exists.** darktable provides the rendering, color science, masks, modules — already mature, already OSS. MCP provides the agent protocol. The chat-client's vision-capable LLM (Claude.ai / ChatGPT / Claude Code) provides content-derived masking today (RFC-026 / ADR-086) — zero deployment cost. SAM (and successors) provide pixel-precise segmentation when the precision tier lands as RFC-030's deployed sibling-provider scaffolding. Every piece needed is available. The novel contribution is the integration layer and the agent's behavioral patterns — bounded engineering, not research uncertainty.
 
 ## What success looks like
 

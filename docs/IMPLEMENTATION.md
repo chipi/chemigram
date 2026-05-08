@@ -3,7 +3,7 @@
 > The slice-by-slice implementation guide for Chemigram.
 > Names slices, gates, RFC closures.
 > Source of truth for "what gets built when."
-> Last updated · 2026-04-29
+> Last updated · 2026-05-08 (v1.9.0 release pass)
 
 This document describes the implementation phases for building Chemigram, decomposed where possible into concrete slices with acceptance gates. Each slice's gate is the moment when a set of RFCs gets closed into ADRs — closure is not a continuous process, it's a checkpoint.
 
@@ -18,16 +18,20 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | **Phase 0** | Validation — manual XMP composition end-to-end | ✅ Closed green (8 findings logged) |
 | **Phase 1** | Minimum viable loop — Python engine, MCP server, starter vocabulary | ✅ **Closed (v1.0.0)** — Slices 1–6 shipped. Issues #1–#29 closed; 13 RFCs closed → ADR-050..061. |
 | **Phase 1.1** | Comprehensive validation — capability matrix + real-darktable e2e suite | ✅ **Closed (v1.1.0)** — 519 tests; 3 engine bugs root-caused and fixed (ADR-062 + branch/checkout consistency + provider-exception escape). Issues #30–#38 closed. |
-| **Phase 1.2** | Engine unblock + reference-image validation infrastructure | **Closing as v1.2.0** — slice-and-gate. RFC-018 v0.2 closes the synthesizer Path B gap (per-entry iop_order proven unnecessary in dt 5.4.1, see `tests/fixtures/preflight-evidence/`) → ADR-063 (Path B unblocking) + ADR-064 (authoring workflow). RFC-019 v0.2 ships the CI-safe synthetic reference fixture + assertion library → ADR-066 (fixture policy) + ADR-067 (assertion protocol) + ADR-068 (darktable version gate, deferred). Mode A prompt v3 lands. The 35-entry `expressive-baseline` pack ships as an empty scaffold; authoring is hands-on darktable work and moves to its own milestone (Phase 1.4 below). |
+| **Phase 1.2** | Engine unblock + reference-image validation infrastructure | ✅ **Closed (v1.2.0)** — slice-and-gate. RFC-018 v0.2 closed the synthesizer Path B gap → ADR-063 + ADR-064. RFC-019 v0.2 shipped the CI-safe synthetic reference fixture + assertion library → ADR-066 + ADR-067 + ADR-068. Mode A prompt v3 landed. |
 | **Phase 1.3** | Command-line interface | ✅ **Closed (v1.3.0)** — RFC-020 + PRD-005 → ADR-069/070/071/072. 22 verbs in `chemigram.cli` mirroring MCP verb-for-verb; output human default + NDJSON via `--json`; thin-wrapper discipline lint-enforced. |
 | **Phase 1.4** | `expressive-baseline` vocabulary authoring | ✅ **Closed (v1.4.0)** — 31+4 entries shipped (programmatic + drawn-mask). #63 channelmixerrgb B&W still wants a hand-authored darktable seed; #62 tone_lifted_shadows_subject was retired in v1.5.0 cleanup. |
-| **Phase 1.5** | Mask architecture cleanup | ✅ **Closed (v1.5.0)** — drawn-mask only (ADR-076). Removed the PNG-mask path + provider system + 5 MCP tools + the CLI `masks` sub-app; supersedes ADR-021/022/055/057/058/074. The drawn-mask path shipped in v1.4.0 (path 4a) remains the only mask binding. |
-| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **Begins post-v1.5.0** — use-driven; intermittent; grows the *personal* pack on top of starter + expressive-baseline. Not slice-and-gate. |
-| **Phase 3** | Additional drawn-form geometries in vocabulary | Conditional — when Phase 2 surfaces region needs the existing gradient/ellipse/rectangle don't cover |
-| **Phase 4** | Content-aware masking via sibling provider (drawn-form output) | Conditional — when local adjustments demand pixel-precise organic shapes |
+| **Phase 1.5** | Mask architecture cleanup | ✅ **Closed (v1.5.0)** — drawn-mask only (ADR-076). Removed the PNG-mask path + provider system + 5 MCP tools + the CLI `masks` sub-app; supersedes ADR-021/022/055/057/058/074. |
+| **Phase 1.6** | Parameterized vocabulary (Path C as default) | ✅ **Closed (v1.6.0)** — RFC-021 → ADR-077..080. 18 parameterized entries across 11 modules. Path C decoders for exposure / bilat / colorbalancergb / colorequal / sigmoid / vignette / sharpen / temperature / hazeremoval / etc. |
+| **Phase 1.7** | Tier 2 expansion + Lightroom-parity Bucket A (A.1–A.7) | ✅ **Closed (v1.7.0)** — RFC-022 → ADR-081 tiering policy. Buckets A.2–A.7 shipped (dehaze, WB tint, midtones grade, Color Grading 9 axes, Texture, ashift Transform, WB Kelvin UX). |
+| **Phase 1.8** | HSL Color Mixer + denoise + lens + filmic v6 | ✅ **Closed (v1.8.0)** — RFC-023 → ADR-083 (HSL via colorequal mv4, 24 axes). Plus #95–#97 closures for noise/lens/filmic. Lightroom daily-use parity: 51/52 (98%). |
+| **Phase 1.9** | Mask + retouch architecture trilogy | ✅ **Closed (v1.9.0)** — RFC-029 / ADR-084 (compositional spatial masks), RFC-024 / ADR-085 (parametric range filters), RFC-026 / ADR-086 (LLM-vision-as-provider), RFC-025 / ADR-087 (spot heal/clone via `apply_spot` MCP tool). 5 compositional-mask L2 looks added; CLI verbs `vocab validate` and `cache` added. RFC-030 deferred (deployed sibling-provider precision tier). 83 vocabulary entries shipped. |
+| **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **In progress** — use-driven; intermittent; grows the *personal* pack on top of starter + expressive-baseline. Not slice-and-gate. |
+| **Phase 3** | Additional drawn-form geometries in vocabulary | ✅ **Effectively closed via v1.9.0** — path geometry shipped (RFC-026 substrate / N-vertex polygons). Brush geometry remains conditional per Phase 2 evidence. |
+| **Phase 4** | Content-aware masking | ✅ **Phase 1 closed via RFC-026 / ADR-086** (LLM-vision-as-provider, conversation-native, zero deployment). **Phase 2 (RFC-030, drafted, deferred)** holds the deployed sibling-provider scaffolding for the precision tier (SAM-class subject masks, depth, AI auto-spot detection). |
 | ~~**Phase 5**~~ | ~~Continuous control via hex encoders (Path C)~~ | ✅ **Retired by ADR-081 (2026-05-07)** — Path C is the default for Tier 1+2 modules per the parameterization tiering policy; further extension rides per-module Tier 2 expansion or Tier 3 promotion ADRs, not a distinct "Phase 5". |
 
-Phases 3–4 are deliberately conditional. They happen only if Phase 2 evidence shows they're worth doing. Phase 5 was retired by ADR-081 — the question it asked ("should the project commit to extending Path C beyond high-value modules?") is now answered by the tiered policy: yes for Tier 1+2 (already shipped at v1.6.0+ and ongoing); no for Tier 3 except via individual promotion ADRs. There is no distinct Phase 5 implementation effort.
+Phases 3–4 are now substantially closed. Phase 3 (additional drawn geometries) shipped path forms via RFC-026's substrate; brush remains conditional. Phase 4 (content-aware masking) is delivered in two tiers: Phase 1 (LLM-vision, RFC-026 / ADR-086) ships now via the chat-client's vision capability; Phase 2 (deployed sibling providers, RFC-030 drafted/deferred) lands when LLM-vision precision becomes the bottleneck. Phase 5 was retired by ADR-081.
 
 ---
 

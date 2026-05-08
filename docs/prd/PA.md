@@ -134,11 +134,11 @@ This is a bias against scope expansion. New surfaces have to earn their place by
 
 ### principles/opaque-where-possible
 
-`op_params` and `blendop_params` are hex/base64 blobs. We don't decode them. The vocabulary primitive is the abstraction; the underlying bytes are darktable's concern. We resist the pull toward "it would be cleaner if we parsed the C struct" — that path leads to per-module engineering and modversion drift maintenance.
+`op_params` and `blendop_params` are hex/base64 blobs by default. We don't decode them unless registered as parameterizable. The vocabulary primitive is the abstraction; the underlying bytes are darktable's concern. We resist the pull toward "it would be cleaner if we parsed the C struct" everywhere — that path leads to per-module engineering and modversion drift maintenance.
 
-Programmatic generation (Path C) exists as a future refinement for high-value modules only, not as a default approach.
+Programmatic generation (Path C) is the *default* for explicitly-declared parameterizable modules per RFC-021 / ADR-077 (v1.6.0+) — 18 modules carry registered byte decoders. ADR-081's tiering policy (Tier 0 immutable / Tier 1 Phase-4 floor / Tier 2 active expansion / Tier 3 default-opaque) governs which modules earn registration. Tier 3 stays opaque; promotions ride per-module ADRs with real evidence. v1.9.0 extended Path C-style byte work into parametric mask filters (RFC-024 / ADR-085: blendif) and the retouch module (RFC-025 / ADR-087: 13260-byte op_params). Backstop: ADR-082 modversion-drift handling (warn-loud at load, hard-fail at apply).
 
-Anchored from: TA/constraints/opaque-hex-blobs
+Anchored from: TA/constraints/opaque-hex-blobs (amended by ADR-081)
 
 ### principles/local-and-private
 

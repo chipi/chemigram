@@ -14,13 +14,16 @@ your taste, you describe intent, the agent edits via a vocabulary of
 named moves on top of darktable. Sessions accumulate; the project gets
 richer over time.
 
-**Status:** v1.5.0 shipped May 2026 — Phase 1 closed (minimum viable
-loop, comprehensive validation, CLI, expressive-baseline vocabulary,
-drawn-mask-only architecture per ADR-076). 692 tests, real-darktable
-e2e suite. Phase 2 (use-driven vocabulary maturation) in progress. Not
-a Lightroom replacement. Not a digital asset manager. A probe into
-where photographic taste lives and how it transmits through language
-and feedback.
+**Status:** v1.9.0 shipped May 2026 — Phase 1 closed at v1.0.0
+(minimum viable loop), Phase 2 in progress (use-driven vocabulary
+maturation). v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%);
+v1.9.0 closed the **mask + retouch architecture trilogy**: spatial
+masks (RFC-029 / ADR-084), parametric range filters (RFC-024 /
+ADR-085), LLM-vision content-derived masks (RFC-026 / ADR-086), spot
+heal/clone (RFC-025 / ADR-087). 1811 tests, real-darktable e2e suite,
+83 vocabulary entries. Not a Lightroom replacement. Not a digital
+asset manager. A probe into where photographic taste lives and how it
+transmits through language and feedback.
 
 ## What this is
 
@@ -58,16 +61,17 @@ masks and snapshots, and learns across sessions. Two modes:
 | 0 | Hands-on validation of darktable composition story | ✅ Closed green |
 | Doc system | Concept package + PRDs/RFCs/ADRs | ✅ Complete |
 | 1 | Core engine + MCP server + starter vocabulary | ✅ Closed (v1.0.0) — Slices 1–6 shipped (ADR-050..061). |
-| 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 519 tests; 3 engine bugs fixed (ADR-062). |
+| 1.1 | Comprehensive validation — capability matrix + real-darktable e2e | ✅ Closed (v1.1.0) — 3 engine bugs fixed (ADR-062). |
 | 1.2 | Engine unblock + reference-image validation infrastructure | ✅ Closed (v1.2.0) — Path B synthesizer + assertion library + Mode A v3 (ADR-063..068). |
 | 1.3 | Command-line interface | ✅ Closed (v1.3.0) — 22 verbs mirroring MCP; ADR-069..072 closed RFC-020. |
-| 1.4 | `expressive-baseline` vocabulary authoring | ✅ Closed (v1.4.0) — 35 entries authored programmatically (Path C) + 4 drawn-mask-bound entries via path 4a (XMP `masks_history` serialization). |
-| 1.5 | Mask architecture cleanup | ✅ Closed (v1.5.0) — drawn-mask-only (ADR-076 supersedes ADR-021/022/055/057/058/074). Removed PNG-based mask infrastructure that turned out to be a silent no-op. |
-| 1.6 | `channelmixerrgb` B&W vocabulary trio | In progress (v1.6.0) — #63: hand-authored darktable seed + 3 programmatic variants. |
-| 2 | Vocabulary maturation — grow vocab from session evidence | Begins post-v1.6.0 (use-driven; intermittent). |
-| 3 | Additional drawn-form mask geometries (path/brush) | Conditional — when Phase 2 surfaces gaps. |
-| 4 | Content-aware masking via sibling project producing drawn-form geometry | Conditional — `chemigram-masker-sam` follow-on. |
-| 5 | Continuous parametric control via hex encoders (Path C extension) | Conditional. |
+| 1.4 | `expressive-baseline` vocabulary authoring | ✅ Closed (v1.4.0) — 35 entries authored programmatically (Path C) + 4 drawn-mask-bound entries. |
+| 1.5 | Mask architecture cleanup (drawn-only) | ✅ Closed (v1.5.0) — ADR-076 retired the PNG-based mask infrastructure that turned out to be a silent no-op. |
+| 1.6 | Parameterized vocabulary (Path C as default) | ✅ Closed (v1.6.0) — RFC-021 / ADR-077..080. 18 parameterized entries across 11 modules. |
+| 1.7 | Tier 2 expansion + Lightroom-parity Bucket A | ✅ Closed (v1.7.0) — RFC-022 / ADR-081 tiering policy; A.1–A.7 buckets shipped. |
+| 1.8 | HSL via colorequal + denoise + lens + filmic v6 | ✅ Closed (v1.8.0) — RFC-023 / ADR-083; #95–#97 visual proofs verified. Lightroom daily-use parity 51/52 (98%). |
+| 1.9 | Mask + retouch architecture trilogy | ✅ Closed (v1.9.0) — RFC-024 / ADR-085 (parametric range), RFC-025 / ADR-087 (spot heal/clone), RFC-026 / ADR-086 (LLM-vision masks), RFC-029 / ADR-084 (compositional masks). RFC-030 deferred (deployed sibling-provider precision tier). |
+| 2 | Vocabulary maturation — grow vocab from session evidence | In progress (use-driven; intermittent). 83 entries shipped. |
+| 3+ | Multi-photographer review / pack management / AI provider scaffolding | Conditional / future — RFC-027, RFC-028, RFC-030. |
 
 For the canonical phase plan and current status, see `docs/IMPLEMENTATION.md`.
 
@@ -108,13 +112,13 @@ chemigram status
 # 3. ingest a raw + apply a vocabulary entry
 export CHEMIGRAM_DT_CONFIGDIR=~/chemigram-phase0/dt-config   # see getting-started for setup
 chemigram ingest ~/Pictures/raw/iguana.NEF
-chemigram apply-primitive iguana --entry expo_+0.5
+chemigram apply-primitive iguana --primitive exposure --value 0.5
 chemigram render-preview iguana --size 1024
 chemigram export-final iguana --format jpeg
 
 # 4. machine-readable output for scripts and agents (NDJSON)
-chemigram --json apply-primitive iguana --entry wb_warm_subtle
-# {"event":"result","status":"ok","image_id":"iguana","entry":"wb_warm_subtle", ...}
+chemigram --json apply-primitive iguana --primitive wb_warm_subtle
+# {"event":"result","status":"ok","image_id":"iguana", ...}
 ```
 
 The CLI is stateless per invocation — parallel calls against different images are safe. The image_id derives from the raw filename's stem (case-preserving): `iguana.NEF` → `iguana`, `IMG_2041.ARW` → `IMG_2041`. **Concurrent calls against the same image are not tested**; the engine writes refs without an explicit fcntl lock, so serialize at the caller level if a single image is touched by multiple subprocesses simultaneously. For the full verb surface, see [`docs/guides/cli-reference.md`](docs/guides/cli-reference.md). For driving Chemigram from a custom agent loop, see the "Agent loops" section of [`docs/getting-started.md`](docs/getting-started.md).
@@ -179,7 +183,7 @@ See **[`docs/getting-started.md`](docs/getting-started.md#your-first-session)** 
 
 ## Growing your vocabulary
 
-The starter vocabulary that ships with `chemigram` is deliberately small — four entries (two exposure deltas, a warm-WB nudge, an L2 neutral look). The companion `expressive-baseline` pack adds 35 more programmatically-authored entries, including four drawn-mask-bound primitives (gradient × 2, ellipse, rectangle). Phase 2 grows the vocabulary from real session evidence: the agent logs gaps when it reaches for moves you don't have; once a month or so, you open darktable, capture the missing primitives as `.dtstyle` files, and drop them into `~/.chemigram/vocabulary/personal/`. After 3 months of regular use most photographers reach 30–60 personal entries; after 6 months, 80–120. The vocabulary becomes an articulation of *your* craft.
+The starter vocabulary that ships with `chemigram` is deliberately small — two entries (a warm-WB nudge, an L2 neutral look). The companion `expressive-baseline` pack adds 81 more entries: 18 parameterized primitives across 11 modules (Path C; RFC-021), 13 L2 looks (cinematic / portrait / decade / 5 compositional-mask looks via the v1.9.0 trilogy), L3 discrete kinds + 4 mask-bound primitives. Plus the **`apply_spot` MCP tool** (RFC-025 / ADR-087) for blemish removal / cloning. Phase 2 grows the vocabulary from real session evidence: the agent logs gaps when it reaches for moves you don't have; once a month or so, you open darktable, capture the missing primitives as `.dtstyle` files, and drop them into `~/.chemigram/vocabulary/personal/`. After 3 months of regular use most photographers reach 30–60 personal entries; after 6 months, 80–120. The vocabulary becomes an articulation of *your* craft.
 
 Full procedure in **[`docs/getting-started.md`](docs/getting-started.md#growing-your-vocabulary)** and **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)**.
 

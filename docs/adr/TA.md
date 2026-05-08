@@ -64,14 +64,26 @@ Per-image content-addressed DAG of XMP snapshots. "Mini git for photos."
 
 ### components/masking
 
-Drawn-mask serialization for vocabulary entries that shape only part of the frame. Encodes geometric forms (gradient / ellipse / rectangle) directly into darktable's `<darktable:masks_history>` XMP element, and patches each plugin's `blendop_params` to bind the form via `mask_id`.
+Mask serialization for vocabulary entries and apply-time mask construction. Four mask sources, all serializing to bytes darktable's mask system consumes per ADR-076: drawn-form geometry (gradient / ellipse / rectangle / path encoded into `<darktable:masks_history>`), parametric range filters (luminance + HSL color ranges via `blendif` byte fields in `blendop_params`), retouch heal/clone forms, and LLM-vision-derived polygon masks (constructed by the chat-client's vision-capable LLM, materialized as path-form geometry).
 
-**Files (shipped v1.4.0, simplified v1.5.0):** `src/chemigram/core/masking/dt_serialize.py` — encoders for `dt_masks_point_gradient_t`, `dt_masks_point_ellipse_t`, 4-corner `dt_masks_point_path_t`, plus the 420-byte `dt_develop_blend_params_t` patch. High-level apply helper at `chemigram.core.helpers.apply_with_drawn_mask`.
+**Files (shipped v1.4.0, generalized v1.9.0):** `src/chemigram/core/masking/dt_serialize.py` — encoders for `dt_masks_point_gradient_t` / `dt_masks_point_ellipse_t` / N-vertex `dt_masks_point_path_t` / circle (retouch) / clone-source mask_src; `blendop_params` patching for drawn + parametric + drawn+parametric combinations; retouch byte encoders (`dt_iop_retouch_form_data_t`, 13260-byte op_params blob). High-level apply helper at `chemigram.core.helpers.apply_with_mask` (renamed from `apply_with_drawn_mask`; backcompat alias preserved).
 
 **Public API:**
-- `apply_with_drawn_mask(baseline, dtstyle, mask_spec, *, opacity=100.0) → Xmp` — apply a vocabulary entry's dtstyle bound to a drawn form. Routed by `apply_primitive` either from the entry's manifest `mask_spec` (the v1.5.0 path) or from a caller-supplied `mask_spec` parameter (the v1.6.0 path; CLI: `--mask-spec '<json>'`, MCP: `mask_spec` arg). Caller override wins when both present.
+- `apply_with_mask(baseline, dtstyle, mask_spec, *, opacity=100.0) → Xmp` — apply a vocabulary entry's dtstyle bound to a mask. Routes drawn-only / parametric-only / drawn+parametric automatically based on `mask_spec` shape. Routed by `apply_primitive` either from the entry's manifest `mask_spec` or from a caller-supplied `mask_spec` parameter (CLI: `--mask-spec '<json>'`, MCP: `mask_spec` arg). Caller override wins when both present.
+- `apply_spot_retouch(baseline, *, kind, x, y, radius, source_x?, source_y?, opacity=100.0) → Xmp` — apply a single retouch form (heal or clone) at the given coordinate. Surfaced via the `apply_spot` MCP tool (sister to `apply_primitive`; RFC-025 / ADR-087).
 
-**Schema:** `mask_spec: {"dt_form": "gradient"|"ellipse"|"rectangle", "dt_params": {...}}` on the vocabulary entry. No PNG, no provider, no registry — see ADR-076.
+**Schema (RFC-029 / ADR-084 + RFC-024 / ADR-085):**
+```
+mask_spec: {
+  "dt_form": "gradient"|"ellipse"|"rectangle"|"path",  # spatial (optional)
+  "dt_params": {...},                                   # form-specific kwargs
+  "range_filter": {                                      # parametric (optional)
+    "kind": "luminance"|"color_h"|"color_s"|"color_l",
+    "min": <0..1>, "max": <0..1>, "feather": <0..0.5>, "invert": <bool>
+  }
+}
+```
+At least one of `dt_form` or `range_filter` must be present. Both present = drawn AND parametric (intersection). No PNG, no separate registry — see ADR-076.
 
 **Anchored from:** ADR-076 (closes the prior PNG-mask path retroactively; supersedes ADR-021/022/055/057/058/074)
 
@@ -256,7 +268,6 @@ Per-image directory layout. Per `02/4`:
   sessions/               session transcripts (JSONL per session)
   previews/               render cache (regenerable)
   exports/                final outputs
-  masks/                  registered masks + registry.json
   vocabulary_gaps.jsonl   gaps surfaced this image
 ```
 
@@ -389,7 +400,8 @@ Locked technology choices. Each entry has a corresponding ADR.
 | Lens correction | Lensfun (via darktable) + embedded EXIF metadata | ADR-014 |
 | Noise model | darktable profiled denoise | ADR-014 |
 | Color science | darktable scene-referred pipeline | ADR-014 |
-| Subject masking (production) | `chemigram-masker-sam` sibling project | RFC-004 |
+| Subject masking (coarse, MVP) | LLM-vision-as-provider via the chat-client (RFC-026 / ADR-086) — Claude.ai / ChatGPT / Claude Code see `render_preview` JPEGs and construct mask_spec | RFC-026 |
+| Subject masking (precision tier, deferred) | `chemigram-masker-sam` sibling project — SAM-class, deployed | RFC-030 |
 | Build backend | hatchling (via `pyproject.toml`) | ADR-034 |
 | Package layout | `src/`-style, single distribution, two modules (`chemigram.core`, `chemigram.mcp`) | ADR-034 |
 | Dev environment | uv (lockfile: `uv.lock`) | ADR-035 |
