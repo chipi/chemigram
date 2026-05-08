@@ -38,8 +38,9 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Decided | ADR-083 (closes) |
 | RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Decided | ADR-085 (closes; depth + subject deferred to RFC-026) |
 | RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
-| RFC-026 | AI-derived mask provider scaffolding (subject / depth / content-aware spots) | Draft v0.1 | — |
+| RFC-026 | LLM-vision-as-provider for AI-derived masks (MVP, conversation-native) | Decided | ADR-086 (closes) |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
+| RFC-030 | Deployed sibling-provider scaffolding for precision-tier AI masks | Draft v0.1 (deferred) | — |
 
 ## Maturity legend
 
