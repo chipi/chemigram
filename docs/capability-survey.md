@@ -229,36 +229,48 @@ The CLI mirrors most MCP tools verb-for-verb. Agent-only tools (no direct CLI):
 
 - **Workflow + versioning**: snapshot/branch/diff/tag/reset is comprehensive and Git-shaped. Cheap, reversible, content-addressed. This part feels finished.
 - **Engine architecture**: synthesizer, mask-binding, MCP/CLI parity, taste/brief/notes context, session transcripts — all the *plumbing* is solid.
-- **Parameterized continuous control** (RFC-021/RFC-022 + ADR-077..083): **38 parameterized entries** across **18 modules** as of v1.8.0 (every magnitude-ladder Phase 4 module + the original 4 Tier 2 expansions + 4 brilliance axes + 9 colorbalancergb Color Grading axes + dehaze + texture + 3 HSL multi-axis entries via colorequal + filmic + denoise + lens + transform + WB Kelvin UX wrapper). Single-axis, multi-axis (2/3/4 param), 8-axis HSL channels, 9-axis toneequalizer, 10-axis lens, and 24-axis HSL panel cases all proven on the same architecture. Discoverability via MCP `list_vocabulary` + CLI `vocab show` (#89).
+- **Parameterized continuous control** (RFC-021/RFC-022 + ADR-077..083): **38 parameterized entries** across **18 modules** as of v1.8.0+ (every magnitude-ladder Phase 4 module + the original 4 Tier 2 expansions + 4 brilliance axes + 9 colorbalancergb Color Grading axes + dehaze + texture + 3 HSL multi-axis entries via colorequal + filmic + denoise + lens + transform + WB Kelvin UX wrapper). Single-axis, multi-axis (2/3/4 param), 8-axis HSL channels, 9-axis toneequalizer, 10-axis lens, and 24-axis HSL panel cases all proven on the same architecture. Discoverability via MCP `list_vocabulary` + CLI `vocab show` (#89). **Total vocabulary corpus: 78 entries** (38 parameterized + 40 discrete: L1/L2 looks + L3 kinds + mask-bound). Did-you-mean suggestions on unknown entry names (#107).
+- **Read-side analytics** (v1.9.0): `chemigram gap-log` sub-app (#106) for `vocabulary_gaps.jsonl` — list / rank / show / clear, supports the Phase 2 use-driven feedback loop. `chemigram session-log` sister sub-app (#109) for session transcripts — list / show / find / replay. Both with full guides under `docs/guides/`.
 - **Tone control**: `exposure` (parameterized EV ±3) + `sigmoid_contrast` (parameterized) + `toneequalizer` (9-band parameterized) + `highlights_clip_threshold` (parameterized) + `blacks_lifted/crushed/whites_open` (discrete kinds) + 4 mask-bound exposure entries. The whole tonal surface is photographically operational.
 - **Color grading via `colorbalancergb`**: 8 parameterized axes (saturation_global, vibrance, chroma_global, hue_angle, brilliance × 4) plus 7 discrete entries for per-zone chroma + warm/cool grade.
 - **B&W conversion**: `bw_convert` / `bw_sky_drama` / `bw_foliage` via channelmixerrgb mv3 — closes #63 and the "channel mixer / B&W" gap from §2.
 - **Drawn-mask masking**: works on every primitive (engine-tested), with three drawn-form geometries (gradient / ellipse / rectangle).
 - **CI gates**: 5-layer parameterized coverage (ADR-080), manifest-modversion consistency (#85), runtime modversion drift detection (ADR-082) — three separate safety nets against the failure modes parameterization could introduce.
 
-### Where chemigram is thin today (post-v1.8.0)
+### Where chemigram is thin today (post-v1.9.0 in-progress)
 
-The "thin" list has narrowed dramatically. v1.8.0 closed the bulk of the Tier 3 watchlist plus the Tier 2 unauthored candidates from the v1.7.0 list:
+The "thin" list has narrowed dramatically since v1.7.0. v1.8.0 closed the bulk of the Tier 3 module watchlist; the in-progress v1.9.0 cycle has shipped CLI analytics (gap-log + session-log), real-raw fixture path, more vocabulary entries (cinematic L2 looks + L3 discrete kinds), and drafted RFC-024 (range masks) + RFC-025 (spot removal/heal).
 
 **Closed in v1.8.0** (decoder shipped or partial-empirical):
 - ✅ **Selective color HSL** — closed via RFC-023 / ADR-083 → `colorequal` mv4 (3 multi-axis entries; 24 axes total).
-- ✅ **Noise reduction** — closed via #96 → `denoiseprofile` mv12 with constructed wavelet-curve baseline (verification under #100).
+- ✅ **Noise reduction** — closed via #96 → `denoiseprofile` mv12 (NLMEANS mode; wavelet-curve verification under #100).
 - ✅ **Lens correction** — closed via #95 → `lens` mv10 with manual-override strength axes (EXIF auto-binding under #100).
 - ✅ **Diffuse-or-sharpen** — closed via #92 → `diffuse` mv2 (texture entry).
 - ✅ **Dehaze** — closed via #90 A.2 → `hazeremoval` mv3.
 - ✅ **Filmic v6** — closed via #97 → `filmicrgb` mv6 alongside the existing sigmoid.
 - ✅ **Rotation / perspective** — closed via #101 → `ashift` mv5 (transform entry).
 - ✅ **WB Kelvin UX** — closed via #102 → `wb_kelvin_delta` (UX wrapper on temperature).
-- ✅ **Color Grading completion** — closed via #91 (per-zone hue/sat × 3 + blending + balance) and #90 A.4 (midtones grade entries).
+- ✅ **Color Grading completion** — closed via #91 + #90 A.4.
 
-**Still open** (the v1.9.0 horizon):
+**Closed / drafted in v1.9.0 (in-progress)**:
+- ✅ **Real-raw visual-proof fixture path** — closed via #103 (commit `830f89f`); script extension supports HSL skip-listed entries against a real raw fixture; awaits the iguana fixture file drop.
+- ✅ **Cinematic L2 looks** — closed via #104; 9 named photographic recipes (cinematic / portrait / decade) compose existing primitives.
+- ✅ **Gap-log analytics CLI** — closed via #106; Phase 2 use-driven feedback loop now has read-side tooling.
+- ✅ **CLI ergonomics polish** — closed via #107; did-you-mean suggestions for unknown vocabulary names; shell-completion guide.
+- ✅ **Session-log analytics CLI** — closed via #109; sister to gap-log for session transcripts.
+- ✅ **More L3 discrete kinds** — closed via #110; 7 new clarity / sharpen / vignette / split-grade variants.
+- ✅ **Lightroom-to-chemigram comparison guide** — closed via #111; onboarding doc for Lightroom users.
+- 📝 **Range masks (color-range / luminance-range / depth-range / subject)** — RFC-024 drafted via #105 (Draft v0.1). Hybrid proposal: native parametric for color/luminance ranges + deferred RFC-026 for depth/subject providers.
+- 📝 **Spot removal / heal** — RFC-025 drafted via #108 (Draft v0.1). Native retouch decoder (Tier 2-shaped after struct survey) + deferred RFC-026 for AI content-aware spot detection.
+
+**Still open** (post-v1.9.0 horizon):
 - **Manual tone curve** (`tonecurve`) — the last Lightroom daily-use gap. Decoder is straightforward but the 520-byte spline-curve struct needs an empirical baseline from a darktable-GUI session. Tracked as #94, sequenced under #100.
 - **Discrete colorzones HSL precision fallback** — for the 5% HSL workflow that needs Lightroom's per-zone Range slider precision. Discrete-only; tracked as #98, sequenced under #100.
-- **Retouch / spot healing** (`retouch`, `spots`): stroke-based input doesn't reduce to a per-image vocabulary entry. Still the major portrait gap. Would need a fresh RFC; not on v1.8.0 critical path.
-- **AI / content-aware masks** (the manta's belly): explicitly conditional Phase 4 in IMPLEMENTATION.md; sibling project (`chemigram-masker-sam`) shape per BYOA discipline.
-- **Range masks** (color-range / luminance-range / depth-range): different architectural shape from drawn masks per ADR-076. Would need an RFC.
+- **AI / content-aware masks + spot detection** — the BYOA arc per ADR-007. Placeholder RFC-026 named in RFC-024 + RFC-025; not yet drafted. Sibling project shape (`chemigram-masker-sam`).
+- **Multi-photographer review phase plan** — the deferred work from ADR-081's promotion threshold. Solo build-baseline → community transition. No RFC drafted yet.
+- **Pack management / vendor packs / multi-pack composition stress-testing** — the loader supports multi-pack but conflict resolution between packs hasn't been stress-tested. No RFC drafted yet.
 
-**Tier classification post-v1.8.0:** ADR-081's Tier 3 examples list is now mostly stale (all of `lens`, `denoiseprofile`, `colorzones`-via-colorequal have been promoted or addressed). ADR-083 records the first formal Tier 3 → Tier 2 promotion (HSL via colorequal). The remaining named Tier 3 items (`tonecurve`, `colorzones`-as-discrete) are blocked on darktable-session work, not on cost-shape concerns.
+**Tier classification post-v1.9.0 in-progress:** ADR-081's Tier 3 examples list is now stale (all of `lens`, `denoiseprofile`, `colorzones`-via-colorequal have been promoted or addressed). ADR-083 records the first formal Tier 3 → Tier 2 promotion (HSL via colorequal). The remaining named Tier 3 items (`tonecurve`, `colorzones`-as-discrete, retouch-via-AI) are blocked on either darktable-session work or RFC-026 / depth-mask provider scaffolding.
 
 ### What's been shipped against this survey's vision (v1.6.0 → v1.7.0)
 
@@ -644,15 +656,30 @@ Aggregating across the 5 panels — Color Mixer's 24 sliders count as 24 control
 
 Daily-use Lightroom parity is essentially closed. The only remaining gap is **#94 tone curve**, which is blocked on the darktable-session empirical-baseline work tracked under #100. Everything else in the daily-use surface ships.
 
-Post-Lightroom-parity, the v1.9.0 horizon shifts to:
+Post-v1.9.0-in-progress, the next work splits into **darktable-bound** and **keyboard-only** tracks:
 
-1. **#100 darktable-session empirical verification** — capture baselines for #94 (tone curve), #96 (denoise wavelet curves), #95 (lens EXIF auto-binding), #98 (colorzones HSL precision). The umbrella exists so there's one place to look when at the GUI.
-2. **AI-provider integrations** (per BYOA principle in CLAUDE.md) — sibling projects like `chemigram-masker-sam` for AI subject masking. Not core engine work; MCP-provider territory.
-3. **Range masks** (color-range, luminance-range, depth-range) — a separate architectural arc from drawn masks (per ADR-076). Would need a fresh RFC before any code lands.
-4. **Multi-photographer review phase** — ADR-081's promotion-threshold revisit. Triggered when distinct photographers run distinct sessions and the gap-log becomes load-bearing for vocabulary decisions. Premature today.
-5. **HSL color mixer** (Tier 3 promotion ADR; axis-collapsed shape) — the largest single gap; needs the most design
+**Darktable-bound (the #100 umbrella):**
 
-Items 1–4 are routine Tier 2 expansion; item 5 is the next genuine RFC-shaped piece of work.
+1. **#94 manual tone curve decoder** — needs darktable-GUI baseline capture
+2. **#95 lens EXIF auto-binding** — needs real-raw + lensfun lookup verification
+3. **#96 denoise wavelet-curve baseline verification** — confirm or fix the constructed `x[6][7]/y[6][7]` baseline
+4. **#98 colorzones spline-curve HSL precision fallback** — discrete-only presets
+5. **HSL real-raw visual proofs** — the iguana fixture drop closes the v1.8.0 #103 placeholder rows
+
+**Keyboard-only (no darktable needed):**
+
+1. **RFC-026 — AI-mask + AI-spot-detection provider scaffolding** — placeholder named in RFC-024 + RFC-025; sets up the BYOA-shaped extension at the right architectural level (sibling project shape per ADR-007). High-leverage architectural deliberation; closes the deferred half of both upstream RFCs.
+2. **RFC-027 — Multi-photographer review phase plan** — the deferred work from ADR-081's promotion threshold. Solo build-baseline → community transition. The Tier 3 → Tier 2 evidence threshold, gap-log methodology, vocabulary conflict resolution between photographers, the social shape of pack contribution.
+3. **RFC-028 — Pack management / multi-pack composition / vendor packs** — the loader supports multi-pack but conflict resolution between packs hasn't been stress-tested. Argues the architectural shape for vendor-distributed packs and pack-versioning.
+4. **`chemigram vocab validate <name>` CLI verb** — runs all consistency checks against an entry (modversion drift, manifest correctness, dtstyle file exists + parses, blendop matches, parameters block validation). Useful for vocabulary authors mid-session.
+5. **`chemigram cache {list,clear,size}` CLI sub-app** — manage the per-image previews/ render cache (size, listing, opt-in clear).
+6. **More mask-bound L2 looks** — `look_subject_lift`, `look_horizon_dampen`, `look_corner_burn` etc. Tests the masked-L2 path explicitly; pure composition.
+7. **Recipe book / cookbook** — "100 ways to use chemigram." Worked photographic recipes pulling from the 78-entry vocabulary corpus.
+8. **Onboarding guide for new contributors** — what a new contributor reads first (concept → architecture → CLAUDE.md → recipe book).
+9. **Architecture diagrams** — visual one-pager(s) of the stack (agent → MCP/CLI → engine → darktable).
+10. **Property-based fuzz tests for parameterize decoders** — fuzz the 18 patch() functions to surface byte-correctness regressions. Catches issues the 5-layer manual tests don't.
+
+The `--without-darktable` track is still rich; the `with-darktable` track is bounded by the #100 umbrella. See § 13's "What this implies" for the Lightroom-parity slice specifically.
 
 ---
 
