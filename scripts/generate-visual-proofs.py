@@ -68,6 +68,12 @@ _BASELINE_TEMPLATE_XMP = REPO / "src/chemigram/core/_baseline_v1.xmp"
 COLORCHECKER = REPO / "tests/fixtures/reference-targets/colorchecker_synthetic_srgb.png"
 GRAYSCALE = REPO / "tests/fixtures/reference-targets/grayscale_synthetic_linear.png"
 CLIPPED_GRADIENT = REPO / "tests/fixtures/reference-targets/clipped_gradient_synthetic.png"
+# Real-raw fixture for entries that need a working color-management
+# chain (e.g. HSL via colorequal). When the file is missing, those
+# entries fall back to the documented placeholder row in the gallery
+# md (#103 mechanism). See tests/fixtures/raws/README.md for fixture
+# conventions + license expectations.
+REAL_RAW_FIXTURE = REPO / "tests/fixtures/raws/iguana_galapagos.jpg"
 PROOFS_DIR = REPO / "docs/visual-proofs"
 GALLERY_PAGE = REPO / "docs/guides/visual-proofs.md"
 
@@ -352,6 +358,19 @@ TARGETS = (
     RenderTarget(GRAYSCALE, "Grayscale ramp", "grayscale"),
 )
 
+# Real-raw target for entries that fail on the synthetic chart pipeline
+# (e.g. HSL via colorequal — see _SKIP_VISUAL_PROOF_ENTRIES). Used as a
+# replacement for TARGETS, not in addition: skip-listed entries render
+# against the real raw INSTEAD of the synthetic chart.
+REAL_RAW_TARGET = RenderTarget(REAL_RAW_FIXTURE, "Real raw", "realraw")
+
+
+def _real_raw_fixture_available() -> bool:
+    """True when the real-raw fixture file exists on disk; the script
+    falls back to the placeholder text when it's missing so the gallery
+    still builds without the fixture committed."""
+    return REAL_RAW_FIXTURE.exists()
+
 
 def _resolve_configdir() -> Path:
     raw = os.environ.get("CHEMIGRAM_DT_CONFIGDIR")
@@ -454,14 +473,35 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     entry_dir.mkdir(parents=True, exist_ok=True)
 
     if entry.name in _SKIP_VISUAL_PROOF_ENTRIES:
-        # Mark as skipped so the gallery generator emits a documented
-        # placeholder row instead of a broken render. See
-        # _SKIP_VISUAL_PROOF_ENTRIES docstring for the reasoning.
+        if _real_raw_fixture_available():
+            # Render this entry against the real raw fixture instead of
+            # the synthetic chart targets. The byte-level apply path is
+            # the same; only the input differs.
+            print(f"rendering {pack_name}/{entry.name} against real raw…")
+            try:
+                applied_xmp = _synthesize_for_entry(baseline, entry)
+            except Exception as exc:
+                print(f"  ✗ synthesize failed: {exc}", file=sys.stderr)
+                return
+            xmp_path = entry_dir / f"_{entry.name}.xmp"
+            write_xmp(applied_xmp, xmp_path)
+            rendered.setdefault(entry.name, {})
+            out = entry_dir / f"{entry.name}-{REAL_RAW_TARGET.slug}.jpg"
+            if _render_one(REAL_RAW_TARGET.path, xmp_path, out, configdir):
+                rendered[entry.name][REAL_RAW_TARGET.slug] = out
+                rendered[entry.name]["__real_raw_only"] = True
+            xmp_path.unlink(missing_ok=True)
+            # Also produce parameter sweeps against the real raw if the
+            # entry is parameterized — the sweep emit will pick up the
+            # __real_raw_only flag and render against REAL_RAW_TARGET.
+            _render_parameter_sweep(entry, baseline, entry_dir, configdir, rendered, {})
+            return
+        # No fixture: documented placeholder row instead of broken render.
         rendered.setdefault(entry.name, {})
         rendered[entry.name]["__visual_proof_skip"] = True
         print(
             f"skipping {pack_name}/{entry.name} "
-            f"(real-raw-only entry; see _SKIP_VISUAL_PROOF_ENTRIES)"
+            f"(real-raw fixture missing; see tests/fixtures/raws/README.md)"
         )
         return
 
@@ -518,9 +558,16 @@ def _render_parameter_sweep(
     if entry.parameters is None:
         return
 
-    # Render against colorchecker only — tone deltas read cleanly there.
-    target_slug = "colorchecker"
-    target_path = COLORCHECKER
+    # Real-raw-only entries (skip-listed; #103) sweep against the real
+    # raw target instead of the synthetic colorchecker — colorequal etc.
+    # need a working color-management chain.
+    if rendered.get(entry.name, {}).get("__real_raw_only"):
+        target_slug = REAL_RAW_TARGET.slug
+        target_path = REAL_RAW_TARGET.path
+    else:
+        # Render against colorchecker only — tone deltas read cleanly there.
+        target_slug = "colorchecker"
+        target_path = COLORCHECKER
 
     rendered[entry.name].setdefault("_sweeps", [])
     sweeps: list[dict] = rendered[entry.name]["_sweeps"]
@@ -735,28 +782,12 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
     cc_masked = outs.get("colorchecker_masked")
     gs_masked = outs.get("grayscale_masked")
 
-    # Real-raw-only entries: render a documented placeholder instead of broken images.
-    if outs.get("__visual_proof_skip"):
-        out: list[str] = []
-        out.append(f"### `{entry.name}`\n")
-        out.append(f"_{entry.description}_\n")
-        skip_url = (
-            "https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120"
-        )
-        out.append(
-            "> 🚫 **Visual-proof rendering skipped.** This entry's "
-            "photographic effect requires real-raw input — its "
-            "underlying darktable module produces degenerate output on "
-            "the synthetic ColorChecker / grayscale fixtures (verified "
-            "experimentally by varying the module's global tuning; "
-            "chart pipeline doesn't recover). The byte-level apply "
-            "path is verified by the 5-layer test coverage (per ADR-080). "
-            "Visual proof on real raws is a v1.9.0+ work item — see "
-            f"[`_SKIP_VISUAL_PROOF_ENTRIES`]({skip_url}) in the gallery "
-            "script for the list and reasoning.\n"
-        )
-        out.append("")
-        return out
+    # Skip-listed entries (#103): delegate to one of two helpers — either
+    # the placeholder (fixture missing) or the real-raw render layout.
+    # Done as a single branch so this function's complexity stays under C901.
+    skip_md = _maybe_render_skip_listed_md(entry, outs)
+    if skip_md is not None:
+        return skip_md
 
     if (cc in (None, "skipped")) and (gs in (None, "skipped")):
         return []
@@ -865,6 +896,66 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
     return out
 
 
+def _maybe_render_skip_listed_md(entry, outs: dict) -> list[str] | None:
+    """Dispatcher for #103 skip-listed entries. Returns the rendered
+    markdown when the entry is in _SKIP_VISUAL_PROOF_ENTRIES (either
+    placeholder or real-raw layout), or None if the caller should
+    proceed with the regular synthetic-chart layout."""
+    if outs.get("__visual_proof_skip"):
+        return _render_skip_placeholder_md(entry)
+    if outs.get("__real_raw_only"):
+        return _render_real_raw_entry_md(entry, outs)
+    return None
+
+
+def _render_skip_placeholder_md(entry) -> list[str]:
+    """Markdown for an entry skipped from visual proofs (#103) when the
+    real-raw fixture isn't available."""
+    skip_url = "https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120"
+    return [
+        f"### `{entry.name}`\n",
+        f"_{entry.description}_\n",
+        "> 🚫 **Visual-proof rendering skipped.** This entry's "
+        "photographic effect requires real-raw input — its underlying "
+        "darktable module produces degenerate output on the synthetic "
+        "ColorChecker / grayscale fixtures (verified experimentally by "
+        "varying the module's global tuning; chart pipeline doesn't "
+        "recover). The byte-level apply path is verified by the 5-layer "
+        "test coverage (per ADR-080). Visual proof on real raws is a "
+        "v1.9.0+ work item — see "
+        f"[`_SKIP_VISUAL_PROOF_ENTRIES`]({skip_url}) in the gallery "
+        "script for the list and reasoning. To enable real-raw "
+        "rendering, drop a fixture file at the path defined by "
+        "`REAL_RAW_FIXTURE` (see `tests/fixtures/raws/README.md`).\n",
+        "",
+    ]
+
+
+def _render_real_raw_entry_md(entry, outs: dict) -> list[str]:
+    """Markdown for a real-raw-only entry (#103): rendered against the
+    iguana fixture instead of the synthetic chart targets. Emits a
+    1-col global view followed by parameter-sweep rows if applicable."""
+    out: list[str] = []
+    out.append(f"### `{entry.name}` 🦎 real-raw\n")
+    out.append(f"_{entry.description}_\n")
+    out.append(
+        "> 🦎 **Real-raw rendering.** This entry's photographic effect "
+        "needs a working color-management chain that the synthetic "
+        "chart pipeline doesn't provide; rendered against the iguana "
+        "fixture instead. Apply-path correctness is independently "
+        "verified by the 5-layer test coverage (per ADR-080).\n"
+    )
+    realraw = outs.get(REAL_RAW_TARGET.slug)
+    if realraw not in (None, "skipped"):
+        out.append("| Real raw |")
+        out.append("|-|")
+        out.append(f"| {_img_md(realraw, f'{entry.name} real raw')} |")
+        out.append("")
+    out.extend(_render_sweep_rows_md(entry, outs.get("_sweeps") or []))
+    out.append("")
+    return out
+
+
 def _render_sweep_rows_md(entry, sweeps: list[dict]) -> list[str]:
     """Markdown lines for one entry's parameter-sweep rows. Each sweep
     in the list emits one block (header + table); multi-parameter
@@ -963,6 +1054,29 @@ def render_gallery_md(rendered: dict[str, dict[str, Path]]) -> str:
         f"[`tests/fixtures/reference-targets/`]"
         f"(https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md).\n"
     )
+    if _real_raw_fixture_available():
+        lines.append(
+            "> **🦎 Real-raw fixture path (#103).** A small set of entries "
+            "(currently the HSL row via `colorequal`) need a working "
+            "color-management chain that the synthetic chart pipeline "
+            "doesn't provide. Those entries render against the real-raw "
+            "fixture at "
+            "[`tests/fixtures/raws/`]"
+            "(https://github.com/chipi/chemigram/blob/main/tests/fixtures/raws/README.md) "
+            "instead. Look for the 🦎 marker in the entry header.\n"
+        )
+    else:
+        lines.append(
+            "> **🚫 Real-raw fixture missing (#103).** A small set of "
+            "entries (currently HSL via `colorequal`) need a real raw "
+            "for visual proof — the synthetic chart pipeline produces "
+            "degenerate output. Those entries currently show a documented "
+            "placeholder row; drop a fixture file at the path defined by "
+            "`REAL_RAW_FIXTURE` in this script (see "
+            "[`tests/fixtures/raws/README.md`]"
+            "(https://github.com/chipi/chemigram/blob/main/tests/fixtures/raws/README.md)) "
+            "to enable real-raw rendering.\n"
+        )
 
     lines.append("---\n")
     lines.append("## Baseline reference\n")

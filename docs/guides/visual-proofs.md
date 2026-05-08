@@ -12,6 +12,8 @@
 
 > Render size: 400x400, JPEG quality default. Inputs: synthetic targets from [`tests/fixtures/reference-targets/`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md).
 
+> **🚫 Real-raw fixture missing (#103).** A small set of entries (currently HSL via `colorequal`) need a real raw for visual proof — the synthetic chart pipeline produces degenerate output. Those entries currently show a documented placeholder row; drop a fixture file at the path defined by `REAL_RAW_FIXTURE` in this script (see [`tests/fixtures/raws/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/raws/README.md)) to enable real-raw rendering.
+
 ---
 
 ## Baseline reference
@@ -634,21 +636,21 @@ _(near-baseline diff in grayscale (masked): below visible threshold on this char
 
 _Parameterized HSL Saturation row (RFC-023). Lightroom HSL Color Mixer Saturation parity via darktable's colorequal module. 8 per-color axes (sat_red, sat_orange, sat_yellow, sat_green, sat_cyan, sat_blue, sat_lavender, sat_magenta); each range [-1.0, 1.0]; default 0.0. Negative desaturates that color zone (e.g. sat_orange=-0.3 → mute skin tones); positive boosts. Compose with hsl_hue and hsl_luminance for the full HSL Color Mixer._
 
-> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning.
+> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning. To enable real-raw rendering, drop a fixture file at the path defined by `REAL_RAW_FIXTURE` (see `tests/fixtures/raws/README.md`).
 
 
 ### `hsl_hue`
 
 _Parameterized HSL Hue row (RFC-023). Lightroom HSL Color Mixer Hue parity via colorequal. 8 per-color hue-shift axes (hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta); each range [-180.0, 180.0] degrees; default 0.0. Shifts that color zone toward an adjacent hue (e.g. hue_green=15.0 → foliage warmer toward yellow)._
 
-> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning.
+> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning. To enable real-raw rendering, drop a fixture file at the path defined by `REAL_RAW_FIXTURE` (see `tests/fixtures/raws/README.md`).
 
 
 ### `hsl_luminance`
 
 _Parameterized HSL Luminance row (RFC-023). Lightroom HSL Color Mixer Luminance parity via colorequal. 8 per-color brightness axes (bright_red, bright_orange, bright_yellow, bright_green, bright_cyan, bright_blue, bright_lavender, bright_magenta); each range [-1.0, 1.0]; default 0.0. Negative darkens that color zone (e.g. bright_blue=-0.3 → deeper sky); positive lightens._
 
-> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning.
+> 🚫 **Visual-proof rendering skipped.** This entry's photographic effect requires real-raw input — its underlying darktable module produces degenerate output on the synthetic ColorChecker / grayscale fixtures (verified experimentally by varying the module's global tuning; chart pipeline doesn't recover). The byte-level apply path is verified by the 5-layer test coverage (per ADR-080). Visual proof on real raws is a v1.9.0+ work item — see [`_SKIP_VISUAL_PROOF_ENTRIES`](https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120) in the gallery script for the list and reasoning. To enable real-raw rendering, drop a fixture file at the path defined by `REAL_RAW_FIXTURE` (see `tests/fixtures/raws/README.md`).
 
 
 ### `dehaze`
