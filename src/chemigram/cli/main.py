@@ -17,6 +17,7 @@ from chemigram.cli.commands import (
     context,
     edit,
     export,
+    gap_log,
     lifecycle,
     render,
     status,
@@ -37,6 +38,11 @@ app = typer.Typer(
 )
 
 app.add_typer(vocab.app, name="vocab", help="Inspect installed vocabulary.")
+app.add_typer(
+    gap_log.app,
+    name="gap-log",
+    help="Read-side analytics for vocabulary_gaps.jsonl (Phase 2 use-driven feedback).",
+)
 app.command(
     name="status",
     help="Print runtime diagnostics: chemigram + darktable-cli versions, "
