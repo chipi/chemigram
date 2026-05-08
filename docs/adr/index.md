@@ -101,6 +101,7 @@ ADRs come from two streams:
 | ADR-084 | Apply-time mask spec semantics + path shape addition; closes RFC-029, formalizes build-by-words inline mask construction | Accepted |
 | ADR-085 | Parametric mask encoding via blendif; range_filter mask_spec field; AND composition with drawn masks (closes RFC-024) | Accepted |
 | ADR-086 | LLM-vision-as-provider for AI-derived masks (MVP via existing wire + workflow guide; closes RFC-026; precision tier deferred to RFC-030) | Accepted |
+| ADR-087 | Retouch byte encoding + apply_spot MCP tool (closes RFC-025; HEAL+CLONE on CIRCLE geometry, single-form per call; AI auto-detection deferred to RFC-030) | Accepted |
 
 ## Conventions
 

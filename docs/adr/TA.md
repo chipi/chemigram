@@ -434,7 +434,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-022 | Bulk parameterization of common-use darktable modules (tiered baseline) | Decided | ADR-081 (closes; explicitly amends ADR-008) |
 | RFC-023 | HSL Color Mixer parity (colorzones vs colorequal backing) | Decided | ADR-083 (closes) |
 | RFC-024 | Range masks (color-range / luminance-range / depth-range / subject) | Decided | ADR-085 (closes; depth + subject deferred to RFC-026) |
-| RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Draft v0.1 | — |
+| RFC-025 | Spot removal / heal architecture (retouch byte serialization) | Decided | ADR-087 (closes; AI auto-detection deferred to RFC-030) |
 | RFC-026 | LLM-vision-as-provider for AI-derived masks (MVP, conversation-native) | Decided | ADR-086 (closes) |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
 | RFC-030 | Deployed sibling-provider scaffolding for precision-tier AI masks | Draft v0.1 (deferred) | — |
@@ -528,6 +528,7 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-084 | Apply-time mask spec semantics + path shape addition; closes RFC-029, formalizes build-by-words inline mask construction | Accepted |
 | ADR-085 | Parametric mask encoding via blendif; range_filter mask_spec field; AND composition with drawn masks (closes RFC-024) | Accepted |
 | ADR-086 | LLM-vision-as-provider for AI-derived masks (MVP via existing wire + workflow guide; closes RFC-026; precision tier deferred to RFC-030) | Accepted |
+| ADR-087 | Retouch byte encoding + apply_spot MCP tool (closes RFC-025; HEAL+CLONE on CIRCLE geometry, single-form per call; AI auto-detection deferred to RFC-030) | Accepted |
 
 ---
 

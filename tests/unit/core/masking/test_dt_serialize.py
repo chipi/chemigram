@@ -453,6 +453,201 @@ def test_parametric_rejects_excessive_feather() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Circle mask form + clone source (RFC-025 / ADR-087)
+# ---------------------------------------------------------------------------
+
+
+def test_circle_mask_points_is_16_bytes() -> None:
+    from chemigram.core.masking.dt_serialize import encode_circle_mask_points
+
+    blob = encode_circle_mask_points(center_x=0.5, center_y=0.5, radius=0.05)
+    assert len(blob) == 16  # 4 floats
+
+
+def test_circle_mask_points_round_trips() -> None:
+    from chemigram.core.masking.dt_serialize import encode_circle_mask_points
+
+    blob = encode_circle_mask_points(center_x=0.3, center_y=0.7, radius=0.04, border=0.02)
+    cx, cy, r, b = struct.unpack("<ffff", blob)
+    assert cx == pytest.approx(0.3)
+    assert cy == pytest.approx(0.7)
+    assert r == pytest.approx(0.04)
+    assert b == pytest.approx(0.02)
+
+
+def test_clone_mask_src_is_8_bytes() -> None:
+    from chemigram.core.masking.dt_serialize import encode_clone_mask_src
+
+    blob = encode_clone_mask_src(source_x=0.4, source_y=0.3)
+    assert len(blob) == 8
+
+
+def test_clone_mask_src_round_trips() -> None:
+    from chemigram.core.masking.dt_serialize import encode_clone_mask_src
+
+    blob = encode_clone_mask_src(source_x=0.4, source_y=0.3)
+    sx, sy = struct.unpack("<ff", blob)
+    assert (sx, sy) == pytest.approx((0.4, 0.3))
+
+
+def test_clone_mask_src_distinguishes_from_empty() -> None:
+    """A clone source mask_src is non-zero; empty (heal) is zero."""
+    from chemigram.core.masking.dt_serialize import (
+        empty_mask_src,
+        encode_clone_mask_src,
+    )
+
+    clone = encode_clone_mask_src(source_x=0.4, source_y=0.3)
+    heal = empty_mask_src()
+    assert clone != heal
+    assert heal == b"\x00" * 8
+
+
+# ---------------------------------------------------------------------------
+# Retouch encoders (RFC-025 / ADR-087)
+# ---------------------------------------------------------------------------
+
+
+def test_retouch_form_is_44_bytes() -> None:
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        encode_retouch_form,
+    )
+
+    form = encode_retouch_form(formid=12345, algorithm=DT_IOP_RETOUCH_HEAL)
+    assert len(form) == 44
+
+
+def test_retouch_form_writes_formid_and_algorithm_at_correct_offsets() -> None:
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        encode_retouch_form,
+    )
+
+    form = encode_retouch_form(formid=99, algorithm=DT_IOP_RETOUCH_HEAL)
+    (formid,) = struct.unpack_from("<i", form, 0)
+    (scale,) = struct.unpack_from("<i", form, 4)
+    (algorithm,) = struct.unpack_from("<i", form, 8)
+    assert formid == 99
+    assert scale == 0
+    assert algorithm == DT_IOP_RETOUCH_HEAL
+
+
+def test_retouch_form_clone_vs_heal_distinct_bytes() -> None:
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_CLONE,
+        DT_IOP_RETOUCH_HEAL,
+        encode_retouch_form,
+    )
+
+    heal = encode_retouch_form(formid=1, algorithm=DT_IOP_RETOUCH_HEAL)
+    clone = encode_retouch_form(formid=1, algorithm=DT_IOP_RETOUCH_CLONE)
+    assert heal != clone
+
+
+def test_retouch_op_params_total_is_13260_bytes() -> None:
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        RETOUCH_PARAMS_SIZE,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+
+    one_form = encode_retouch_form(formid=1, algorithm=DT_IOP_RETOUCH_HEAL)
+    blob = encode_retouch_op_params([one_form])
+    assert len(blob) == RETOUCH_PARAMS_SIZE
+    assert RETOUCH_PARAMS_SIZE == 13260
+
+
+def test_retouch_op_params_pads_unused_form_slots_with_zeros() -> None:
+    """Active forms come first; remaining slots are zero-filled 44-byte blocks."""
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        RETOUCH_FORM_SIZE,
+        RETOUCH_NO_FORMS,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+
+    one_form = encode_retouch_form(formid=1, algorithm=DT_IOP_RETOUCH_HEAL)
+    blob = encode_retouch_op_params([one_form])
+    # Slot 0 = the active form
+    assert blob[:RETOUCH_FORM_SIZE] == one_form
+    # Slots 1..299 must all be zero
+    for i in range(1, RETOUCH_NO_FORMS):
+        slot = blob[i * RETOUCH_FORM_SIZE : (i + 1) * RETOUCH_FORM_SIZE]
+        assert slot == b"\x00" * RETOUCH_FORM_SIZE, f"slot {i} not zero"
+
+
+def test_retouch_op_params_global_tail_is_zero_by_default() -> None:
+    """The 60-byte global tail (algorithm, scales, fill, blur, max_heal_iter)
+    is all zeros for the v1.9.0 ship — per-form algorithm is what matters."""
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        RETOUCH_FORM_SIZE,
+        RETOUCH_NO_FORMS,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+
+    one_form = encode_retouch_form(formid=1, algorithm=DT_IOP_RETOUCH_HEAL)
+    blob = encode_retouch_op_params([one_form])
+    tail_offset = RETOUCH_NO_FORMS * RETOUCH_FORM_SIZE  # 13200
+    tail = blob[tail_offset:]
+    assert len(tail) == 60
+    assert tail == b"\x00" * 60
+
+
+def test_retouch_op_params_rejects_too_many_forms() -> None:
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_HEAL,
+        RETOUCH_NO_FORMS,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+
+    too_many = [
+        encode_retouch_form(formid=i + 1, algorithm=DT_IOP_RETOUCH_HEAL)
+        for i in range(RETOUCH_NO_FORMS + 1)
+    ]
+    with pytest.raises(ValueError, match="at most 300 forms"):
+        encode_retouch_op_params(too_many)
+
+
+def test_retouch_op_params_rejects_wrong_size_form() -> None:
+    from chemigram.core.masking.dt_serialize import encode_retouch_op_params
+
+    with pytest.raises(ValueError, match=r"32 bytes, expected 44"):
+        encode_retouch_op_params([b"\x00" * 32])  # wrong size
+
+
+def test_retouch_op_params_handles_multiple_forms() -> None:
+    """v1.9.0 ships single-form per call, but the encoder must handle
+    multi-form inputs cleanly (RFC-030 will batch AI-detected spots)."""
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_CLONE,
+        DT_IOP_RETOUCH_HEAL,
+        RETOUCH_FORM_SIZE,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+
+    forms = [
+        encode_retouch_form(formid=10, algorithm=DT_IOP_RETOUCH_HEAL),
+        encode_retouch_form(formid=20, algorithm=DT_IOP_RETOUCH_CLONE),
+        encode_retouch_form(formid=30, algorithm=DT_IOP_RETOUCH_HEAL),
+    ]
+    blob = encode_retouch_op_params(forms)
+    # Slots 0-2 are active
+    for i in range(3):
+        slot = blob[i * RETOUCH_FORM_SIZE : (i + 1) * RETOUCH_FORM_SIZE]
+        assert slot == forms[i]
+    # Slot 3 should be zero-padded
+    slot_3 = blob[3 * RETOUCH_FORM_SIZE : 4 * RETOUCH_FORM_SIZE]
+    assert slot_3 == b"\x00" * RETOUCH_FORM_SIZE
+
+
+# ---------------------------------------------------------------------------
 # XMP blob encoding (matches dt_exif_xmp_encode)
 # ---------------------------------------------------------------------------
 

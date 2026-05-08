@@ -261,7 +261,7 @@ The "thin" list has narrowed dramatically since v1.7.0. v1.8.0 closed the bulk o
 - ✅ **More L3 discrete kinds** — closed via #110; 7 new clarity / sharpen / vignette / split-grade variants.
 - ✅ **Lightroom-to-chemigram comparison guide** — closed via #111; onboarding doc for Lightroom users.
 - 📝 **Range masks (color-range / luminance-range / depth-range / subject)** — RFC-024 drafted via #105 (Draft v0.1). Hybrid proposal: native parametric for color/luminance ranges + deferred RFC-026 for depth/subject providers.
-- 📝 **Spot removal / heal** — RFC-025 drafted via #108 (Draft v0.1). Native retouch decoder (Tier 2-shaped after struct survey) + deferred RFC-026 for AI content-aware spot detection.
+- ✅ **Spot removal / heal** — closed via RFC-025 / ADR-087. New `apply_spot` MCP tool (sister to `apply_primitive`) with HEAL + CLONE algorithms on CIRCLE geometry. Wire-verified e2e against darktable. AI auto-detection ("find all the spots") deferred to RFC-030.
 
 **Still open** (post-v1.9.0 horizon):
 - **Manual tone curve** (`tonecurve`) — the last Lightroom daily-use gap. Decoder is straightforward but the 520-byte spline-curve struct needs an empirical baseline from a darktable-GUI session. Tracked as #94, sequenced under #100.

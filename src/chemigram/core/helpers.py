@@ -464,3 +464,190 @@ def _inject_masks_history_for_drawn(
         new_extra.append(("elem", "darktable:masks_history", masks_history_xml))
 
     return dataclasses.replace(new_xmp, raw_extra_fields=tuple(new_extra))
+
+
+# ---------------------------------------------------------------------------
+# Apply with retouch (spot heal/clone) — RFC-025 / ADR-087
+# ---------------------------------------------------------------------------
+
+
+def _validate_spot_args(
+    *,
+    kind: str,
+    x: float,
+    y: float,
+    radius: float,
+    source_x: float | None,
+    source_y: float | None,
+    opacity: float,
+) -> None:
+    """Validate apply_spot_retouch arguments. Raises ValueError on any
+    out-of-range or missing-required input. Extracted from the main
+    function to keep its complexity bounded (per ADR-038's mypy/ruff
+    strictness on chemigram.core)."""
+    if kind not in ("heal", "clone"):
+        raise ValueError(f"kind must be 'heal' or 'clone', got {kind!r}")
+    if not 0.0 <= x <= 1.0:
+        raise ValueError(f"x must be in [0, 1], got {x}")
+    if not 0.0 <= y <= 1.0:
+        raise ValueError(f"y must be in [0, 1], got {y}")
+    if not 0.0 < radius <= 1.0:
+        raise ValueError(f"radius must be in (0, 1], got {radius}")
+    if not 0.0 <= opacity <= 100.0:
+        raise ValueError(f"opacity must be in [0, 100], got {opacity}")
+    if kind == "clone":
+        if source_x is None or source_y is None:
+            raise ValueError("clone requires source_x and source_y")
+        if not 0.0 <= source_x <= 1.0 or not 0.0 <= source_y <= 1.0:
+            raise ValueError("source_x and source_y must be in [0, 1]")
+
+
+def apply_spot_retouch(
+    baseline: Xmp,
+    *,
+    kind: str,  # "heal" or "clone"
+    x: float,
+    y: float,
+    radius: float,
+    source_x: float | None = None,
+    source_y: float | None = None,
+    opacity: float = 100.0,
+    border: float = 0.02,
+) -> Xmp:
+    """Synthesize an XMP applying a single retouch form (heal or clone).
+
+    Implements the RFC-025 / ADR-087 wire: builds a CIRCLE mask form,
+    a retouch op_params with one form referencing the mask_id, and a
+    blendop_params with mask binding. Injects the masks_history element
+    and snapshots.
+
+    Args:
+        baseline: The current XMP to apply onto.
+        kind: ``"heal"`` (darktable picks the source via wavelet
+            decomposition) or ``"clone"`` (caller specifies source).
+        x, y: Spot center in normalized [0, 1] image coords.
+        radius: Spot radius in normalized [0, 1] image coords.
+        source_x, source_y: Required for ``"clone"``; ignored for
+            ``"heal"``. Source region center in normalized coords.
+        opacity: 0..100; default 100.
+        border: Mask falloff width in normalized coords; default 0.02
+            (subtle soft edge, natural blending).
+
+    Returns:
+        A new :class:`Xmp` with the retouch plugin appended and
+        ``masks_history`` injected.
+
+    Raises:
+        ValueError: kind is not "heal" or "clone"; clone with missing
+            source_x/source_y; coordinates / radius out of [0, 1];
+            opacity out of [0, 100].
+    """
+    import dataclasses
+    from hashlib import blake2b
+
+    from chemigram.core.dtstyle import DtstyleEntry, PluginEntry
+    from chemigram.core.masking.dt_serialize import (
+        DT_IOP_RETOUCH_CLONE,
+        DT_IOP_RETOUCH_HEAL,
+        DT_MASKS_CIRCLE,
+        DT_MASKS_VERSION,
+        DrawnMaskForm,
+        build_masks_history_xml,
+        empty_mask_src,
+        encode_blendop_with_drawn_mask,
+        encode_circle_mask_points,
+        encode_clone_mask_src,
+        encode_mask_blob_for_xmp,
+        encode_retouch_form,
+        encode_retouch_op_params,
+    )
+    from chemigram.core.xmp import synthesize_xmp
+
+    _validate_spot_args(
+        kind=kind,
+        x=x,
+        y=y,
+        radius=radius,
+        source_x=source_x,
+        source_y=source_y,
+        opacity=opacity,
+    )
+
+    # 1. Deterministic mask_id from the spec — same scheme as drawn masks
+    spec_repr = repr(
+        sorted(
+            {
+                "kind": kind,
+                "x": round(x, 6),
+                "y": round(y, 6),
+                "radius": round(radius, 6),
+                "source_x": round(source_x, 6) if source_x is not None else None,
+                "source_y": round(source_y, 6) if source_y is not None else None,
+            }.items()
+        )
+    )
+    h = blake2b(spec_repr.encode(), digest_size=4).digest()
+    mask_id = 0x10000000 | int.from_bytes(h, "big")
+
+    # 2. Build the CIRCLE mask form
+    circle_points = encode_circle_mask_points(center_x=x, center_y=y, radius=radius, border=border)
+    if kind == "clone":
+        assert source_x is not None and source_y is not None
+        mask_src = encode_clone_mask_src(source_x=source_x, source_y=source_y)
+    else:
+        mask_src = empty_mask_src()
+    form = DrawnMaskForm(
+        mask_id=mask_id,
+        mask_type=DT_MASKS_CIRCLE,
+        mask_version=DT_MASKS_VERSION,
+        mask_name=f"spot_{kind}",
+        mask_points=circle_points,
+        mask_nb=1,
+        mask_src=mask_src,
+    )
+    masks_history_xml = build_masks_history_xml([form])
+
+    # 3. Build the retouch op_params: one form, the rest empty
+    algorithm = DT_IOP_RETOUCH_CLONE if kind == "clone" else DT_IOP_RETOUCH_HEAL
+    retouch_form = encode_retouch_form(formid=mask_id, algorithm=algorithm)
+    retouch_op_params = encode_retouch_op_params([retouch_form])
+    retouch_op_params_str = encode_mask_blob_for_xmp(retouch_op_params)
+
+    # 4. Build the blendop_params with mask_id binding
+    blendop_bytes = encode_blendop_with_drawn_mask(mask_id=mask_id, opacity=opacity)
+    blendop_str = encode_mask_blob_for_xmp(blendop_bytes)
+
+    # 5. Build a retouch PluginEntry + DtstyleEntry
+    retouch_plugin = PluginEntry(
+        operation="retouch",
+        num=0,
+        module=3,  # retouch mv3
+        op_params=retouch_op_params_str,
+        blendop_params=blendop_str,
+        blendop_version=14,
+        multi_priority=0,
+        multi_name="",
+        enabled=True,
+    )
+    dtstyle = DtstyleEntry(
+        name=f"spot_{kind}",
+        description=f"v1.9.0 retouch: {kind} at ({x:.3f}, {y:.3f}) r={radius:.3f}",
+        iop_list=None,
+        plugins=(retouch_plugin,),
+    )
+
+    # 6. Synthesize + inject masks_history
+    new_xmp = synthesize_xmp(baseline, [dtstyle])
+
+    new_extra: list[tuple[str, str, str]] = []
+    replaced = False
+    for fkind, qname, value in new_xmp.raw_extra_fields:
+        if fkind == "elem" and qname == "darktable:masks_history":
+            new_extra.append((fkind, qname, masks_history_xml))
+            replaced = True
+        else:
+            new_extra.append((fkind, qname, value))
+    if not replaced:
+        new_extra.append(("elem", "darktable:masks_history", masks_history_xml))
+
+    return dataclasses.replace(new_xmp, raw_extra_fields=tuple(new_extra))

@@ -114,6 +114,23 @@ IOP_CS_HSL: Final = 5
 
 
 # ---------------------------------------------------------------------------
+# Retouch module enums (src/iop/retouch.c; mv3) — RFC-025 / ADR-087
+# ---------------------------------------------------------------------------
+
+# dt_iop_retouch_algo_type_t
+DT_IOP_RETOUCH_NONE: Final = 0
+DT_IOP_RETOUCH_CLONE: Final = 1
+DT_IOP_RETOUCH_HEAL: Final = 2
+DT_IOP_RETOUCH_BLUR: Final = 3  # not exposed in v1.9.0 surface
+DT_IOP_RETOUCH_FILL: Final = 4  # not exposed in v1.9.0 surface
+
+# Retouch struct sizing (verified against darktable 5.4.1 src/iop/retouch.c)
+RETOUCH_NO_FORMS: Final = 300
+RETOUCH_FORM_SIZE: Final = 44  # dt_iop_retouch_form_data_t
+RETOUCH_PARAMS_SIZE: Final = 13260  # 300 * 44 + 60-byte tail
+
+
+# ---------------------------------------------------------------------------
 # Drawn-mask form encoders
 # ---------------------------------------------------------------------------
 
@@ -255,6 +272,170 @@ def encode_rectangle_path_points(
         [(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
         border=border,
     )
+
+
+def encode_circle_mask_points(
+    *,
+    center_x: float,
+    center_y: float,
+    radius: float,
+    border: float = 0.0,
+) -> bytes:
+    """``dt_masks_point_circle_t`` (16 bytes).
+
+    A simple radial form used for retouch (RFC-025 / ADR-087) spot
+    correction. Coordinates normalized [0, 1]; radius is also in
+    normalized image space (0.05 = 5% of the image's smaller axis).
+
+    Args:
+        center_x, center_y: Circle center in normalized coords.
+        radius: Circle radius in normalized coords.
+        border: Feathering width on the falloff (default 0 = hard
+            edge; spot correction usually wants a small soft edge
+            ~0.02 for natural blending into surrounding pixels).
+    """
+    return struct.pack("<ffff", center_x, center_y, radius, border)
+
+
+def encode_clone_mask_src(*, source_x: float, source_y: float) -> bytes:
+    """``mask_src`` field for a CLONE form (8 bytes).
+
+    Replaces :func:`empty_mask_src` (which returns 8 zeros) for forms
+    that need to specify a clone source. For HEAL forms, mask_src
+    stays at zeros (darktable picks the source automatically via the
+    wavelet-based heal algorithm).
+    """
+    return struct.pack("<ff", source_x, source_y)
+
+
+# ---------------------------------------------------------------------------
+# Retouch module encoders (RFC-025 / ADR-087)
+# ---------------------------------------------------------------------------
+
+
+def encode_retouch_form(
+    *,
+    formid: int,
+    algorithm: int,
+    scale: int = 0,
+    blur_type: int = 0,
+    blur_radius: float = 0.0,
+    fill_mode: int = 0,
+    fill_color: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    fill_brightness: float = 0.0,
+    distort_mode: int = 0,
+) -> bytes:
+    """``dt_iop_retouch_form_data_t`` (44 bytes).
+
+    Per-form retouch struct: links a mask form (by ``formid``) to an
+    algorithm (HEAL / CLONE / BLUR / FILL) plus per-form parameters.
+
+    Verified against darktable 5.4.1 src/iop/retouch.c:
+
+        struct {
+            int32_t formid;          // mask_id reference
+            int32_t scale;
+            int32_t algorithm;       // DT_IOP_RETOUCH_*
+            int32_t blur_type;
+            float   blur_radius;
+            int32_t fill_mode;
+            float   fill_color[3];
+            float   fill_brightness;
+            int32_t distort_mode;
+        }
+
+    For v1.9.0's HEAL / CLONE scope, only formid + algorithm + the
+    other defaults matter; blur and fill fields stay at zero.
+
+    Note: ``formid`` is packed as unsigned int32 to match the wire-level
+    treatment of mask ids elsewhere (encode_blendop_with_drawn_mask
+    masks the id to 0xFFFFFFFF). darktable's source declares formid as
+    signed int32 but the byte representation is identical; the
+    deterministic-hash mask_id allocator may produce values above
+    INT32_MAX.
+    """
+    return struct.pack(
+        "<I i i i f i fff f i",
+        formid & 0xFFFFFFFF,
+        scale,
+        algorithm,
+        blur_type,
+        blur_radius,
+        fill_mode,
+        fill_color[0],
+        fill_color[1],
+        fill_color[2],
+        fill_brightness,
+        distort_mode,
+    )
+
+
+def encode_retouch_op_params(
+    forms: Sequence[bytes],
+    *,
+    algorithm_default: int = DT_IOP_RETOUCH_NONE,
+) -> bytes:
+    """``dt_iop_retouch_params_t`` (13260 bytes).
+
+    Constructs the full retouch op_params blob: a 300-form fixed
+    array (active forms first, padded with empty 44-byte form slots)
+    plus a 60-byte global tail (default algorithm, scales,
+    fill/blur defaults, max heal iterations).
+
+    For v1.9.0's single-form-per-call scope, ``forms`` typically
+    contains 1 form; the remaining 299 slots are zero-padded. The
+    global tail stays at all-zero defaults — darktable reads the
+    per-form algorithm field, not the global one, when applying
+    retouch operations.
+
+    Args:
+        forms: List of 44-byte form blobs (from
+            :func:`encode_retouch_form`). Up to 300 entries.
+        algorithm_default: Global algorithm field for the params
+            tail (default ``DT_IOP_RETOUCH_NONE = 0``). The per-form
+            algorithm is what darktable actually uses; this is just
+            the UI default.
+
+    Raises:
+        ValueError: more than 300 forms supplied; or any form is
+            not exactly 44 bytes.
+    """
+    if len(forms) > RETOUCH_NO_FORMS:
+        raise ValueError(f"retouch supports at most {RETOUCH_NO_FORMS} forms, got {len(forms)}")
+    for i, form_bytes in enumerate(forms):
+        if len(form_bytes) != RETOUCH_FORM_SIZE:
+            raise ValueError(f"forms[{i}] is {len(form_bytes)} bytes, expected {RETOUCH_FORM_SIZE}")
+
+    empty_form = b"\x00" * RETOUCH_FORM_SIZE
+    form_array = b"".join(forms) + empty_form * (RETOUCH_NO_FORMS - len(forms))
+
+    # Global tail (60 bytes): algorithm, num_scales, curr_scale,
+    # merge_from_scale, preview_levels[3], blur_type, blur_radius,
+    # fill_mode, fill_color[3], fill_brightness, max_heal_iter
+    tail = struct.pack(
+        "<i i i i fff i f i fff f i",
+        algorithm_default,  # algorithm (UI default; per-form value is what's applied)
+        0,  # num_scales
+        0,  # curr_scale
+        0,  # merge_from_scale
+        0.0,
+        0.0,
+        0.0,  # preview_levels[3]
+        0,  # blur_type
+        0.0,  # blur_radius
+        0,  # fill_mode
+        0.0,
+        0.0,
+        0.0,  # fill_color[3]
+        0.0,  # fill_brightness
+        0,  # max_heal_iter
+    )
+    out = form_array + tail
+    if len(out) != RETOUCH_PARAMS_SIZE:
+        raise RuntimeError(
+            f"retouch op_params size mismatch: produced {len(out)}, expected {RETOUCH_PARAMS_SIZE}"
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------
