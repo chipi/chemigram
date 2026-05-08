@@ -48,7 +48,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (60 entries)
+## `expressive-baseline` pack (69 entries)
 
 ### `grain_strength`
 
@@ -63,8 +63,6 @@ _(near-baseline diff in ColorChecker (global): grain texture is hard to see on f
 _(near-baseline diff in grayscale (global): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 _(near-baseline diff in ColorChecker (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
-
-_(near-baseline diff in grayscale (masked): grain texture is hard to see on flat chart patches — see the **clipped-gradient row below** for visible texture, or [mask-applicable-controls](mask-applicable-controls.md#grain))_
 
 **On the clipped-gradient fixture** (continuous tone + blown highlights — chart designed to show this module's effect; see [`reference-targets/README.md`](https://github.com/chipi/chemigram/blob/main/tests/fixtures/reference-targets/README.md)):
 
@@ -174,8 +172,6 @@ _Neutral B&W conversion via channelmixerrgb (Rec. 709 luminance weights: R 0.212
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
-
 ### `bw_sky_drama`
 
 _B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues — classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true._
@@ -185,8 +181,6 @@ _B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and
 | <img src="../visual-proofs/expressive-baseline/bw_sky_drama-colorchecker.jpg" alt="bw_sky_drama ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_sky_drama-grayscale.jpg" alt="bw_sky_drama grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_sky_drama-colorchecker-masked.jpg" alt="bw_sky_drama ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_sky_drama-grayscale-masked.jpg" alt="bw_sky_drama grayscale masked" width="180"> |
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 ### `bw_foliage`
 
@@ -211,10 +205,6 @@ _Parameterized 9-band tone equalizer (RFC-022 Tier 2; most complex multi-paramet
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
-
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`noise`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -306,6 +296,8 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`cx`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `0.00` | `+0.10` | `+0.20` | `+0.30` |
@@ -342,6 +334,8 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`clarity_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
@@ -369,8 +363,6 @@ _Parameterized exposure compensation (RFC-021). Pass --value V (CLI) or value: V
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
@@ -747,6 +739,8 @@ _Parameterized global saturation in colorbalancergb (RFC-021). Pass --value V (C
 
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`saturation_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-1.00` | `-0.50` | `0.00` | `+0.25` | `+0.50` |
@@ -784,8 +778,6 @@ _Parameterized global chroma on colorbalancergb (RFC-022 Tier 2). Pass --value V
 > **Grayscale column omitted**: this primitive moves chroma only; gray patches have no chroma to affect.
 
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`chroma_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -827,8 +819,6 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
-
 **Parameter sweep** (`brilliance_global`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -849,6 +839,8 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
 **Parameter sweep** (`brilliance_highlights`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `-0.50` | `0.00` | `+0.30` | `+0.60` | `+1.00` |
@@ -866,6 +858,8 @@ _Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86)
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
@@ -905,7 +899,7 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`hue_shadows`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -1031,8 +1025,6 @@ _(near-baseline diff in grayscale (global): below visible threshold on this char
 
 _(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
-
 **Parameter sweep** (`shadows_weight`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
 | `0.00` | `+0.50` | `+1.00` | `+2.00` | `+4.00` |
@@ -1051,7 +1043,7 @@ _(near-baseline diff in ColorChecker (global): below visible threshold on this c
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`highlights_weight`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -1070,6 +1062,10 @@ _Parameterized shadow/highlight balance point (#91 Bucket A.5; Lightroom Color G
 _(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in ColorChecker (masked): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 **Parameter sweep** (`white_fulcrum`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
 
@@ -1210,6 +1206,78 @@ _L2 look — nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-cu
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/look_vintage_film-colorchecker.jpg" alt="look_vintage_film ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_vintage_film-grayscale.jpg" alt="look_vintage_film grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_vintage_film-colorchecker-masked.jpg" alt="look_vintage_film ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_vintage_film-grayscale-masked.jpg" alt="look_vintage_film grayscale masked" width="180"> |
+
+### `look_cinematic_teal_orange`
+
+_L2 look — Hollywood blockbuster teal-and-orange grade (#104). sigmoid_contrast 1.4 + colorbalancergb hue_shadows=210 deg / saturation_shadows=+0.3 (teal) + hue_highlights=30 deg / saturation_highlights=+0.2 (orange) + saturation_global=+0.1._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_cinematic_teal_orange-colorchecker.jpg" alt="look_cinematic_teal_orange ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_cinematic_teal_orange-grayscale.jpg" alt="look_cinematic_teal_orange grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_cinematic_teal_orange-colorchecker-masked.jpg" alt="look_cinematic_teal_orange ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_cinematic_teal_orange-grayscale-masked.jpg" alt="look_cinematic_teal_orange grayscale masked" width="180"> |
+
+### `look_film_kodachrome`
+
+_L2 look — Kodachrome film simulation (#104). sigmoid_contrast 1.4 + temperature warm (red 2.148 / blue 1.209 = wb_warm_subtle) + saturation_global=+0.2 + grain_strength=8._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_film_kodachrome-colorchecker.jpg" alt="look_film_kodachrome ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_kodachrome-grayscale.jpg" alt="look_film_kodachrome grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_kodachrome-colorchecker-masked.jpg" alt="look_film_kodachrome ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_kodachrome-grayscale-masked.jpg" alt="look_film_kodachrome grayscale masked" width="180"> |
+
+### `look_film_portra`
+
+_L2 look — Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s-curve) + temperature subtle warm (red 1.5 / blue 1.3) + saturation_global=-0.1 + grain_strength=15. Compose with hsl_saturation --param sat_orange=+0.05 if you want the canonical Portra skin-warmth boost on real raws._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_film_portra-colorchecker.jpg" alt="look_film_portra ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_portra-grayscale.jpg" alt="look_film_portra grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_portra-colorchecker-masked.jpg" alt="look_film_portra ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_film_portra-grayscale-masked.jpg" alt="look_film_portra grayscale masked" width="180"> |
+
+### `look_high_key_portrait`
+
+_L2 look — high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_high_key_portrait-colorchecker.jpg" alt="look_high_key_portrait ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_high_key_portrait-grayscale.jpg" alt="look_high_key_portrait grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_high_key_portrait-colorchecker-masked.jpg" alt="look_high_key_portrait ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_high_key_portrait-grayscale-masked.jpg" alt="look_high_key_portrait grayscale masked" width="180"> |
+
+### `look_low_key_portrait`
+
+_L2 look — low-key portrait (#104). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.1._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_low_key_portrait-colorchecker.jpg" alt="look_low_key_portrait ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_low_key_portrait-grayscale.jpg" alt="look_low_key_portrait grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_low_key_portrait-colorchecker-masked.jpg" alt="look_low_key_portrait ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_low_key_portrait-grayscale-masked.jpg" alt="look_low_key_portrait grayscale masked" width="180"> |
+
+### `look_moody_dramatic`
+
+_L2 look — moody / dramatic editorial (#104). sigmoid_contrast 2.0 (strong s-curve) + colorbalancergb saturation_global=-0.3 + vibrance=+0.1 + grain_strength=25._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_moody_dramatic-colorchecker.jpg" alt="look_moody_dramatic ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_moody_dramatic-grayscale.jpg" alt="look_moody_dramatic grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_moody_dramatic-colorchecker-masked.jpg" alt="look_moody_dramatic ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_moody_dramatic-grayscale-masked.jpg" alt="look_moody_dramatic grayscale masked" width="180"> |
+
+### `look_70s_film`
+
+_L2 look — 1970s film aesthetic (#104). temperature warm (red 2.0 / blue 1.4) + sigmoid_contrast 1.1 (gentle s-curve) + saturation_global=-0.1 + grain_strength=35 (medium grain)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_70s_film-colorchecker.jpg" alt="look_70s_film ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_70s_film-grayscale.jpg" alt="look_70s_film grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_70s_film-colorchecker-masked.jpg" alt="look_70s_film ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_70s_film-grayscale-masked.jpg" alt="look_70s_film grayscale masked" width="180"> |
+
+### `look_90s_grain`
+
+_L2 look — 1990s film aesthetic (#104). sigmoid_contrast 1.6 + temperature subtle cool (red 1.2 / blue 2.0) + grain_strength=50 (heavy grain)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_90s_grain-colorchecker.jpg" alt="look_90s_grain ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_90s_grain-grayscale.jpg" alt="look_90s_grain grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_90s_grain-colorchecker-masked.jpg" alt="look_90s_grain ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_90s_grain-grayscale-masked.jpg" alt="look_90s_grain grayscale masked" width="180"> |
+
+### `look_2000s_digital`
+
+_L2 look — early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 + temperature subtle cool (red 1.1 / blue 1.6) + saturation_global=+0.4 (oversaturated digital signature)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_2000s_digital-colorchecker.jpg" alt="look_2000s_digital ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-grayscale.jpg" alt="look_2000s_digital grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-colorchecker-masked.jpg" alt="look_2000s_digital ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-grayscale-masked.jpg" alt="look_2000s_digital grayscale masked" width="180"> |
 
 ---
 
