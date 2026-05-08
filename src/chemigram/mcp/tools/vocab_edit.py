@@ -257,10 +257,10 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
         except (ValueError, TypeError, PatchError) as exc:
             return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
     elif effective_mask is not None:
-        from chemigram.core.helpers import apply_with_drawn_mask
+        from chemigram.core.helpers import apply_with_mask
 
         try:
-            new_xmp = apply_with_drawn_mask(baseline_xmp, entry.dtstyle, effective_mask)
+            new_xmp = apply_with_mask(baseline_xmp, entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
             return ToolResult.fail(ToolError(code=ErrorCode.MASKING_ERROR, message=str(exc)))
     else:

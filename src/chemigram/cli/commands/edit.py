@@ -8,8 +8,9 @@ through ``chemigram.mcp.tools.*``.
 Mask binding paths (closes #78):
 
 - An entry with ``mask_spec`` in its manifest auto-routes through
-  :func:`chemigram.core.helpers.apply_with_drawn_mask`. This is the
-  v1.5.0 behavior — used by the 4 shipped masked entries.
+  :func:`chemigram.core.helpers.apply_with_mask`. This is the
+  v1.5.0 behavior, generalized in v1.9.0 (ADR-085) to handle drawn
+  masks, parametric range_filter, and drawn+parametric composition.
 - ``--mask-spec '<json>'`` on ``apply-primitive`` overrides at apply
   time (or supplies a mask for an entry that doesn't have one).
   This is the v1.6.0 addition — lets a photographer mask any
@@ -35,7 +36,7 @@ from chemigram.cli._workspace import resolve_workspace_or_fail
 from chemigram.cli.exit_codes import ExitCode
 from chemigram.core.helpers import (
     apply_entry,
-    apply_with_drawn_mask,
+    apply_with_mask,
     current_xmp,
     summarize_state,
 )
@@ -105,7 +106,7 @@ def _resolve_effective_mask(
 ) -> dict[str, Any] | None:
     """Pick the mask_spec to apply, preferring the CLI override.
 
-    Returns the dict that should be passed to ``apply_with_drawn_mask``,
+    Returns the dict that should be passed to ``apply_with_mask``,
     or None if the entry should be applied globally. The CLI override
     takes precedence over the manifest's ``mask_spec`` so a photographer
     can re-mask a shipped masked entry on the fly.
@@ -167,7 +168,7 @@ def _do_apply_primitive(
     elif effective_mask is not None:
         # Legacy mask-only path (no parameters axis).
         try:
-            new_xmp = apply_with_drawn_mask(baseline_xmp, vocab_entry.dtstyle, effective_mask)
+            new_xmp = apply_with_mask(baseline_xmp, vocab_entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
             writer.error(str(exc), ExitCode.MASKING_ERROR, entry=entry_name)
             return ExitCode.MASKING_ERROR.value

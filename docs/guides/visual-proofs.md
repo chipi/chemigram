@@ -48,7 +48,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (76 entries)
+## `expressive-baseline` pack (81 entries)
 
 ### `grain_strength`
 
@@ -1362,6 +1362,50 @@ _L2 look — early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 +
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-colorchecker.jpg" alt="look_2000s_digital ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-grayscale.jpg" alt="look_2000s_digital grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-colorchecker-masked.jpg" alt="look_2000s_digital ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_2000s_digital-grayscale-masked.jpg" alt="look_2000s_digital grayscale masked" width="180"> |
+
+### `look_subject_lift_dark_only` 🟦 mask-bound
+
+_L2 look — lift only the *dark pixels* in a centered subject region. Drawn ellipse around the subject + luminance shadows filter. Composes RFC-029 drawn mask + RFC-024 range_filter. The user's mental model: 'in this drawn mask, only affect the dark pixels.'_
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_subject_lift_dark_only-colorchecker.jpg" alt="look_subject_lift_dark_only ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_subject_lift_dark_only-grayscale.jpg" alt="look_subject_lift_dark_only grayscale" width="180"> |
+
+### `look_sky_blue_deepen` 🟦 mask-bound
+
+_L2 look — deepen sky blues in the upper half. Drawn gradient (top half) + color_h filter on cyan-blue range. Composes RFC-029 + RFC-024. Real-world workflow: dramatic sky without affecting foreground or non-blue elements above the horizon._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_sky_blue_deepen-colorchecker.jpg" alt="look_sky_blue_deepen ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_sky_blue_deepen-grayscale.jpg" alt="look_sky_blue_deepen grayscale" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+### `look_horizon_warm_glow` 🟦 mask-bound
+
+_L2 look — lift warm tones near the horizon. Horizontal gradient anchored at midline + color_h filter on warm tones (orange/red). Sunset / golden-hour enhancement without affecting cool tones._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_horizon_warm_glow-colorchecker.jpg" alt="look_horizon_warm_glow ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_horizon_warm_glow-grayscale.jpg" alt="look_horizon_warm_glow grayscale" width="180"> |
+
+### `look_subject_brighten_highlights` 🟦 mask-bound
+
+_L2 look — brighten only the bright pixels in the subject region. Drawn ellipse + luminance highlights filter. Catchlights, skin highlights, sparkle without blowing out midtones._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_subject_brighten_highlights-colorchecker.jpg" alt="look_subject_brighten_highlights ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_subject_brighten_highlights-grayscale.jpg" alt="look_subject_brighten_highlights grayscale" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+### `look_dark_pixels_global_lift` 🟦 mask-bound
+
+_L2 look — lift dark pixels globally (no spatial mask). Pure parametric range_filter — luminance shadows. Useful when the intent is purely tonal: 'open up all the dark areas in the image, regardless of where they are.' Demonstrates the parametric-only path of RFC-024 / ADR-085._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-colorchecker.jpg" alt="look_dark_pixels_global_lift ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-grayscale.jpg" alt="look_dark_pixels_global_lift grayscale" width="180"> |
 
 ---
 

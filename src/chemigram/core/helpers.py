@@ -16,9 +16,12 @@ Contents:
   at a ref or hash without moving HEAD
 - :func:`stitch_side_by_side` — Pillow-based two-up image composition
   (used by the ``compare`` verb in both adapters)
-- :func:`apply_with_drawn_mask` — synthesize an XMP with one vocab
-  entry + a drawn mask binding (the only mask path that actually wires
-  to darktable; the earlier PNG-file path was a silent no-op)
+- :func:`apply_with_mask` — synthesize an XMP with one vocab
+  entry + a mask binding. Handles drawn masks, parametric range_filter,
+  and drawn+parametric composition (ADR-076 / ADR-084 / ADR-085).
+  Old name ``apply_with_drawn_mask`` remains as a backcompat alias.
+- :func:`apply_spot_retouch` — synthesize an XMP with a single retouch
+  form (heal or clone) at the given coordinate (RFC-025 / ADR-087).
 
 What stays in ``chemigram.mcp._state``:
 
@@ -281,9 +284,10 @@ def apply_entry(
             )
         dtstyle = _apply_parameter_values_to_dtstyle(dtstyle, entry.parameters, parameter_values)
 
-    # Axis 2: drawn-mask binding (ADR-076) — composes with parameter overrides
+    # Axis 2: mask binding (ADR-076 drawn / ADR-085 parametric / both) —
+    # composes with parameter overrides
     if mask_spec is not None:
-        return apply_with_drawn_mask(
+        return apply_with_mask(
             baseline,
             dtstyle,
             mask_spec,
@@ -300,7 +304,7 @@ def apply_entry(
 # ---------------------------------------------------------------------------
 
 
-def apply_with_drawn_mask(
+def apply_with_mask(
     baseline: Xmp,
     dtstyle: Any,  # DtstyleEntry — unannotated to avoid circular import
     mask_spec: dict[str, Any],
@@ -309,6 +313,11 @@ def apply_with_drawn_mask(
     opacity: float = 100.0,
 ) -> Xmp:
     """Synthesize a new XMP applying ``dtstyle`` with a mask bound.
+
+    Renamed from ``apply_with_drawn_mask`` after ADR-085 generalized the
+    function to handle parametric (range_filter) and drawn+parametric
+    composition. The old name remains available as a backcompat alias
+    at module level for callers that haven't migrated.
 
     Handles three valid mask compositions per ADR-085:
 
@@ -437,7 +446,7 @@ def _inject_masks_history_for_drawn(
 ) -> Xmp:
     """Inject the drawn-form ``masks_history`` element into the synthesized
     XMP (replacing any existing one, or appending). Helper for
-    :func:`apply_with_drawn_mask`'s drawn-path branches."""
+    :func:`apply_with_mask`'s drawn-path branches."""
     import dataclasses
 
     from chemigram.core.masking.dt_serialize import (
@@ -464,6 +473,14 @@ def _inject_masks_history_for_drawn(
         new_extra.append(("elem", "darktable:masks_history", masks_history_xml))
 
     return dataclasses.replace(new_xmp, raw_extra_fields=tuple(new_extra))
+
+
+# Backcompat alias: pre-ADR-085 the function was named apply_with_drawn_mask
+# (only handled drawn-form masks). After ADR-085 generalized it for
+# parametric range_filter + drawn+parametric composition, the canonical
+# name is apply_with_mask. Keep the old name resolvable so existing
+# callers / tests / external scripts don't break.
+apply_with_drawn_mask = apply_with_mask
 
 
 # ---------------------------------------------------------------------------

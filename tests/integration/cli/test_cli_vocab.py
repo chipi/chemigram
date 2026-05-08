@@ -204,3 +204,64 @@ def test_vocab_list_flags_parameterized_entries(runner: CliRunner) -> None:
         assert discrete_name in by_name
         assert by_name[discrete_name]["parameterized"] is False
         assert by_name[discrete_name]["parameter_names"] is None
+
+
+# ---------------------------------------------------------------------------
+# vocab validate (RFC-025 / ADR-087 era addition; #v1.9.0)
+# ---------------------------------------------------------------------------
+
+
+def test_vocab_validate_known_good_entry_passes_all_checks(runner: CliRunner) -> None:
+    """A known-good shipped entry must pass all 6 consistency checks."""
+    result = runner.invoke(
+        app,
+        ["vocab", "validate", "exposure", "--pack", "expressive-baseline"],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    out = result.stdout
+    assert "6/6 checks passed" in out
+    assert "exposure" in out
+
+
+def test_vocab_validate_unknown_entry_returns_not_found(runner: CliRunner) -> None:
+    """Validating a non-existent entry exits with NOT_FOUND."""
+    result = runner.invoke(app, ["vocab", "validate", "nonexistent_entry_xyz"])
+    assert result.exit_code == ExitCode.NOT_FOUND.value
+    assert "not found" in result.stdout.lower() or "not found" in result.stderr.lower()
+
+
+def test_vocab_validate_json_emits_per_check_events(runner: CliRunner) -> None:
+    """JSON mode emits one validation_check event per check + a final
+    result event."""
+    result = runner.invoke(
+        app,
+        ["--json", "vocab", "validate", "exposure", "--pack", "expressive-baseline"],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    payloads = [json.loads(line) for line in lines]
+    checks = [p for p in payloads if p["event"] == "validation_check"]
+    results = [p for p in payloads if p["event"] == "result"]
+    # 6 checks: dtstyle_exists, parses, touches, modversions, blendop_size, parameters
+    assert len(checks) == 6
+    assert all(c["status"] == "pass" for c in checks)
+    assert len(results) == 1
+    assert results[0]["passed_count"] == 6
+
+
+def test_vocab_validate_non_parameterized_entry_skips_parameter_check(
+    runner: CliRunner,
+) -> None:
+    """Non-parameterized entries skip the parameters_consistent check
+    (5 checks instead of 6)."""
+    result = runner.invoke(
+        app,
+        ["--json", "vocab", "validate", "blacks_lifted", "--pack", "expressive-baseline"],
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    payloads = [json.loads(line) for line in lines]
+    checks = [p for p in payloads if p["event"] == "validation_check"]
+    check_names = {c["check"] for c in checks}
+    assert "parameters_consistent" not in check_names  # discrete entry
+    assert "blendop_params_size" in check_names  # but other checks still run

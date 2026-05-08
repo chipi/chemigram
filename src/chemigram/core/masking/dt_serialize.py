@@ -127,7 +127,26 @@ DT_IOP_RETOUCH_FILL: Final = 4  # not exposed in v1.9.0 surface
 # Retouch struct sizing (verified against darktable 5.4.1 src/iop/retouch.c)
 RETOUCH_NO_FORMS: Final = 300
 RETOUCH_FORM_SIZE: Final = 44  # dt_iop_retouch_form_data_t
-RETOUCH_PARAMS_SIZE: Final = 13260  # 300 * 44 + 60-byte tail
+RETOUCH_TAIL_SIZE: Final = 60  # global tail after the form-array
+RETOUCH_PARAMS_SIZE: Final = 13260  # 300 * 44 + 60
+
+# Named byte offsets within dt_iop_retouch_form_data_t (per-form, 44 bytes).
+# Address a specific field of form i with
+# `_OFFSET_RETOUCH_FORMS_ARRAY + i * RETOUCH_FORM_SIZE + <field_offset>`.
+_OFFSET_FORM_FORMID: Final = 0  # int32 (wire-treated as uint32; deterministic-hash mask_id)
+_OFFSET_FORM_SCALE: Final = 4
+_OFFSET_FORM_ALGORITHM: Final = 8  # DT_IOP_RETOUCH_*
+_OFFSET_FORM_BLUR_TYPE: Final = 12
+_OFFSET_FORM_BLUR_RADIUS: Final = 16  # float
+_OFFSET_FORM_FILL_MODE: Final = 20
+_OFFSET_FORM_FILL_COLOR: Final = 24  # 3 floats
+_OFFSET_FORM_FILL_BRIGHTNESS: Final = 36  # float
+_OFFSET_FORM_DISTORT_MODE: Final = 40
+
+# Named byte offsets within dt_iop_retouch_params_t (whole struct, 13260 bytes).
+_OFFSET_RETOUCH_FORMS_ARRAY: Final = 0  # 13200 bytes (300 * 44)
+_OFFSET_RETOUCH_TAIL: Final = 13200  # 60-byte global tail
+_OFFSET_RETOUCH_GLOBAL_ALGORITHM: Final = 13200  # int32 (UI default; per-form wins at runtime)
 
 
 # ---------------------------------------------------------------------------

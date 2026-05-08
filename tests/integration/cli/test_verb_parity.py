@@ -33,6 +33,11 @@ _KNOWN_PENDING_VERBS: frozenset[str] = frozenset(
         "confirm_taste_update",
         "propose_notes_update",
         "confirm_notes_update",
+        # apply_spot ships v1.9.0 (RFC-025 / ADR-087) as an MCP tool;
+        # CLI verb deferred until a CLI workflow demands it. The MCP
+        # surface is the dominant agent path; CLI parity can layer on
+        # additively when a real photographer asks for it.
+        "apply_spot",
     }
 )
 
