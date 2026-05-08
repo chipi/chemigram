@@ -203,7 +203,7 @@ Three-part is typical; longer is acceptable when the move is specific. See the d
 - **TOML** for config files; **JSON** for manifests (ADR-028)
 - **JSONL** for session transcripts (ADR-029)
 - **Filesystem-based content-addressed storage** for versioning (ADR-018)
-- **PNG (8-bit grayscale)** for masks (ADR-021)
+- **Drawn-form masks inline in `masks_history` XML** (ADR-076 retired the v1.5.0 PNG-mask path; ADR-021 historical). Mask geometry serializes to bytes via `chemigram.core.masking.dt_serialize`; supports gradient / ellipse / rectangle / path (RFC-029 / ADR-084) + parametric range filters (RFC-024 / ADR-085) + retouch heal/clone (RFC-025 / ADR-087)
 - **Jinja2** for prompt templates (ADR-043)
 
 **Build and package:**
@@ -265,7 +265,6 @@ log.jsonl               append-only operation log
 sessions/               session transcripts (JSONL per session)
 previews/               render cache (regenerable)
 exports/                final outputs
-masks/                  registered masks + registry.json
 vocabulary_gaps.jsonl   gaps surfaced this image
 ```
 

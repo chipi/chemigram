@@ -192,7 +192,46 @@ All coordinates are normalized image coordinates `[0, 1]`. See `chemigram.core.m
 
 ---
 
-## 4. Verifying mask localization on a custom primitive
+## 4. Beyond drawn masks — parametric refinement and retouch (v1.9.0)
+
+The matrix above covers `apply_primitive` with a drawn `mask_spec`. v1.9.0 adds two further axes:
+
+### Parametric range refinement (RFC-024 / ADR-085)
+
+`mask_spec` now supports an optional `range_filter` field that intersects the spatial mask with pixel-level criteria:
+
+```jsonc
+mask_spec = {
+    "dt_form": "ellipse",                                    // spatial (RFC-029)
+    "dt_params": {"center_x": 0.5, "center_y": 0.5, ...},
+    "range_filter": {                                         // pixel-level (RFC-024)
+        "kind": "luminance",   // or color_h / color_s / color_l
+        "min": 0.0, "max": 0.3, "feather": 0.05, "invert": false
+    }
+}
+```
+
+Three valid combinations: drawn only (existing), parametric only (`range_filter` without `dt_form`), drawn + parametric (intersection — "the dark pixels in this ellipse"). Composes with every primitive in the matrix above. See `mask-shapes-from-words.md` for example phrases and `range_filter` semantics.
+
+### Retouch (spot heal/clone) — a new primitive class (RFC-025 / ADR-087)
+
+`apply_spot` is a new MCP tool sister to `apply_primitive`. It's not in the matrix above because it's a structurally different primitive class — it *replaces* pixels (heal/clone) rather than filtering an effect:
+
+```python
+apply_spot(image_id, kind="heal", x=0.4, y=0.2, radius=0.05)         # remove blemish
+apply_spot(image_id, kind="clone", x=0.6, y=0.4, radius=0.04,
+           source_x=0.4, source_y=0.4)                                # mirror feature
+```
+
+v1.9.0 scope: HEAL + CLONE on CIRCLE geometry, single form per call. Multi-form batched detection (AI auto-spots) routes to RFC-030's deployed-provider scaffolding when that ships. BLUR + FILL algorithms and ellipse / path geometries deferred until evidence demands.
+
+### LLM-vision provider (RFC-026 / ADR-086)
+
+For "where's the subject" / "what hue range matches the sky" workflows, the LLM in your chat client looks at a `render_preview` and constructs `mask_spec` from spatial reasoning. Zero deployment cost, conversation-native. See `llm-vision-for-masks.md` for the workflow patterns.
+
+---
+
+## 5. Verifying mask localization on a custom primitive
 
 If you author a masked entry and want laboratory-grade confirmation that it's localizing correctly:
 
@@ -210,4 +249,10 @@ The visual gallery at [`docs/guides/visual-proofs.md`](visual-proofs.md) shows t
 - [`vocabulary-patterns.md`](vocabulary-patterns.md) — composition recipes including mask combinations
 - [`visual-proofs.md`](visual-proofs.md) — chart-based before/after gallery for every shipped primitive
 - [ADR-076](../adr/ADR-076-drawn-mask-only-mask-architecture.md) — the architectural decision that drawn-form masking is the only path
+- [ADR-084 / RFC-029](../adr/ADR-084-apply-time-mask-spec-semantics.md) — compositional masks at apply time (build-by-words)
+- [ADR-085 / RFC-024](../adr/ADR-085-parametric-mask-encoding.md) — parametric range_filter encoding
+- [ADR-086 / RFC-026](../adr/ADR-086-llm-vision-as-mask-provider.md) — LLM-vision-as-provider for AI masks
+- [ADR-087 / RFC-025](../adr/ADR-087-retouch-encoding-apply-spot-tool.md) — retouch byte encoding + apply_spot tool
+- [`mask-shapes-from-words.md`](mask-shapes-from-words.md) — spatial-English-to-`mask_spec` mapping
+- [`llm-vision-for-masks.md`](llm-vision-for-masks.md) — LLM-vision workflow patterns
 - [`docs/concept/04-architecture.md`](../concept/04-architecture.md) §3.1 — masking in the synthesizer

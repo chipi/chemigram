@@ -3,9 +3,9 @@
 > Status · Decided
 > Date · 2026-05-08
 > TA anchor · /components/masking · /contracts/per-image-repo · /constraints/opaque-hex-blobs
-> Related · ADR-076 (drawn-mask only architecture; this RFC formalizes the parametric extension), ADR-007 (BYOA principle), RFC-026 (AI mask provider scaffolding; subject + depth deferred there), RFC-029 / ADR-084 (compositional masks at apply time; this RFC adds the *refinement* dimension on top of the spatial dimension), capability-survey.md § 7 (local adjustments — range masks are the named gap), #105 (the issue that opened this question)
+> Related · ADR-076 (drawn-mask only architecture; this RFC formalizes the parametric extension), ADR-007 (BYOA principle), ADR-086 / RFC-026 (LLM-vision-as-provider for AI masks; coarse subject identification routes there), RFC-030 (deployed sibling-provider scaffolding; precision-tier subject + depth masks deferred there), RFC-029 / ADR-084 (compositional masks at apply time; this RFC adds the *refinement* dimension on top of the spatial dimension), capability-survey.md § 7 (local adjustments — range masks are the named gap), #105 (the issue that opened this question)
 > Closes into · ADR-085 (parametric mask encoding via blendif; range_filter schema; AND composition with drawn masks)
-> Why this is an RFC · ADR-076 settled the v1.5.0 mask architecture as drawn-only and noted that future content-derived masks would need to land as bytes darktable's mask system actually consumes. v1.8.0 closed Lightroom-parity for *spatial* masking; the largest remaining gap is *content-derived* masking — "affect only the dark pixels," "affect only the blue hues" — which Lightroom calls **range masks**. Four flavors (color, luminance, depth, subject) have materially different cost shapes: color and luminance are darktable-native parametric paths (bytes-only extension); depth and subject need ML at inference time (BYOA-shaped). The genuine open question this RFC argued: **what's the architectural shape that handles all four?** The answer below: a **hybrid** — parametric mask encoding for the two darktable-native cases (Tier 2 expansion), with depth and subject deferred to RFC-026 (BYOA provider scaffolding). The byte-level work is bounded; the schema integration with RFC-029's drawn-mask compose path is the load-bearing decision.
+> Why this is an RFC · ADR-076 settled the v1.5.0 mask architecture as drawn-only and noted that future content-derived masks would need to land as bytes darktable's mask system actually consumes. v1.8.0 closed Lightroom-parity for *spatial* masking; the largest remaining gap is *content-derived* masking — "affect only the dark pixels," "affect only the blue hues" — which Lightroom calls **range masks**. Four flavors (color, luminance, depth, subject) have materially different cost shapes: color and luminance are darktable-native parametric paths (bytes-only extension); depth and subject need ML at inference time (BYOA-shaped). The genuine open question this RFC argued: **what's the architectural shape that handles all four?** The answer below: a **hybrid** — parametric mask encoding for the two darktable-native cases (Tier 2 expansion), with coarse AI subject masks routing to RFC-026 (LLM-vision-as-provider) and the precision tier (depth + pixel-perfect subject silhouettes) deferred to RFC-030 (deployed sibling-provider scaffolding). The byte-level work is bounded; the schema integration with RFC-029's drawn-mask compose path is the load-bearing decision.
 
 ---
 
@@ -30,14 +30,14 @@ The genuinely open question argued: **what's the architectural shape that handle
 2. **Photographer wants to lift just the shadow band of a high-contrast scene.** Luminance-range mask on the bottom 30% of tones; bound to an exposure +0.5 EV move. Lightroom's "Luminance Range" panel does exactly this.
 3. **The user's mental model — refine spatial mask with pixel filter.** "Brighten just the *dark* pixels in the bottom third of the photo." Drawn gradient (bottom third) + luminance-range filter (shadows). The drawn mask defines the *region*; the parametric mask refines *which pixels in that region* receive the edit.
 4. **Color-range refinement of a drawn ellipse.** "Reduce saturation only in the warm tones around the subject." Drawn ellipse + color-range filter (hue near red/orange).
-5. **Subject + depth (deferred to RFC-026).** "Brighten just the foreground person." Subject mask. Out of scope for this RFC; the architectural arc is BYOA-shaped, drafted in RFC-026.
+5. **Subject + depth (coarse via RFC-026 / ADR-086 LLM-vision; precision via RFC-030).** "Brighten just the foreground person." Coarse subject region identification works today through the LLM-vision workflow (chat-client looks at the photo, estimates an ellipse / polygon). Pixel-perfect silhouettes and depth-band masks need deployed sibling providers; that arc is RFC-030 (deferred). Out of scope for this RFC's byte-level work.
 
 ---
 
 ## Goals
 
-- **Pick the architectural shape** that handles color-range and luminance-range now; subject and depth land via RFC-026's provider scaffolding when ready.
-- **Honor ADR-076's structural lesson.** Provider Protocol exists for the AI cases (RFC-026); native byte-encoding for the darktable-native cases (this RFC).
+- **Pick the architectural shape** that handles color-range and luminance-range now; coarse subject masks route to RFC-026 (LLM-vision); precision subject + depth land via RFC-030's deployed-provider scaffolding when ready.
+- **Honor ADR-076's structural lesson.** Coarse AI cases use LLM-vision (RFC-026, no deployed provider); precision-tier deployed providers land in RFC-030; native byte-encoding for the darktable-native cases (this RFC).
 - **Stay byte-level-correct.** Range masks serialize through the same `dt_serialize` codec that handles drawn forms. Same modversion-drift policy (ADR-082) applies.
 - **Compose with drawn masks via AND** — that's the dominant photographer workflow ("the dark pixels in this gradient"). Other compose modes (OR / SUBTRACT / invert) deferred until evidence demands them.
 - **Bound the modversion-drift surface.** Each field added to the byte serializer adds drift exposure; ADR-082's warn-loud-at-load + hard-fail-at-apply backstop applies to parametric mask fields too.
@@ -47,17 +47,17 @@ The genuinely open question argued: **what's the architectural shape that handle
 ## Constraints
 
 - **ADR-076** (`/components/masking`): drawn-mask architecture is ground truth; this RFC adds parametric as a refinement layer, not a replacement.
-- **ADR-007** (BYOA): no AI dependencies in `chemigram.core`. Subject + depth (which need ML) live in RFC-026 sibling-provider territory.
+- **ADR-007** (BYOA): no AI dependencies in `chemigram.core`. Coarse subject masks via LLM-vision (RFC-026 / ADR-086); precision-tier subject + depth deployed providers live in RFC-030 territory.
 - **ADR-008 (amended by ADR-081)**: `blendop_params` is opaque except where parameterization is registered. Parametric masks live inside `blendop_params`; this RFC + ADR-085 register the specific byte regions.
 - **ADR-033** (narrow MCP tool surface): no new tools. Extension is purely schema (a new `range_filter` field on `mask_spec`).
 - **ADR-084 / RFC-029**: inline `mask_spec` is the canonical apply-time path. The `range_filter` field plugs into the same struct.
-- **CLAUDE.md three foundational disciplines**: agent-only-writer (range filter set via tool calls); darktable-does-the-photography (parametric mask math runs in darktable); BYOA (AI providers in RFC-026 sibling projects).
+- **CLAUDE.md three foundational disciplines**: agent-only-writer (range filter set via tool calls); darktable-does-the-photography (parametric mask math runs in darktable); BYOA (LLM-vision in chat client per RFC-026; deployed AI providers via RFC-030 when needed).
 
 ---
 
 ## Decision
 
-**Hybrid: parametric mask encoding for color-range + luminance-range; AI subject + depth deferred to RFC-026.**
+**Hybrid: parametric mask encoding for color-range + luminance-range; coarse AI subject masks via RFC-026 LLM-vision; precision-tier subject + depth deferred to RFC-030.**
 
 Three concrete pieces:
 
@@ -165,7 +165,7 @@ Rejected. The Protocol that ADR-076 retired produced PNG bytes darktable can't r
 
 ### Alt 3: AI-subject-only first; defer color and luminance
 
-Rejected. AI-subject is the dominant Lightroom workflow gap, but the architectural surface it needs (provider scaffolding) is materially bigger. Shipping AI first would force every subsequent range-mask decision through the provider lens, which is wrong for the darktable-native cases. Ship the cheap path first; the bigger lift earns its own RFC (RFC-026, drafted).
+Rejected. AI-subject is the dominant Lightroom workflow gap, but the architectural surface it needs (provider scaffolding) is materially bigger. Shipping AI-precision-tier first would force every subsequent range-mask decision through the provider lens, which is wrong for the darktable-native cases. Ship the cheap path first; the bigger lift earns its own RFC (RFC-030, drafted; coarse subject already covered by RFC-026 LLM-vision).
 
 ### Alt 4: Drawn-mask approximations forever (don't ship parametric at all)
 
@@ -192,13 +192,13 @@ Considered. A `luminance_range_shadows_lift` entry could be parameterized over `
 - **Color-range needs blend_cst handling.** The encoder must set `blend_cst` to HSL for `color_*` kinds. Adds a small color-space-aware branch. Mitigated: there's only one branch (luminance vs color); the color-space constant is a single value.
 - **Range-mask entries are camera/image-dependent.** A "blue-sky" hue range tuned to one image won't match another's sky. Phase 2 evidence will tell us whether to parameterize bounds.
 - **modversion drift surface grows.** Each parametric field added is exposure to darktable-version churn. Same backstop policy as ADR-082.
-- **AI subject + depth still deferred.** Lightroom users reaching for AI-subject masks won't find them in v1.9.0. Mitigated: workaround is drawn-radial approximations + RFC-026's provider scaffolding when it ships.
+- **Precision-tier AI subject + depth deferred.** Lightroom users reaching for pixel-perfect AI-subject silhouettes won't find them in v1.9.0. Mitigated: coarse subject masks via RFC-026 LLM-vision work today; precision tier lands via RFC-030's deployed-provider scaffolding when it ships.
 
 ---
 
 ## Open questions resolved during deliberation
 
-1. ~~Native vs provider for which kinds?~~ → **Native for color + luminance (this RFC); provider for depth + subject (RFC-026).**
+1. ~~Native vs provider for which kinds?~~ → **Native for color + luminance (this RFC); LLM-vision for coarse subject (RFC-026 / ADR-086); deployed provider for precision-tier subject + depth (RFC-030, deferred).**
 2. ~~Compose syntax (tree vs flat)?~~ → **Neither.** Composition with drawn masks is via the `range_filter` sibling field — the schema is flat, single-level. Future RFC can introduce explicit compose syntax if multi-mask AND/OR demands it.
 3. ~~mask_spec schema integration?~~ → **`range_filter` as an optional sibling to `dt_form` / `dt_params`.** Three valid combinations (drawn only, parametric only, both AND-composed). No new top-level schema kinds.
 4. ~~mask_combine modes?~~ → **AND only for v1.9.0** (hardcoded `mask_combine = 0`). Other modes deferred until evidence.
@@ -235,7 +235,8 @@ Settles:
 - ADR-081 — Tier 2 cost-shape guidance
 - ADR-082 — modversion-drift handling (backstop for parametric mask byte serializer)
 - ADR-084 — apply-time mask spec semantics (RFC-029; spatial side; this RFC adds the refinement dimension)
-- RFC-026 — AI mask provider scaffolding (subject + depth deferred there)
+- ADR-086 / RFC-026 — LLM-vision-as-provider for AI masks (coarse subject masks land here)
+- RFC-030 — deployed sibling-provider scaffolding (precision-tier subject + depth deferred there)
 - capability-survey.md § 7 — local adjustments / range masks named gap
 - darktable 5.4.1 `src/develop/blend.h` — `dt_develop_blend_params_t` source struct
 - Issue #105 — opened the question
