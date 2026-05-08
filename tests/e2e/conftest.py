@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from chemigram.core.vocab import VocabularyIndex, load_starter
+from chemigram.core.vocab import VocabularyIndex, load_packs, load_starter
 from chemigram.core.xmp import Xmp, parse_xmp
 
 _DEFAULT_CONFIGDIR = Path.home() / "chemigram-phase0" / "dt-config"
@@ -72,8 +72,23 @@ def baseline_xmp() -> Xmp:
 
 @pytest.fixture(scope="session")
 def starter_vocab() -> VocabularyIndex:
-    """The shipped starter pack — five real entries calibrated to dt 5.4.1."""
+    """The shipped starter pack — 2 entries post-v1.6.0 (`wb_warm_subtle`,
+    `look_neutral`); the discrete `expo_+0.5` / `expo_-0.5` entries were
+    collapsed into the parameterized `exposure` entry that lives in
+    expressive-baseline (RFC-021 / ADR-077..080)."""
     return load_starter()
+
+
+@pytest.fixture(scope="session")
+def full_vocab() -> VocabularyIndex:
+    """Starter + expressive-baseline composed. Use this when tests need
+    the parameterized `exposure` entry or any other expressive-baseline
+    entry (the bulk of the post-v1.6.0 vocabulary). Pre-v1.6.0 tests
+    that referenced the discrete `expo_+0.5` / `expo_-0.5` should now
+    use this fixture and apply via `apply_entry(..., parameter_values=
+    {"ev": 0.5})`.
+    """
+    return load_packs(["starter", "expressive-baseline"])
 
 
 # --- pixel statistics --------------------------------------------------

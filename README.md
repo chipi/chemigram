@@ -112,12 +112,12 @@ chemigram status
 # 3. ingest a raw + apply a vocabulary entry
 export CHEMIGRAM_DT_CONFIGDIR=~/chemigram-phase0/dt-config   # see getting-started for setup
 chemigram ingest ~/Pictures/raw/iguana.NEF
-chemigram apply-primitive iguana --primitive exposure --value 0.5
+chemigram apply-primitive iguana --entry exposure --value 0.5 --pack expressive-baseline
 chemigram render-preview iguana --size 1024
 chemigram export-final iguana --format jpeg
 
 # 4. machine-readable output for scripts and agents (NDJSON)
-chemigram --json apply-primitive iguana --primitive wb_warm_subtle
+chemigram --json apply-primitive iguana --entry wb_warm_subtle
 # {"event":"result","status":"ok","image_id":"iguana", ...}
 ```
 

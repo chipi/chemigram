@@ -65,7 +65,7 @@ def _decode(call_result: Any) -> dict:
 def test_compare_stitches_two_states_into_one_jpeg(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -76,7 +76,7 @@ def test_compare_stitches_two_states_into_one_jpeg(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -85,7 +85,7 @@ def test_compare_stitches_two_states_into_one_jpeg(
             apply_a = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
                 )
             )
             assert apply_a["success"], apply_a.get("error")
@@ -107,7 +107,7 @@ def test_compare_stitches_two_states_into_one_jpeg(
             apply_b = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
                 )
             )
             hash_b = apply_b["data"]["snapshot_hash"]
@@ -164,7 +164,7 @@ def test_compare_stitches_two_states_into_one_jpeg(
 def test_workspace_state_survives_registry_clear(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -178,7 +178,7 @@ def test_workspace_state_survives_registry_clear(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -187,7 +187,7 @@ def test_workspace_state_survives_registry_clear(
             applied = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
                 )
             )
             assert applied["success"], applied.get("error")
@@ -209,7 +209,7 @@ def test_workspace_state_survives_registry_clear(
     # workspace from the same root.
     clear_registry()
     prompts2 = PromptStore(_SHIPPED_PROMPTS)
-    server2, ctx2 = build_server(vocabulary=starter_vocab, prompts=prompts2)
+    server2, ctx2 = build_server(vocabulary=full_vocab, prompts=prompts2)
     repo2 = ImageRepo(ws_root)
     ws2 = Workspace(
         image_id="phase0",

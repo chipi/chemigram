@@ -119,26 +119,28 @@ def test_expo_primitives_have_correct_relative_ordering(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
-    starter_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
     pixel_stats,
 ) -> None:
-    """``expo_+0.5`` produces a brighter render than ``expo_-0.5``.
+    """The parameterized ``exposure`` entry at +0.5 EV produces a
+    brighter render than the same entry at -0.5 EV.
 
-    The two primitives differ in their dtstyle's exposure float by 1.0 EV,
-    which on a typical scene is many luma units. This test catches:
-    - dtstyle files getting mis-named / swapped
-    - synthesize_xmp dropping operations
-    - render pipeline applying operations in the wrong order
-    - hex-blob corruption from a copy/move that wasn't byte-for-byte
+    Pre-v1.6.0 this used the discrete ``expo_+0.5`` / ``expo_-0.5``
+    starter entries; those were collapsed into the parameterized
+    ``exposure`` in expressive-baseline (RFC-021 / ADR-077..080). The
+    test covers the same regression surface — dtstyle byte-correctness,
+    synthesize_xmp ordering, render pipeline integrity — through the
+    parameterized apply path.
     """
-    plus_entry = starter_vocab.lookup_by_name("expo_+0.5")
-    minus_entry = starter_vocab.lookup_by_name("expo_-0.5")
-    assert plus_entry is not None and minus_entry is not None
+    from chemigram.core.helpers import apply_entry
+    from chemigram.core.vocab import load_packs
 
-    plus_xmp = synthesize_xmp(baseline_xmp, [plus_entry.dtstyle])
-    minus_xmp = synthesize_xmp(baseline_xmp, [minus_entry.dtstyle])
+    expo = load_packs(["expressive-baseline"]).lookup_by_name("exposure")
+    assert expo is not None, "expressive-baseline pack missing 'exposure' entry"
+
+    plus_xmp = apply_entry(baseline_xmp, expo, parameter_values={"ev": 0.5})
+    minus_xmp = apply_entry(baseline_xmp, expo, parameter_values={"ev": -0.5})
 
     plus_jpg = _render(
         test_raw, plus_xmp, configdir, tmp_path, name="plus", binary=darktable_binary
@@ -155,7 +157,7 @@ def test_expo_primitives_have_correct_relative_ordering(
     # (out of 255). Demand at least +5.0 — generous enough to survive
     # scene content variation but well above noise floor.
     assert delta > 5.0, (
-        f"expo_+0.5 should render brighter than expo_-0.5; "
+        f"exposure +0.5 should render brighter than -0.5; "
         f"got plus={plus_lum:.2f}, minus={minus_lum:.2f}, delta={delta:.3f}"
     )
 
@@ -164,26 +166,27 @@ def test_expo_primitive_changes_baseline(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
-    starter_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
     pixel_stats,
 ) -> None:
-    """Applying ``expo_+0.5`` produces a *measurably different* render
-    from baseline. Direction depends on the baseline's exposure entry
-    (see module docstring); we don't assert direction here, only that
-    something happened.
+    """Applying parameterized ``exposure`` at +0.5 EV produces a
+    *measurably different* render from baseline. Direction depends on
+    the baseline's exposure entry (see module docstring); we don't
+    assert direction here, only that something happened.
 
-    This catches the worst regression: synthesize_xmp returning the
-    baseline unchanged, or render silently dropping the synthesized
-    operation.
+    Catches the worst regression: synthesize_xmp returning the baseline
+    unchanged, or render silently dropping the synthesized operation.
     """
+    from chemigram.core.helpers import apply_entry
+    from chemigram.core.vocab import load_packs
+
     base = _render(
         test_raw, baseline_xmp, configdir, tmp_path, name="base", binary=darktable_binary
     )
-    entry = starter_vocab.lookup_by_name("expo_+0.5")
-    assert entry is not None
-    plus = synthesize_xmp(baseline_xmp, [entry.dtstyle])
+    expo = load_packs(["expressive-baseline"]).lookup_by_name("exposure")
+    assert expo is not None
+    plus = apply_entry(baseline_xmp, expo, parameter_values={"ev": 0.5})
     plus_jpg = _render(test_raw, plus, configdir, tmp_path, name="plus", binary=darktable_binary)
 
     base_lum = pixel_stats.mean_luminance(base)
@@ -193,7 +196,7 @@ def test_expo_primitive_changes_baseline(
     # Demand at least 5 luma units of change — well above noise floor,
     # well below typical primitive's actual delta.
     assert delta > 5.0, (
-        f"expo_+0.5 should change the render measurably; "
+        f"exposure +0.5 should change the render measurably; "
         f"got base={base_lum:.2f}, plus={plus_lum:.2f}, |delta|={delta:.3f}"
     )
 
@@ -202,33 +205,38 @@ def test_expo_plus_minus_approximately_cancels(
     test_raw: Path,
     configdir: Path,
     baseline_xmp: Xmp,
-    starter_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
     pixel_stats,
 ) -> None:
-    """Per ADR-002 SET semantics, applying expo_+0.5 then expo_-0.5
-    replaces the previous exposure entry rather than stacking.  The
+    """Per ADR-002 SET semantics, applying exposure +0.5 then -0.5
+    replaces the previous exposure entry rather than stacking. The
     second SET is what darktable renders.
 
-    This isn't strict cancellation — it's *replacement*.  After both
-    moves are applied in sequence, the rendered image should match what
-    expo_-0.5 alone produces, NOT the baseline (because the
-    expo_+0.5 was overwritten, not undone).
+    This isn't strict cancellation — it's *replacement*. After both
+    moves are applied in sequence, the rendered image should match
+    what -0.5 alone produces, NOT the baseline (because the +0.5 was
+    overwritten, not undone).
     """
+    from chemigram.core.helpers import apply_entry
+    from chemigram.core.vocab import load_packs
+
     base = _render(
         test_raw, baseline_xmp, configdir, tmp_path, name="base", binary=darktable_binary
     )
-    entry_plus = starter_vocab.lookup_by_name("expo_+0.5")
-    entry_minus = starter_vocab.lookup_by_name("expo_-0.5")
-    assert entry_plus is not None and entry_minus is not None
+    expo = load_packs(["expressive-baseline"]).lookup_by_name("exposure")
+    assert expo is not None
 
-    # Apply both in sequence; SET semantics means the second wins.
-    sequence = synthesize_xmp(baseline_xmp, [entry_plus.dtstyle, entry_minus.dtstyle])
+    # Apply both in sequence via apply_entry (which handles parameter
+    # patching). For the parameterized entry the SET-replace semantics
+    # apply at the dtstyle's plugin level — same mechanism as the
+    # original discrete-entry test exercised pre-v1.6.0.
+    plus_xmp = apply_entry(baseline_xmp, expo, parameter_values={"ev": 0.5})
+    sequence = apply_entry(plus_xmp, expo, parameter_values={"ev": -0.5})
     seq_jpg = _render(test_raw, sequence, configdir, tmp_path, name="seq", binary=darktable_binary)
 
-    # Same as expo_-0.5 alone for comparison.
-    just_minus = synthesize_xmp(baseline_xmp, [entry_minus.dtstyle])
+    # Same as -0.5 alone for comparison.
+    just_minus = apply_entry(baseline_xmp, expo, parameter_values={"ev": -0.5})
     minus_jpg = _render(
         test_raw, just_minus, configdir, tmp_path, name="just_minus", binary=darktable_binary
     )
@@ -237,14 +245,14 @@ def test_expo_plus_minus_approximately_cancels(
     seq_lum = pixel_stats.mean_luminance(seq_jpg)
     minus_lum = pixel_stats.mean_luminance(minus_jpg)
 
-    # The sequence should match expo_-0.5 alone (within noise) and be
+    # The sequence should match -0.5 alone (within noise) and be
     # darker than the baseline.
     assert abs(seq_lum - minus_lum) < 1.0, (
-        f"expo_+ then expo_- should equal expo_- alone (SET semantics); "
+        f"+0.5 then -0.5 should equal -0.5 alone (SET semantics); "
         f"got seq={seq_lum:.2f}, just_minus={minus_lum:.2f}"
     )
     assert base_lum - seq_lum > 1.0, (
-        f"expo_+ then expo_- should still leave image darker than baseline; "
+        f"+0.5 then -0.5 should still leave image darker than baseline; "
         f"got base={base_lum:.2f}, seq={seq_lum:.2f}"
     )
 

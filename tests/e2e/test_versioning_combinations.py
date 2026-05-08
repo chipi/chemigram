@@ -77,7 +77,7 @@ def _luma(jpeg_bytes: bytes) -> float:
 def test_snapshot_tag_reset_render_round_trips(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -88,7 +88,7 @@ def test_snapshot_tag_reset_render_round_trips(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -107,12 +107,12 @@ def test_snapshot_tag_reset_render_round_trips(
             # Apply, tag the apply, apply again, reset, render.
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
             )
             await session.call_tool("tag", arguments={"image_id": "phase0", "name": "after-plus"})
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
             )
             await session.call_tool("reset", arguments={"image_id": "phase0"})
             r2 = _decode(
@@ -141,7 +141,7 @@ def test_snapshot_tag_reset_render_round_trips(
 def test_branch_checkout_render_renders_branch_state(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -154,7 +154,7 @@ def test_branch_checkout_render_renders_branch_state(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -163,7 +163,7 @@ def test_branch_checkout_render_renders_branch_state(
             # Apply expo_+0.5 on main.
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
             )
 
             # Branch experimental from HEAD.
@@ -183,7 +183,7 @@ def test_branch_checkout_render_renders_branch_state(
             # Apply expo_-0.5 on experimental.
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
             )
             r_exp = _decode(
                 await session.call_tool(
@@ -232,7 +232,7 @@ def test_branch_checkout_render_renders_branch_state(
 def test_tag_then_checkout_tag_renders_tagged_state(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -242,7 +242,7 @@ def test_tag_then_checkout_tag_renders_tagged_state(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -251,7 +251,7 @@ def test_tag_then_checkout_tag_renders_tagged_state(
             # Apply A (will be tagged).
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
             )
             r_a = _decode(
                 await session.call_tool(
@@ -268,7 +268,7 @@ def test_tag_then_checkout_tag_renders_tagged_state(
             # Diverge: SET-replace exposure.
             await session.call_tool(
                 "apply_primitive",
-                arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
             )
 
             # Checkout the tag (HEAD detaches per ADR-019).

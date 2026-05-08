@@ -89,7 +89,7 @@ def _read_jpeg_mean_luma_bytes(jpeg_bytes: bytes) -> float:
 def test_mcp_session_with_real_render_full_circle(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -113,7 +113,7 @@ def test_mcp_session_with_real_render_full_circle(
     _ = darktable_binary  # implicitly used via PATH by pipeline.render
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace_with_phase_0_raw(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -122,7 +122,7 @@ def test_mcp_session_with_real_render_full_circle(
             apply_plus = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
                 )
             )
             assert apply_plus["success"], apply_plus.get("error")
@@ -143,7 +143,7 @@ def test_mcp_session_with_real_render_full_circle(
             apply_minus = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
                 )
             )
             assert apply_minus["success"], apply_minus.get("error")
@@ -191,7 +191,7 @@ def test_mcp_session_with_real_render_full_circle(
 def test_mcp_session_render_then_no_change(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -204,7 +204,7 @@ def test_mcp_session_render_then_no_change(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace_with_phase_0_raw(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -244,7 +244,7 @@ def test_mcp_session_render_then_no_change(
 def test_mcp_session_reset_then_apply_then_render(
     test_raw: Path,
     configdir: Path,
-    starter_vocab: VocabularyIndex,
+    full_vocab: VocabularyIndex,
     darktable_binary: str,
     tmp_path: Path,
 ) -> None:
@@ -260,7 +260,7 @@ def test_mcp_session_reset_then_apply_then_render(
     _ = darktable_binary
     clear_registry()
     prompts = PromptStore(_SHIPPED_PROMPTS)
-    server, ctx = build_server(vocabulary=starter_vocab, prompts=prompts)
+    server, ctx = build_server(vocabulary=full_vocab, prompts=prompts)
     ws = _build_workspace_with_phase_0_raw(tmp_path, test_raw, configdir)
     ctx.workspaces[ws.image_id] = ws
 
@@ -269,7 +269,7 @@ def test_mcp_session_reset_then_apply_then_render(
             apply_plus = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_+0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": 0.5},
                 )
             )
             assert apply_plus["success"], apply_plus.get("error")
@@ -280,7 +280,7 @@ def test_mcp_session_reset_then_apply_then_render(
             apply_minus = _decode(
                 await session.call_tool(
                     "apply_primitive",
-                    arguments={"image_id": "phase0", "primitive_name": "expo_-0.5"},
+                    arguments={"image_id": "phase0", "primitive_name": "exposure", "value": -0.5},
                 )
             )
             assert apply_minus["success"], (

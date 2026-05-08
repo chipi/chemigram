@@ -69,7 +69,11 @@ def test_cli_session_ingest_apply_get_state(test_raw: Path, workspace_root: Path
         "apply-primitive",
         "session-test",
         "--entry",
-        "expo_+0.5",
+        "exposure",
+        "--value",
+        "0.5",
+        "--pack",
+        "expressive-baseline",
     )
     assert apply_proc.returncode == 0, (
         f"apply-primitive failed:\nstdout={apply_proc.stdout}\nstderr={apply_proc.stderr}"
@@ -144,7 +148,11 @@ def test_cli_session_render_and_export(
         "apply-primitive",
         image_id,
         "--entry",
-        "expo_+0.5",
+        "exposure",
+        "--value",
+        "0.5",
+        "--pack",
+        "expressive-baseline",
         env=env,
     )
     assert apply_proc.returncode == 0, f"apply failed:\n{apply_proc.stderr}"
@@ -229,7 +237,11 @@ def test_cli_session_compare(test_raw: Path, configdir: Path, workspace_root: Pa
         "apply-primitive",
         image_id,
         "--entry",
-        "expo_+0.5",
+        "exposure",
+        "--value",
+        "0.5",
+        "--pack",
+        "expressive-baseline",
         env=env,
     )
     assert apply_proc.returncode == 0
