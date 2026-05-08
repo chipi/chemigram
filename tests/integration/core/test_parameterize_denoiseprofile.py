@@ -98,14 +98,15 @@ def test_apply_entry_no_values_uses_dtstyle_defaults(baseline_xmp, denoise_entry
 
 
 def test_apply_entry_preserves_mode_and_calibration(baseline_xmp, denoise_entry) -> None:
-    """mode (WAVELETS=1), wavelet_color_mode (Y0U0V0=1), and the 3 mode
-    flags must survive the apply path. Calibration arrays a[3]/b[3] also
-    preserved (would be auto-populated by darktable if camera/ISO known)."""
+    """mode (NLMEANS=0; see decoder docstring on the mode choice),
+    wavelet_color_mode (Y0U0V0=1), and the 3 mode flags must survive the
+    apply path. Calibration arrays a[3]/b[3] also preserved (would be
+    auto-populated by darktable if camera/ISO known)."""
     new_xmp = apply_entry(baseline_xmp, denoise_entry, parameter_values={"denoise_strength": 3.0})
     plugins = [p for p in new_xmp.history if p.operation == "denoiseprofile"]
     fields = decode(plugins[-1].params)
-    assert fields[14] == 1  # mode = WAVELETS
-    assert fields[102] == 1  # wavelet_color_mode = Y0U0V0
+    assert fields[14] == 0  # mode = NLMEANS
+    assert fields[102] == 1  # wavelet_color_mode = Y0U0V0 (preserved but unused in NLMEANS)
     # Calibration arrays preserved
     for i in range(8, 14):
         assert fields[i] == pytest.approx(0.0, abs=1e-5)

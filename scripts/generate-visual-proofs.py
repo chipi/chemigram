@@ -119,6 +119,34 @@ _SUPPRESS_MASKED_SUBTYPES: dict[str, str] = {
 # these tags.
 _SKIP_GRAYSCALE_TAGS: set[str] = {"saturation", "chroma", "vibrance"}
 
+# Entries whose photographic effect requires real-raw input (working-
+# profile RGB after a real input profile + EXIF + camera-aware color
+# management). On the synthetic ColorChecker / grayscale fixtures, the
+# darktable pipeline produces degenerate output for these — not because
+# the apply path is wrong (the byte-level patches and the 5-layer test
+# coverage per ADR-080 verify correctness), but because the underlying
+# darktable module's algorithm is incompatible with the chart's
+# already-baked-sRGB-as-input shape.
+#
+# These entries DO work on real raw photographs; their visual proofs
+# need to be captured on real fixtures (a v1.9.0+ work item — possibly
+# an extension to the visual-proofs script that swaps in a real raw
+# fixture for these). Until then, the entries are skipped from the
+# synthetic-chart gallery to avoid publishing broken output as if it
+# were correct.
+_SKIP_VISUAL_PROOF_ENTRIES: set[str] = {
+    # HSL Color Mixer — colorequal mv4 needs the full input-profile +
+    # working-profile chain that the synthetic chart doesn't provide.
+    # The pipeline produces degenerate dark output on flat patches
+    # regardless of axis values or global tuning. Verified by
+    # experimenting with use_filter / param_size / chroma_size
+    # adjustments — none recover the chart pipeline. (RFC-023 / ADR-083
+    # entries; commit 1b5db21 ship.)
+    "hsl_saturation",
+    "hsl_hue",
+    "hsl_luminance",
+}
+
 # Subtypes that render against the **clipped-gradient** fixture in
 # addition to the default cc + grayscale targets. The colorchecker24
 # and grayscale-ramp fixtures don't carry the signal these modules
@@ -185,8 +213,10 @@ _PARAMETER_SWEEP_VALUES: dict[str, list[float]] = {
     # (EXIF auto-binding follow-up); sweeps still verify the apply path
     # bytes-correctness.
     "lens_scale": [0.0, 1.0, 1.5, 2.0],
-    "lens_tca_r": [0.99, 0.995, 1.0, 1.005, 1.01],
-    "lens_tca_b": [0.99, 0.995, 1.0, 1.005, 1.01],
+    # TCA values use 0.02 spacing so 2-decimal slugs stay distinct
+    # (0.995 and 1.005 both round to "+1.00" in the slugger).
+    "lens_tca_r": [0.98, 0.99, 1.0, 1.01, 1.02],
+    "lens_tca_b": [0.98, 0.99, 1.0, 1.01, 1.02],
     "lens_cor_distortion": [0.0, 0.3, 0.6, 1.0],
     "lens_cor_vignette": [0.0, 0.3, 0.6, 1.0],
     "lens_cor_ca_r": [-1.0, 0.0, 1.0],
@@ -422,6 +452,18 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     pack_name = pack_root.name if pack_root else "unknown"
     entry_dir = PROOFS_DIR / pack_name
     entry_dir.mkdir(parents=True, exist_ok=True)
+
+    if entry.name in _SKIP_VISUAL_PROOF_ENTRIES:
+        # Mark as skipped so the gallery generator emits a documented
+        # placeholder row instead of a broken render. See
+        # _SKIP_VISUAL_PROOF_ENTRIES docstring for the reasoning.
+        rendered.setdefault(entry.name, {})
+        rendered[entry.name]["__visual_proof_skip"] = True
+        print(
+            f"skipping {pack_name}/{entry.name} "
+            f"(real-raw-only entry; see _SKIP_VISUAL_PROOF_ENTRIES)"
+        )
+        return
 
     print(f"rendering {pack_name}/{entry.name}…")
     try:
@@ -692,6 +734,29 @@ def _render_entry_md(entry, rendered: dict[str, dict[str, Path]]) -> list[str]:
     gs = outs.get("grayscale")
     cc_masked = outs.get("colorchecker_masked")
     gs_masked = outs.get("grayscale_masked")
+
+    # Real-raw-only entries: render a documented placeholder instead of broken images.
+    if outs.get("__visual_proof_skip"):
+        out: list[str] = []
+        out.append(f"### `{entry.name}`\n")
+        out.append(f"_{entry.description}_\n")
+        skip_url = (
+            "https://github.com/chipi/chemigram/blob/main/scripts/generate-visual-proofs.py#L120"
+        )
+        out.append(
+            "> 🚫 **Visual-proof rendering skipped.** This entry's "
+            "photographic effect requires real-raw input — its "
+            "underlying darktable module produces degenerate output on "
+            "the synthetic ColorChecker / grayscale fixtures (verified "
+            "experimentally by varying the module's global tuning; "
+            "chart pipeline doesn't recover). The byte-level apply "
+            "path is verified by the 5-layer test coverage (per ADR-080). "
+            "Visual proof on real raws is a v1.9.0+ work item — see "
+            f"[`_SKIP_VISUAL_PROOF_ENTRIES`]({skip_url}) in the gallery "
+            "script for the list and reasoning.\n"
+        )
+        out.append("")
+        return out
 
     if (cc in (None, "skipped")) and (gs in (None, "skipped")):
         return []

@@ -26,11 +26,12 @@ Struct layout (verified against darktable 5.4.1 ``src/iop/denoiseprofile.c``
     offset 44..55 : float b[3]                   (default 0.0, 0.0, 0.0)
 
     Mode (preserved)
-    offset 56..59 : enum  mode                   (default MODE_WAVELETS = 1)
+    offset 56..59 : enum  mode                   (default MODE_NLMEANS = 0)
 
-    Wavelet frequency curves — **CONSTRUCTED, see closing note**
-    offset 60..227  : float x[6][7]              (constructed: evenly-spaced 0..1)
-    offset 228..395 : float y[6][7]              (default 0.5 per source comment)
+    Wavelet frequency curves (preserved verbatim; UNUSED at apply time
+    because mode=NLMEANS skips the wavelet path)
+    offset 60..227  : float x[6][7]              (zeroed; not consulted in NLMEANS mode)
+    offset 228..395 : float y[6][7]              (zeroed; not consulted)
 
     Mode flags (preserved verbatim)
     offset 396..399 : gbool wb_adaptive_anscombe          (default TRUE)
@@ -58,22 +59,32 @@ Other 13 fields preserved verbatim. The per-channel noise calibration
 ``a[3]/b[3]`` is camera/ISO-specific; darktable auto-populates it when
 the camera profile is known. The mode enum is pinned at WAVELETS.
 
-## Note on the wavelet-curve baseline
+## Mode choice — NLMEANS (not WAVELETS)
 
-The ``x[6][7]`` array has **no documented default** in the darktable
-source. The shipped baseline uses evenly-spaced anchor points (j/6 for
-j in 0..6, repeated across all 6 channels) — a reasonable convention
-for darktable curve modules but not empirically verified. ``y[6][7]``
-defaults to 0.5 per the source comment, which is what we ship.
+The shipped baseline pins ``mode=MODE_NLMEANS`` (non-local means)
+rather than darktable's runtime-default ``MODE_WAVELETS``. The
+parameterized magnitude axes work in both modes; the choice is
+photographic, not architectural.
 
-The parameterized strength axes don't touch these curves, so the
-parameterization math is correct regardless. Empirical verification
-of the curve-baseline correctness requires opening darktable's GUI,
-emitting a default-state denoise.dtstyle, and byte-comparing against
-the shipped baseline. This work is tracked as a follow-up issue (the
-"darktable-session empirical verification" parking lot for #94 tone
-curve, this entry's wavelet curves, and the lens correction lensfun
-database fields).
+Why NLMEANS for the v1.8.0 ship:
+
+- WAVELETS mode requires an empirically-correct ``x[6][7]/y[6][7]``
+  curve baseline. Without one captured from a darktable GUI session,
+  zero-filled or constructed curves can crash darktable's wavelet path
+  (the visual-proof sweep produces pure-black output with constructed
+  curves).
+- NLMEANS mode ignores the wavelet curves entirely — the constructed-
+  baseline issue is moot. The parameterized strength axes operate
+  identically.
+- Lightroom's Noise Reduction is patch-similarity-based, which is
+  conceptually closer to NLMEANS than to wavelet-band denoising.
+
+If a photographer wants wavelet-mode denoising, they author a discrete
+``.dtstyle`` from darktable's GUI with the curves correctly populated,
+then this decoder lets them override the strength axes via parameterized
+values. The wavelet-mode baseline capture is tracked under #100's
+darktable-session umbrella as task C — confirm the empirical curve
+defaults, optionally ship a second ``denoise_wavelets`` entry.
 """
 
 from __future__ import annotations

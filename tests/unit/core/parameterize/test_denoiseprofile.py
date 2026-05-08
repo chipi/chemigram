@@ -82,8 +82,9 @@ def test_decode_extracts_darktable_defaults() -> None:
     # Calibration zeros (auto-populated at apply time when known)
     for i in range(8, 14):
         assert fields[i] == pytest.approx(0.0, abs=1e-5)
-    # Mode = WAVELETS (1)
-    assert fields[14] == 1
+    # Mode = NLMEANS (0) — see decoder docstring "Mode choice — NLMEANS (not WAVELETS)".
+    # WAVELETS mode would need an empirically-captured wavelet-curve baseline.
+    assert fields[14] == 0
     # Mode flags TRUE
     for i in range(99, 102):
         assert fields[i] == 1
