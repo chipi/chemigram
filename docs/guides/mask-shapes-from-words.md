@@ -40,16 +40,16 @@ If the photographer says "the bottom third" without qualifying, default to `grad
 
 | Phrase | Spec |
 |-|-|
-| "Bottom half" / "lower half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 0, compression: 1.0, state: 2}}` (light side is bottom; rotation 0 = horizontal axis with light below) |
-| "Top half" / "upper half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 180, compression: 1.0, state: 2}}` |
-| "Bottom third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.67, rotation: 0, compression: 1.0, state: 2}}` |
-| "Top third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.33, rotation: 180, compression: 1.0, state: 2}}` |
-| "Bottom quarter" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.75, rotation: 0, compression: 1.0, state: 2}}` |
-| "Top quarter" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.25, rotation: 180, compression: 1.0, state: 2}}` |
-| "Left half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 90, compression: 1.0, state: 2}}` (rotation 90 = vertical axis, light side on left) |
-| "Right half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 270, compression: 1.0, state: 2}}` |
-| "Left third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.33, anchor_y: 0.5, rotation: 90, compression: 1.0, state: 2}}` |
-| "Right third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.67, anchor_y: 0.5, rotation: 270, compression: 1.0, state: 2}}` |
+| "Bottom half" / "lower half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 180, compression: 0.5, state: 2}}` (light side is bottom; rotation 180 = horizontal axis with light below) |
+| "Top half" / "upper half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 0, compression: 0.5, state: 2}}` (rotation 0 = light side on top — verified against shipped `gradient_top_dampen_highlights`) |
+| "Bottom third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.67, rotation: 180, compression: 0.5, state: 2}}` |
+| "Top third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.33, rotation: 0, compression: 0.5, state: 2}}` |
+| "Bottom quarter" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.75, rotation: 180, compression: 0.5, state: 2}}` |
+| "Top quarter" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.25, rotation: 0, compression: 0.5, state: 2}}` |
+| "Left half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 90, compression: 0.5, state: 2}}` (rotation 90 = vertical axis, light side on left) |
+| "Right half" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 270, compression: 0.5, state: 2}}` |
+| "Left third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.33, anchor_y: 0.5, rotation: 90, compression: 0.5, state: 2}}` |
+| "Right third" | `{dt_form: "gradient", dt_params: {anchor_x: 0.67, anchor_y: 0.5, rotation: 270, compression: 0.5, state: 2}}` |
 
 ### Hard-edged regions (rectangles)
 
@@ -87,10 +87,10 @@ Less common but useful for off-axis lighting situations.
 
 | Phrase | Spec |
 |-|-|
-| "Diagonal, top-left dim" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 135, compression: 1.0, state: 2}}` |
-| "Diagonal, top-right dim" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 225, compression: 1.0, state: 2}}` |
-| "Diagonal, bottom-left dim" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 45, compression: 1.0, state: 2}}` |
-| "Diagonal, bottom-right dim" | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 315, compression: 1.0, state: 2}}` |
+| "Diagonal, top-left dim" (light side bottom-right) | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 225, compression: 0.5, state: 2}}` |
+| "Diagonal, top-right dim" (light side bottom-left) | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 135, compression: 0.5, state: 2}}` |
+| "Diagonal, bottom-left dim" (light side top-right) | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 315, compression: 0.5, state: 2}}` |
+| "Diagonal, bottom-right dim" (light side top-left) | `{dt_form: "gradient", dt_params: {anchor_x: 0.5, anchor_y: 0.5, rotation: 45, compression: 0.5, state: 2}}` |
 
 ### Polygons (paths)
 
@@ -114,8 +114,8 @@ When RFC-026 lands, the AI provider returns a polygon for "the fish" / "the pers
 ### Gradient (`dt_form: "gradient"`)
 
 - `anchor_x`, `anchor_y`: where the gradient line crosses (the 50% point of the falloff). For a "bottom third" gradient, `anchor_y = 0.67` puts the transition line 2/3 down.
-- `rotation` (degrees): orientation of the gradient axis. `0` = horizontal axis with the light side **below** anchor; `90` = vertical axis with light side on the **left**; `180` = horizontal with light **above**; `270` = vertical with light on the **right**. Rotate by 45° for diagonals.
-- `compression` (default `1.0`): controls falloff width. `1.0` = falloff covers the full image; `0.5` = sharper transition (half the image); `2.0` = softer (extends beyond image edges).
+- `rotation` (degrees): orientation of the gradient axis. `0` = horizontal axis with the light side on **top** (verified against shipped `gradient_top_dampen_highlights`); `90` = vertical axis with light side on the **left**; `180` = horizontal with light on the **bottom**; `270` = vertical with light on the **right**. Rotate by 45° for diagonals (e.g., `45` = light on bottom-right).
+- `compression` (default `0.5` for image-spanning thirds/halves): controls falloff width. `0.5` = sharper transition (half the image, recommended for crisp third/half regions); `1.0` = full-image falloff (very smooth); `2.0` = extends beyond image edges (extremely soft).
 - `state` (default `2` = sigmoidal): `1` = linear falloff (sharp), `2` = sigmoidal (smooth, recommended for natural-looking masks).
 
 ### Ellipse (`dt_form: "ellipse"`)
@@ -137,6 +137,34 @@ When RFC-026 lands, the AI provider returns a polygon for "the fish" / "the pers
 - `vertices`: list of `[x, y]` pairs, normalized [0, 1], closed implicitly (last connects to first).
 - `border` (default `0.02`): feathering uniform on all sides.
 - Minimum 3 vertices. Typical AI-subject masks have 50–500 vertices after Douglas-Peucker simplification at the provider boundary (RFC-026).
+
+## Visual reference
+
+Each row below renders **exposure +1.0** through one shape from the table above, against the synthetic grayscale ramp. The brightened region reveals where the mask is on; everything else stays at the ramp's baseline tone.
+
+Reference renders for visual comparison:
+
+| Reference | Description |
+|-|-|
+| ![baseline](../visual-proofs/mask-shapes/_baseline.jpg) | Baseline ramp — no effect, no mask. The unmodified target. |
+| ![uniform](../visual-proofs/mask-shapes/_uniform.jpg) | expo+1.0 with no mask — uniform brightening everywhere. The "fully on" reference. |
+
+Per-shape renders:
+
+| Phrase | Notes | Render |
+|-|-|-|
+| "Bottom third" (gradient) | anchor_y=0.67, rotation=180. Light side covers bottom 1/3. | ![bottom-third-gradient](../visual-proofs/mask-shapes/bottom-third-gradient.jpg) |
+| "Top half" (gradient) | anchor_y=0.5, rotation=0. Light side covers top half. | ![top-half-gradient](../visual-proofs/mask-shapes/top-half-gradient.jpg) |
+| "Left half" (gradient) | rotation=90, vertical axis. Light side covers left half. | ![left-half-gradient](../visual-proofs/mask-shapes/left-half-gradient.jpg) |
+| "Right half" (gradient) | rotation=270, vertical axis. Light side covers right half. | ![right-half-gradient](../visual-proofs/mask-shapes/right-half-gradient.jpg) |
+| "Bottom third (hard edge)" (rectangle) | x0=0, y0=0.67, x1=1, y1=1. Hard-edged bottom 1/3. | ![bottom-third-rectangle](../visual-proofs/mask-shapes/bottom-third-rectangle.jpg) |
+| "Center square" (rectangle) | 50% x 50% center square with subtle feathering. | ![center-square-rectangle](../visual-proofs/mask-shapes/center-square-rectangle.jpg) |
+| "Center circle, medium" (ellipse) | center=(0.5, 0.5), radius=0.3, border=0.08. | ![center-circle-medium-ellipse](../visual-proofs/mask-shapes/center-circle-medium-ellipse.jpg) |
+| "Subject upper-left rule-of-thirds" (ellipse) | center=(0.33, 0.33), radius=0.2 - subject region at top-left intersection. | ![upper-left-thirds-ellipse](../visual-proofs/mask-shapes/upper-left-thirds-ellipse.jpg) |
+| "Diagonal, top-left dim" (gradient, light bottom-right) | rotation=225, diagonal axis. Light side bottom-right. | ![diagonal-bottom-right-light-gradient](../visual-proofs/mask-shapes/diagonal-bottom-right-light-gradient.jpg) |
+| Centered triangle (path) | 3-vertex closed polygon. RFC-026 substrate; same wire AI subject masks will use. | ![centered-triangle-path](../visual-proofs/mask-shapes/centered-triangle-path.jpg) |
+
+These renders are produced by `scripts/generate-mask-shapes-gallery.py`. Refresh after changing the spec table above; CI does not regenerate them automatically.
 
 ## See also
 
