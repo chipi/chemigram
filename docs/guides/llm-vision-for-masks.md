@@ -204,6 +204,57 @@ apply_primitive("exposure", 0.5, mask_spec={
 
 Photographer sees the new render, gives feedback, LLM iterates. The conversation IS the refinement loop.
 
+### Pattern 7: Named-mask escalation (RFC-032 + LLM-vision)
+
+**Photographer:** *"Cool down the sky."*
+
+**Context:** chemigram ships named maskdefs (RFC-032) — `mask_sky`, `mask_subject`, `mask_eye_region` — that carry both a parametric fallback (luminance / hue band approximation) AND an `llm_vision_prompt` field. The fallback works for grand-vista landscapes with clean skies; it leaks badly on sunsets, partial clouds, and trees against bright sky. **The named maskdef is a hint that LLM-vision is the right tool here.**
+
+**LLM reasoning:**
+
+> "The photographer asked for sky. The vocabulary ships `mask_sky` — a named maskdef with both a parametric fallback and an LLM-vision prompt. Because this is a complex sky (clouds + horizon + tree silhouettes), the parametric fallback would leak onto the trees. I'll render a preview, examine the actual sky boundary, and construct a path-form mask using the maskdef's canonical prompt. The maskdef's parametric fallback is useful as a sanity check, not as the final mask."
+
+**Workflow:**
+
+1. `vocab show-mask mask_sky` — read the canonical `llm_vision_prompt`.
+2. `render_preview(image_id)` — surface a current-state JPEG.
+3. Examine the photo against the prompt: *"Select the sky region — including clouds, atmosphere, and visible portions of the upper atmosphere. Exclude horizon-bordering land, mountains, or trees that protrude into the sky. Feather the bottom edge slightly where land meets sky."*
+4. Construct a path-form mask (typically 8-15 vertices tracing the horizon and any tree silhouettes that protrude into the sky).
+5. Apply with the constructed `mask_spec` instead of `{"kind": "named", "name": "mask_sky"}`.
+
+**`mask_spec`** (constructed; replaces the named reference):
+
+```json
+{
+  "dt_form": "path",
+  "dt_params": {
+    "vertices": [
+      [0.0, 0.0], [1.0, 0.0],
+      [1.0, 0.45], [0.78, 0.42], [0.65, 0.48],
+      [0.42, 0.39], [0.28, 0.45], [0.0, 0.42]
+    ],
+    "feather": 0.04
+  }
+}
+```
+
+**When to use the named reference vs. construct via vision:**
+
+| Situation | Use named reference | Construct via LLM-vision |
+|-|-|-|
+| Grand-vista landscape, clean sky, no foreground intrusion | ✓ — parametric fallback is fine | overkill |
+| Sunset / sunrise — sky has bright orange/red zones (color_h fallback fails) | ✗ — fallback leaks | ✓ — construct path |
+| Trees / mountains against bright sky | ✗ — fallback includes tree silhouettes | ✓ — trace horizon explicitly |
+| Portrait — subject region (`mask_subject`) | ✗ — center-bias luminance fallback is very coarse | ✓ — almost always upgrade |
+| Eye region (`mask_eye_region`) | rarely (highlight-luminance fallback misses iris detail) | ✓ — almost always upgrade |
+| Skin region (`mask_skin_region`) | ✓ — color_h on orange band IS the canonical move | rarely needed |
+| Foliage (`mask_foliage_green`) | ✓ — color_h band is the move | rarely needed |
+| Luminosity bands (`mask_luminosity_*`) | ✓ — these are parametric by design | N/A — no LLM-vision prompt on these |
+
+The maskdefs that ship `llm_vision_prompt` are the ones where the named reference is "good enough sometimes, but a vision-constructed mask is sharper." The maskdefs without `llm_vision_prompt` (luminosity bands, skin/foliage/water hue bands) are inherently parametric — no escalation path.
+
+**Composition with `apply_per_region` (RFC-031):** named-mask references and constructed mask_specs both work in batched calls. Mix them: per-region dodge-and-burn with one region using `mask_sky` (parametric fallback fine for that one) and another region using a constructed path (precision needed there).
+
 ## How to ground the LLM in this workflow
 
 When a photographer asks for a content-derived mask, the agent's reasoning chain should be:

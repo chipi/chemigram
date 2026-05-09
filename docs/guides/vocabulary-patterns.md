@@ -193,6 +193,57 @@ Pairs well with low-saturation portraits and quiet landscapes.
 
 ---
 
+## Named-mask composition (RFC-032)
+
+Named maskdefs ship as a fourth vocabulary kind — `mask_sky`, `mask_skin_region`, `mask_luminosity_brightest_quartile`, etc. Reference them by name in any `mask_spec` argument:
+
+```
+chemigram apply-primitive --entry hsl_saturation \
+  --param sat_orange=-0.3 \
+  --mask-spec '{"kind":"named","name":"mask_skin_region"}'
+```
+
+Or pre-bake the named mask into a manifest entry — `skin_uniformity` and `skin_smooth_painterly` already do this so the photographer doesn't have to remember the binding. List with `chemigram vocab list-masks -p expressive-baseline` and inspect with `chemigram vocab show-mask <name>`.
+
+The maskdefs split into two families:
+
+- **Parametric-only** (`mask_skin_region`, `mask_foliage_green`, `mask_water_blue_cyan`, `mask_luminosity_*`) — the parametric `range_filter` IS the canonical move. Always reach for the named reference.
+- **Content-aware** (`mask_sky`, `mask_subject`, `mask_eye_region`) — the parametric fallback is "good enough sometimes." For higher-precision work, escalate to LLM-vision construction per `llm-vision-for-masks.md` Pattern 7. The maskdef's `llm_vision_prompt` field is the canonical prompt for that escalation.
+
+## Batched per-region adjustment (RFC-031)
+
+For "one move with internal structure" — dodge-and-burn, eye-region detail lifts, skin-spot harmonization — `apply-per-region` applies one primitive to N mask-bound regions atomically. Each region is a `mask_spec` + optional `parameter_values` pair; all regions validate first, then apply as one snapshot.
+
+### "Sculpt the face — dodge and burn"
+
+```
+chemigram apply-per-region <image_id> --entry exposure --regions '[
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.4,"center_y":0.35,"radius_x":0.05,"radius_y":0.07,"border":0.03}},"parameter_values":{"ev":0.3}},
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.6,"center_y":0.35,"radius_x":0.05,"radius_y":0.07,"border":0.03}},"parameter_values":{"ev":0.3}},
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.5,"radius_x":0.06,"radius_y":0.04,"border":0.04}},"parameter_values":{"ev":0.2}},
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.5,"center_y":0.7,"radius_x":0.18,"radius_y":0.08,"border":0.05}},"parameter_values":{"ev":-0.3}}
+]'
+```
+
+Six lit regions + six shadowed regions = one snapshot, six `multi_priority`-stacked exposure instances in the synthesized XMP. The agent reasons about it as one move ("sculpt the face"); chemigram tracks it as one log entry.
+
+### "Sky and foreground twin move"
+
+Mix named-mask references with inline drawn forms in a single batch:
+
+```
+chemigram apply-per-region <image_id> --entry exposure --regions '[
+  {"mask_spec":{"kind":"named","name":"mask_sky"},"parameter_values":{"ev":-0.4}},
+  {"mask_spec":{"kind":"named","name":"mask_luminosity_darkest_quartile"},"parameter_values":{"ev":0.3}}
+]'
+```
+
+Sky cooled and darkened; foreground shadows lifted; one snapshot. The named-mask references resolve at apply time to their parametric specs.
+
+### Single-primitive restriction
+
+All regions in one batch use the same primitive. For "+exposure on the iris and +sharpening on lashes," emit two `apply-per-region` calls (one per primitive) — that's still 2 snapshots instead of 6, the cost of mixed-op batching deferred per RFC-031.
+
 ## When patterns don't fit
 
 Composition is per-image. These are starting points, not prescriptions. The agent's job (and yours) is to judge each move's render against the brief — if a pattern that "should work" doesn't, that's a vocabulary gap or a composition that needs a different recipe.

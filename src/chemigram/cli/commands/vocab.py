@@ -229,6 +229,18 @@ def show_mask(
         raise typer.Exit(code=ExitCode.NOT_FOUND.value)
 
     pack_root = index.mask_pack_for(mask.name)
+    # When a maskdef ships an llm_vision_prompt, surface a hint about the
+    # escalation pattern (RFC-032 + ADR-086): the named reference resolves
+    # to the parametric fallback today; for higher-precision work the agent
+    # constructs a path mask via render_preview + the prompt below. See
+    # docs/guides/llm-vision-for-masks.md "Pattern 7".
+    hint = (
+        "tip: this maskdef has an LLM-vision prompt. For higher-precision "
+        "masking, render_preview then construct a path-form mask using the "
+        "prompt — see docs/guides/llm-vision-for-masks.md (Pattern 7)."
+        if mask.llm_vision_prompt
+        else None
+    )
     writer.result(
         message=f"maskdef: {mask.name}",
         name=mask.name,
@@ -238,6 +250,7 @@ def show_mask(
         tags=list(mask.tags),
         spec=mask.spec,
         llm_vision_prompt=mask.llm_vision_prompt,
+        llm_vision_hint=hint,
         darktable_version=mask.darktable_version,
         source=mask.source,
         license=mask.license,

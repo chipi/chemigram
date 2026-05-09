@@ -3680,6 +3680,46 @@
       "llm_vision_prompt": "Select the eye region of the subject — irises, pupils, and the surrounding skin within roughly 5% of the eye width. Exclude eyebrows and lashes."
     },
     {
+      "name": "skin_smooth_painterly",
+      "layer": "L3",
+      "subtype": "localcontrast",
+      "path": "layers/L3/localcontrast/bilat_clarity_strength.dtstyle",
+      "touches": ["bilat"],
+      "_test_coverage_exempt": "Phase-1 frequency-separation approximation (RFC-033 Portrait Gap #4 cheap variant). Lab-grade global / lab-grade masked / visual proof tiers require human review of representative portraits — natural-skin vs over-smoothed boundary is a visual judgment per ADR-080. Unit + integration coverage ships; lab-grade + proof land alongside the visual-review sign-off.",
+      "tags": [
+        "skin",
+        "portrait",
+        "smoothing",
+        "frequency-separation-approximation",
+        "parameterized"
+      ],
+      "description": "Approximate frequency separation for skin smoothing (Portrait Gap #4, cheap variant). Reduces local contrast (texture-band frequency) within the skin region — the color band stays untouched. Pass --value V or --param clarity_strength=V; range [-1.0, 4.0], typical -0.3 to -0.7 for natural smoothing. -0.5 default. Pre-baked with mask_skin_region. **Not** Photoshop's true frequency separation (band decomposition); approximation via bilat softening on a hue-masked region. Compose orthogonally with skin_uniformity (color-band uniformity) for the full skin-uniformity-plus-smoothing move. For sharper precision, override mask_spec via render_preview + LLM-vision (see docs/guides/llm-vision-for-masks.md Pattern 7).",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_skin_region"
+      },
+      "parameters": [
+        {
+          "name": "clarity_strength",
+          "type": "float",
+          "range": [-1.0, 0.0],
+          "default": -0.5,
+          "field": {
+            "module": "bilat",
+            "modversion": 3,
+            "offset": 12,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
       "name": "skin_uniformity",
       "layer": "L3",
       "subtype": "colorequal",

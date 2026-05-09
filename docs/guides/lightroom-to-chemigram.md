@@ -225,9 +225,13 @@ The visual-proof gallery shows each look applied to the synthetic ColorChecker c
 
 | Lightroom feature | chemigram status | Tracked as |
 |---|---|---|
-| **Spot removal / heal** | Not shipped | RFC-025 drafted; ADR pending |
-| **AI subject mask** | Not shipped (BYOA arc) | RFC-024 (range masks) defers AI to RFC-026 |
-| **Range masks** (color-range, luminance-range, depth-range) | Not shipped | RFC-024 drafted |
+| **Spot removal / heal** | ✅ Shipped v1.9.0 | `apply_spot` MCP tool / RFC-025 / ADR-087 |
+| **AI subject mask** | ✅ Shipped v1.9.0 (LLM-vision; conversation-native) | RFC-026 / ADR-086 + `mask_subject` named mask (RFC-032) |
+| **Adaptive Sky preset** | ✅ Shipped v1.10 (parametric fallback + LLM-vision escalation) | `mask_sky` named mask (RFC-032) + Pattern 7 of `llm-vision-for-masks.md` |
+| **Range masks** (color-range, luminance-range) | ✅ Shipped v1.9.0 | RFC-024 / ADR-085; named-mask vocabulary in RFC-032 |
+| **Capture One Skin Tone Uniformity** | ✅ Shipped v1.10 (color-band uniformity; texture deferred) | `skin_uniformity` entry / RFC-033 |
+| **Frequency separation (skin smoothing)** | ⚠️ Approximated v1.10 (`skin_smooth_painterly` via masked clarity reduction); true band decomposition deferred | RFC-033 Portrait Gap #4 |
+| **Batched dodge-and-burn** | ✅ Shipped v1.10 (atomic N-region apply) | `apply_per_region` MCP tool / RFC-031 |
 | **Tone Curve** (parametric / point curve) | Not shipped | #94; needs darktable-GUI baseline session |
 | **HSL precision via Range slider** | Not shipped (95% covered via colorequal) | #98 colorzones spline-curve fallback |
 | **Profiled lens auto-correction (EXIF-bound)** | Decoder shipped; auto-bind pending | #100 task B |

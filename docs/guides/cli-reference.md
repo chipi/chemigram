@@ -102,6 +102,34 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
     --help                     Show this message and exit.
 ```
 
+### `chemigram apply-per-region`
+
+```
+Usage: chemigram apply-per-region [OPTIONS] IMAGE_ID
+
+ Apply one primitive to N mask-bound regions atomically (RFC-031).
+
+ *    image_id      TEXT  Image ID. [required]
+ *  --entry              TEXT  Vocabulary entry name. [required]
+ *  --regions            TEXT  JSON array of regions. Each region:
+                               {"mask_spec": {...}, "parameter_values":
+                               {...}}. mask_spec accepts drawn / parametric /
+                               named-mask shapes. [required]
+    --pack       -p      TEXT  Pack name (repeatable). Defaults to
+                               ['starter'].
+    --label              TEXT  Optional snapshot label.
+    --help                     Show this message and exit.
+```
+
+The canonical use case is dodge-and-burn: brighten cheekbones, brighten nose
+bridge, deepen jaw shadow — one move from the photographer's perspective, N
+region-specific applications underneath. Atomic semantics — all regions
+validate first; if any fails (out-of-range parameter, unresolved named-mask
+reference, etc.), none apply. Single-primitive restriction (mixed-op
+batching deferred per RFC-031). Soft cap: 32 regions per call. Each region
+gets a unique `multi_priority` so the synthesizer treats them as distinct
+masked instances rather than collapsing to last-writer.
+
 ### `chemigram remove-module`
 
 ```
@@ -379,3 +407,40 @@ Usage: chemigram vocab show [OPTIONS] NAME
  --pack  -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
  --help                Show this message and exit.
 ```
+
+### `chemigram vocab list-masks`
+
+```
+Usage: chemigram vocab list-masks [OPTIONS]
+
+ List named masks (RFC-032) across the loaded packs.
+
+ --pack   -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
+ --tag            TEXT  Filter by tag (repeatable; OR — any matching tag
+                        includes the maskdef).
+ --help                 Show this message and exit.
+```
+
+Each entry's `spec` field is the apply-time `mask_spec`; reference a named
+mask in any `apply_primitive` / `apply_per_region` / `--mask-spec` argument
+as `{"kind": "named", "name": "<maskdef-name>"}`. Maskdefs that ship an
+`llm_vision_prompt` field can be upgraded from the parametric fallback to a
+constructed mask via render_preview + LLM-vision (per
+`docs/guides/llm-vision-for-masks.md` Pattern 7).
+
+### `chemigram vocab show-mask`
+
+```
+Usage: chemigram vocab show-mask [OPTIONS] NAME
+
+ Print one maskdef's manifest fields + spec (RFC-032).
+
+ *    name      TEXT  Maskdef name (e.g. mask_sky). [required]
+ --pack  -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
+ --help                Show this message and exit.
+```
+
+When the maskdef has an `llm_vision_prompt`, the output includes a
+`llm_vision_hint` line pointing to Pattern 7 of
+`docs/guides/llm-vision-for-masks.md` for the higher-precision construction
+workflow.

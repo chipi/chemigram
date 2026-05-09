@@ -225,6 +225,24 @@ Per-pack `manifest.json`. Per `03/Vocabulary primitives`:
 }
 ```
 
+**Maskdef entries (RFC-032).** A fourth vocabulary kind, distinguished by top-level `kind: "mask"` discriminator. Maskdef entries skip `path` / `touches` / `modversions` (no dtstyle) and instead carry `spec` (the apply-time `mask_spec` shape: drawn `dt_form` / parametric `range_filter` / both) and an optional `llm_vision_prompt` declaring the canonical prompt for LLM-vision construction (per `llm-vision-for-masks.md` Pattern 7). Loaded into a separate index; resolved at apply time via `{"kind": "named", "name": "..."}` references in the `mask_spec` field of any primitive entry, MCP `apply_primitive` / `apply_per_region` call, or CLI `--mask-spec` override.
+
+```json
+{
+  "name": "mask_sky",
+  "kind": "mask",
+  "description": "Sky region (Heaton-style 'adaptive sky'); top-luminance + blue-hue parametric fallback; LLM-vision route per Pattern 7.",
+  "tags": ["mask", "named", "sky", "content-aware", "landscape"],
+  "darktable_version": "5.4",
+  "source": "expressive-baseline",
+  "license": "MIT",
+  "spec": {
+    "range_filter": {"kind": "luminance", "min": 0.55, "max": 1.0, "feather": 0.08}
+  },
+  "llm_vision_prompt": "Select the sky region — including clouds, atmosphere, ..."
+}
+```
+
 ### contracts/xmp-darktable-history
 
 darktable's history is an RDF Seq of `<rdf:li>` elements. Calibrated to darktable 5.4.1; per `04/3` and verified against the v3 Phase 0 reference XMP:
@@ -277,8 +295,10 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 
 **Vocabulary and edit operations**
 - `list_vocabulary(layer?, tags?)` → entries
+- `list_masks_vocabulary(tags?)` → entries (RFC-032 named maskdefs)
 - `get_state(image_id)` → entries + head hash
 - `apply_primitive(image_id, primitive_name, mask_spec?)` → state_after, snapshot_hash
+- `apply_per_region(image_id, primitive_name, regions, label?)` → state_after, snapshot_hash, n_regions (RFC-031 atomic batched apply)
 - `remove_module(image_id, module_name)` → state_after, snapshot_hash
 - `reset(image_id)` → state_after (resets to baseline_end, not empty)
 
