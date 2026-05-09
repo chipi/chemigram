@@ -70,6 +70,10 @@ app.command(name="ingest", help="Bootstrap a per-image workspace from a raw file
 app.command(name="apply-primitive", help="Apply a vocabulary entry; snapshot the result.")(
     edit.apply_primitive
 )
+app.command(
+    name="apply-per-region",
+    help="Apply one primitive to N mask-bound regions atomically (RFC-031).",
+)(edit.apply_per_region_cli)
 app.command(name="remove-module", help="Strip all history entries for an operation.")(
     edit.remove_module
 )

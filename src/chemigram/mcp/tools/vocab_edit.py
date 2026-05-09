@@ -155,6 +155,124 @@ register_tool(
 )
 
 
+# --- apply_per_region (RFC-031) -----------------------------------------
+
+
+async def _apply_per_region(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
+    from chemigram.core.batched import (
+        BatchedApplyError,
+        RegionSpec,
+        apply_per_region,
+    )
+
+    image_id = args["image_id"]
+    primitive_name = args["primitive_name"]
+    regions_raw = args.get("regions", [])
+    label = args.get("label")
+
+    workspace = resolve_workspace(ctx, image_id)
+    if workspace is None:
+        return ToolResult.fail(error_not_found(f"image {image_id!r}"))
+
+    baseline_xmp = current_xmp(workspace)
+    if baseline_xmp is None:
+        return ToolResult.fail(
+            ToolError(
+                code=ErrorCode.INVALID_INPUT,
+                message="workspace has no baseline snapshot to apply onto",
+            )
+        )
+
+    if not isinstance(regions_raw, list):
+        return ToolResult.fail(error_invalid_input("regions must be a list"))
+    regions = [
+        RegionSpec(
+            mask_spec=r.get("mask_spec"),
+            parameter_values=r.get("parameter_values"),
+        )
+        for r in regions_raw
+    ]
+
+    try:
+        new_xmp = apply_per_region(baseline_xmp, primitive_name, regions, vocab=ctx.vocabulary)
+    except BatchedApplyError as exc:
+        return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+
+    snapshot_label = (
+        label if label else f"apply_per_region: {primitive_name} ({len(regions)} regions)"
+    )
+    try:
+        new_hash = snapshot(workspace.repo, new_xmp, label=snapshot_label)
+    except VersioningError as exc:
+        return ToolResult.fail(ToolError(code=ErrorCode.VERSIONING_ERROR, message=str(exc)))
+
+    return ToolResult.ok(
+        {
+            "state_after": summarize_state(new_xmp),
+            "snapshot_hash": new_hash,
+            "n_regions": len(regions),
+            "primitive_name": primitive_name,
+        }
+    )
+
+
+register_tool(
+    name="apply_per_region",
+    description=(
+        "Apply one vocabulary primitive to N mask-bound regions atomically "
+        "(RFC-031). Use for batched moves like dodge-and-burn where the "
+        "photographer thinks of one coherent action ('sculpt the face') but "
+        "executes it across multiple regions. Each region declares its own "
+        "mask_spec (drawn / parametric / named via RFC-032) and optional "
+        "parameter_values. All regions validate first; if any fails, none "
+        "apply (atomic). Single-primitive restriction — mixed-op batching "
+        "is deferred. Soft cap: 32 regions per call."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "image_id": {"type": "string"},
+            "primitive_name": {"type": "string"},
+            "regions": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 32,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "mask_spec": {
+                            "type": "object",
+                            "description": (
+                                "Apply-time mask spec — drawn-form "
+                                "(dt_form/dt_params), parametric "
+                                "(range_filter), or named ({kind: 'named', "
+                                "name: '<maskdef>'}). Per-region mandatory."
+                            ),
+                        },
+                        "parameter_values": {
+                            "type": "object",
+                            "description": (
+                                "Optional per-region parameter overrides; "
+                                "required when the primitive declares "
+                                "parameters."
+                            ),
+                        },
+                    },
+                    "required": ["mask_spec"],
+                },
+            },
+            "label": {
+                "type": "string",
+                "description": "Optional snapshot label.",
+            },
+        },
+        "required": ["image_id", "primitive_name", "regions"],
+        "additionalProperties": False,
+    },
+    handler=_apply_per_region,
+)
+
+
 # --- get_state ----------------------------------------------------------
 
 

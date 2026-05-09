@@ -430,6 +430,109 @@ def apply_primitive(
 
 
 # ---------------------------------------------------------------------------
+# apply-per-region (RFC-031)
+# ---------------------------------------------------------------------------
+
+
+def apply_per_region_cli(
+    ctx: typer.Context,
+    image_id: str = typer.Argument(..., help="Image ID."),
+    entry: str = typer.Option(..., "--entry", help="Vocabulary entry name."),
+    regions_json: str = typer.Option(
+        ...,
+        "--regions",
+        help=(
+            "JSON array of regions. Each region: "
+            '{"mask_spec": {...}, "parameter_values": {...}}. '
+            "mask_spec accepts drawn / parametric / named-mask shapes. "
+            'Example: \'[{"mask_spec":{"dt_form":"ellipse",'
+            '"dt_params":{"center_x":0.3,"center_y":0.5,"radius_x":0.1,'
+            '"radius_y":0.1,"border":0.02}},"parameter_values":{"ev":0.3}}]\''
+        ),
+    ),
+    pack: list[str] = typer.Option(
+        None,
+        "--pack",
+        "-p",
+        help="Pack name (repeatable). Defaults to ['starter'].",
+    ),
+    label: str = typer.Option(None, "--label", help="Optional snapshot label."),
+) -> None:
+    """Apply one primitive to N mask-bound regions atomically (RFC-031)."""
+    from chemigram.core.batched import (
+        BatchedApplyError,
+        RegionSpec,
+        apply_per_region,
+    )
+
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    pack_names = pack if pack else ["starter"]
+
+    try:
+        regions_raw = json.loads(regions_json)
+    except json.JSONDecodeError as exc:
+        writer.error(
+            f"--regions must be valid JSON: {exc.msg} at pos {exc.pos}",
+            ExitCode.INVALID_INPUT,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+    if not isinstance(regions_raw, list):
+        writer.error("--regions must be a JSON array", ExitCode.INVALID_INPUT)
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
+
+    try:
+        vocabulary = load_packs(pack_names)
+    except Exception as exc:
+        writer.error(
+            f"failed to load packs {pack_names}: {exc}",
+            ExitCode.INVALID_INPUT,
+            packs=pack_names,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    regions = [
+        RegionSpec(
+            mask_spec=r.get("mask_spec"),
+            parameter_values=r.get("parameter_values"),
+        )
+        for r in regions_raw
+    ]
+
+    workspace = resolve_workspace_or_fail(ctx, image_id)
+    baseline_xmp = current_xmp(workspace)
+    if baseline_xmp is None:
+        writer.error(
+            "workspace has no baseline snapshot to apply onto",
+            ExitCode.STATE_ERROR,
+            image_id=image_id,
+        )
+        raise typer.Exit(code=ExitCode.STATE_ERROR.value)
+
+    try:
+        new_xmp = apply_per_region(baseline_xmp, entry, regions, vocab=vocabulary)
+    except BatchedApplyError as exc:
+        writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry)
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    snapshot_label = label if label else f"apply_per_region: {entry} ({len(regions)} regions)"
+    try:
+        new_hash = snapshot(workspace.repo, new_xmp, label=snapshot_label)
+    except VersioningError as exc:
+        writer.error(str(exc), ExitCode.VERSIONING_ERROR, image_id=image_id)
+        raise typer.Exit(code=ExitCode.VERSIONING_ERROR.value) from exc
+
+    writer.result(
+        message=f"applied {entry} to {len(regions)} regions of {image_id}",
+        image_id=image_id,
+        entry=entry,
+        n_regions=len(regions),
+        snapshot_hash=new_hash,
+        state_after=summarize_state(new_xmp),
+    )
+
+
+# ---------------------------------------------------------------------------
 # remove-module
 # ---------------------------------------------------------------------------
 
