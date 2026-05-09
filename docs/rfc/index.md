@@ -41,6 +41,9 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-026 | LLM-vision-as-provider for AI-derived masks (MVP, conversation-native) | Decided | ADR-086 (closes) |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
 | RFC-030 | Deployed sibling-provider scaffolding for precision-tier AI masks | Draft v0.1 (deferred) | — |
+| RFC-031 | Batched per-region adjustment meta-tool | Draft v0.1 | — (pending) |
+| RFC-032 | Named-mask vocabulary on v1.9.0 mask primitives | Draft v0.1 | — (pending; possibly two ADRs) |
+| RFC-033 | Skin-tone uniformity primitive | Draft v0.1 (gated on capability survey) | — (pending; path depends on survey) |
 
 ## Maturity legend
 
