@@ -262,7 +262,7 @@
         "drama",
         "global"
       ],
-      "description": "B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues \u2014 classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true.",
+      "description": "B&W with sky-drama mix (red-emphasis: R 0.5 / G 0.4 / B 0.1). Lightens reds and darkens blues — classic 'red filter' landscape look that emphasizes clouds against sky. normalize_grey=true.",
       "modversions": {
         "channelmixerrgb": 3
       },
@@ -285,7 +285,7 @@
         "green",
         "global"
       ],
-      "description": "B&W with foliage mix (green-emphasis: R 0.1 / G 0.7 / B 0.2). Lightens greens \u2014 separates foliage from neighboring tones; useful for forest / botanical work where green is the dominant subject. normalize_grey=true.",
+      "description": "B&W with foliage mix (green-emphasis: R 0.1 / G 0.7 / B 0.2). Lightens greens — separates foliage from neighboring tones; useful for forest / botanical work where green is the dominant subject. normalize_grey=true.",
       "modversions": {
         "channelmixerrgb": 3
       },
@@ -507,7 +507,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized crop (RFC-022 Tier 2). Pass --param cx=V cy=V cw=V ch=V \u2014 each in [0.0, 1.0]. Default 0,0,1,1 (no crop). cx/cy = top-left margin, cw/ch = bottom-right margin (so crop region is [cx..cw] x [cy..ch] in normalized coords). First workflow-primitive parameterized entry; aspect-ratio constraint preserved at -1/-1 (free).",
+      "description": "Parameterized crop (RFC-022 Tier 2). Pass --param cx=V cy=V cw=V ch=V — each in [0.0, 1.0]. Default 0,0,1,1 (no crop). cx/cy = top-left margin, cw/ch = bottom-right margin (so crop region is [cx..cw] x [cy..ch] in normalized coords). First workflow-primitive parameterized entry; aspect-ratio constraint preserved at -1/-1 (free).",
       "modversions": {
         "crop": 3
       },
@@ -591,7 +591,7 @@
         "global",
         "parameterized"
       ],
-      "description": "Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry \u2014 different kind, not strength.",
+      "description": "Parameterized clarity strength on bilat / local laplacian (RFC-021). Pass --value V; range [-1.0, 4.0]. 1.5 = clarity_strong-equivalent. clarity_painterly stays as a separate discrete entry — different kind, not strength.",
       "modversions": {
         "bilat": 3
       },
@@ -652,7 +652,7 @@
         "high-bite",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 etched / over-defined clarity (#110). bilat_clarity_strength=2.0 (high local-contrast bite).",
+      "description": "L3 discrete kind — etched / over-defined clarity (#110). bilat_clarity_strength=2.0 (high local-contrast bite).",
       "modversions": {
         "bilat": 3
       },
@@ -674,7 +674,7 @@
         "soft",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 soft / dreamy clarity (#110). bilat_clarity_strength=-0.5 (negative bite \u2014 softens local contrast).",
+      "description": "L3 discrete kind — soft / dreamy clarity (#110). bilat_clarity_strength=-0.5 (negative bite — softens local contrast).",
       "modversions": {
         "bilat": 3
       },
@@ -696,7 +696,7 @@
         "discrete",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 edge-only sharpening (#110). amount=0.6 with default radius (2.0 px) and threshold (0.5). Threshold gates sharpening to detected edges only.",
+      "description": "L3 discrete kind — edge-only sharpening (#110). amount=0.6 with default radius (2.0 px) and threshold (0.5). Threshold gates sharpening to detected edges only.",
       "modversions": {
         "sharpen": 1
       },
@@ -718,7 +718,7 @@
         "discrete",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 whole-image sharpening with bite (#110). amount=1.2 (strong).",
+      "description": "L3 discrete kind — whole-image sharpening with bite (#110). amount=1.2 (strong).",
       "modversions": {
         "sharpen": 1
       },
@@ -740,7 +740,7 @@
         "discrete",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 gentle peripheral darkening (#110). brightness=-0.15.",
+      "description": "L3 discrete kind — gentle peripheral darkening (#110). brightness=-0.15.",
       "modversions": {
         "vignette": 4
       },
@@ -763,7 +763,7 @@
         "discrete",
         "global"
       ],
-      "description": "L3 discrete kind \u2014 pronounced peripheral darkening (#110). brightness=-0.5.",
+      "description": "L3 discrete kind — pronounced peripheral darkening (#110). brightness=-0.5.",
       "modversions": {
         "vignette": 4
       },
@@ -827,7 +827,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized perspective / transform (#101). Closes the Lightroom Transform panel parity gap via darktable's ashift module. 5 magnitude axes: --param transform_rotation=V (image rotation in degrees), --param transform_lensshift_v=V (vertical perspective / keystone), --param transform_lensshift_h=V (horizontal perspective), --param transform_shear=V, --param transform_aspect=V (post-transform aspect adjust; default 1.0). Axis names use transform_ prefix. Lens-tuning floats (focal length, crop factor, ortho-correction) and the user-drawn-lines storage are preserved verbatim \u2014 those are darktable-GUI-authored when needed.",
+      "description": "Parameterized perspective / transform (#101). Closes the Lightroom Transform panel parity gap via darktable's ashift module. 5 magnitude axes: --param transform_rotation=V (image rotation in degrees), --param transform_lensshift_v=V (vertical perspective / keystone), --param transform_lensshift_h=V (horizontal perspective), --param transform_shear=V, --param transform_aspect=V (post-transform aspect adjust; default 1.0). Axis names use transform_ prefix. Lens-tuning floats (focal length, crop factor, ortho-correction) and the user-drawn-lines storage are preserved verbatim — those are darktable-GUI-authored when needed.",
       "modversions": {
         "ashift": 5
       },
@@ -1409,7 +1409,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized HSL Saturation row (RFC-023). Lightroom HSL Color Mixer Saturation parity via darktable's colorequal module. 8 per-color axes (sat_red, sat_orange, sat_yellow, sat_green, sat_cyan, sat_blue, sat_lavender, sat_magenta); each range [-1.0, 1.0]; default 0.0. Negative desaturates that color zone (e.g. sat_orange=-0.3 \u2192 mute skin tones); positive boosts. Compose with hsl_hue and hsl_luminance for the full HSL Color Mixer.",
+      "description": "Parameterized HSL Saturation row (RFC-023). Lightroom HSL Color Mixer Saturation parity via darktable's colorequal module. 8 per-color axes (sat_red, sat_orange, sat_yellow, sat_green, sat_cyan, sat_blue, sat_lavender, sat_magenta); each range [-1.0, 1.0]; default 0.0. Negative desaturates that color zone (e.g. sat_orange=-0.3 → mute skin tones); positive boosts. Compose with hsl_hue and hsl_luminance for the full HSL Color Mixer.",
       "modversions": {
         "colorequal": 4
       },
@@ -1556,7 +1556,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized HSL Hue row (RFC-023). Lightroom HSL Color Mixer Hue parity via colorequal. 8 per-color hue-shift axes (hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta); each range [-180.0, 180.0] degrees; default 0.0. Shifts that color zone toward an adjacent hue (e.g. hue_green=15.0 \u2192 foliage warmer toward yellow).",
+      "description": "Parameterized HSL Hue row (RFC-023). Lightroom HSL Color Mixer Hue parity via colorequal. 8 per-color hue-shift axes (hue_red, hue_orange, hue_yellow, hue_green, hue_cyan, hue_blue, hue_lavender, hue_magenta); each range [-180.0, 180.0] degrees; default 0.0. Shifts that color zone toward an adjacent hue (e.g. hue_green=15.0 → foliage warmer toward yellow).",
       "modversions": {
         "colorequal": 4
       },
@@ -1704,7 +1704,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized HSL Luminance row (RFC-023). Lightroom HSL Color Mixer Luminance parity via colorequal. 8 per-color brightness axes (bright_red, bright_orange, bright_yellow, bright_green, bright_cyan, bright_blue, bright_lavender, bright_magenta); each range [-1.0, 1.0]; default 0.0. Negative darkens that color zone (e.g. bright_blue=-0.3 \u2192 deeper sky); positive lightens.",
+      "description": "Parameterized HSL Luminance row (RFC-023). Lightroom HSL Color Mixer Luminance parity via colorequal. 8 per-color brightness axes (bright_red, bright_orange, bright_yellow, bright_green, bright_cyan, bright_blue, bright_lavender, bright_magenta); each range [-1.0, 1.0]; default 0.0. Negative darkens that color zone (e.g. bright_blue=-0.3 → deeper sky); positive lightens.",
       "modversions": {
         "colorequal": 4
       },
@@ -1963,7 +1963,7 @@
         "parameterized",
         "multi-axis"
       ],
-      "description": "Parameterized white balance (RFC-021; first multi-parameter ship). Three axes: --param red_coeff=V (warmer image: red\u2191), --param green_coeff=V (Lightroom Tint axis: green\u2191 \u2192 magenta-shifted, green\u2193 \u2192 green-shifted), --param blue_coeff=V (cooler image: blue\u2191). Range [0.5, 4.0] each; all default 1.0 (no shift). Replaces the v1.5.x discrete wb_cool_subtle entry. green_coeff added in #90 Bucket A.3 to close the Lightroom Tint parity gap. Starter's wb_warm_subtle remains as a discrete teaching artifact; production use of WB shifts should prefer this parameterized entry.",
+      "description": "Parameterized white balance (RFC-021; first multi-parameter ship). Three axes: --param red_coeff=V (warmer image: red↑), --param green_coeff=V (Lightroom Tint axis: green↑ → magenta-shifted, green↓ → green-shifted), --param blue_coeff=V (cooler image: blue↑). Range [0.5, 4.0] each; all default 1.0 (no shift). Replaces the v1.5.x discrete wb_cool_subtle entry. green_coeff added in #90 Bucket A.3 to close the Lightroom Tint parity gap. Starter's wb_warm_subtle remains as a discrete teaching artifact; production use of WB shifts should prefer this parameterized entry.",
       "modversions": {
         "temperature": 4
       },
@@ -2071,7 +2071,7 @@
         "global",
         "parameterized"
       ],
-      "description": "Parameterized vibrance on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. 0.3 = vibrance_+0.3-equivalent. Vibrance protects already-saturated pixels \u2014 gentler chroma push than saturation_global. Replaces v1.5.x vibrance_+0.3.",
+      "description": "Parameterized vibrance on colorbalancergb (RFC-022 Tier 2). Pass --value V; range [-1.0, +1.0]. 0.3 = vibrance_+0.3-equivalent. Vibrance protects already-saturated pixels — gentler chroma push than saturation_global. Replaces v1.5.x vibrance_+0.3.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -2185,7 +2185,7 @@
         "global",
         "parameterized"
       ],
-      "description": "Parameterized global brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Brilliance shapes per-zone luminance \u2014 the global axis moves all zones together. Per-zone variants (highlights/midtones/shadows) target specific tonal ranges.",
+      "description": "Parameterized global brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Brilliance shapes per-zone luminance — the global axis moves all zones together. Per-zone variants (highlights/midtones/shadows) target specific tonal ranges.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -2223,7 +2223,7 @@
         "highlights",
         "parameterized"
       ],
-      "description": "Parameterized highlight-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the highlight tonal zone \u2014 useful for selectively brightening or compressing high-key areas without affecting shadows / midtones.",
+      "description": "Parameterized highlight-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the highlight tonal zone — useful for selectively brightening or compressing high-key areas without affecting shadows / midtones.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -2261,7 +2261,7 @@
         "midtones",
         "parameterized"
       ],
-      "description": "Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the midtone tonal zone \u2014 selectively shapes the body of the tonal distribution.",
+      "description": "Parameterized midtone-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the midtone tonal zone — selectively shapes the body of the tonal distribution.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -2299,7 +2299,7 @@
         "shadows",
         "parameterized"
       ],
-      "description": "Parameterized shadow-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the shadow tonal zone \u2014 selectively lifts or deepens dark areas without affecting highlights / midtones.",
+      "description": "Parameterized shadow-zone brilliance on colorbalancergb (RFC-022 Tier 2 / #86). Pass --value V; range [-1.0, +1.0]. Targets only the shadow tonal zone — selectively lifts or deepens dark areas without affecting highlights / midtones.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -2815,7 +2815,7 @@
         "cool",
         "discrete"
       ],
-      "description": "L3 discrete kind \u2014 classic split-toning composite (#110). Combines grade_shadows_cool (blue tint, hue 210 deg / chroma 0.3) with grade_highlights_warm (orange tint, hue 45 deg / chroma 0.2) in one entry. The signature 'cinematic' split-tone in a single primitive.",
+      "description": "L3 discrete kind — classic split-toning composite (#110). Combines grade_shadows_cool (blue tint, hue 210 deg / chroma 0.3) with grade_highlights_warm (orange tint, hue 45 deg / chroma 0.2) in one entry. The signature 'cinematic' split-tone in a single primitive.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -3028,7 +3028,7 @@
         "skin",
         "gentle"
       ],
-      "description": "L2 look \u2014 gentle skin-protective composition. exposure +0.2 EV, sigmoid_contrast 1.2 (soft s-curve), colorbalancergb saturation_global=-0.1 + vibrance=+0.2 (mild chroma push that protects saturated pixels). Targets portraiture; avoid stacking with aggressive contrast or clarity.",
+      "description": "L2 look — gentle skin-protective composition. exposure +0.2 EV, sigmoid_contrast 1.2 (soft s-curve), colorbalancergb saturation_global=-0.1 + vibrance=+0.2 (mild chroma push that protects saturated pixels). Targets portraiture; avoid stacking with aggressive contrast or clarity.",
       "modversions": {
         "exposure": 7,
         "sigmoid": 3,
@@ -3054,7 +3054,7 @@
         "vibrant",
         "dramatic"
       ],
-      "description": "L2 look \u2014 vibrant dramatic landscape composition. sigmoid_contrast 2.0 (strong s-curve), colorbalancergb saturation_global=+0.3 + vibrance=+0.2, bilat_clarity_strength 1.0 (definite local-contrast pop). Aggressive \u2014 pull back via sigmoid to ~1.5 if it feels harsh.",
+      "description": "L2 look — vibrant dramatic landscape composition. sigmoid_contrast 2.0 (strong s-curve), colorbalancergb saturation_global=+0.3 + vibrance=+0.2, bilat_clarity_strength 1.0 (definite local-contrast pop). Aggressive — pull back via sigmoid to ~1.5 if it feels harsh.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3081,7 +3081,7 @@
         "film",
         "nostalgia"
       ],
-      "description": "L2 look \u2014 nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-curve), colorbalancergb saturation_global=-0.2 (slight desaturation), grain_strength 25 (medium film grain), temperature warm shift (red 2.148 / blue 1.209). Pairs well with grade_shadows_warm.",
+      "description": "L2 look — nostalgia / faded film aesthetic. sigmoid_contrast 1.2 (gentle s-curve), colorbalancergb saturation_global=-0.2 (slight desaturation), grain_strength 25 (medium film grain), temperature warm shift (red 2.148 / blue 1.209). Pairs well with grade_shadows_warm.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3107,7 +3107,7 @@
         "teal-orange",
         "blockbuster"
       ],
-      "description": "L2 look \u2014 Hollywood blockbuster teal-and-orange grade (#104). sigmoid_contrast 1.4 + colorbalancergb hue_shadows=210 deg / saturation_shadows=+0.3 (teal) + hue_highlights=30 deg / saturation_highlights=+0.2 (orange) + saturation_global=+0.1.",
+      "description": "L2 look — Hollywood blockbuster teal-and-orange grade (#104). sigmoid_contrast 1.4 + colorbalancergb hue_shadows=210 deg / saturation_shadows=+0.3 (teal) + hue_highlights=30 deg / saturation_highlights=+0.2 (orange) + saturation_global=+0.1.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5
@@ -3133,7 +3133,7 @@
         "kodachrome",
         "warm"
       ],
-      "description": "L2 look \u2014 Kodachrome film simulation (#104). sigmoid_contrast 1.4 + temperature warm (red 2.148 / blue 1.209 = wb_warm_subtle) + saturation_global=+0.2 + grain_strength=8.",
+      "description": "L2 look — Kodachrome film simulation (#104). sigmoid_contrast 1.4 + temperature warm (red 2.148 / blue 1.209 = wb_warm_subtle) + saturation_global=+0.2 + grain_strength=8.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3162,7 +3162,7 @@
         "portrait",
         "skin"
       ],
-      "description": "L2 look \u2014 Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s-curve) + temperature subtle warm (red 1.5 / blue 1.3) + saturation_global=-0.1 + grain_strength=15. Compose with hsl_saturation --param sat_orange=+0.05 if you want the canonical Portra skin-warmth boost on real raws.",
+      "description": "L2 look — Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s-curve) + temperature subtle warm (red 1.5 / blue 1.3) + saturation_global=-0.1 + grain_strength=15. Compose with hsl_saturation --param sat_orange=+0.05 if you want the canonical Portra skin-warmth boost on real raws.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3190,7 +3190,7 @@
         "bright",
         "soft"
       ],
-      "description": "L2 look \u2014 high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05.",
+      "description": "L2 look — high-key portrait (Adler-style fashion / commercial). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05 (retains skin saturation while reducing global). For magazine / beauty work where bright skin tones drive the look. Compose with skin_uniformity for a complete editorial pass.",
       "modversions": {
         "exposure": 7,
         "sigmoid": 3,
@@ -3217,7 +3217,7 @@
         "dark",
         "dramatic"
       ],
-      "description": "L2 look \u2014 low-key portrait (#104). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.1.",
+      "description": "L2 look — low-key portrait (Tucker / chiaroscuro voice). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.10. For dramatic editorial / character portraits where deep shadows carry the mood. Compose with look_portrait_split_tone_moody for a more cinematic grade.",
       "modversions": {
         "exposure": 7,
         "sigmoid": 3,
@@ -3243,7 +3243,7 @@
         "dramatic",
         "editorial"
       ],
-      "description": "L2 look \u2014 moody / dramatic editorial (#104). sigmoid_contrast 2.0 (strong s-curve) + colorbalancergb saturation_global=-0.3 + vibrance=+0.1 + grain_strength=25.",
+      "description": "L2 look — moody / dramatic editorial (#104). sigmoid_contrast 2.0 (strong s-curve) + colorbalancergb saturation_global=-0.3 + vibrance=+0.1 + grain_strength=25.",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3271,7 +3271,7 @@
         "film",
         "nostalgia"
       ],
-      "description": "L2 look \u2014 1970s film aesthetic (#104). temperature warm (red 2.0 / blue 1.4) + sigmoid_contrast 1.1 (gentle s-curve) + saturation_global=-0.1 + grain_strength=35 (medium grain).",
+      "description": "L2 look — 1970s film aesthetic (#104). temperature warm (red 2.0 / blue 1.4) + sigmoid_contrast 1.1 (gentle s-curve) + saturation_global=-0.1 + grain_strength=35 (medium grain).",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3299,7 +3299,7 @@
         "film",
         "grunge"
       ],
-      "description": "L2 look \u2014 1990s film aesthetic (#104). sigmoid_contrast 1.6 + temperature subtle cool (red 1.2 / blue 2.0) + grain_strength=50 (heavy grain).",
+      "description": "L2 look — 1990s film aesthetic (#104). sigmoid_contrast 1.6 + temperature subtle cool (red 1.2 / blue 2.0) + grain_strength=50 (heavy grain).",
       "modversions": {
         "sigmoid": 3,
         "grain": 2,
@@ -3326,7 +3326,7 @@
         "digital",
         "saturated"
       ],
-      "description": "L2 look \u2014 early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 + temperature subtle cool (red 1.1 / blue 1.6) + saturation_global=+0.4 (oversaturated digital signature).",
+      "description": "L2 look — early-2000s digital camera aesthetic (#104). sigmoid_contrast 1.3 + temperature subtle cool (red 1.1 / blue 1.6) + saturation_global=+0.4 (oversaturated digital signature).",
       "modversions": {
         "sigmoid": 3,
         "colorbalancergb": 5,
@@ -3351,7 +3351,7 @@
         "shadows",
         "lift"
       ],
-      "description": "L2 look \u2014 lift only the *dark pixels* in a centered subject region. Drawn ellipse around the subject + luminance shadows filter. Composes RFC-029 drawn mask + RFC-024 range_filter. The user's mental model: 'in this drawn mask, only affect the dark pixels.'",
+      "description": "L2 look — lift only the *dark pixels* in a centered subject region. Drawn ellipse around the subject + luminance shadows filter. Composes RFC-029 drawn mask + RFC-024 range_filter. The user's mental model: 'in this drawn mask, only affect the dark pixels.'",
       "modversions": {
         "exposure": 7
       },
@@ -3390,7 +3390,7 @@
         "color_range",
         "deepen"
       ],
-      "description": "L2 look \u2014 deepen sky blues in the upper half. Drawn gradient (top half) + color_h filter on cyan-blue range. Composes RFC-029 + RFC-024. Real-world workflow: dramatic sky without affecting foreground or non-blue elements above the horizon.",
+      "description": "L2 look — deepen sky blues in the upper half. Drawn gradient (top half) + color_h filter on cyan-blue range. Composes RFC-029 + RFC-024. Real-world workflow: dramatic sky without affecting foreground or non-blue elements above the horizon.",
       "modversions": {
         "colorbalancergb": 5
       },
@@ -3429,7 +3429,7 @@
         "warm",
         "glow"
       ],
-      "description": "L2 look \u2014 lift warm tones near the horizon. Horizontal gradient anchored at midline + color_h filter on warm tones (orange/red). Sunset / golden-hour enhancement without affecting cool tones.",
+      "description": "L2 look — lift warm tones near the horizon. Horizontal gradient anchored at midline + color_h filter on warm tones (orange/red). Sunset / golden-hour enhancement without affecting cool tones.",
       "modversions": {
         "exposure": 7
       },
@@ -3468,7 +3468,7 @@
         "highlights",
         "brighten"
       ],
-      "description": "L2 look \u2014 brighten only the bright pixels in the subject region. Drawn ellipse + luminance highlights filter. Catchlights, skin highlights, sparkle without blowing out midtones.",
+      "description": "L2 look — brighten only the bright pixels in the subject region. Drawn ellipse + luminance highlights filter. Catchlights, skin highlights, sparkle without blowing out midtones.",
       "modversions": {
         "exposure": 7
       },
@@ -3507,7 +3507,7 @@
         "global",
         "lift"
       ],
-      "description": "L2 look \u2014 lift dark pixels globally (no spatial mask). Pure parametric range_filter \u2014 luminance shadows. Useful when the intent is purely tonal: 'open up all the dark areas in the image, regardless of where they are.' Demonstrates the parametric-only path of RFC-024 / ADR-085.",
+      "description": "L2 look — lift dark pixels globally (no spatial mask). Pure parametric range_filter — luminance shadows. Useful when the intent is purely tonal: 'open up all the dark areas in the image, regardless of where they are.' Demonstrates the parametric-only path of RFC-024 / ADR-085.",
       "modversions": {
         "exposure": 7
       },
@@ -3527,7 +3527,13 @@
       "name": "mask_luminosity_brightest_quartile",
       "kind": "mask",
       "description": "Top 25% luminance band — Page-style luminosity-mask compositing for highlights and bright features. Pair with sky-darken or contrast-lift moves on stormy skies, water specular highlights, snow detail. Bottom of the brightest tonal banding — apply contrast / color shifts here without affecting midtones or shadows.",
-      "tags": ["mask", "named", "luminosity", "highlights", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "luminosity",
+        "highlights",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3544,7 +3550,13 @@
       "name": "mask_luminosity_darkest_quartile",
       "kind": "mask",
       "description": "Bottom 25% luminance band — Page/Adamus-style luminosity-mask compositing for shadows and deep tonal regions. Pair with shadow-lift moves to dodge dark foregrounds, or with color-grading moves to inject hue into the darkest pixels only.",
-      "tags": ["mask", "named", "luminosity", "shadows", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "luminosity",
+        "shadows",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3561,7 +3573,12 @@
       "name": "mask_luminosity_midtones",
       "kind": "mask",
       "description": "Middle 50% luminance band — the canonical 'midtones' selection for selective contrast or color work that should leave both extremes alone. Frequently the right scope for portrait skin work and for landscape mid-frequency clarity moves.",
-      "tags": ["mask", "named", "luminosity", "midtones"],
+      "tags": [
+        "mask",
+        "named",
+        "luminosity",
+        "midtones"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3578,7 +3595,13 @@
       "name": "mask_skin_region",
       "kind": "mask",
       "description": "Approximate skin-tone hue range (orange-red band, scoped to typical caucasian-through-deep skin tones). Pair with skin-uniformity, skin-warm, or skin-saturation-pull moves. Approximate — leakage onto lips / teeth / orange backgrounds is expected at high opacity. RFC-033 skin-tone uniformity primitive will compose with this maskdef.",
-      "tags": ["mask", "named", "skin", "color", "portrait"],
+      "tags": [
+        "mask",
+        "named",
+        "skin",
+        "color",
+        "portrait"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3595,7 +3618,13 @@
       "name": "mask_foliage_green",
       "kind": "mask",
       "description": "Green foliage hue range — autumn-shift moves invert this; spring/summer landscape green saturation moves use this directly. Hue range covers chartreuse through deep forest green; feathered edges to avoid hard transitions on yellow-green and blue-green boundaries.",
-      "tags": ["mask", "named", "foliage", "color", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "foliage",
+        "color",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3612,7 +3641,14 @@
       "name": "mask_water_blue_cyan",
       "kind": "mask",
       "description": "Water and sky-blue hue range (cyan through deep blue). Pair with selective desaturation for muted-water landscape work, with cool-tone color grades, or with luminosity-quartile compositions for water-specific moves.",
-      "tags": ["mask", "named", "water", "blue", "color", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "water",
+        "blue",
+        "color",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3629,7 +3665,13 @@
       "name": "mask_sky",
       "kind": "mask",
       "description": "The sky region (Heaton-style 'adaptive sky'). Phase-1 fallback is 'top-luminance + blue-hue' — bright pixels in the sky-blue range. Future: routes to LLM-vision masker (ADR-086) with the canonical prompt below when configured. Approximate — strong sunsets / overcast skies / high-contrast trees against bright sky may leak. Pair with cool-tone color grades, sky-darken moves, or sky-contrast moves.",
-      "tags": ["mask", "named", "sky", "content-aware", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "sky",
+        "content-aware",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3647,7 +3689,14 @@
       "name": "mask_subject",
       "kind": "mask",
       "description": "The main subject region (portrait subject, central feature in landscape). Phase-1 fallback is 'midtone luminance + center-bias' — a coarse approximation. Future: routes to LLM-vision masker with the canonical prompt below when configured. Pair with subject-warm, subject-lift, eye-region details, or any subject-isolated move.",
-      "tags": ["mask", "named", "subject", "content-aware", "portrait", "landscape"],
+      "tags": [
+        "mask",
+        "named",
+        "subject",
+        "content-aware",
+        "portrait",
+        "landscape"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3665,7 +3714,13 @@
       "name": "mask_eye_region",
       "kind": "mask",
       "description": "Eye region (irises + immediate surrounding skin). Phase-1 fallback is highlight-luminance — catchlights tend to be the brightest pixels in a portrait, which is a coarse but useful proxy. Future: routes to LLM-vision masker. Pair with eye-detail-lift (Adler-style catchlight emphasis), iris-saturation-lift, or sharpening moves scoped to the eye region only.",
-      "tags": ["mask", "named", "eye", "content-aware", "portrait"],
+      "tags": [
+        "mask",
+        "named",
+        "eye",
+        "content-aware",
+        "portrait"
+      ],
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT",
@@ -3684,7 +3739,9 @@
       "layer": "L3",
       "subtype": "localcontrast",
       "path": "layers/L3/localcontrast/bilat_clarity_strength.dtstyle",
-      "touches": ["bilat"],
+      "touches": [
+        "bilat"
+      ],
       "_test_coverage_exempt": "Phase-1 frequency-separation approximation (RFC-033 Portrait Gap #4 cheap variant). Lab-grade global / lab-grade masked / visual proof tiers require human review of representative portraits — natural-skin vs over-smoothed boundary is a visual judgment per ADR-080. Unit + integration coverage ships; lab-grade + proof land alongside the visual-review sign-off.",
       "tags": [
         "skin",
@@ -3708,7 +3765,10 @@
         {
           "name": "clarity_strength",
           "type": "float",
-          "range": [-1.0, 0.0],
+          "range": [
+            -1.0,
+            0.0
+          ],
           "default": -0.5,
           "field": {
             "module": "bilat",
@@ -3724,7 +3784,9 @@
       "layer": "L3",
       "subtype": "colorequal",
       "path": "layers/L3/colorequal/hsl_saturation.dtstyle",
-      "touches": ["colorequal"],
+      "touches": [
+        "colorequal"
+      ],
       "_test_coverage_exempt": "RFC-033 v1: lab-grade global + lab-grade masked + visual proof tests deferred to the visual-review checkpoint (per RFC-033 §Recommendation, the path-validation requires human review of representative portraits at strengths 0.2/0.4/0.6 — not automatable). Unit + integration coverage ships; lab-grade + proof land alongside the visual-review sign-off.",
       "tags": [
         "skin",
@@ -3748,7 +3810,10 @@
         {
           "name": "sat_orange",
           "type": "float",
-          "range": [-1.0, 0.0],
+          "range": [
+            -1.0,
+            0.0
+          ],
           "default": -0.3,
           "field": {
             "module": "colorequal",
@@ -3758,6 +3823,373 @@
           }
         }
       ]
+    },
+    {
+      "name": "look_portrait_natural_skin",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_portrait_natural_skin.dtstyle",
+      "touches": [
+        "temperature",
+        "exposure",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "portrait",
+        "skin",
+        "restraint-discipline"
+      ],
+      "description": "Restraint-first portrait foundation — Tucker/Marino-aligned. Slight warm temperature (+0.03 red), exposure +0.1 EV, sigmoid contrast 1.2 (gentle s-curve), saturation_global -0.05 + vibrance +0.1 (mild chroma shaping that protects skin tones). The starting point for portrait work that doesn't push contrast or saturation as a stylistic choice.",
+      "modversions": {
+        "temperature": 4,
+        "exposure": 7,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_portrait_editorial",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_portrait_editorial.dtstyle",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "portrait"
+      ],
+      "description": "Magazine / fashion editorial grade. Punchier sigmoid contrast (1.6), global saturation pull-back (-0.10) — counterintuitive but the move Adler/Woloszynowicz reach for; reduced overall sat lets the split-tone read. Cool-shadows + warm-highlights split (hue_shadows=210, hue_highlights=45). Compose with skin_uniformity if skin patches fight the grade.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_portrait_skin_warm_lift",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_portrait_skin_warm_lift.dtstyle",
+      "touches": [
+        "temperature",
+        "exposure"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "portrait",
+        "skin",
+        "masked"
+      ],
+      "description": "Subject-region warm + brighten. Slight warm temperature (+0.04 red) + exposure +0.2 EV. Pre-baked with mask_skin_region so the lift scopes to skin without affecting clothing or background. Pairs with skin_uniformity for a complete portrait skin pass.",
+      "modversions": {
+        "temperature": 4,
+        "exposure": 7
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_skin_region"
+      }
+    },
+    {
+      "name": "look_portrait_background_dim",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_portrait_background_dim.dtstyle",
+      "touches": [
+        "exposure",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "portrait",
+        "background"
+      ],
+      "description": "Dim and de-saturate the background to push the subject forward. Exposure -0.4 EV + saturation_global -0.15. **No pre-baked mask** — the caller supplies an inverted-subject mask via --mask-spec. Common shapes: inverted ellipse around the subject, or mask_subject (RFC-032) with invert: true. See vocabulary-patterns.md for the compose recipe.",
+      "modversions": {
+        "exposure": 7,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_portrait_split_tone_moody",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_portrait_split_tone_moody.dtstyle",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "portrait",
+        "dramatic"
+      ],
+      "description": "Cinematic split-tone portrait — cool blue shadows (hue 210, sat 0.30) + warm orange highlights (hue 45, sat 0.20), sigmoid contrast 1.4. Stronger split than look_portrait_editorial; some photographers (Adler) consider this 'fashion-only' rather than a general portrait move. Borderline survey candidate — ships, but exercise judgment.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_grand_vista",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_grand_vista.dtstyle",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape"
+      ],
+      "description": "Heaton/PureRAW-style grand vista. Sigmoid contrast 1.4, mildly warm shadows (hue 30, sat 0.10), vibrance +0.10, bilat clarity_strength 0.5. The chemigram shape of LR's adaptive sky + foreground lift workflow rendered globally; for sky-specific work compose with look_landscape_sky_enhance instead.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_intimate_quiet",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_intimate_quiet.dtstyle",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "restrained",
+        "restraint-discipline"
+      ],
+      "description": "Marino-style intimate / small-scene restraint. Very gentle sigmoid contrast (1.05), saturation pulled back (-0.10), bilat softened (clarity_strength -0.3 — opposite of clarity boost). The defining stylistic choice for forest interiors, abstract details, and any scene where drama would betray the subject. Applies LESS than the baseline does, deliberately.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_golden_hour",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_golden_hour.dtstyle",
+      "touches": [
+        "temperature",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "golden-hour"
+      ],
+      "description": "Sunset / sunrise mood. Warm temperature shift (+0.07 red), sigmoid contrast 1.3, warm shadows (hue 30, sat 0.20) + amber highlights (hue 50, sat 0.15), vibrance +0.10. Pushes the warmth that golden-hour light almost has and amplifies it without breaking color credibility. For scenes already on the warm side, apply at lower strength via opacity — not authored as parametric (look-not-primitive).",
+      "modversions": {
+        "temperature": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_blue_hour_cool",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_blue_hour_cool.dtstyle",
+      "touches": [
+        "temperature",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "blue-hour"
+      ],
+      "description": "Twilight / pre-dawn / blue-hour mood. Cool temperature shift (+0.07 blue), sigmoid contrast 1.3, cool shadows (hue 210, sat 0.20) + neutral-cool highlights (hue 200, sat 0.10), saturation_global -0.05. Opposite mood from golden_hour; equally valid genre signature. Composes with sigmoid_contrast for stronger drama if needed.",
+      "modversions": {
+        "temperature": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_atmospheric_haze",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_atmospheric_haze.dtstyle",
+      "touches": [
+        "hazeremoval",
+        "bilat",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "atmospheric"
+      ],
+      "description": "Misty / hazy / fog-as-subject mood. Hazeremoval strength 0.5 (lift visibility while preserving the moody atmosphere), bilat clarity 0.3, warm shadows (hue 30, sat 0.10) + vibrance +0.05. The trick: lift JUST enough to read details, not enough to flatten the atmosphere. Strong hazeremoval values (>1.0) produce 'no atmosphere' results that defeat the intent — keep restrained.",
+      "modversions": {
+        "hazeremoval": 3,
+        "bilat": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_dramatic_moody",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_dramatic_moody.dtstyle",
+      "touches": [
+        "sigmoid",
+        "colorbalancergb",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "dramatic"
+      ],
+      "description": "Page/Adamus-style dramatic atmospheric. Sigmoid contrast 1.7 (strong), cool shadows (hue 210, sat 0.20) + warm highlights (hue 30, sat 0.15), bilat clarity_strength 0.6. The dramatic counterpart to intimate_quiet — for stormy skies, rugged terrain, and weather drama. Pair with mask_luminosity_brightest_quartile darkening for stormy-cloud emphasis.",
+      "modversions": {
+        "sigmoid": 3,
+        "colorbalancergb": 5,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_autumn_pop",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_autumn_pop.dtstyle",
+      "touches": [
+        "temperature",
+        "colorequal",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "autumn"
+      ],
+      "description": "Autumn foliage / fall color. Slight warm temperature (+0.04 red), colorequal sat_orange +0.30 + sat_red +0.20 (lift autumn colors) + sat_blue -0.10 (compensating to keep skies natural — without this, skies turn cartoonish). Bilat clarity_strength 0.4 for foliage definition. A targeted seasonal grade; not for non-foliage scenes.",
+      "modversions": {
+        "temperature": 4,
+        "colorequal": 4,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_landscape_sky_enhance",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_sky_enhance.dtstyle",
+      "touches": [
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "sky",
+        "masked"
+      ],
+      "description": "Sky-targeted enhancement (Heaton 'adaptive sky' shape). Cool-tone highlights shift (hue 200, sat 0.15) + slight vibrance (+0.05). Pre-baked with mask_sky (RFC-032) so the move scopes to the sky region automatically. **Compose, don't replace** — this is a focused enhancement to stack on top of any landscape look. For complex skies (sunsets, partial clouds, trees protruding into sky), override mask_spec with a constructed path mask via render_preview + LLM-vision (llm-vision-for-masks.md Pattern 7).",
+      "modversions": {
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_sky"
+      }
+    },
+    {
+      "name": "look_landscape_water_silk",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_landscape_water_silk.dtstyle",
+      "touches": [
+        "bilat",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "landscape",
+        "water",
+        "masked"
+      ],
+      "description": "Water surfaces — silky water in long-exposure work, glassy lakes. Bilat clarity_strength -0.4 (smooths the texture, OPPOSITE of clarity), cool-tone shadows (hue 200, sat 0.10), vibrance +0.05. Pre-baked with mask_water_blue_cyan so the smoothing scopes to water without affecting rocks, foliage, or sky. Reduces clarity selectively to enhance the smoothness photographers spent shutter-time creating.",
+      "modversions": {
+        "bilat": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_water_blue_cyan"
+      }
     }
   ]
 }
