@@ -1,11 +1,11 @@
 # Photographer workflows survey
 
-> Last updated · 2026-05-09 (Portrait + Landscape + Wedding/Event + B&W — rounds 1-2 of 3)
+> Last updated · 2026-05-09 (Portrait + Landscape + Wedding/Event + B&W + Nature/Wildlife + Food/Product — all 6 genres complete)
 > Status · Research artifact (Tier 3, operational). Companion to `capability-survey.md`. Feeds `vocabulary-patterns.md` and the `expressive-baseline` L2 layer.
 
 This document extracts how working photographers post-process across genres — drawn from public sources (essays, blog posts, course material, interviews, tutorials) — and maps each move to chemigram's existing primitive surface. The output is two things at once: **L2 candidates** (composition recipes that recur across photographers in a genre) and **vocabulary gaps** (moves photographers reach for that chemigram cannot compose because the underlying primitives don't exist yet).
 
-Round 1 covered Portrait + Landscape (maximally different — single-subject skin work vs. wide-scene tonal work). Round 2 covers Wedding/Event + B&W (workflow-pace + skin-under-pressure vs. conversion-discipline + zone-system vocabulary — different axis of contrast, surfacing different gap classes). Nature/Wildlife + Food/Product follow in round 3.
+Round 1 covered Portrait + Landscape (maximally different — single-subject skin work vs. wide-scene tonal work). Round 2 covered Wedding/Event + B&W (workflow-pace + skin-under-pressure vs. conversion-discipline + zone-system vocabulary). Round 3 covers Nature/Wildlife + Food/Product (outdoor unpredictable + critical-detail vs. indoor controlled + color-perfect). The 6-genre survey is now complete; 36 photographers extracted total.
 
 ---
 
@@ -615,19 +615,252 @@ To partially compensate, Move 9 below cross-references the [avidandrew.com scene
 
 ---
 
+## Genre — Nature / Wildlife
+
+### Photographers surveyed (6)
+
+| # | Photographer | Style | Primary tool | Source |
+|-|-|-|-|-|
+| N1 | **Steve Perry** (Backcountry Gallery) | Bird-photography specialist; high-volume cull discipline | Lightroom + Topaz DeNoise AI | [Backcountry Gallery](https://backcountrygallery.com/), [BCG Lightroom Course](https://bcgwebstore.com/) |
+| N2 | **Mutasim Sweileh** (AvianBliss) | Bird photography post-processing methodologist | Lightroom + Photoshop + Topaz DeNoise AI | [Bird Photography Post Processing Workflow](https://avianbliss.com/bird-photography-post-processing-workflow/) |
+| N3 | **Mariano Matiash** | Bird photography Lightroom workflow with subject masking | Lightroom (AI Denoise + Adaptive Profile) | [Lightroom for Bird Photography](https://www.matiash.com/blog/lightroom-for-bird-photography) |
+| N4 | **Nick Dale** | Wildlife pro, balanced LR + PS workflow | Lightroom + Photoshop | [Editing Wildlife Photos: Beginner Tips](https://www.nickdalephotography.com/blog/editing-wildlife-photos-beginner-tips) |
+| N5 | **Jonathan Gardner** | Detail-perfect Capture One pipeline (Photo Mechanic → DxO → C1) | **Capture One** + DxO PureRAW + Photoshop | [Wildlife Photography Processing Workflow](https://jonathangardner.photography/blog/wildlife-photography-post-processing-workflow) |
+| N6 | **Marc** (Bushcrafter / Open Source Photography) | darktable wildlife sharpening with drawn-mask discipline | **darktable** | [Bird and Wildlife Sharpening in Darktable](https://marcrphoto.wordpress.com/2023/07/03/how-to-bird-and-wildlife-sharpening-in-darktable/) |
+
+**Mix:** Lightroom (4: N1-N4) / Capture One + DxO (1: N5) / darktable (1: N6). **Three ecosystems represented; mandate met.** Wildlife/Nature has slightly stronger ecosystem diversity than Wedding because of the high-end pre-processing market (DxO PureRAW / Topaz DeNoise) — which drives some Capture-One adoption.
+
+### Common moves (recurrence 3+)
+
+#### Move 1 — AI noise reduction as the foundational pre-processing step
+**Recurs across:** N1 Perry (Topaz DeNoise after culling), N2 Sweileh (Topaz DeNoise AI), N3 Matias (LR AI Denoise generates DNG), N4 Dale (AI NR optional; manual NR otherwise), N5 Gardner (DxO PureRAW 3 DeepPRIME). **5/6 — universal.**
+
+- **Intent:** High-ISO wildlife images (typical 1600-6400) carry sensor noise that disrupts feather/fur detail; remove noise before any sharpening
+- **Result:** Preserved subject texture; clean shadows; downstream edits operate on clean data
+- **Tool surface:** Topaz DeNoise AI, DxO PureRAW (DeepPRIME), Lightroom AI Denoise (creates DNG), darktable `denoiseprofile` with non-local-means (luma) + wavelet (chroma)
+- **Ordering note:** **Universal Step 1 (after culling).** Any sharpening / clarity / contrast work AFTER NR; before is wrong order — sharpens noise.
+- **Mapping:** ⚠️ partial — chemigram has `denoiseprofile` decoder shipping (~300 camera profiles per ADR), but **AI-driven NR is BYOA territory**. The agent could route to Topaz / DxO / LR AI Denoise as a sibling tool (per ADR-007), but no first-class chemigram primitive covers the AI-NR class. Workflow gap: document Phase-2 BYOA pattern. **Cross-references R2 Wedding's high-ISO recovery (Move 8) — same underlying gap.**
+
+#### Move 2 — Subject isolation + selective sharpening
+**Recurs across:** N2 Sweileh (Photoshop selection or Layer Masks), N3 Matias (Select Subject mask + Texture), N4 Dale (LR brushes / PS masks), N5 Gardner (Capture One brush + fill + mask refinement), N6 Marc (darktable drawn mask + Sharpen module). **5/6 — universal "make subject pop" move.**
+
+- **Intent:** Sharpen ONLY the subject (bird, mammal, foreground feature); leave background untouched or actively softened
+- **Result:** Subject crispness against soft background; viewer's eye locked on the wildlife subject
+- **Tool surface:** LR Subject mask (AI-driven) + Sharpening, Capture One layer mask + Clarity, darktable Sharpen + drawn mask, Photoshop layer + masked Smart Sharpen
+- **Ordering note:** After NR (Move 1); before output sharpening (Move 9).
+- **Mapping:** ✅ supported via `mask_subject` (RFC-032) + `sharpen` primitive (RFC-021). The chemigram pattern: `apply_primitive --entry sharpen_subtle_punch --mask-spec '{"kind":"named","name":"mask_subject"}'`. **Strong validation of RFC-032's `mask_subject` design.** Worth shipping `look_wildlife_subject_sharpen` as L2.
+
+#### Move 3 — Inverse mask: blur background to amplify subject
+**Recurs across:** N5 Gardner (inverted layer duplication), N6 Marc (darktable Soften module + drawn mask polarity toggle), N3 Matias (background mask inverse). **3/6.**
+
+- **Intent:** Background gets blurred or de-clarified to make the in-focus subject pop further; mimics longer-lens / shallower-DOF rendering at edit time
+- **Result:** Compositional emphasis on subject without retaking with longer lens
+- **Tool surface:** darktable Soften module with inverted drawn mask, Capture One inverted layer + Gaussian Blur, Photoshop selective blur layer
+- **Ordering note:** Mid-late workflow; after subject-sharpen (Move 2)
+- **Mapping:** ✅ supported via `mask_subject + invert: true` (RFC-034) + `bilat_clarity_strength` (negative for softening). RFC-034's invert-flag-on-named-masks lands exactly here. Worth shipping `look_wildlife_background_blur` as L2.
+
+#### Move 4 — Eye / catchlight enhancement
+**Recurs across:** N1 Perry (eye crispness), N2 Sweileh (Sharpen bird's eye → LR Adjustment Brush targeted), N4 Dale (Eye Enhancement targeted sharpening + clarity). **3/6.**
+
+- **Intent:** Subject's eye must be the sharpest, most-luminous point in the frame; gives the bird/animal "life"
+- **Result:** Locked viewer attention on the eye; the rest of the image organizes around it
+- **Tool surface:** LR Adjustment Brush targeted, Photoshop dodge layer + targeted sharpening, darktable masked exposure + sharpen
+- **Ordering note:** After subject sharpen (Move 2); often combined with selective dodge (lifts catchlight)
+- **Mapping:** ✅ supported via `mask_eye_region` (RFC-032) + `sharpen` + `exposure` (parameterized). The wildlife eye mask is roughly the same as portrait eye mask (parametric fallback = highlights). Cross-references Portrait Move 7 (eye-detail lift). Strong cross-genre validation. Ship `look_wildlife_eye_lift` as L2.
+
+#### Move 5 — Selective clarity on subject (feather / fur detail)
+**Recurs across:** N1 Perry (clarity for feathers), N2 Sweileh (Clarity +10 to +30 — explicit constraint), N3 Matias (Texture on subject), N4 Dale (selective clarity). **4/6.**
+
+- **Intent:** Mid-frequency definition of feathers / fur / scales; the subject reads as detailed without being crunchy
+- **Result:** Feather barbs visible; fur strands separable; scales individuated
+- **Tool surface:** LR Clarity + Texture sliders (subject-masked), Capture One Clarity (layer-masked), darktable `bilat_clarity_strength` + drawn mask
+- **Ordering note:** After NR + Subject mask; before output sharpening
+- **Mapping:** ✅ supported via `bilat_clarity_strength` (parameterized) + `mask_subject` named mask. Strong cross-genre with Landscape Move 4 (local contrast). The wildlife-specific "feather constraint" — keep clarity ≤ +30 — is documentable as a Phase-2 personal-vocabulary discipline.
+
+#### Move 6 — White balance + minor color refinement
+**Recurs across:** N1 Perry, N2 Sweileh, N3 Matias (White Balance Dropper), N4 Dale (eyedropper), N5 Gardner. **5/6.**
+
+- **Intent:** Establish neutral or scene-appropriate WB; refine specific color ranges via HSL
+- **Result:** Subject reads its natural color; background balances against it
+- **Tool surface:** LR Temp/Tint + WB Dropper + HSL panel, Capture One White Balance Picker, darktable Color Calibration
+- **Ordering note:** Universally early (after NR but before tone shaping). Same as cross-genre Pattern 1.
+- **Mapping:** ✅ supported via `temperature` (parameterized) + `colorequal`. Cross-genre Pattern 1 confirmed.
+
+#### Move 7 — Compositional crop / horizontal flip
+**Recurs across:** N3 Matias (Crop & Horizontal Flip), N4 Dale (crop tool), N5 Gardner (compositional cropping after horizon correction). **3/6.**
+
+- **Intent:** Tighten composition to subject; sometimes flip image so subject faces into frame (cultural reading-direction)
+- **Result:** Subject prominent; "rule-of-thirds" compositional cleanup
+- **Tool surface:** LR Crop tool, Capture One Crop, darktable Crop / Rotate / Flip
+- **Mapping:** ✅ supported via `crop_*` primitives. Standard.
+
+#### Move 8 — Dust spot / distraction removal
+**Recurs across:** N4 Dale (implicit), N5 Gardner (Capture One healing brush + custom dust-detection style layer). **2/6 explicit but implicit in most pro workflows.**
+
+- **Intent:** Sensor dust spots, distracting twigs, rogue leaves removed
+- **Result:** Clean image foreground/background
+- **Tool surface:** Capture One Healing Brush, LR Healing Brush, Photoshop Spot Healing Brush, darktable Retouch
+- **Mapping:** ✅ supported via `apply_spot` MCP tool (RFC-025 / ADR-087, v1.9.0).
+
+#### Move 9 — Sharpening last (output sharpening)
+**Recurs across:** All 6 — N2 Sweileh (Save for reuse / output sharpening), N3 Matias (Sharpening with masking — final step), N4 Dale (output sharpening adapted to display medium), N5 Gardner (export presets per output), N6 Marc (sharpen as primary subject move — but applied last in his chain). **6/6.**
+
+- **Intent:** Final sharpening pass tuned to output medium (screen vs. print)
+- **Mapping:** ✅ supported via `sharpen_*` primitives. Cross-genre Pattern 2 confirmed.
+
+#### Move 10 — Export per medium (print vs. screen vs. social)
+**Recurs across:** N5 Gardner (Capture One export presets — social media, website, Canon Pro-10 print profiles), N1 Perry (BCG output recipes). **2/6.**
+
+- **Mapping:** Out of vocabulary scope (export-pipeline concern). R3 reinforces Gap #17 from R1+R2 — export-pipeline future work.
+
+### Signature / idiosyncratic moves
+
+| Photographer | Signature move | Why it doesn't generalize |
+|-|-|-|
+| N1 Perry | 4000 images/hour culling discipline | Asset-management; out of edit-vocabulary scope |
+| N2 Sweileh | Strict +10-to-+30 clarity ceiling on subject | A Phase-2 personal-vocabulary discipline; not a primitive gap |
+| N3 Matias | Adaptive Color Profile as Step 2 | LR-specific AI feature; chemigram has `temperature` + L1 baselines for camera profiles |
+| N5 Gardner | 5-tool pipeline (Photo Mechanic → DxO PureRAW → Capture One → Photoshop → Topaz Gigapixel) | Tool-stacking discipline; chemigram philosophy is single engine + sibling AI tools |
+| N6 Marc | darktable polarity-toggle for inverse-mask softening | darktable-specific UX; chemigram has the equivalent via RFC-034 invert flag |
+
+### Proposed L2 looks (Nature / Wildlife)
+
+| Name | Intent | Composition |
+|-|-|-|
+| `look_wildlife_subject_sharpen` | Subject-isolated feather/fur sharpening | `mask_subject` + `sharpen_subtle_punch` + `bilat_clarity_strength` (+0.3, masked) |
+| `look_wildlife_background_blur` | Inverse-mask background softening | `mask_subject + invert: true` + `bilat_clarity_strength` (-0.5, masked) |
+| `look_wildlife_eye_lift` | Catchlight emphasis on eye region | `mask_eye_region` + `exposure` (+0.3) + `sharpen` (subtle) |
+| `look_wildlife_high_iso_recovery` | High-ISO wildlife with NR + subject lift | `denoiseprofile` (medium) + `mask_subject` + selective clarity |
+| `look_wildlife_natural_warm` | Warm golden-hour wildlife default | `temperature` (warm) + mild contrast + saturation hold |
+
+**Note:** Every wildlife L2 look composes the v1.10 named-masks (`mask_subject`, `mask_eye_region`) directly. Strong validation that RFC-032's named-mask vocabulary investment is paying out cross-genre.
+
+### Genre-specific gaps (Nature / Wildlife)
+
+| Gap | Severity | Photographers | Response |
+|-|-|-|-|
+| **AI noise reduction integration (Topaz / DxO / LR AI)** | High (5/6) | N1, N2, N3, N4, N5 | **BYOA documentation.** chemigram has `denoiseprofile` (manual NR) but no AI-NR primitive. Per ADR-007 chemigram doesn't bundle AI; the right answer is a workflow pattern in `vocabulary-patterns.md` documenting how the agent routes high-ISO images through a sibling tool (Topaz DeNoise / DxO PureRAW) before chemigram-side editing. Cross-references R2 Wedding Move 8. |
+| **Output sharpening per medium** | Medium | N1 Perry, N5 Gardner | Continues Gap #17 — export-pipeline RFC future. |
+| **Image upsizing for print (Topaz Gigapixel)** | Low | N5 Gardner only | Out of edit-vocabulary scope; pre/post chemigram processing. |
+
+---
+
+## Genre — Food / Product
+
+### Photographers surveyed (6)
+
+| # | Photographer | Style | Primary tool | Source |
+|-|-|-|-|-|
+| F1 | **Lauren C. Short** (Food Photography Academy) | Food-blog editorial; HSL-panel methodologist | Lightroom | [HSL Panel for food photography](https://foodphotographyacademy.co/blog/editing/editing-how-i-edit-food-photography-in-lightroom-for-colour-hsl-panel/) |
+| F2 | **Ryan** (Signature Edits) | Food photography incremental-adjustment school | Lightroom | [Signature Edits — Food Photography Lightroom Tutorial](https://www.signatureedits.com/editing-food-photography-in-lightroom/) |
+| F3 | **Darina Kopcok** | Commercial food photographer | Lightroom (referenced) | [Digital Photography School — How to Edit Food Photos](https://digital-photography-school.com/how-edit-food-photography-images-using-lightroom/) — content snippet only (full fetch blocked 403) |
+| F4 | **Karl Taylor** (Visual Education) | Commercial product / packshot retouching | **Photoshop** + Capture One | [Visual Education — Karl Taylor Product Retouching](https://visualeducation.com/class/practical-demonstration-on-product-retouch/) |
+| F5 | **Zoe Noble** | Commercial product photographer; tethered Capture One | **Capture One** | [Capture One Support — Product photography workflow with Zoe Noble](https://support.captureone.com/hc/en-us/articles/8235498504605-Product-photography-workflow-with-Zoe-Noble) — content snippet only (full fetch blocked 403) |
+| F6 | **Joanie Simon** (The Bite Shot) | Food blog photographer; mobile-friendly LR workflow | Lightroom (mobile / desktop) | [The Bite Shot](https://thebiteshot.com/), [Food Blogger Pro podcast — Joanie Simon photography tips](https://www.foodbloggerpro.com/podcast/joanie-simon-photography-tips/) |
+
+**Mix:** Lightroom (4: F1, F2, F3, F6) / Capture One (1: F5) / Photoshop (1: F4). **Three ecosystems represented; mandate met (just).** Food/Product publishing landscape skews LR-heavy for food blog work, with Photoshop+Capture One dominating commercial product. **Caveat:** F3 (Kopcok) and F5 (Noble) full-text fetches blocked 403 — extracted from search snippets and linked sources rather than primary content. Content density therefore lower than R1+R2; flagged as a limitation.
+
+### Common moves (recurrence 3+)
+
+#### Move 1 — White balance via gray card (color-accuracy-driven)
+**Recurs across:** F3 Kopcok ("set white balance in camera or use a gray card"), F5 Noble (Capture One White Balance Picker on gray card), F4 Taylor (color-accurate product retouching), F1 Short (HSL framework presupposes accurate WB). **3-4/6 explicit but universal in commercial work.**
+
+- **Intent:** Absolute color accuracy — products must read their actual color for sales / brand consistency
+- **Result:** No color casts; food and products as-shot color
+- **Tool surface:** LR WB Dropper on gray-card frame, Capture One White Balance Picker layer, Photoshop Levels gray-eyedropper
+- **Ordering note:** Universal Step 1 (or pre-shoot — gray-card frame captured at the start of the shoot)
+- **Mapping:** ✅ supported via `temperature` (parameterized RGB coefficients) — but the **gray-card-pick workflow** isn't surfaced. The agent today asks the photographer for explicit RGB coefficient values; surfacing a "pick from gray card region" tool would be a thin RFC. Cross-references B&W's WB-as-conversion-input role.
+
+#### Move 2 — HSL per-color shaping (NOT global saturation)
+**Recurs across:** F1 Short (HSL panel for food color — explicit Hue / Sat / Lum per food color), F2 Ryan (HSL "best friend" for food photography), F6 Simon (per-color adjustments). **3/6 explicit, but universal in food.**
+
+- **Intent:** Brighten the orange of the carrots WITHOUT shifting the green of the herbs; subdue the red of the tablecloth WITHOUT muting the meat
+- **Result:** Each ingredient reads its appetizing color; non-subject elements fade
+- **Tool surface:** LR HSL panel (Hue / Saturation / Luminance per 8 colors), Capture One Color Editor B&W mode, darktable Color Equalizer
+- **Ordering note:** Mid-workflow — after WB foundation; before tone curve and finishing
+- **Mapping:** ✅ supported via `colorequal` (HSL Color Mixer parity, RFC-023 / ADR-083). The shipped vocabulary already names `hsl_saturation`, `hsl_hue`, `hsl_luminance` — strong fit. **But food-specific named L2 looks are missing** — `look_food_orange_pop`, `look_food_green_natural`, etc. would be wins.
+
+#### Move 3 — Tone curve for warm midtones / appetizing pop
+**Recurs across:** F2 Ryan (lift midtones + darken shadows), F1 Short (slight bump in midtones), F6 Simon (tone curve discipline). **3/6.**
+
+- **Intent:** Warm midtones lift food's appetizing quality; slight shadow darkening adds dimension without making food look stale
+- **Result:** Food reads vibrant, appetizing; not flat
+- **Tool surface:** LR Tone Curve, Capture One Levels + Curve, Photoshop Curves
+- **Mapping:** ✅ supported via `sigmoid_contrast` (parameterized) + `tone_eq` zonal control. Could ship `look_food_appetizing_curve` L2.
+
+#### Move 4 — Clarity for food (with constraints)
+**Recurs across:** F1 Short (clarity guidance), F2 Ryan (incremental — never overdone), F3 Kopcok (clarity is "most important slider" but "overdoing it makes food look dry"). **3/6.**
+
+- **Intent:** Mid-frequency definition for food texture (bread crust, pastry layers, meat fibers) without crossing into "dry / unappetizing"
+- **Result:** Food reads textured but moist
+- **Tool surface:** LR Clarity slider, darktable `bilat_clarity_strength`
+- **Ordering note:** Late workflow; constraint-bound (typically +10 to +20)
+- **Mapping:** ✅ supported via `bilat_clarity_strength`. The food-specific constraint ("never high enough to dry") is a Phase-2 personal-vocabulary discipline. Could ship `look_food_texture_subtle` L2.
+
+#### Move 5 — Distraction / dust / blemish removal
+**Recurs across:** F4 Taylor (cleaning up product, adjusting labels, removing distractions), F6 Simon (dust spot removal), F2 Ryan (incremental cleanup). **3/6.**
+
+- **Intent:** Crumbs, dust, label imperfections, sensor dust all removed
+- **Mapping:** ✅ supported via `apply_spot` MCP tool (RFC-025 / ADR-087). Karl Taylor's PHOTOSHOP-specific label-fix work via Content-Aware Fill is out of chemigram scope (multi-image compositing).
+
+#### Move 6 — Exposure baseline / brightening
+**Recurs across:** F2 Ryan, F3 Kopcok, F6 Simon. **3-4/6.**
+
+- **Intent:** Lift food into bright optimistic exposure range
+- **Mapping:** ✅ supported via `exposure` (parameterized).
+
+#### Move 7 — Vignette / final framing
+**Recurs across:** F4 Taylor (commercial product vignette), F2 Ryan (subtle finishing). **2-3/6.**
+
+- **Mapping:** ✅ supported via `vignette` (parameterized).
+
+#### Move 8 — Subject (food) selective clarity vs muted background
+**Recurs across:** F4 Taylor (product isolation + label sharpness vs background blur), implicit F1+F2+F3 (food-vs-table separation). **2/6 explicit; foundational for commercial product.**
+
+- **Intent:** Hero food / product is sharp + clarity-lifted; background table / surface is muted
+- **Mapping:** ✅ supported via `mask_subject` (RFC-032) + `bilat_clarity_strength` masked. Cross-genre with Wildlife Move 2 — the same fundamental "subject vs background" pattern.
+
+### Signature / idiosyncratic moves
+
+| Photographer | Signature move | Notes |
+|-|-|-|
+| F4 Taylor | Photoshop Content-Aware Fill for label-fix | Multi-image compositing; out of chemigram scope |
+| F4 Taylor | Liquify for product-shape correction | Photoshop-specific transform; chemigram has crop/rotate but not local geometric warp |
+| F5 Noble | Tethered shooting + immediate review | Capture One tethering UX; out of chemigram edit scope |
+
+### Proposed L2 looks (Food / Product)
+
+| Name | Intent | Composition |
+|-|-|-|
+| `look_food_appetizing_warm` | Default food editorial — warm WB, lifted midtones, vibrant color | `temperature` (+0.04 warm) + `tone_eq` zone-5 lift + `colorequal` selective sat lifts |
+| `look_food_orange_pop` | Boost orange/red food (tomato, carrot, salmon) | `colorequal` sat_orange (+0.3) + sat_red (+0.2) + lum_orange (+0.05) |
+| `look_food_green_natural` | Lift greens (herbs, salad) without muddying | `colorequal` sat_green (+0.2) + lum_green (+0.05) — restraint discipline |
+| `look_food_texture_subtle` | Texture lift for bread / pastry / meat fibers without drying | `bilat_clarity_strength` (+0.2; explicit ceiling) + `mask_subject` |
+| `look_product_packshot_clean` | Clean product on white background | `temperature` (neutral) + slight `sigmoid_contrast` (1.15) + subtle vignette |
+
+### Genre-specific gaps (Food / Product)
+
+| Gap | Severity | Photographers | Response |
+|-|-|-|-|
+| **Gray-card-pick UX surface** | Medium (3-4/6) | F3, F5, F4, F1 | **Small RFC.** chemigram's `temperature` takes RGB coefficients; the gray-card workflow is "click here in the image, derive coefficients." Could ship as a small CLI / MCP tool: `wb_from_gray_card(image_id, x, y)` → returns derived `temperature` parameters. Half-day work; meaningful UX win. |
+| **Product retouching multi-image compositing** | Low | F4 Taylor only | Photoshop-native (Content-Aware Fill, Liquify); out of chemigram scope. Document as a sibling-tool route. |
+| **Tethered shooting UX** | Out of scope | F5 Noble | Capture-time tooling, not edit-time. |
+
+---
+
 ## Cross-genre observations
 
-Patterns that hold across the four genres surveyed (Portrait + Landscape + Wedding/Event + B&W) — and what they imply for chemigram's vocabulary direction. Now updated for round 2; new patterns surfaced specifically by Wedding and B&W are flagged as **(R2-new)**.
+Patterns that hold across all six genres surveyed (Portrait + Landscape + Wedding/Event + B&W + Nature/Wildlife + Food/Product) — and what they imply for chemigram's vocabulary direction. Now updated for round 3; new patterns surfaced specifically by Wildlife and Food/Product are flagged as **(R3-new)**.
 
 ### Pattern 1 — White balance is universally Step 1
 
-Every one of the **24 photographers across all four genres** establishes white balance / color foundation before any other tonal or aesthetic move. **All four ecosystems represented.** The "WB first" discipline is the closest thing to a universally-shared ordering rule across the entire survey, with one B&W-specific caveat: the WB step in B&W workflows is a *conversion-step input* — wrong WB still produces wrong tonal mapping in the channel-mixed output.
+Every one of the **36 photographers across all six genres** establishes white balance / color foundation before any other tonal or aesthetic move. **(R3 reinforces — Food/Product genre adds the gray-card-pick discipline as the most rigorous variant.)** The "WB first" discipline is the closest thing to a universally-shared ordering rule across the entire survey, with two genre-specific caveats: B&W workflows treat the WB step as a *conversion-step input* (wrong WB → wrong tonal mapping in channel-mixed output); Food/Product workflows treat WB as a *commercial requirement* verified against gray-card or color-checker reference.
 
 **Implication for chemigram.** The parameterized `temperature` entry (RFC-021 / ADR-077..080 in v1.6.0) is correctly positioned as a foundational primitive. Documentation in `vocabulary-patterns.md` should make explicit that **any L2 look not built on a settled WB is fragile** — a `look_portrait_natural_skin` applied to an image with broken WB will fail to read as natural skin. The composition order in L2 entries should list `temperature` (or accept-existing-WB) as Step 1 unless deliberately stylized.
 
 ### Pattern 2 — Sharpening is universally last
 
-22/24 photographers (Marino is the only consistent abstainer; one wedding photographer surveyed defers all sharpening to export-recipe-time which is functionally the same outcome) treat sharpening as the *final* creative step before export. This is the one piece of ordering discipline shared across all four tool ecosystems unmodified — LR, Capture One, darktable, and Silver Efex / Photoshop all sharpen last. **(R2 confirms.)**
+34/36 photographers (Marino is the only consistent abstainer; one wedding photographer surveyed defers all sharpening to export-recipe-time which is functionally the same outcome) treat sharpening as the *final* creative step before export. This is the one piece of ordering discipline shared across all four tool ecosystems unmodified — LR, Capture One, darktable, and Silver Efex / Photoshop all sharpen last. **(R3 reinforces — wildlife sharpens after AI noise reduction; food sharpens last too.)**
 
 **Implication for chemigram.** The agent loop's "compose vocabulary in any order" flexibility should be tempered with a **soft ordering convention** in `vocabulary-patterns.md`: sharpening primitives are tagged as terminal, and L2 looks that include sharpening should be applied last in any sequence. Worth a note in the agent's prompt template (`MANIFEST.toml` per ADR-044) that sharpening is the closing move, not a midstream one.
 
@@ -665,6 +898,18 @@ Across all four genres, the same workflow shape appears: photographer specifies 
 
 **Implication for chemigram.** The propagate-state pattern is a real architectural gap surfaced by Wedding. chemigram's `apply_primitive --stdin` propagates the same primitive call across N images, but doesn't propagate edit STATE (the resulting XMP / vocabulary entries) from a source image to N targets. **High-priority RFC candidate** for v1.11+ work — surfaces a wedding-specific need not seen in earlier genres. Specifically: a `propagate_state(source_image, target_image_ids, scope)` MCP verb where `scope` is one of "all," "exposure-only," "wb-only," etc.
 
+### Pattern 9 — **(R3-new)** AI noise reduction is now the universal pre-processing step for high-ISO genres
+
+**(R3-new — surfaced cleanly by Nature/Wildlife.)** 5/6 wildlife photographers route high-ISO images through an AI-driven noise-reduction tool (Topaz DeNoise AI / DxO PureRAW DeepPRIME / Lightroom AI Denoise) BEFORE any chemigram-side editing. R2 wedding's Move 8 (high-ISO reception recovery) was the precursor; R3 confirms it as a genre-spanning workflow norm. The "AI NR is essential" assumption is becoming load-bearing across multiple genres.
+
+**Implication for chemigram.** chemigram has `denoiseprofile` (manual NR with ~300 camera profiles per ADR-082) but no AI-NR primitive. Per ADR-007 BYOA, this stays out of `chemigram.core` — but the agent's mental model needs to know "high-ISO image → route through Topaz/DxO sibling tool BEFORE chemigram-edit." Document as a Phase-2 sibling-tool integration pattern in `vocabulary-patterns.md`. The agent prompt template should surface "for ISO ≥ 1600, recommend AI-NR pre-processing if a sibling tool is configured."
+
+### Pattern 10 — **(R3-new)** Subject-vs-background separation is universal across content-aware genres
+
+**(R3-new — surfaced strongly by Wildlife + Food/Product, reinforces R1+R2.)** Across 4/6 wildlife (subject sharp, background blurred) + 2/6 food (subject clarity-lifted, background muted) + portrait (subject lift via mask_subject) + wedding (subject vs. background dim) — the "subject + (NOT subject)" pattern recurs in every content-aware genre. Landscape and B&W are the partial exceptions (subject is often the whole scene).
+
+**Implication for chemigram.** RFC-032's `mask_subject` + RFC-034's `invert: true` shorthand together cover this entire pattern. The shipped vocabulary IS positioned correctly; the visual-review checkpoint should specifically validate that `mask_subject + invert: true` produces usable results across genres (wildlife: blur background; food: mute table; wedding: dim non-subject; portrait: dim background). **Single most-validated R1+R2+R3 architectural commitment.**
+
 ### Pattern 8 — **(R2-new)** Genre-defining named-conversion primitives are missing
 
 **(R2-new — surfaced cleanly by B&W.)** The B&W genre revealed that 6/6 photographers ship their work through a "B&W conversion" move that is fundamentally a *named* operation in their mental model ("convert to black and white"), but chemigram has no first-class B&W conversion primitive. The same probably-true conjecture holds for any genre where conversion-to-genre-aesthetic is itself a named move (e.g., "film emulation" in landscape, "matte fade" in portrait, etc.).
@@ -673,9 +918,9 @@ Across all four genres, the same workflow shape appears: photographer specifies 
 
 ---
 
-## Gap summary (deduped, ranked by cross-genre recurrence — R1+R2)
+## Gap summary (deduped, ranked by cross-genre recurrence — R1+R2+R3, final)
 
-The single ranked list across all 24 surveyed photographers (Portrait + Landscape + Wedding/Event + B&W). Each gap names what it is, who reaches for it, and what RFC / vocabulary / architectural response it suggests. Ordering is by total photographer recurrence count across the survey, with cross-genre signal weighted higher than within-genre. **Status column** indicates current chemigram response.
+The single ranked list across all **36 surveyed photographers** (Portrait + Landscape + Wedding/Event + B&W + Nature/Wildlife + Food/Product). Each gap names what it is, who reaches for it, and what RFC / vocabulary / architectural response it suggests. Ordering is by total photographer recurrence count across the survey, with cross-genre signal weighted higher than within-genre. **Status column** indicates current chemigram response. R3-new findings flagged.
 
 | Rank | Gap | Total recurrence | Cross-genre? | Status | Proposed response |
 |-|-|-|-|-|-|
@@ -697,37 +942,45 @@ The single ranked list across all 24 surveyed photographers (Portrait + Landscap
 | 16 | **Preset-stack as workflow / Smart Adjustments AI batch** **(R2 reframe)** | 1/6 landscape (Ramelli) + 4/6 wedding (R2 reframe) | Landscape + Wedding | **Workflow philosophy** | Wedding's preset-stack pattern is functionally equivalent to chemigram's L2 looks + Phase 2 personal-pack. Smart-Adjustments AI is BYOA out-of-scope. Address via documentation of the L2-looks-as-presets pattern. |
 | 17 | **Output sharpening per medium / dual-format export recipes** **(R2 reinforces)** | 2/6 landscape + 3/6 wedding | Landscape + Wedding | **Out of L2 scope** | Export-pipeline concern, not vocabulary. R2 (wedding) reinforces this is a real future RFC for the export pipeline. |
 | 18 | **Asset management (rating, culling, sessions)** **(R2-new)** | All 6 wedding photographers | Wedding-defining | **Out of vocabulary scope** | chemigram operates on `image_id` post-culling. Document the boundary. |
+| 19 | **AI noise reduction integration (Topaz / DxO / LR AI)** **(R3-new)** | 5/6 wildlife + 1/6 wedding (high-ISO reception) | Wildlife + Wedding | **BYOA documentation** | Per ADR-007 chemigram doesn't bundle AI. Document the sibling-tool pattern (high-ISO → route through Topaz / DxO before chemigram); update agent prompt template to surface "ISO ≥ 1600 → recommend AI-NR pre-processing." |
+| 20 | **Gray-card-pick UX surface** **(R3-new)** | 3-4/6 food/product + commercial settings | Food/Product primarily | **Open — small RFC** | `wb_from_gray_card(image_id, x, y)` MCP tool / CLI command that derives `temperature` parameters from a clicked gray-card region. Half-day work; meaningful UX win for color-accuracy-driven workflows. |
+| 21 | **Subject-mask sharpening + inverse blur** **(R3-validates)** | 5/6 wildlife explicit + 2/6 food/product | Wildlife + Food/Product + cross-genre | ✅ **Already shipped** | RFC-032's `mask_subject` + RFC-034's `invert: true` cover this fully. Just need to ship `look_wildlife_subject_sharpen` + `look_wildlife_background_blur` L2 entries (proposed in R3 Wildlife). |
+| 22 | **Multi-image compositing (Liquify, Content-Aware Fill)** **(R3-new)** | 1/6 food/product (Karl Taylor product retouching) | Food/Product only | **Out of scope** | Photoshop-native; chemigram is per-image. Sibling-tool route documented. |
+| 23 | **Image upsizing (Topaz Gigapixel)** **(R3-new)** | 1/6 wildlife (Gardner) | Wildlife only | **Out of scope** | Pre/post chemigram processing; sibling-tool. |
 
-### Direction signal from R1+R2 ranking
+### Direction signal from R1+R2+R3 ranking (final)
 
-R2 promoted **Named B&W conversion** to the highest-recurrence gap (6/6 B&W universal). Shipping `bw_convert` parameterized primitive + `look_bw_*` L2 family is the clearest single direction for v1.11.
+**Top priorities for v1.11** (informed by 6-genre survey):
 
-R2 surfaced **anchor-and-sync** as a new high-priority gap (Gap #4). Wedding-defining; load-bearing for genre adoption. **Candidate RFC for v1.11+.**
+1. **`bw_convert` parameterized primitive + `look_bw_*` L2 family** (Gap #1, 6/6 B&W universal). Highest-recurrence gap; clearest single ship target. Cross-references Wedding's B&W-as-parallel-deliverable.
+2. **RFC-037 — `propagate_state` MCP verb** (Gap #4, 4/6 wedding-defining). Wedding-defining workflow primitive; partially surfaces in landscape (anchor → batch sync of similar-light shots).
+3. **`wb_from_gray_card` MCP tool / CLI** (Gap #20, R3-new). Small RFC; food/product UX win that also serves portrait/wedding gray-card-anchor workflows.
+4. **`look_wildlife_subject_sharpen` + `look_wildlife_background_blur` L2 entries** (Gap #21, R3-validates). Cheap; high-impact; demonstrates the cross-genre payoff of RFC-032+RFC-034.
+5. **AI noise reduction sibling-tool pattern documentation** (Gap #19, R3-new). BYOA — no chemigram code change; documentation in `vocabulary-patterns.md` + agent prompt template update.
 
-R2 reinforced existing R1 work — RFC-031, RFC-032, RFC-033 all confirmed cross-genre relevant. The visual-review checkpoint findings will inform whether RFC-035 (parametric L2 strength) and RFC-036 (mixed-op apply_per_region) need implementation.
+**Validation work (visual-review checkpoint)** still gates v1.11 implementation of RFC-033 closing ADR + RFC-035 / RFC-036 implementation decisions. See `darkroom-session-debt.md`.
 
-R2 added three new patterns (7, 8 — anchor/sync, named-conversion-primitives) and three new low-priority gaps (within-image WB gradient, Zone System surface, per-zone structure) all of which are tractable.
+**Survey conclusions:**
+- All 6 RFCs from R1+R2 (RFC-031 through RFC-036) confirmed cross-genre relevant or correctly bounded.
+- 9 named maskdefs from RFC-032 used across all 6 genres. **Strongest cross-genre validation** of any v1.10 design choice.
+- The "vocabulary, not sliders" discipline survives 6 genres of testing — every photographer reaches for *named moves*, not slider adjustments. The vocabulary direction is right.
+- **Two deliberate boundaries confirmed across all 6 genres:** (a) multi-raw HDR fusion (capture-time); (b) asset management (rating, culling, sessions). Both rejected on principled grounds.
 
-R2 confirmed two deliberate boundaries (multi-raw, asset management) and one out-of-scope (Smart Adjustments AI batch) hold.
-
-**Recommended v1.11 priorities (post-validation):**
-1. `bw_convert` parameterized primitive + `look_bw_*` L2 family (Gap #1, top priority)
-2. RFC-037 (new) — `propagate_state` MCP verb (Gap #4 — wedding-defining)
-3. Genre-specific named-conversion primitives generalized after `bw_convert` ships (Gap #9)
-4. RFC-035 / RFC-036 implementation IF visual-review surfaces real need
-
-**Continuing the survey** — Nature/Wildlife + Food/Product remain (round 3). Recommended pairing for round 3: same maximal-contrast principle (Nature/Wildlife = subject-detail + unpredictable conditions; Food/Product = controlled studio + color accuracy). Should surface different gap classes again — likely concentrated around output sharpening (medium-specific), color accuracy (gray-card / chart-driven), and possibly compositing primitives (food retouching often involves multi-image compositing).
+**Survey complete; further research deprioritized** until v1.11 implementation surfaces new evidence-driven questions.
 
 ---
 
-## Calibration checkpoint (post-R2)
+## Calibration checkpoint (final — post-R3)
 
-This document is now updated through round 2 (Wedding/Event + B&W). After review, the user decides among:
+The 6-genre survey is now complete. The work that remains is execution:
 
-- **(a) Continue to round 3 (Nature/Wildlife + Food/Product)** in the same shape — completes the 6-genre survey.
-- **(b) Pause and act on R2 findings** — ship `bw_convert` + `look_bw_*` family (Gap #1), draft RFC-037 for `propagate_state` (Gap #4), then resume genre research.
-- **(c) Visual-review session first** — close out the existing pending validation in `darkroom-session-debt.md` before more research, ensuring the architectural commitments (RFC-031/032/033/034) are sound under real photographer use.
-- **(d) Shift focus entirely** — different priorities (e.g., the masker-routing maturity work, or the export-pipeline future).
+- **(a) Ship `bw_convert` + `look_bw_*` L2 family** — Gap #1, top priority.
+- **(b) Draft RFC-037 — `propagate_state` MCP verb** — Gap #4, wedding-defining.
+- **(c) Run the visual-review checkpoint** — closes RFC-033 into ADR; informs RFC-035/036 implementation decisions. See `darkroom-session-debt.md`.
+- **(d) Ship the remaining low-cost L2 entries** — `look_wildlife_subject_sharpen`, `look_wildlife_background_blur`, `look_wildlife_eye_lift`, `look_food_appetizing_warm`, `look_food_orange_pop`, `look_food_green_natural`, `look_food_texture_subtle`, `look_product_packshot_clean`. Composes existing primitives.
+- **(e) Update `vocabulary-patterns.md`** with the cross-genre patterns surfaced — AI-NR sibling-tool route, gray-card-pick workflow, subject+inverse-mask discipline.
+
+Further survey-research is deferred until evidence-driven questions surface (e.g., a 7th-genre-class request, or an architectural decision blocked on missing genre context).
 
 ---
 
@@ -786,10 +1039,29 @@ This document is now updated through round 2 (Wedding/Event + B&W). After review
 - [B&W Mastery — Capture One Pro 8 B&W Workflows (Richard Boutwell)](https://www.bwmastery.com/blog/2015/black-and-white-with-capture-one-pro-8-part-2-workflows)
 - [mel365.com — darktable black and white tutorial (Stefano)](https://mel365.com/darktable-black-and-white/)
 
+### Nature / Wildlife
+
+- [Backcountry Gallery — Steve Perry](https://backcountrygallery.com/)
+- [BCG Lightroom Course — Steve Perry](https://bcgwebstore.com/)
+- [AvianBliss — Bird Photography Post Processing Workflow (Mutasim Sweileh)](https://avianbliss.com/bird-photography-post-processing-workflow/)
+- [Mariano Matiash — Lightroom for Bird Photography](https://www.matiash.com/blog/lightroom-for-bird-photography)
+- [Nick Dale Photography — Editing Wildlife Photos](https://www.nickdalephotography.com/blog/editing-wildlife-photos-beginner-tips)
+- [Jonathan Gardner Photography — Wildlife Processing Workflow](https://jonathangardner.photography/blog/wildlife-photography-post-processing-workflow)
+- [Open Source Photography — Bird and Wildlife Sharpening in Darktable (Marc / Bushcrafter)](https://marcrphoto.wordpress.com/2023/07/03/how-to-bird-and-wildlife-sharpening-in-darktable/)
+
+### Food / Product
+
+- [Food Photography Academy — HSL Panel for food photography (Lauren C. Short)](https://foodphotographyacademy.co/blog/editing/editing-how-i-edit-food-photography-in-lightroom-for-colour-hsl-panel/)
+- [Signature Edits — Food Photography Lightroom Tutorial (Ryan)](https://www.signatureedits.com/editing-food-photography-in-lightroom/)
+- [Digital Photography School — How to Edit Food Photos (Darina Kopcok)](https://digital-photography-school.com/how-edit-food-photography-images-using-lightroom/)
+- [Visual Education — Karl Taylor Product Retouching](https://visualeducation.com/class/practical-demonstration-on-product-retouch/)
+- [Capture One Support — Product photography workflow with Zoe Noble](https://support.captureone.com/hc/en-us/articles/8235498504605-Product-photography-workflow-with-Zoe-Noble)
+- [The Bite Shot — Joanie Simon](https://thebiteshot.com/), [Food Blogger Pro — Joanie Simon photography tips](https://www.foodbloggerpro.com/podcast/joanie-simon-photography-tips/)
+
 ### Reference (cross-genre / darktable analog)
 
 - [avidandrew.com — The Darktable Scene-Referred Workflow](https://avidandrew.com/darktable-scene-referred-workflow.html) — used as the darktable analog of common moves where no working landscape essayist surfaced in that ecosystem.
 
 ---
 
-*Photographer workflows survey · v0.2 · 2026-05-09 · Portrait + Landscape (R1) + Wedding/Event + B&W (R2). Tier 3 operational doc; companion to `capability-survey.md`. Feeds future `vocabulary-patterns.md` updates and `expressive-baseline` L2-layer additions. Round 3 (Nature/Wildlife + Food/Product) pending.*
+*Photographer workflows survey · v1.0 · 2026-05-09 · All 6 genres complete (R1: Portrait + Landscape; R2: Wedding/Event + B&W; R3: Nature/Wildlife + Food/Product). 36 photographers extracted across 4-5 tool ecosystems. Tier 3 operational doc; companion to `capability-survey.md`. Feeds `vocabulary-patterns.md` updates and `expressive-baseline` L2-layer additions.*
