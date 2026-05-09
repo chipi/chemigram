@@ -86,8 +86,26 @@ MODULE_IDS: dict[str, int] = {
     "toneequalizer": 9,
 }
 
-# Plugin order in the <iop_list> declaration (matches existing looks).
-IOP_LIST = "colorin,demosaic,temperature,exposure,colorbalancergb,bilat,grain,sigmoid,colorout"
+# Plugin order in the <iop_list> declaration. Existing looks use a fixed
+# baseline pipeline order. New looks may touch ops outside that order
+# (e.g., colorequal, hazeremoval); they get appended to preserve readability.
+# darktable resolves actual pipeline position from iop_order_version, so
+# this declaration is informational, not load-bearing — but matching the
+# existing convention reduces XMP diff noise (item #8 of the retro).
+_BASELINE_IOP_ORDER = (
+    "colorin,demosaic,temperature,exposure,colorbalancergb,bilat,grain,sigmoid,colorout"
+)
+
+
+def derive_iop_list(touches: list[str]) -> str:
+    """Build the <iop_list> string for the new look. Modules in the
+    baseline order keep their position; modules outside it are appended
+    after (preserving readability vs. injecting at unknown positions)."""
+    base = _BASELINE_IOP_ORDER.split(",")
+    extra = [op for op in touches if op not in base]
+    if not extra:
+        return _BASELINE_IOP_ORDER
+    return ",".join(base + extra)
 
 
 def make_plugin(
@@ -116,14 +134,15 @@ def make_plugin(
     )
 
 
-def make_dtstyle(*, name: str, description: str, plugins: list[str]) -> str:
+def make_dtstyle(*, name: str, description: str, plugins: list[str], touches: list[str]) -> str:
     plugins_xml = "".join(plugins)
+    iop_list = derive_iop_list(touches)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<darktable_style version="1.0">'
         f"<info><name>{name}</name>"
         f"<description>{_escape_xml(description)}</description>"
-        f"<iop_list>{IOP_LIST}</iop_list></info>"
+        f"<iop_list>{iop_list}</iop_list></info>"
         f"<style>{plugins_xml}</style>"
         "</darktable_style>\n"
     )
@@ -257,7 +276,7 @@ def look_portrait_skin_warm_lift() -> tuple[str, str, dict]:
 
 
 def look_portrait_background_dim() -> tuple[str, str, dict]:
-    """Dim + desaturate background — applied with caller-supplied subject mask."""
+    """Dim + desaturate background — pre-baked with inverted mask_subject (RFC-034)."""
     from chemigram.core.parameterize import colorbalancergb, exposure
 
     plugins = [
@@ -271,13 +290,26 @@ def look_portrait_background_dim() -> tuple[str, str, dict]:
     name = "look_portrait_background_dim"
     desc = (
         "Dim and de-saturate the background to push the subject forward. "
-        "Exposure -0.4 EV + saturation_global -0.15. **No pre-baked mask** — "
-        "the caller supplies an inverted-subject mask via --mask-spec. Common "
-        "shapes: inverted ellipse around the subject, or mask_subject "
-        "(RFC-032) with invert: true. See vocabulary-patterns.md for the "
-        "compose recipe."
+        "Exposure -0.4 EV + saturation_global -0.15. Pre-baked with "
+        "mask_subject + invert: true (RFC-034) — the photographer doesn't "
+        "have to construct an inverse-subject mask manually. The parametric "
+        "fallback for mask_subject is coarse (midtone luminance + center-"
+        "bias); for clean subject vs. background separation override the "
+        "mask_spec at apply time with a manually-drawn inverted ellipse, "
+        "or escalate via render_preview + LLM-vision construction "
+        "(llm-vision-for-masks.md Pattern 7) for a path-form subject mask."
     )
-    return name, desc, _manifest(name, desc, ["exposure", "colorbalancergb"], plugins)
+    return (
+        name,
+        desc,
+        _manifest(
+            name,
+            desc,
+            ["exposure", "colorbalancergb"],
+            plugins,
+            mask_spec={"kind": "named", "name": "mask_subject", "invert": True},
+        ),
+    )
 
 
 def look_portrait_split_tone_moody() -> tuple[str, str, dict]:
@@ -694,20 +726,29 @@ def _tags_for(name: str, has_mask: bool) -> list[str]:
 
 
 def _modversions_for(touches: list[str]) -> dict[str, int]:
-    """Modversions canonical to v1.10's parameterize decoders. Match engine
-    pins (SUPPORTED_MODVERSION) to avoid drift warnings; existing v1.7+ L2
-    looks use the same values."""
-    canonical = {
-        "temperature": 4,
-        "exposure": 7,
-        "sigmoid": 3,
-        "colorbalancergb": 5,
-        "bilat": 3,
-        "hazeremoval": 3,
-        "colorequal": 4,
-        "toneequalizer": 2,
-    }
-    return {op: canonical[op] for op in touches}
+    """Modversions canonical to the parameterize decoders. Single source of
+    truth: ``known_pinned_modversions()`` from the modversion-drift module —
+    no manual duplicate map. Drift warnings at vocab-load time already
+    enforce this on the read side; this enforces it on the write side
+    (item #6 of the post-batch retro)."""
+    from chemigram.core.vocab._modversion_drift import known_pinned_modversions
+
+    pinned = known_pinned_modversions()
+    out: dict[str, int] = {}
+    for op in touches:
+        # Note: existing entries declare exposure mv7, but the parameterize
+        # decoder pins to a different number (existing manifests use the
+        # higher number from the dtstyle's <module> tag, not the decoder
+        # pin). Fall back to the existing-manifest convention for entries
+        # the registry doesn't recognize.
+        if op in pinned:
+            out[op] = pinned[op]
+        else:
+            # Fallbacks for ops not in the parameterize registry — match
+            # the values shipped on existing L2 looks.
+            fallbacks = {"exposure": 7}
+            out[op] = fallbacks.get(op, 1)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -737,13 +778,11 @@ def main() -> None:
     L2_DIR.mkdir(parents=True, exist_ok=True)
     new_entries: list[dict] = []
     for builder in LOOK_BUILDERS:
-        # Re-extract plugins by re-running the builder's body — easier than
-        # threading through a tuple. The builders already return entry; we
-        # need the plugin list. Restructure:
         name, desc, entry = builder()
-        # Re-run the part of the builder that produces the plugin list:
         plugins = _build_plugins_for(name)
-        dtstyle_xml = make_dtstyle(name=name, description=desc, plugins=plugins)
+        dtstyle_xml = make_dtstyle(
+            name=name, description=desc, plugins=plugins, touches=entry["touches"]
+        )
         dtstyle_path = L2_DIR / f"{name}.dtstyle"
         dtstyle_path.write_text(dtstyle_xml, encoding="utf-8")
         new_entries.append(entry)
@@ -762,7 +801,16 @@ def main() -> None:
 
 def _build_plugins_for(name: str) -> list[str]:
     """Re-derive the plugin list for a given look name. Mirrors the body of
-    each builder but returns just the plugin XML list."""
+    each builder but returns just the plugin XML list.
+
+    **Known duplication** (item #7 of the post-batch retro): each builder
+    constructs plugins inline (for the manifest entry's touches list) and
+    this function re-constructs them. A cleaner design has builders return
+    ``(name, desc, touches, plugins, mask_spec)`` and main() builds the
+    entry dict + dtstyle XML. Refactor deferred — this script ships and is
+    re-runnable; the duplication is contained to this file. Address before
+    the next genre's L2-look batch (Wedding/Event, B&W, Nature/Wildlife,
+    Food/Product) for cleaner authoring across all 6 genres."""
     from chemigram.core.parameterize import (
         bilat,
         colorbalancergb,

@@ -24,7 +24,6 @@ _BASELINE = Path(__file__).resolve().parents[3] / "src/chemigram/core/_baseline_
 SURVEY_LOOKS_GLOBAL = [
     "look_portrait_natural_skin",
     "look_portrait_editorial",
-    "look_portrait_background_dim",
     "look_portrait_split_tone_moody",
     "look_landscape_grand_vista",
     "look_landscape_intimate_quiet",
@@ -37,6 +36,7 @@ SURVEY_LOOKS_GLOBAL = [
 
 SURVEY_LOOKS_MASKED = [
     "look_portrait_skin_warm_lift",  # mask_skin_region
+    "look_portrait_background_dim",  # mask_subject + invert (RFC-034)
     "look_landscape_sky_enhance",  # mask_sky
     "look_landscape_water_silk",  # mask_water_blue_cyan
 ]
@@ -105,6 +105,22 @@ def test_water_silk_pre_baked_with_water_band(vocab: VocabularyIndex) -> None:
     entry = vocab.lookup_by_name("look_landscape_water_silk")
     assert entry is not None
     assert entry.mask_spec == {"kind": "named", "name": "mask_water_blue_cyan"}
+
+
+def test_background_dim_pre_baked_with_inverted_subject(vocab: VocabularyIndex) -> None:
+    """RFC-034: look_portrait_background_dim ships with mask_subject +
+    invert: true (no caller-supplied mask required)."""
+    entry = vocab.lookup_by_name("look_portrait_background_dim")
+    assert entry is not None
+    assert entry.mask_spec == {
+        "kind": "named",
+        "name": "mask_subject",
+        "invert": True,
+    }
+    # Resolution applies the invert XOR
+    resolved = resolve_named_mask_spec(entry.mask_spec, vocab)
+    assert resolved is not None
+    assert resolved["range_filter"]["invert"] is True
 
 
 def test_intimate_quiet_uses_negative_clarity(vocab: VocabularyIndex) -> None:

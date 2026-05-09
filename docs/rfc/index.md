@@ -41,9 +41,12 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-026 | LLM-vision-as-provider for AI-derived masks (MVP, conversation-native) | Decided | ADR-086 (closes) |
 | RFC-029 | Compositional masks at apply time (build-by-words) | Decided | ADR-084 (closes) |
 | RFC-030 | Deployed sibling-provider scaffolding for precision-tier AI masks | Draft v0.1 (deferred) | — |
-| RFC-031 | Batched per-region adjustment meta-tool | Draft v0.1 | — (pending) |
-| RFC-032 | Named-mask vocabulary on v1.9.0 mask primitives | Draft v0.1 | — (pending; possibly two ADRs) |
-| RFC-033 | Skin-tone uniformity primitive | Draft v0.1 (gated on capability survey) | — (pending; path depends on survey) |
+| RFC-031 | Batched per-region adjustment meta-tool | Draft v0.1 (impl shipped) | — (pending) |
+| RFC-032 | Named-mask vocabulary on v1.9.0 mask primitives | Draft v0.1 (impl shipped) | — (pending; possibly two ADRs) |
+| RFC-033 | Skin-tone uniformity primitive | Draft v0.1 (Path B impl shipped; gated on visual review) | — (pending; path depends on visual review) |
+| RFC-034 | `invert` flag on named-mask references | Draft v0.1 (parametric impl shipped) | — (pending) |
+| RFC-035 | Parametric L2 strength (opacity-as-amount) | Draft v0.1 (deferred — informed by darkroom-session) | — |
+| RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Draft v0.1 (deferred — informed by darkroom-session) | — |
 
 ## Maturity legend
 

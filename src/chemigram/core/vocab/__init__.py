@@ -676,12 +676,23 @@ def resolve_named_mask_spec(
     :func:`chemigram.core.helpers.apply_with_mask`. Three cases:
 
     1. **None** → returned as-is (no mask binding).
-    2. **Named reference** — ``{"kind": "named", "name": "<maskdef-name>"}``
-       → looks up the maskdef in ``vocab`` and returns its ``spec`` field.
-       The resolved spec is the same shape that ``apply_with_mask`` accepts
-       (drawn / parametric / drawn-and-parametric).
+    2. **Named reference** — ``{"kind": "named", "name": "<maskdef-name>",
+       "invert": <bool>}`` → looks up the maskdef in ``vocab`` and returns a
+       deep copy of its ``spec`` field, with optional inversion applied
+       (RFC-034). The resolved spec is the same shape that
+       ``apply_with_mask`` accepts (drawn / parametric / drawn-and-parametric).
     3. **Already-resolved spec** — anything else passes through unchanged
        (the apply-time validator catches malformed specs).
+
+    Inversion semantics (RFC-034):
+    - Parametric specs: toggles ``range_filter.invert`` (XOR).
+    - Drawn specs: injects ``invert_drawn: true`` (the apply path flips the
+      masks_history ``inverted`` attribute).
+    - Drawn + parametric: both — the resulting mask is the inverse of the
+      combined region.
+    - LLM-vision-routed maskdefs: the parametric fallback inverts; the LLM
+      prompt itself is not automatically inverted (the photographer
+      constructs the inverse mask by hand via Pattern 7 if needed).
 
     Phase-1 resolution does not honor ``llm_vision_prompt`` on maskdefs;
     every named-mask reference resolves to the maskdef's parametric/drawn
@@ -713,7 +724,44 @@ def resolve_named_mask_spec(
     # itself a dict).
     import copy
 
-    return copy.deepcopy(maskdef.spec)
+    resolved = copy.deepcopy(maskdef.spec)
+
+    # RFC-034 invert flag. Apply at resolution time so downstream call sites
+    # (apply_with_mask, the parametric blendop encoder) see the right shape.
+    if spec.get("invert", False):
+        _apply_inversion(resolved)
+    return resolved
+
+
+def _apply_inversion(spec: dict[str, Any]) -> None:
+    """Toggle the inversion field of a resolved parametric mask spec in
+    place (RFC-034 v1).
+
+    Parametric inversion is XOR of ``range_filter.invert``. Drawn-only
+    inversion is **not yet supported** — would require extending
+    DrawnMaskForm + masks_history XML emission to flip darktable's
+    ``inverted`` attribute. Tracked as a deferred follow-up; no current
+    maskdef is drawn-only (all carry at least a parametric spec or
+    parametric fallback), so v1 is sufficient for the named-mask
+    catalogue shipped to date.
+
+    Raises ``VocabError`` on a drawn-only spec asked to invert — fail
+    loud rather than silently no-op so the user sees the limitation.
+    """
+    if "range_filter" in spec and isinstance(spec["range_filter"], dict):
+        rf = spec["range_filter"]
+        rf["invert"] = not bool(rf.get("invert", False))
+        return
+    if "dt_form" in spec:
+        raise VocabError(
+            "RFC-034 v1: 'invert: true' is only supported on parametric "
+            "(range_filter) maskdef specs. Drawn-only inversion would "
+            "require extending masks_history XML emission and is deferred. "
+            "Workaround: re-author the maskdef to include a parametric "
+            "fallback, or invert the drawn form by-hand at apply time."
+        )
+    # No range_filter and no dt_form is unreachable per RFC-032 maskdef
+    # validation; defensive no-op.
 
 
 def _resolve_starter_path() -> Path:

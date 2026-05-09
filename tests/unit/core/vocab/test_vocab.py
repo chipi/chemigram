@@ -625,6 +625,101 @@ def test_maskdef_collision_across_packs_raises(tmp_path: Path) -> None:
         VocabularyIndex([pack_a, pack_b])
 
 
+def test_invert_flag_xors_parametric_invert(tmp_path: Path) -> None:
+    """RFC-034: ``invert: true`` on a named-mask reference toggles the
+    resolved spec's ``range_filter.invert`` field via XOR."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_inv_test")])
+    index = VocabularyIndex(pack)
+    # Default — no invert
+    plain = resolve_named_mask_spec({"kind": "named", "name": "mask_inv_test"}, index)
+    assert plain is not None
+    assert plain["range_filter"].get("invert", False) is False
+    # invert: true → toggles to True
+    inverted = resolve_named_mask_spec(
+        {"kind": "named", "name": "mask_inv_test", "invert": True}, index
+    )
+    assert inverted is not None
+    assert inverted["range_filter"]["invert"] is True
+    # invert: false → unchanged
+    not_inverted = resolve_named_mask_spec(
+        {"kind": "named", "name": "mask_inv_test", "invert": False}, index
+    )
+    assert not_inverted is not None
+    assert not_inverted["range_filter"].get("invert", False) is False
+
+
+def test_invert_flag_xors_already_inverted_spec(tmp_path: Path) -> None:
+    """RFC-034 XOR semantics: ``invert: true`` on a maskdef whose spec
+    already has ``invert: true`` flips it back to false."""
+    spec_with_invert = {
+        "range_filter": {
+            "kind": "luminance",
+            "min": 0.5,
+            "max": 1.0,
+            "feather": 0.05,
+            "invert": True,
+        }
+    }
+    pack = _write_pack(tmp_path, [_maskdef("mask_already_inverted", spec=spec_with_invert)])
+    index = VocabularyIndex(pack)
+    flipped = resolve_named_mask_spec(
+        {"kind": "named", "name": "mask_already_inverted", "invert": True}, index
+    )
+    assert flipped is not None
+    assert flipped["range_filter"]["invert"] is False
+
+
+def test_invert_flag_does_not_mutate_maskdef(tmp_path: Path) -> None:
+    """Inversion is applied to the deep-copy; subsequent resolutions see
+    the original spec, not the inverted one."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_mutate_test")])
+    index = VocabularyIndex(pack)
+    inverted = resolve_named_mask_spec(
+        {"kind": "named", "name": "mask_mutate_test", "invert": True}, index
+    )
+    assert inverted is not None
+    assert inverted["range_filter"]["invert"] is True
+    # Re-resolve without invert — should NOT carry the inversion
+    fresh = resolve_named_mask_spec({"kind": "named", "name": "mask_mutate_test"}, index)
+    assert fresh is not None
+    assert fresh["range_filter"].get("invert", False) is False
+
+
+def test_invert_flag_on_drawn_only_raises(tmp_path: Path) -> None:
+    """RFC-034 v1: drawn-only inversion is deferred. Resolver fails loud
+    rather than silently no-op so the user sees the limitation."""
+    drawn_spec = {
+        "dt_form": "ellipse",
+        "dt_params": {
+            "center_x": 0.5,
+            "center_y": 0.5,
+            "radius_x": 0.2,
+            "radius_y": 0.2,
+            "border": 0.05,
+        },
+    }
+    pack = _write_pack(tmp_path, [_maskdef("mask_drawn", spec=drawn_spec)])
+    index = VocabularyIndex(pack)
+    # Without invert, drawn maskdef resolves fine
+    plain = resolve_named_mask_spec({"kind": "named", "name": "mask_drawn"}, index)
+    assert plain is not None
+    assert plain["dt_form"] == "ellipse"
+    # With invert: true, fail loud
+    with pytest.raises(VocabError, match=r"only supported on parametric"):
+        resolve_named_mask_spec({"kind": "named", "name": "mask_drawn", "invert": True}, index)
+
+
+def test_invert_flag_no_op_when_false(tmp_path: Path) -> None:
+    """``invert: false`` is identity — same as no flag at all."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_no_invert")])
+    index = VocabularyIndex(pack)
+    no_flag = resolve_named_mask_spec({"kind": "named", "name": "mask_no_invert"}, index)
+    explicit_false = resolve_named_mask_spec(
+        {"kind": "named", "name": "mask_no_invert", "invert": False}, index
+    )
+    assert no_flag == explicit_false
+
+
 def test_expressive_baseline_ships_canonical_maskdefs() -> None:
     """Smoke test against the real expressive-baseline pack: the 9 canonical
     maskdefs from the RFC-032 implementation load without error and resolve

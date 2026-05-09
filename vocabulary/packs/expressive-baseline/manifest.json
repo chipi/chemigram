@@ -3918,16 +3918,22 @@
         "look",
         "composite",
         "portrait",
-        "background"
+        "background",
+        "masked"
       ],
-      "description": "Dim and de-saturate the background to push the subject forward. Exposure -0.4 EV + saturation_global -0.15. **No pre-baked mask** — the caller supplies an inverted-subject mask via --mask-spec. Common shapes: inverted ellipse around the subject, or mask_subject (RFC-032) with invert: true. See vocabulary-patterns.md for the compose recipe.",
+      "description": "Dim and de-saturate the background to push the subject forward. Exposure -0.4 EV + saturation_global -0.15. Pre-baked with mask_subject + invert: true (RFC-034) — the photographer doesn't have to construct an inverse-subject mask manually. The parametric fallback for mask_subject is coarse (midtone luminance + center-bias); for clean subject vs. background separation override the mask_spec at apply time with a manually-drawn inverted ellipse, or escalate via render_preview + LLM-vision construction (llm-vision-for-masks.md Pattern 7) for a path-form subject mask.",
       "modversions": {
         "exposure": 7,
         "colorbalancergb": 5
       },
       "darktable_version": "5.4",
       "source": "expressive-baseline",
-      "license": "MIT"
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_subject",
+        "invert": true
+      }
     },
     {
       "name": "look_portrait_split_tone_moody",

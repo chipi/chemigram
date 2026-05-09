@@ -46,12 +46,26 @@ from typing import Any
 # at module-load time — vocab loads before parameterize is needed.
 
 
-def _build_known_pinned_modversions() -> dict[str, int]:
-    """Return ``{module_name: SUPPORTED_MODVERSION}`` for every Path C
-    decoder registered in :mod:`chemigram.core.parameterize`.
+def known_pinned_modversions() -> dict[str, int]:
+    """Public entry point: return ``{module_name: SUPPORTED_MODVERSION}``
+    for every Path C decoder registered in
+    :mod:`chemigram.core.parameterize`.
 
-    Functions called at vocab-load time, not at import; safe to call
-    repeatedly (cheap)."""
+    Use from generator scripts and authoring tools so the canonical
+    modversion mapping has a single source of truth (the parameterize
+    decoders themselves) and authors don't have to manually maintain a
+    duplicate map. Drift warnings already fire at vocab-load time per
+    :func:`emit_drift_signals` — this exposes the same data for the
+    write side.
+
+    Cheap (registry lookup only); safe to call repeatedly."""
+    return _build_known_pinned_modversions()
+
+
+def _build_known_pinned_modversions() -> dict[str, int]:
+    """Internal: return ``{module_name: SUPPORTED_MODVERSION}`` for every
+    Path C decoder. Kept for backcompat; new callers prefer
+    :func:`known_pinned_modversions`."""
     from chemigram.core.parameterize import (
         ashift,
         bilat,
