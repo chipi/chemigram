@@ -3678,6 +3678,46 @@
         }
       },
       "llm_vision_prompt": "Select the eye region of the subject — irises, pupils, and the surrounding skin within roughly 5% of the eye width. Exclude eyebrows and lashes."
+    },
+    {
+      "name": "skin_uniformity",
+      "layer": "L3",
+      "subtype": "colorequal",
+      "path": "layers/L3/colorequal/hsl_saturation.dtstyle",
+      "touches": ["colorequal"],
+      "_test_coverage_exempt": "RFC-033 v1: lab-grade global + lab-grade masked + visual proof tests deferred to the visual-review checkpoint (per RFC-033 §Recommendation, the path-validation requires human review of representative portraits at strengths 0.2/0.4/0.6 — not automatable). Unit + integration coverage ships; lab-grade + proof land alongside the visual-review sign-off.",
+      "tags": [
+        "skin",
+        "portrait",
+        "uniformity",
+        "color-mixer",
+        "parameterized"
+      ],
+      "description": "Skin-tone uniformity (RFC-033). Compresses skin-band saturation variance toward uniform appearance — Capture One's Skin Tone Uniformity equivalent for chemigram. Pre-baked with mask_skin_region so the move is scoped automatically. Pass --value V or --param sat_orange=V; range [-1.0, 0.0]. -0.3 is moderate uniformity; -0.6 is strong (typical Woloszynowicz/Adler/Nordqvist range); -1.0 fully desaturates the skin band; 0.0 is no-op. Override mask_spec for per-image manual mask if mask_skin_region's hue-range fallback leaks (Phase-1 LLM-vision fallback per RFC-032). Frequency-separation texture work composes orthogonally; this primitive is color-band uniformity only.",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_skin_region"
+      },
+      "parameters": [
+        {
+          "name": "sat_orange",
+          "type": "float",
+          "range": [-1.0, 0.0],
+          "default": -0.3,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 32,
+            "encoding": "le_f32"
+          }
+        }
+      ]
     }
   ]
 }
