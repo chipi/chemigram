@@ -3522,6 +3522,162 @@
           "feather": 0.05
         }
       }
+    },
+    {
+      "name": "mask_luminosity_brightest_quartile",
+      "kind": "mask",
+      "description": "Top 25% luminance band — Page-style luminosity-mask compositing for highlights and bright features. Pair with sky-darken or contrast-lift moves on stormy skies, water specular highlights, snow detail. Bottom of the brightest tonal banding — apply contrast / color shifts here without affecting midtones or shadows.",
+      "tags": ["mask", "named", "luminosity", "highlights", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.75,
+          "max": 1.0,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "mask_luminosity_darkest_quartile",
+      "kind": "mask",
+      "description": "Bottom 25% luminance band — Page/Adamus-style luminosity-mask compositing for shadows and deep tonal regions. Pair with shadow-lift moves to dodge dark foregrounds, or with color-grading moves to inject hue into the darkest pixels only.",
+      "tags": ["mask", "named", "luminosity", "shadows", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.0,
+          "max": 0.25,
+          "feather": 0.05
+        }
+      }
+    },
+    {
+      "name": "mask_luminosity_midtones",
+      "kind": "mask",
+      "description": "Middle 50% luminance band — the canonical 'midtones' selection for selective contrast or color work that should leave both extremes alone. Frequently the right scope for portrait skin work and for landscape mid-frequency clarity moves.",
+      "tags": ["mask", "named", "luminosity", "midtones"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.25,
+          "max": 0.75,
+          "feather": 0.08
+        }
+      }
+    },
+    {
+      "name": "mask_skin_region",
+      "kind": "mask",
+      "description": "Approximate skin-tone hue range (orange-red band, scoped to typical caucasian-through-deep skin tones). Pair with skin-uniformity, skin-warm, or skin-saturation-pull moves. Approximate — leakage onto lips / teeth / orange backgrounds is expected at high opacity. RFC-033 skin-tone uniformity primitive will compose with this maskdef.",
+      "tags": ["mask", "named", "skin", "color", "portrait"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "color_h",
+          "min": 0.02,
+          "max": 0.12,
+          "feather": 0.04
+        }
+      }
+    },
+    {
+      "name": "mask_foliage_green",
+      "kind": "mask",
+      "description": "Green foliage hue range — autumn-shift moves invert this; spring/summer landscape green saturation moves use this directly. Hue range covers chartreuse through deep forest green; feathered edges to avoid hard transitions on yellow-green and blue-green boundaries.",
+      "tags": ["mask", "named", "foliage", "color", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "color_h",
+          "min": 0.22,
+          "max": 0.42,
+          "feather": 0.04
+        }
+      }
+    },
+    {
+      "name": "mask_water_blue_cyan",
+      "kind": "mask",
+      "description": "Water and sky-blue hue range (cyan through deep blue). Pair with selective desaturation for muted-water landscape work, with cool-tone color grades, or with luminosity-quartile compositions for water-specific moves.",
+      "tags": ["mask", "named", "water", "blue", "color", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "color_h",
+          "min": 0.45,
+          "max": 0.65,
+          "feather": 0.04
+        }
+      }
+    },
+    {
+      "name": "mask_sky",
+      "kind": "mask",
+      "description": "The sky region (Heaton-style 'adaptive sky'). Phase-1 fallback is 'top-luminance + blue-hue' — bright pixels in the sky-blue range. Future: routes to LLM-vision masker (ADR-086) with the canonical prompt below when configured. Approximate — strong sunsets / overcast skies / high-contrast trees against bright sky may leak. Pair with cool-tone color grades, sky-darken moves, or sky-contrast moves.",
+      "tags": ["mask", "named", "sky", "content-aware", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.55,
+          "max": 1.0,
+          "feather": 0.08
+        }
+      },
+      "llm_vision_prompt": "Select the sky region — including clouds, atmosphere, and visible portions of the upper atmosphere. Exclude horizon-bordering land, mountains, or trees that protrude into the sky. Feather the bottom edge slightly where land meets sky."
+    },
+    {
+      "name": "mask_subject",
+      "kind": "mask",
+      "description": "The main subject region (portrait subject, central feature in landscape). Phase-1 fallback is 'midtone luminance + center-bias' — a coarse approximation. Future: routes to LLM-vision masker with the canonical prompt below when configured. Pair with subject-warm, subject-lift, eye-region details, or any subject-isolated move.",
+      "tags": ["mask", "named", "subject", "content-aware", "portrait", "landscape"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.25,
+          "max": 0.75,
+          "feather": 0.1
+        }
+      },
+      "llm_vision_prompt": "Select the main subject — for portraits, the person; for landscape, the most prominent foreground element (lone tree, mountain peak, central rock formation). Feather generously around edges to avoid hard cutouts."
+    },
+    {
+      "name": "mask_eye_region",
+      "kind": "mask",
+      "description": "Eye region (irises + immediate surrounding skin). Phase-1 fallback is highlight-luminance — catchlights tend to be the brightest pixels in a portrait, which is a coarse but useful proxy. Future: routes to LLM-vision masker. Pair with eye-detail-lift (Adler-style catchlight emphasis), iris-saturation-lift, or sharpening moves scoped to the eye region only.",
+      "tags": ["mask", "named", "eye", "content-aware", "portrait"],
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "spec": {
+        "range_filter": {
+          "kind": "luminance",
+          "min": 0.7,
+          "max": 1.0,
+          "feather": 0.05
+        }
+      },
+      "llm_vision_prompt": "Select the eye region of the subject — irises, pupils, and the surrounding skin within roughly 5% of the eye width. Exclude eyebrows and lashes."
     }
   ]
 }

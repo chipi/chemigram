@@ -20,7 +20,7 @@ from typing import Any
 from chemigram.core.helpers import current_xmp, summarize_state
 from chemigram.core.versioning import RefNotFoundError, RepoError
 from chemigram.core.versioning.ops import VersioningError, reset_to, snapshot
-from chemigram.core.vocab import VocabEntry
+from chemigram.core.vocab import MaskdefEntry, VocabEntry
 from chemigram.core.xmp import synthesize_xmp
 from chemigram.mcp._state import resolve_workspace
 from chemigram.mcp.errors import (
@@ -108,6 +108,50 @@ register_tool(
         "additionalProperties": False,
     },
     handler=_list_vocabulary,
+)
+
+
+# --- list_masks_vocabulary (RFC-032) ------------------------------------
+
+
+def _serialize_maskdef(m: MaskdefEntry) -> dict[str, Any]:
+    return {
+        "name": m.name,
+        "kind": "mask",
+        "description": m.description,
+        "tags": list(m.tags),
+        "spec": m.spec,
+        "llm_vision_prompt": m.llm_vision_prompt,
+        "darktable_version": m.darktable_version,
+        "source": m.source,
+    }
+
+
+async def _list_masks_vocabulary(
+    args: dict[str, Any], ctx: ToolContext
+) -> ToolResult[list[dict[str, Any]]]:
+    tags = args.get("tags")
+    masks = ctx.vocabulary.list_masks(tags=tags)
+    return ToolResult.ok([_serialize_maskdef(m) for m in masks])
+
+
+register_tool(
+    name="list_masks_vocabulary",
+    description=(
+        "List available named masks (RFC-032). Each entry's 'spec' field is "
+        "the apply-time mask_spec — drawn-form, parametric range_filter, or "
+        "both. Reference a named mask in apply_primitive's mask_spec arg as "
+        "{'kind': 'named', 'name': '<maskdef-name>'}. Optional tags filter "
+        "(OR — any tag in the list matches)."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tags": {"type": "array", "items": {"type": "string"}},
+        },
+        "additionalProperties": False,
+    },
+    handler=_list_masks_vocabulary,
 )
 
 
@@ -240,6 +284,16 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
 
     # Mask resolution: caller-supplied mask_spec override > manifest mask_spec.
     effective_mask = mask_spec_override if mask_spec_override is not None else entry.mask_spec
+
+    # RFC-032 named-mask resolution: if effective_mask is a {"kind": "named",
+    # "name": "..."} reference, look it up in the vocab and substitute the
+    # maskdef's spec. No-op for already-resolved drawn / parametric specs.
+    from chemigram.core.vocab import VocabError, resolve_named_mask_spec
+
+    try:
+        effective_mask = resolve_named_mask_spec(effective_mask, ctx.vocabulary)
+    except VocabError as exc:
+        return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
 
     # Route: parameterized OR non-parameterized.
     has_parameters = parameter_values is not None or entry.parameters is not None

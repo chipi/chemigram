@@ -8,7 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from chemigram.core.vocab import ManifestError, VocabEntry, VocabularyIndex
+from chemigram.core.vocab import (
+    ManifestError,
+    MaskdefEntry,
+    VocabEntry,
+    VocabError,
+    VocabularyIndex,
+    resolve_named_mask_spec,
+)
 
 TEST_PACK_ROOT = Path(__file__).resolve().parents[3] / "fixtures" / "vocabulary" / "test_pack"
 
@@ -414,3 +421,234 @@ def test_entry_with_mask_spec_round_trips(tmp_path: Path) -> None:
 # require per-entry iop_order; the manifest schema dropped those fields.
 # If a future dt version regresses, restore the field-validation tests
 # alongside the synthesizer changes.
+
+
+# ---------- RFC-032: named-mask vocabulary -----------------------------
+
+
+def _maskdef(name: str = "mask_test", **overrides: object) -> dict:
+    """Build a minimal valid maskdef entry with optional field overrides."""
+    base: dict = {
+        "name": name,
+        "kind": "mask",
+        "description": "test maskdef",
+        "tags": ["mask", "test"],
+        "darktable_version": "5.4",
+        "source": "test",
+        "license": "MIT",
+        "spec": {
+            "range_filter": {
+                "kind": "luminance",
+                "min": 0.5,
+                "max": 1.0,
+                "feather": 0.05,
+            }
+        },
+    }
+    base.update(overrides)
+    return base
+
+
+def test_maskdef_loads_into_index(tmp_path: Path) -> None:
+    """A manifest entry with kind='mask' is loaded as a MaskdefEntry,
+    indexed separately from primitive entries, and discoverable via
+    list_masks / lookup_mask_by_name (RFC-032)."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_test_lum")])
+    index = VocabularyIndex(pack)
+    assert len(index.list_all()) == 0
+    assert len(index.list_masks()) == 1
+    mask = index.lookup_mask_by_name("mask_test_lum")
+    assert isinstance(mask, MaskdefEntry)
+    assert mask.name == "mask_test_lum"
+    assert mask.spec == {
+        "range_filter": {
+            "kind": "luminance",
+            "min": 0.5,
+            "max": 1.0,
+            "feather": 0.05,
+        }
+    }
+    assert mask.llm_vision_prompt is None
+
+
+def test_maskdef_with_llm_vision_prompt(tmp_path: Path) -> None:
+    """Maskdefs may declare an optional canonical LLM-vision prompt for
+    future ADR-086 routing. Phase-1 resolution still uses the parametric
+    spec; the prompt is stored but unused."""
+    pack = _write_pack(
+        tmp_path,
+        [_maskdef("mask_with_prompt", llm_vision_prompt="Select the sky.")],
+    )
+    index = VocabularyIndex(pack)
+    mask = index.lookup_mask_by_name("mask_with_prompt")
+    assert mask is not None
+    assert mask.llm_vision_prompt == "Select the sky."
+
+
+def test_maskdef_missing_required_field_raises(tmp_path: Path) -> None:
+    bad = _maskdef("mask_bad")
+    del bad["spec"]
+    pack = _write_pack(tmp_path, [bad])
+    with pytest.raises(ManifestError, match="missing required field 'spec'"):
+        VocabularyIndex(pack)
+
+
+def test_maskdef_spec_without_drawn_or_parametric_raises(tmp_path: Path) -> None:
+    """A maskdef's spec must have at least one of dt_form / range_filter
+    (mirrors apply-time validation in apply_with_mask)."""
+    bad = _maskdef("mask_empty_spec", spec={})
+    pack = _write_pack(tmp_path, [bad])
+    with pytest.raises(ManifestError, match="must have at least one of 'dt_form'"):
+        VocabularyIndex(pack)
+
+
+def test_maskdef_invalid_kind_raises(tmp_path: Path) -> None:
+    bad = _maskdef("mask_bad_kind", kind="not-mask")
+    pack = _write_pack(tmp_path, [bad])
+    # 'not-mask' kind doesn't match 'mask', so the loader treats it as a
+    # primitive entry — which fails primitive validation because maskdefs
+    # don't have layer/path/touches.
+    with pytest.raises(ManifestError, match="missing required field"):
+        VocabularyIndex(pack)
+
+
+def test_maskdef_collision_with_primitive_raises(tmp_path: Path) -> None:
+    """A maskdef and a primitive in the same pack cannot share a name."""
+    src = TEST_PACK_ROOT / "layers" / "L3" / "exposure" / "expo_+0.5.dtstyle"
+    pack = tmp_path / "pack"
+    pack.mkdir()
+    (pack / "layers" / "L3" / "exposure").mkdir(parents=True)
+    shutil.copy(src, pack / "layers" / "L3" / "exposure" / "shared_name.dtstyle")
+    primitive_entry = {
+        "name": "shared_name",
+        "layer": "L3",
+        "path": "layers/L3/exposure/shared_name.dtstyle",
+        "touches": ["exposure"],
+        "tags": ["test"],
+        "description": "primitive",
+        "modversions": {"exposure": 6},
+        "darktable_version": "5.4",
+        "source": "test",
+        "license": "MIT",
+    }
+    maskdef = _maskdef("shared_name")
+    (pack / "manifest.json").write_text(json.dumps({"entries": [primitive_entry, maskdef]}))
+    with pytest.raises(ManifestError, match="collides with"):
+        VocabularyIndex(pack)
+
+
+def test_resolve_named_mask_spec_substitutes(tmp_path: Path) -> None:
+    """A {'kind': 'named', 'name': X} reference resolves to the maskdef's
+    spec field."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_resolved")])
+    index = VocabularyIndex(pack)
+    resolved = resolve_named_mask_spec({"kind": "named", "name": "mask_resolved"}, index)
+    assert resolved == {
+        "range_filter": {
+            "kind": "luminance",
+            "min": 0.5,
+            "max": 1.0,
+            "feather": 0.05,
+        }
+    }
+
+
+def test_resolve_named_mask_spec_passes_through_resolved(tmp_path: Path) -> None:
+    """An already-resolved mask_spec (drawn or parametric) passes through
+    unchanged — the resolver is a no-op for non-named specs."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_unused")])
+    index = VocabularyIndex(pack)
+    drawn = {"dt_form": "gradient", "dt_params": {}}
+    parametric = {"range_filter": {"kind": "luminance", "min": 0.0, "max": 0.5}}
+    assert resolve_named_mask_spec(drawn, index) is drawn
+    assert resolve_named_mask_spec(parametric, index) is parametric
+    assert resolve_named_mask_spec(None, index) is None
+
+
+def test_resolve_named_mask_spec_unknown_raises(tmp_path: Path) -> None:
+    pack = _write_pack(tmp_path, [_maskdef("mask_real")])
+    index = VocabularyIndex(pack)
+    with pytest.raises(VocabError, match="not found"):
+        resolve_named_mask_spec({"kind": "named", "name": "mask_does_not_exist"}, index)
+
+
+def test_resolve_named_mask_spec_missing_name_raises(tmp_path: Path) -> None:
+    pack = _write_pack(tmp_path, [_maskdef("mask_real")])
+    index = VocabularyIndex(pack)
+    with pytest.raises(VocabError, match="missing 'name' field"):
+        resolve_named_mask_spec({"kind": "named"}, index)
+
+
+def test_resolve_named_mask_spec_returns_copy(tmp_path: Path) -> None:
+    """Resolved spec is a copy — mutation by the caller doesn't poison the
+    maskdef's stored spec dict for subsequent resolutions."""
+    pack = _write_pack(tmp_path, [_maskdef("mask_copy_test")])
+    index = VocabularyIndex(pack)
+    resolved_a = resolve_named_mask_spec({"kind": "named", "name": "mask_copy_test"}, index)
+    assert resolved_a is not None
+    resolved_a["range_filter"]["min"] = 99.0  # poison attempt
+    resolved_b = resolve_named_mask_spec({"kind": "named", "name": "mask_copy_test"}, index)
+    assert resolved_b is not None
+    assert resolved_b["range_filter"]["min"] == 0.5
+
+
+def test_list_masks_filters_by_tag(tmp_path: Path) -> None:
+    pack = _write_pack(
+        tmp_path,
+        [
+            _maskdef("mask_a", tags=["luminosity", "highlights"]),
+            _maskdef("mask_b", tags=["color", "skin"]),
+            _maskdef("mask_c", tags=["luminosity", "shadows"]),
+        ],
+    )
+    index = VocabularyIndex(pack)
+    lum = index.list_masks(tags=["luminosity"])
+    assert len(lum) == 2
+    assert {m.name for m in lum} == {"mask_a", "mask_c"}
+    skin = index.list_masks(tags=["skin"])
+    assert len(skin) == 1
+    assert skin[0].name == "mask_b"
+
+
+def test_lookup_mask_unknown_returns_none(tmp_path: Path) -> None:
+    pack = _write_pack(tmp_path, [_maskdef("mask_real")])
+    index = VocabularyIndex(pack)
+    assert index.lookup_mask_by_name("mask_imaginary") is None
+
+
+def test_maskdef_collision_across_packs_raises(tmp_path: Path) -> None:
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    pack_a = _write_pack(tmp_path / "a", [_maskdef("mask_dup")])
+    pack_b = _write_pack(tmp_path / "b", [_maskdef("mask_dup")])
+    with pytest.raises(ManifestError, match="maskdef name collision across packs"):
+        VocabularyIndex([pack_a, pack_b])
+
+
+def test_expressive_baseline_ships_canonical_maskdefs() -> None:
+    """Smoke test against the real expressive-baseline pack: the 9 canonical
+    maskdefs from the RFC-032 implementation load without error and resolve
+    to apply-time-valid specs."""
+    from chemigram.core.vocab import load_packs
+
+    index = load_packs(["expressive-baseline"])
+    masks = index.list_masks()
+    canonical_names = {
+        "mask_luminosity_brightest_quartile",
+        "mask_luminosity_darkest_quartile",
+        "mask_luminosity_midtones",
+        "mask_skin_region",
+        "mask_foliage_green",
+        "mask_water_blue_cyan",
+        "mask_sky",
+        "mask_subject",
+        "mask_eye_region",
+    }
+    actual = {m.name for m in masks}
+    missing = canonical_names - actual
+    assert not missing, f"expected canonical maskdefs missing: {missing}"
+    # Each one must resolve cleanly.
+    for name in canonical_names:
+        resolved = resolve_named_mask_spec({"kind": "named", "name": name}, index)
+        assert resolved is not None
+        assert "dt_form" in resolved or "range_filter" in resolved

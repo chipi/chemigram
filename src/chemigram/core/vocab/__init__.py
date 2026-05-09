@@ -28,10 +28,12 @@ ADR-053 the match is exact (case-sensitive, no fuzzy) — see
 :meth:`VocabularyIndex.lookup_l1`.
 
 Public API:
-    - :class:`VocabEntry` — full entry record (manifest fields + parsed dtstyle)
+    - :class:`VocabEntry` — full primitive/look entry record (manifest fields + parsed dtstyle)
+    - :class:`MaskdefEntry` — named-mask vocabulary entry (RFC-032)
     - :class:`VocabularyIndex` — loaded, validated pack(s)
     - :func:`load_starter` — bundled starter-pack loader
     - :func:`load_packs` — multi-pack loader by name
+    - :func:`resolve_named_mask_spec` — named-mask resolution helper (RFC-032)
     - :class:`VocabError`, :class:`ManifestError` — exceptions
 """
 
@@ -68,6 +70,20 @@ _REQUIRED_FIELDS = (
 )
 _VALID_LAYERS = ("L1", "L2", "L3")
 
+# Maskdef entries (RFC-032) — fourth vocabulary kind. Distinguished by
+# top-level ``kind: "mask"`` discriminator. Different shape from primitive/
+# look entries: no dtstyle, no touches, no modversions.
+_MASKDEF_REQUIRED_FIELDS = (
+    "name",
+    "kind",
+    "description",
+    "tags",
+    "darktable_version",
+    "source",
+    "license",
+    "spec",
+)
+
 
 @dataclass(frozen=True)
 class ParameterField:
@@ -99,6 +115,34 @@ class ParameterSpec:
     range: tuple[float, float]  # [min, max] inclusive
     default: float
     field: ParameterField
+
+
+@dataclass(frozen=True)
+class MaskdefEntry:
+    """One named-mask vocabulary entry (RFC-032).
+
+    Named masks turn the v1.9.0 mask primitives (drawn / parametric / LLM-
+    vision) into composable vocabulary. ``spec`` carries the apply-time mask
+    spec (the ``{"dt_form": ..., "range_filter": ...}`` shape that
+    :func:`chemigram.core.helpers.apply_with_mask` consumes); resolving a
+    named-mask reference is a lookup-and-substitute.
+
+    For LLM-vision-backed masks (sky, subject, eye_region), ``spec`` is the
+    parametric *fallback* — what runs when the LLM-vision provider is
+    unconfigured. The optional ``llm_vision_prompt`` field declares the
+    canonical prompt to route through the masker (ADR-086) when configured;
+    LLM-vision integration ships as a follow-up. Phase-1 resolution always
+    uses ``spec`` directly.
+    """
+
+    name: str
+    description: str
+    tags: tuple[str, ...]
+    darktable_version: str
+    source: str
+    license: str
+    spec: dict[str, Any]
+    llm_vision_prompt: str | None = None
 
 
 @dataclass(frozen=True)
@@ -174,11 +218,16 @@ class VocabularyIndex:
             raise ManifestError("VocabularyIndex requires at least one pack_root")
 
         self._pack_roots: tuple[Path, ...] = tuple(pack_roots)
-        by_name, provenance, l1_entries = self._load_all_packs(pack_roots)
+        by_name, provenance, l1_entries, masks_by_name, mask_provenance = self._load_all_packs(
+            pack_roots
+        )
         self._by_name = by_name
         self._provenance = provenance
         self._l1_entries = tuple(l1_entries)
         self._all_entries = tuple(by_name.values())
+        self._masks_by_name = masks_by_name
+        self._mask_provenance = mask_provenance
+        self._all_masks = tuple(masks_by_name.values())
 
         # Modversion drift detection (RFC-007 closure / ADR-082).
         # Walks the loaded entries; warns on mismatches between manifest
@@ -190,29 +239,101 @@ class VocabularyIndex:
 
     def _load_all_packs(
         self, pack_roots: list[Path]
-    ) -> tuple[dict[str, VocabEntry], dict[str, Path], list[VocabEntry]]:
+    ) -> tuple[
+        dict[str, VocabEntry],
+        dict[str, Path],
+        list[VocabEntry],
+        dict[str, MaskdefEntry],
+        dict[str, Path],
+    ]:
         by_name: dict[str, VocabEntry] = {}
         provenance: dict[str, Path] = {}
         l1_entries: list[VocabEntry] = []
+        masks_by_name: dict[str, MaskdefEntry] = {}
+        mask_provenance: dict[str, Path] = {}
 
         for root in pack_roots:
             manifest_path = root / "manifest.json"
             entries_raw = self._read_manifest(manifest_path)
             for raw_entry in entries_raw:
-                entry = self._build_entry(raw_entry, manifest_path, root)
-                if entry.name in by_name:
-                    prior = provenance[entry.name]
-                    if prior == root:
-                        raise ManifestError(f"{manifest_path}: duplicate entry name {entry.name!r}")
-                    raise ManifestError(
-                        f"name collision across packs: {entry.name!r} declared in "
-                        f"{prior} and {root}"
-                    )
-                by_name[entry.name] = entry
-                provenance[entry.name] = root
-                if entry.layer == "L1":
-                    l1_entries.append(entry)
-        return by_name, provenance, l1_entries
+                self._classify_and_register(
+                    raw_entry,
+                    manifest_path,
+                    root,
+                    by_name=by_name,
+                    provenance=provenance,
+                    l1_entries=l1_entries,
+                    masks_by_name=masks_by_name,
+                    mask_provenance=mask_provenance,
+                )
+        return by_name, provenance, l1_entries, masks_by_name, mask_provenance
+
+    def _classify_and_register(
+        self,
+        raw_entry: Any,
+        manifest_path: Path,
+        root: Path,
+        *,
+        by_name: dict[str, VocabEntry],
+        provenance: dict[str, Path],
+        l1_entries: list[VocabEntry],
+        masks_by_name: dict[str, MaskdefEntry],
+        mask_provenance: dict[str, Path],
+    ) -> None:
+        """Discriminate a manifest entry by ``kind`` and register it in the
+        right index. ``kind: "mask"`` (RFC-032) routes to the maskdef path;
+        any other kind (or absence) routes to the primitive/look path."""
+        kind = raw_entry.get("kind", "primitive") if isinstance(raw_entry, dict) else None
+        if kind == "mask":
+            self._register_maskdef(
+                raw_entry, manifest_path, root, by_name, provenance, masks_by_name, mask_provenance
+            )
+            return
+        entry = self._build_entry(raw_entry, manifest_path, root)
+        if entry.name in by_name:
+            prior = provenance[entry.name]
+            if prior == root:
+                raise ManifestError(f"{manifest_path}: duplicate entry name {entry.name!r}")
+            raise ManifestError(
+                f"name collision across packs: {entry.name!r} declared in {prior} and {root}"
+            )
+        if entry.name in masks_by_name:
+            raise ManifestError(
+                f"{manifest_path}: entry name {entry.name!r} collides with a maskdef "
+                f"of the same name (declared in {mask_provenance[entry.name]})"
+            )
+        by_name[entry.name] = entry
+        provenance[entry.name] = root
+        if entry.layer == "L1":
+            l1_entries.append(entry)
+
+    def _register_maskdef(
+        self,
+        raw_entry: Any,
+        manifest_path: Path,
+        root: Path,
+        by_name: dict[str, VocabEntry],
+        provenance: dict[str, Path],
+        masks_by_name: dict[str, MaskdefEntry],
+        mask_provenance: dict[str, Path],
+    ) -> None:
+        mask_entry = self._build_mask_entry(raw_entry, manifest_path)
+        if mask_entry.name in masks_by_name:
+            prior = mask_provenance[mask_entry.name]
+            if prior == root:
+                raise ManifestError(f"{manifest_path}: duplicate maskdef name {mask_entry.name!r}")
+            raise ManifestError(
+                f"maskdef name collision across packs: {mask_entry.name!r} "
+                f"declared in {prior} and {root}"
+            )
+        if mask_entry.name in by_name:
+            raise ManifestError(
+                f"{manifest_path}: maskdef name {mask_entry.name!r} collides with "
+                f"a primitive/look entry of the same name (declared in "
+                f"{provenance[mask_entry.name]})"
+            )
+        masks_by_name[mask_entry.name] = mask_entry
+        mask_provenance[mask_entry.name] = root
 
     def _read_manifest(self, manifest_path: Path) -> list[Any]:
         if not manifest_path.exists():
@@ -234,6 +355,58 @@ class VocabularyIndex:
     def pack_for(self, name: str) -> Path | None:
         """Return the pack root that contributed ``name``, or ``None``."""
         return self._provenance.get(name)
+
+    def _build_mask_entry(self, raw: Any, manifest_path: Path) -> MaskdefEntry:
+        """Build a :class:`MaskdefEntry` from a manifest entry with
+        ``kind: "mask"`` (RFC-032). Validates required fields, the ``spec``
+        shape, and the optional ``llm_vision_prompt`` declaration.
+        """
+        if not isinstance(raw, dict):
+            raise ManifestError(
+                f"{manifest_path}: maskdef entry must be an object, got {type(raw).__name__}"
+            )
+        for required in _MASKDEF_REQUIRED_FIELDS:
+            if required not in raw:
+                raise ManifestError(
+                    f"{manifest_path}: maskdef entry missing required field {required!r}: {raw!r}"
+                )
+        if raw["kind"] != "mask":
+            raise ManifestError(
+                f"{manifest_path}: maskdef entry {raw['name']!r} has kind "
+                f"{raw['kind']!r}; expected 'mask'"
+            )
+        spec = raw["spec"]
+        if not isinstance(spec, dict):
+            raise ManifestError(
+                f"{manifest_path}: maskdef entry {raw['name']!r} 'spec' must be an object"
+            )
+        # The ``spec`` here is the apply-time mask_spec — it must have at
+        # least one of ``dt_form`` (drawn) or ``range_filter`` (parametric)
+        # per ADR-085. This validation matches the apply-time check in
+        # ``apply_with_mask`` so authors get errors at load time, not apply
+        # time.
+        if "dt_form" not in spec and "range_filter" not in spec:
+            raise ManifestError(
+                f"{manifest_path}: maskdef entry {raw['name']!r} 'spec' must "
+                f"have at least one of 'dt_form' (drawn) or 'range_filter' "
+                f"(parametric); got {sorted(spec.keys())}"
+            )
+        llm_prompt = raw.get("llm_vision_prompt")
+        if llm_prompt is not None and not isinstance(llm_prompt, str):
+            raise ManifestError(
+                f"{manifest_path}: maskdef entry {raw['name']!r} "
+                f"'llm_vision_prompt' must be a string"
+            )
+        return MaskdefEntry(
+            name=str(raw["name"]),
+            description=str(raw["description"]),
+            tags=tuple(raw["tags"]),
+            darktable_version=str(raw["darktable_version"]),
+            source=str(raw["source"]),
+            license=str(raw["license"]),
+            spec=dict(spec),
+            llm_vision_prompt=llm_prompt,
+        )
 
     def _build_entry(self, raw: Any, manifest_path: Path, pack_root: Path) -> VocabEntry:
         self._validate_shape(raw, manifest_path)
@@ -444,6 +617,33 @@ class VocabularyIndex:
         """Return the :class:`VocabEntry` for a symbolic name, or ``None``."""
         return self._by_name.get(name)
 
+    def lookup_mask_by_name(self, name: str) -> MaskdefEntry | None:
+        """Return the :class:`MaskdefEntry` for a symbolic name, or ``None``
+        (RFC-032). Maskdef and primitive namespaces are unified at the loader
+        level (collisions raise) but stored separately for type clarity.
+        """
+        return self._masks_by_name.get(name)
+
+    def list_masks(
+        self,
+        *,
+        tags: list[str] | None = None,
+    ) -> list[MaskdefEntry]:
+        """All maskdef entries (RFC-032); optionally filtered by tag.
+
+        ``tags`` is OR — a maskdef matches if any of its tags appears in the
+        request list (same convention as :meth:`list_all`).
+        """
+        result = list(self._all_masks)
+        if tags is not None:
+            tag_set = set(tags)
+            result = [m for m in result if tag_set.intersection(m.tags)]
+        return result
+
+    def mask_pack_for(self, name: str) -> Path | None:
+        """Return the pack root that contributed maskdef ``name``, or ``None``."""
+        return self._mask_provenance.get(name)
+
     def list_all(
         self,
         *,
@@ -463,6 +663,57 @@ class VocabularyIndex:
             tag_set = set(tags)
             result = [e for e in result if tag_set.intersection(e.tags)]
         return result
+
+
+def resolve_named_mask_spec(
+    spec: dict[str, Any] | None,
+    vocab: VocabularyIndex,
+) -> dict[str, Any] | None:
+    """Resolve a named mask reference to a concrete apply-time mask_spec.
+
+    Implements the RFC-032 named-mask resolution layer that sits between the
+    caller-provided ``mask_spec`` and the apply-time
+    :func:`chemigram.core.helpers.apply_with_mask`. Three cases:
+
+    1. **None** → returned as-is (no mask binding).
+    2. **Named reference** — ``{"kind": "named", "name": "<maskdef-name>"}``
+       → looks up the maskdef in ``vocab`` and returns its ``spec`` field.
+       The resolved spec is the same shape that ``apply_with_mask`` accepts
+       (drawn / parametric / drawn-and-parametric).
+    3. **Already-resolved spec** — anything else passes through unchanged
+       (the apply-time validator catches malformed specs).
+
+    Phase-1 resolution does not honor ``llm_vision_prompt`` on maskdefs;
+    every named-mask reference resolves to the maskdef's parametric/drawn
+    ``spec`` field. LLM-vision routing through the ADR-086 masker is a
+    follow-up implementation.
+
+    Raises:
+        VocabError: ``spec`` is a named reference but the named maskdef
+            does not exist in ``vocab``.
+    """
+    if spec is None:
+        return None
+    if spec.get("kind") != "named":
+        return spec
+    if "name" not in spec:
+        raise VocabError(
+            "named-mask reference is missing 'name' field; "
+            "expected {'kind': 'named', 'name': '<maskdef-name>'}"
+        )
+    target = str(spec["name"])
+    maskdef = vocab.lookup_mask_by_name(target)
+    if maskdef is None:
+        raise VocabError(
+            f"named-mask reference {target!r} not found in loaded packs; "
+            f"check 'list_masks_vocabulary' or pack manifests"
+        )
+    # Deep copy so callers can't mutate the maskdef's stored spec dict.
+    # Shallow copy is insufficient because mask specs nest (range_filter is
+    # itself a dict).
+    import copy
+
+    return copy.deepcopy(maskdef.spec)
 
 
 def _resolve_starter_path() -> Path:

@@ -136,6 +136,114 @@ def show(
     )
 
 
+@app.command("list-masks")
+def list_masks(
+    ctx: typer.Context,
+    pack: list[str] = typer.Option(
+        None,
+        "--pack",
+        "-p",
+        help="Pack name (repeatable). Defaults to ['starter'].",
+    ),
+    tag: list[str] = typer.Option(
+        None,
+        "--tag",
+        help="Filter by tag (repeatable; OR — any matching tag includes the maskdef).",
+    ),
+) -> None:
+    """List named masks (RFC-032) across the loaded packs."""
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    packs = _packs_or_default(pack)
+
+    try:
+        index = load_packs(packs)
+    except Exception as exc:
+        writer.error(
+            f"failed to load packs {packs}: {exc}",
+            ExitCode.INVALID_INPUT,
+            packs=packs,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    masks = index.list_masks(tags=tag if tag else None)
+    for mask in masks:
+        pack_root = index.mask_pack_for(mask.name)
+        writer.event(
+            "maskdef_entry",
+            name=mask.name,
+            description=mask.description,
+            pack=str(pack_root) if pack_root else None,
+            tags=list(mask.tags),
+            spec=mask.spec,
+            llm_vision_prompt=mask.llm_vision_prompt,
+        )
+
+    writer.result(
+        message=f"{len(masks)} maskdef(s) across {len(index.pack_roots)} pack(s)",
+        count=len(masks),
+        packs=packs,
+    )
+
+
+@app.command("show-mask")
+def show_mask(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="Maskdef name (e.g. mask_sky)."),
+    pack: list[str] = typer.Option(
+        None,
+        "--pack",
+        "-p",
+        help="Pack name (repeatable). Defaults to ['starter'].",
+    ),
+) -> None:
+    """Print one maskdef's manifest fields + spec (RFC-032)."""
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+    packs = _packs_or_default(pack)
+
+    try:
+        index = load_packs(packs)
+    except Exception as exc:
+        writer.error(
+            f"failed to load packs {packs}: {exc}",
+            ExitCode.INVALID_INPUT,
+            packs=packs,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    mask = index.lookup_mask_by_name(name)
+    if mask is None:
+        import difflib
+
+        all_names = [m.name for m in index.list_masks()]
+        suggestions = difflib.get_close_matches(name, all_names, n=3, cutoff=0.6)
+        suggestion_text = f" did you mean: {', '.join(suggestions)}?" if suggestions else ""
+        writer.error(
+            f"maskdef not found: {name}.{suggestion_text}",
+            ExitCode.NOT_FOUND,
+            name=name,
+            packs=packs,
+            suggestions=suggestions,
+        )
+        raise typer.Exit(code=ExitCode.NOT_FOUND.value)
+
+    pack_root = index.mask_pack_for(mask.name)
+    writer.result(
+        message=f"maskdef: {mask.name}",
+        name=mask.name,
+        kind="mask",
+        description=mask.description,
+        pack=str(pack_root) if pack_root else None,
+        tags=list(mask.tags),
+        spec=mask.spec,
+        llm_vision_prompt=mask.llm_vision_prompt,
+        darktable_version=mask.darktable_version,
+        source=mask.source,
+        license=mask.license,
+    )
+
+
 @app.command("validate")
 def validate(
     ctx: typer.Context,

@@ -122,11 +122,13 @@ def _do_apply_primitive(
     *,
     vocab_entry: object,
     entry_name: str,
+    vocabulary: object | None = None,
     mask_spec_override: dict[str, Any] | None = None,
     parameter_values: dict[str, float] | None = None,
 ) -> int:
     """Per-image core for apply-primitive; returns exit code."""
-    from chemigram.core.vocab import VocabEntry
+    from chemigram.core.vocab import VocabEntry, VocabError, VocabularyIndex
+    from chemigram.core.vocab import resolve_named_mask_spec as _resolve_named_mask_spec
 
     assert isinstance(vocab_entry, VocabEntry)
     obj = cast(CliContext, ctx.obj)
@@ -146,6 +148,17 @@ def _do_apply_primitive(
         return ExitCode.STATE_ERROR.value
 
     effective_mask = _resolve_effective_mask(vocab_entry, mask_spec_override)
+
+    # RFC-032 named-mask resolution: substitute {"kind": "named", "name": ...}
+    # references with the maskdef's spec. No-op for already-resolved specs.
+    if vocabulary is not None and effective_mask is not None:
+        assert isinstance(vocabulary, VocabularyIndex)
+        try:
+            effective_mask = _resolve_named_mask_spec(effective_mask, vocabulary)
+        except VocabError as exc:
+            writer.error(str(exc), ExitCode.NOT_FOUND, entry=entry_name)
+            return ExitCode.NOT_FOUND.value
+
     has_parameters = parameter_values is not None or vocab_entry.parameters is not None
 
     # Route through apply_entry when parameter axis is in play (entry has
@@ -405,6 +418,7 @@ def apply_primitive(
             img,
             vocab_entry=vocab_entry,
             entry_name=entry,
+            vocabulary=vocabulary,
             mask_spec_override=mask_spec_override,
             parameter_values=parameter_values,
         )
