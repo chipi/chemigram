@@ -112,16 +112,26 @@ clarity_painterly                # soft local contrast (high clarity strengths d
 
 Stay away from aggressive `sigmoid_contrast` (>2.0), high `bilat_clarity_strength` (>1.0), and `chroma_boost_midtones` for portraiture — all three destroy skin tonality.
 
-### "Monochromatic conversion (placeholder)"
+### "Monochromatic conversion"
+
+The default B&W move is `bw_convert` — a single colorequal plugin that kills saturation across all 8 hue bands and exposes 8 `bright_X` axes for Adams-school color-filter strength. The 8 axes give photographer-controlled per-color luminance mapping (red filter, green filter, etc.) without leaving the dedicated B&W primitive.
 
 ```
-bw_convert                       # neutral B&W via channelmixerrgb (Rec. 709 luminance weights)
-sigmoid_contrast --value 2.5     # compensate for the contrast loss B&W typically wants
+chemigram apply-primitive --entry bw_convert \
+  --param bright_red=0.3 --param bright_blue=-0.2     # red-filter sim
+sigmoid_contrast --value 2.5                            # B&W typically wants extra contrast
 ```
 
-For different B&W *kinds* (different per-channel weights), reach for the variants:
-- `bw_sky_drama` — red-emphasis (R 0.5 / G 0.4 / B 0.1); lightens reds, darkens blues; classic "red filter" landscape look
-- `bw_foliage` — green-emphasis (R 0.1 / G 0.7 / B 0.2); separates foliage from neighboring tones for forest / botanical work
+The 8 `bright_X` axes (`bright_red`, `bright_orange`, `bright_yellow`, `bright_green`, `bright_cyan`, `bright_blue`, `bright_lavender`, `bright_magenta`) range `[-1.0, 1.0]`; default 0 is neutral grayscale. Positive lightens that color band's contribution to luminance; negative darkens. The chemigram analog of Photoshop's Channel Mixer (Monochrome) and Silver Efex's color filters.
+
+For pre-baked B&W *recipes* drawn from the photographer-workflow survey:
+- `look_bw_landscape_dramatic` — red-filter sim + sigmoid 1.6 + clarity 0.5; storm-cloud drama
+- `look_bw_high_contrast_chiaroscuro` — Page-style chiaroscuro
+- `look_bw_classic_neutral` — Adams neutral baseline
+- `look_bw_silver_efex_zone_balanced` — Silver-Efex-style zone balance
+- `look_bw_split_tone_warm_shadows` — selenium-print warm-shadow split-tone
+
+Pre-v1.10.0 channel-mixer variants `bw_sky_drama` and `bw_foliage` remain available for the channelmixerrgb-mv3 mechanic; both apply hard-coded grey weights without exposing per-band axes.
 
 `saturation_global --value -1.0` is also valid for "drop all color" but does so without channel-aware luminance mapping — different parts of the frame can read at unintuitive luminance values depending on input hue. The dedicated B&W entries are the better default; reach for `saturation_global --value -1.0` only when you want a no-frills desaturation.
 
@@ -240,9 +250,73 @@ chemigram apply-per-region <image_id> --entry exposure --regions '[
 
 Sky cooled and darkened; foreground shadows lifted; one snapshot. The named-mask references resolve at apply time to their parametric specs.
 
-### Single-primitive restriction
+### Mixed-op per-region (RFC-036)
 
-All regions in one batch use the same primitive. For "+exposure on the iris and +sharpening on lashes," emit two `apply-per-region` calls (one per primitive) — that's still 2 snapshots instead of 6, the cost of mixed-op batching deferred per RFC-031.
+For composite moves like "lighten the iris **and** sharpen the lashes" — primitives differ across regions but the move is conceptually one snapshot — `apply-per-region` accepts an `ops` array per region. Each region names its own `entry` with optional `parameter_values`:
+
+```
+chemigram apply-per-region <image_id> --regions '[
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.45,"center_y":0.4,"radius_x":0.04,"radius_y":0.05,"border":0.02}},
+   "ops":[{"entry":"exposure","parameter_values":{"ev":0.3}},
+          {"entry":"sharpen","parameter_values":{"amount":0.8}}]},
+  {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.55,"center_y":0.4,"radius_x":0.04,"radius_y":0.05,"border":0.02}},
+   "ops":[{"entry":"exposure","parameter_values":{"ev":0.3}},
+          {"entry":"sharpen","parameter_values":{"amount":0.8}}]}
+]'
+```
+
+Per-(operation, region) `multi_priority` allocation keeps stacked instances of the same op (e.g., exposure on multiple regions) coexisting cleanly. Drop the top-level `--entry` flag when using mixed-op shape; the discriminator is the presence of `ops` on any region.
+
+Use mixed-op when the regions are conceptually one move (eye-region work, dodge-and-burn with selective sharpening); fall back to multiple `apply-per-region` calls when the moves are conceptually separate.
+
+### Strength scaling on L2 looks (RFC-035)
+
+Apply any L2 look at a fraction of its authored intensity with the `--strength` flag (range `[0.0, 1.0]`; default `1.0` = authored values; `0.0` = identity / no-op):
+
+```
+chemigram apply-primitive --entry look_landscape_dramatic_moody --strength 0.6
+```
+
+Each parameterized field interpolates linearly between the module's identity value and the authored value:
+
+> `interpolated = identity + strength * (authored - identity)`
+
+For `look_landscape_dramatic_moody` at `strength=0.5`, sigmoid contrast of 1.7 becomes `1 + 0.5 * (1.7 - 1) = 1.35`, colorbalancergb saturation_midtones of 0.15 becomes `0 + 0.5 * 0.15 = 0.075`, etc. Non-parameterized fields (sigmoid mode, vignette shape, etc.) preserve the look's authored values regardless of strength — strength only scales what's parameterizable. Modules without a registered parameterize decoder pass through unchanged.
+
+When to reach for `--strength`: dialing back an L2 look that's "almost right but a bit much" is a one-flag adjustment, not a re-author of the look. Authoring full-strength looks and toning them down at apply time is the recommended workflow.
+
+## Anchor-and-sync workflow (RFC-037)
+
+`propagate_state` is the LR-Sync analog: nail the post-processing on one image, then propagate that edit state to a list of related target images. The target images inherit every history entry from the source workspace **except** framing-bound ops that must stay per-image:
+
+```
+chemigram propagate-state --source <anchor_id> \
+  --targets <id1>,<id2>,<id3> \
+  --label "wedding-reception-batch-2026-05-08"
+```
+
+Framing-bound exclusions (auto-applied):
+- `ashift` — perspective correction (per-camera-angle)
+- `crop` — composition (per-image)
+- `retouch` — heal/clone (location-specific)
+- `lens` — lens correction (per-camera/lens)
+- Any op bound to a drawn mask (gradient, ellipse, rectangle, path) — coordinates are image-specific
+
+What does propagate: white balance, exposure, sigmoid, colorbalancergb, colorequal (HSL), bilat, sharpen, denoiseprofile, grain, hazeremoval, and any op bound to a parametric range mask (color-range / luminance-range — these are content-relative, not coordinate-bound).
+
+Each target gets a single snapshot capturing the full propagated state plus an explicit `label` for the operation log. The agent can later inspect the label to see which images were synced from the same anchor.
+
+When to reach for `propagate-state`:
+
+- **Wedding / event series** — anchor the look on the best frame, propagate to the rest of the burst
+- **Product photography** — anchor on the hero shot, propagate to the variants (color-A vs color-B of the same product)
+- **Series consistency** — keep a body of work coherent (a magazine spread, a portfolio set)
+
+When NOT to reach for `propagate-state`:
+
+- **Cross-genre images** — propagating a portrait look to a landscape doesn't make sense
+- **Different cameras / lenses** — color science differs; framing-bound op exclusion partially handles this but visual review per target is still warranted
+- **Masked moves where the mask is drawn** — those are explicitly framing-bound and won't propagate
 
 ## When patterns don't fit
 

@@ -289,6 +289,94 @@ A few engine capabilities deliberately not exposed to the agent in v1:
 
 ---
 
+## RFC-035/036/037 post-implementation retro (2026-05-10)
+
+Five gaps surfaced during the RFC-035 (parametric L2 strength) / RFC-036
+(mixed-op apply_per_region) / RFC-037 (propagate_state) ship. Each is
+real-but-not-pressing — capture so they don't drift, revisit when the
+trigger fires.
+
+### Gap A — Vocab load doesn't validate (operation, modversion, blendop_params) tuples
+
+**The gap:** newly authored bw_convert + 24 L2 looks shipped with wrong
+`<module>` values + obsolete `gz08` blendop_params for ops that need
+`gz11` (colorequal, temperature, denoiseprofile, hazeremoval) and wrong
+modversions for `bilat`, `sharpen`. Symptom: darktable silently hung
+at render (60s timeout) with no log signal pointing at the real cause.
+Diagnosis required reading darktable source assumptions for each module.
+
+**Trigger to revisit:** the next time a similar "silent render hang"
+happens during vocabulary authoring. The fix shape: at vocab load,
+check every plugin's `(operation, modversion, blendop_version)` against
+a per-darktable-version reference table; warn on mismatch the same way
+ADR-082 warns on modversion drift. The same canonical table the fix
+script used (`temperature: mod=4/gz11`, `colorequal: mod=4/gz11`, etc.)
+is the seed for that lookup.
+
+**Workaround today:** the fix-script pattern (substitute canonical
+blendop_params from a known-working L3 entry per op) catches author-time
+mistakes after-the-fact.
+
+### Gap B — L2 looks have a systematic coverage skip-rationale, not codified
+
+**The gap:** every newly authored L2 look gets hand-added to
+`tests/e2e/_lab_grade_deltas.py::SKIP_REASONS` with a similar rationale
+("L2 composite (...sub-effects covered by parameterized entries)"). The
+rationale is uniform across 31+ entries; the per-entry rule is "if
+manifest entry has multiple `touches[]`, it's a composite, skip lab-grade
+chart isolation." Currently this is hand-rationale per entry, not a
+discriminator.
+
+**Trigger to revisit:** when the SKIP_REASONS dict crosses ~50 L2 entries
+(currently ~35). The fix shape: introduce a manifest-level
+`_lab_grade_coverage_strategy: "L2_composite_skip"` field; the test reads
+that field and skips with a generic rationale. Personal/idiosyncratic
+skip reasons (chart-alignment limitations, etc.) keep their per-entry
+rationale.
+
+### Gap C — Visual-review checkpoint debt has no explicit ledger
+
+**The gap:** RFC-035 / RFC-036 / RFC-037 all closed with "Path B impl
+shipped; visual review pending the darkroom session." That's three
+checkpoints accumulated without an explicit list of what's owed.
+`docs/guides/darkroom-session-debt.md` exists as a guide but isn't a
+ledger of pending items.
+
+**Trigger to revisit:** when the visual-review backlog exceeds 3-4
+items (we're at 3 now; close to threshold). The fix shape: extend
+`darkroom-session-debt.md` with a "Pending validation" section listing
+each (RFC, what visual question is open, what would close it). Items
+graduate off the list as the darkroom session validates them.
+
+### Gap D — Framing-bound op discriminator is hard-coded, not annotated
+
+**The gap:** `propagate_state` excludes a fixed set of framing-bound ops
+(`ashift`, `crop`, `retouch`, `lens`) plus drawn-mask-bound entries.
+The list lives in `src/chemigram/core/propagate.py`'s `FRAMING_BOUND_OPS`
+constant. When future ops get added, we'll need to remember to flag them.
+
+**Trigger to revisit:** when a new operation gets added that has
+per-image framing characteristics (e.g., perspective sub-mode of ashift,
+some future depth-aware op). The fix shape: a `framing_bound: bool`
+field on the dtstyle/manifest entry, defaulted false; propagate_state
+reads the annotation rather than the hard-coded list. Drawn-mask-bound
+detection stays runtime (it inspects the blendop bytes).
+
+### Gap E — Multi-axis parameterized entries can't be exhaustively chart-tested
+
+**The gap:** the new `bw_convert` exposes 8 `bright_X` axes (one per hue
+band). Lab-grade test coverage strategy is `(entry_name, label) →
+(target, check, params)`; covering all 8 axes at 3 magnitudes each =
+24 parametrize ids per entry, and `bw_convert` is just one of N
+multi-axis entries. The test matrix can't grow this way.
+
+**Trigger to revisit:** when we author a second multi-axis primitive
+needing similar coverage (skin_smooth, future range_filter HSL
+variants). The fix shape: chart-isolation for the *base mechanic*
+(chroma-collapse for bw_convert; saturation reduction for sat_*) and
+delegate per-axis directional verification to the unit-test layer
+(byte-level patch + decode round-trip) which already covers it cheaply.
+
 ## Items to capture as they emerge
 
 (Append below. Lightweight, no formatting standards required.)
