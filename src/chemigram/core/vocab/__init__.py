@@ -237,6 +237,15 @@ class VocabularyIndex:
 
         emit_drift_signals(list(self._all_entries))
 
+        # Dtstyle-modversion drift detection (v1.10.0; sister to the
+        # manifest-drift check above). Walks each plugin's <module> byte
+        # and warns when it disagrees with the engine pin — catches the
+        # bug class where dtstyle bytes lie even if the manifest is
+        # honest. Same strict-mode env var.
+        from chemigram.core.vocab._dtstyle_modversion_drift import emit_dtstyle_drift_signals
+
+        emit_dtstyle_drift_signals(list(self._all_entries))
+
     def _load_all_packs(
         self, pack_roots: list[Path]
     ) -> tuple[
