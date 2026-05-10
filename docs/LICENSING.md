@@ -27,6 +27,12 @@ The MIT license covers everything in this repository unless explicitly noted oth
 
 You can use this code and content for any purpose — personal, commercial, modified, redistributed — as long as you preserve the copyright notice. See the `LICENSE` file at the repo root for the full text.
 
+## Runtime dependency: darktable
+
+Chemigram has zero photo processing of its own. Every render is produced by **[darktable](https://www.darktable.org/)**, a separate open-source project licensed under [GPLv3](https://github.com/darktable-org/darktable/blob/master/LICENSE). Chemigram invokes `darktable-cli` as a subprocess; the GPLv3 boundary is the subprocess boundary. Chemigram itself stays MIT.
+
+If you use chemigram, you're using darktable. The darktable team has been doing this work for over a decade; if their tool helps you, [donate to the project](https://www.darktable.org/contact/), file good bug reports, contribute translations, or contribute code. The community license is generous; the right response is generous engagement back.
+
 ## What's borrowed (and how)
 
 Some vocabulary content in `vocabulary/packs/` is borrowed from existing community projects (Fuji film simulation packs, Nikon picture-control emulations, etc.). Each borrowed pack:

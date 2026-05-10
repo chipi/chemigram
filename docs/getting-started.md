@@ -10,7 +10,7 @@ The guide grows as the project does. If something here is wrong or unclear, plea
 
 - **macOS Apple Silicon** (Linux is best-effort in v1.x; Windows untested)
 - **Python 3.11 or newer**
-- **darktable 5.x** — install from [darktable.org](https://www.darktable.org/install/) or `brew install --cask darktable`
+- **darktable 5.x** — install from [darktable.org](https://www.darktable.org/install/) or `brew install --cask darktable`. (If you're new to darktable, the [user manual](https://docs.darktable.org/usermanual/) is excellent and the [GitHub repo](https://github.com/darktable-org/darktable) is where the work happens. chemigram makes no pixel decisions of its own; every render you see is darktable's work.)
 - **An MCP-capable AI client** — one of:
   - [Claude Code](https://docs.claude.com/en/docs/claude-code) (CLI)
   - [Claude Desktop](https://claude.ai/download) (macOS/Windows/Linux app)

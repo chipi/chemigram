@@ -23,6 +23,12 @@ Can a photographer transmit taste through language and feedback? And does an age
 
 Chemigram is a probe — into where photographic taste lives, how it transmits, and what an agent can do with the right substrate. Not a Lightroom replacement. Not a digital asset manager. Not a service that automates editing or replaces the photographer.
 
+## Built on darktable
+
+Every pixel decision in chemigram is made by [**darktable**](https://www.darktable.org/) — the open-source raw photography workflow that has quietly become one of the best photo processing engines in the world. Scene-referred pipeline, perceptually accurate color science, sigmoid + filmic tone mapping, the colorequal HSL panel, lens correction via lensfun, denoising profiles per-camera, drawn-form masks with feathered blendif, parametric range masks, retouch heal/clone — all of it ships in darktable, written by a community of photographers and engineers over more than a decade. Strip chemigram away and darktable still produces the same beautiful renders; strip darktable away and chemigram is a pile of JSON.
+
+If you ship raw work, the [darktable user manual](https://docs.darktable.org/usermanual/) and [darktable GitHub](https://github.com/darktable-org/darktable) are worth your time. The work that team has done makes everything chemigram does possible — *darktable does the photography, Chemigram does the loop*. See `docs/concept/02-project-concept.md` for the architectural commitment.
+
 ## The premise
 
 Photo editing is an act of taste. When a photographer works through a raw, what's happening isn't slider-pushing — it's intent expressed through tooling. The slider is the *medium*; the move is the *intent*. Tools that make sliders easier to find don't change what's hard about photo editing. The hard part is the move, not the slider.
@@ -70,7 +76,7 @@ Four engine subsystems plus two adapter layers:
 2. **Versioning** — content-addressed DAG of XMP snapshots. Branches, tags, the works.
 3. **Masking** — drawn-form geometry (gradient/ellipse/rectangle/path) encoded into darktable's XMP `masks_history`; parametric range filters (luminance + HSL color) via blendif bytes; LLM-vision-as-provider for content-derived masks (RFC-026 / ADR-086) using the chat-client's vision capability; spot heal/clone via the `apply_spot` MCP tool (RFC-025 / ADR-087). Per ADR-076 (v1.5.0) the PNG-based masker was retired; content-aware masking is now layered: byte-level for darktable-native cases, LLM-vision for coarse subject identification, deployed sibling providers (RFC-030 deferred) for the precision tier.
 4. **Context** — multi-scope tastes (`_default.md` + genre files), per-image `brief.md` and `notes.md`, JSONL session transcripts, vocabulary gaps.
-5. **MCP server** — 22 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
+5. **MCP server** — 27 tools that adapt the engine for any MCP-capable client (Claude Code, Cursor, Continue, Cline, Zed, Claude Desktop, …).
 6. **CLI** (v1.3.0+) — `chemigram` binary, mirroring the MCP tool surface verb-for-verb. Subprocess-callable for batch processing, custom agent loops, and CI scripts.
 
 ## Two planes of control

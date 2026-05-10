@@ -14,7 +14,7 @@ your taste, you describe intent, the agent edits via a vocabulary of
 named moves on top of darktable. Sessions accumulate; the project gets
 richer over time.
 
-**Status:** v1.9.0 shipped May 2026 — Phase 1 closed at v1.0.0
+**Status:** v1.10.0 shipped May 2026 — Phase 1 closed at v1.0.0
 (minimum viable loop), Phase 2 in progress (use-driven vocabulary
 maturation). v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%);
 v1.10.0 added the **photographer-workflows survey** vocabulary
@@ -43,6 +43,37 @@ masks and snapshots, and learns across sessions. Two modes:
   agent work through one photo together, conversationally.
 - **Mode B (autonomous fine-tuning)** — agent runs alone, branching to
   explore variants, self-evaluating against criteria you provide.
+
+## Built on darktable
+
+Every pixel decision in chemigram is made by [**darktable**](https://www.darktable.org/) —
+the open-source raw photography workflow that has quietly become one
+of the best photo processing engines in the world. Scene-referred
+pipeline, perceptually accurate color science, sigmoid + filmic tone
+mapping, the colorequal HSL panel, lens correction via lensfun,
+denoising profiles per-camera, drawn-form masks with feathered blendif,
+parametric range masks, retouch heal/clone — all of it ships in
+darktable, written by a community of brilliant photographers and
+engineers over more than a decade. The work is uncompromising. The
+output, in our experience, exceeds what most commercial alternatives
+produce.
+
+**chemigram does no photography.** It contributes orchestration:
+vocabulary, an agent loop, versioning, session capture, and the
+discipline that wraps darktable into something an LLM can drive with
+intent. Strip chemigram away and darktable still produces the same
+beautiful renders; strip darktable away and chemigram is a pile of
+JSON. The architectural commitment is explicit and load-bearing — see
+[CLAUDE.md § "darktable does the photography, Chemigram does the loop"](CLAUDE.md).
+
+If you're new to darktable: **try it**. It's free, it's MIT-spirited
+(GPLv3), it runs natively on macOS / Linux / Windows, and the
+[user manual](https://docs.darktable.org/usermanual/) is one of the
+most thorough pieces of open-source documentation we've ever read.
+The [darktable GitHub repository](https://github.com/darktable-org/darktable)
+is where the work happens. If you ship raw work, this is the engine
+you want; chemigram or no chemigram, the darktable team has earned
+your attention.
 
 ## What makes it different
 
@@ -259,3 +290,23 @@ from a chemical reaction on light-sensitive paper — guided by the
 artist, but not fully controlled. The name fits: each edit here emerges
 from a loop between a photographer's intent, an agent's moves, and a
 tool that responds. Authorship is shared and the result is one-of-a-kind.
+
+## Acknowledgments
+
+[**darktable**](https://www.darktable.org/) is the foundation chemigram
+stands on. The darktable team — maintainers, contributors, translators,
+documentation writers — has built an open-source raw photography engine
+that competes with and frequently exceeds proprietary alternatives. If
+this project is useful, [donate to darktable](https://www.darktable.org/contact/),
+file good bug reports, contribute translations, or just tell other
+photographers to try it. The work the darktable community has shipped
+makes everything chemigram does possible.
+
+Other open-source foundations chemigram leans on with gratitude:
+[Python](https://www.python.org/), [Anthropic's MCP](https://modelcontextprotocol.io/),
+[ruff](https://github.com/astral-sh/ruff), [pytest](https://pytest.org/),
+[uv](https://github.com/astral-sh/uv), [defusedxml](https://github.com/tiran/defusedxml),
+[lensfun](https://lensfun.github.io/) (via darktable). And the photo
+agent on the conversational side is whichever frontier LLM the
+photographer chooses — chemigram is built so that piece is yours
+to swap.
