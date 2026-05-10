@@ -125,6 +125,7 @@ def _do_apply_primitive(
     vocabulary: object | None = None,
     mask_spec_override: dict[str, Any] | None = None,
     parameter_values: dict[str, float] | None = None,
+    strength: float | None = None,
 ) -> int:
     """Per-image core for apply-primitive; returns exit code."""
     from chemigram.core.vocab import VocabEntry, VocabError, VocabularyIndex
@@ -160,17 +161,19 @@ def _do_apply_primitive(
             return ExitCode.NOT_FOUND.value
 
     has_parameters = parameter_values is not None or vocab_entry.parameters is not None
+    has_strength = strength is not None
 
-    # Route through apply_entry when parameter axis is in play (entry has
-    # parameters declared, or caller supplied values). apply_entry handles
-    # the parameter-only / mask-only / both compositions.
-    if has_parameters:
+    # Route through apply_entry when parameter axis OR strength axis is in
+    # play. apply_entry handles the parameter-only / mask-only / strength /
+    # composition shapes.
+    if has_parameters or has_strength:
         try:
             new_xmp = apply_entry(
                 baseline_xmp,
                 vocab_entry,
                 parameter_values=parameter_values,
                 mask_spec=effective_mask,
+                strength=strength,
             )
         except (ValueError, TypeError) as exc:
             writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry_name)
@@ -179,7 +182,7 @@ def _do_apply_primitive(
             writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry_name)
             return ExitCode.INVALID_INPUT.value
     elif effective_mask is not None:
-        # Legacy mask-only path (no parameters axis).
+        # Legacy mask-only path (no parameters / strength axis).
         try:
             new_xmp = apply_with_mask(baseline_xmp, vocab_entry.dtstyle, effective_mask)
         except (ValueError, TypeError) as exc:
@@ -374,6 +377,16 @@ def apply_primitive(
             "with --value if values agree."
         ),
     ),
+    strength: float = typer.Option(
+        None,
+        "--strength",
+        help=(
+            "RFC-035 Path B — interpolate the entry's authored parameterized "
+            "fields toward identity by this factor [0.0, 1.0]. 1.0 preserves "
+            "authored (default); 0.0 = identity / no-op; 0.5 = halfway. "
+            "Useful for L2 looks: '--strength 0.5' produces a softer variant."
+        ),
+    ),
     stdin: bool = typer.Option(
         False,
         "--stdin",
@@ -421,6 +434,7 @@ def apply_primitive(
             vocabulary=vocabulary,
             mask_spec_override=mask_spec_override,
             parameter_values=parameter_values,
+            strength=strength,
         )
         for img in iter_image_ids(stdin, image_id)
     ]

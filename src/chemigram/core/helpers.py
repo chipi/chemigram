@@ -228,33 +228,38 @@ def apply_entry(
     mask_spec: dict[str, Any] | None = None,
     mask_id_seed: int | None = None,
     opacity: float = 100.0,
+    strength: float | None = None,
 ) -> Xmp:
     """Apply a vocabulary entry to a baseline XMP, with optional parameter
-    overrides and/or drawn-mask binding.
+    overrides, drawn-mask binding, and (RFC-035) strength interpolation.
 
-    Composes three orthogonal axes:
+    Composes four orthogonal axes:
 
-    1. **Plain apply** (no parameters, no mask) — synthesizes the entry's
-       dtstyle directly onto baseline. Same shape as ``synthesize_xmp(
-       baseline, [entry.dtstyle])``.
+    1. **Plain apply** (no parameters, no mask, no strength) — synthesizes
+       the entry's dtstyle directly onto baseline.
     2. **Parameterized apply** (``parameter_values`` supplied) — patches
        the dtstyle's plugins' ``op_params`` per the entry's declared
        parameters before synthesizing (RFC-021 / ADR-077).
     3. **Drawn-mask apply** (``mask_spec`` supplied) — binds the mask
        form to every plugin's ``blendop_params`` and injects
        ``masks_history`` (ADR-076).
-
-    All three combinations are valid; (2) and (3) compose by editing
-    ``op_params`` first, then ``blendop_params``, on the same plugins.
+    4. **Strength interpolation** (``strength`` supplied) — RFC-035
+       Path B. Per-parameter linear interpolation between identity and
+       authored values across all the entry's plugins. Applied AFTER
+       parameter overrides and BEFORE mask binding so all four axes
+       compose cleanly. ``strength=1.0`` is identity (preserves authored);
+       ``strength=0.0`` is full no-op; ``0.5`` is halfway.
 
     Args:
         baseline: The current XMP to apply onto.
         entry: A :class:`~chemigram.core.vocab.VocabEntry`.
         parameter_values: Optional dict mapping parameter name to value.
-            Must match names declared in ``entry.parameters``.
-        mask_spec: Optional drawn-mask spec per ADR-076.
-        mask_id_seed: Optional explicit mask_id (mask path only).
+        mask_spec: Optional drawn-mask spec.
+        mask_id_seed: Optional explicit mask_id.
         opacity: Mask opacity (0..100; mask path only).
+        strength: Optional strength scaling per RFC-035 Path B. Range
+            [0.0, 1.0]; ``None`` means no strength scaling (preserve
+            authored).
 
     Returns:
         A new :class:`Xmp` with the requested transformations applied.
@@ -262,10 +267,9 @@ def apply_entry(
     Raises:
         TypeError: ``entry`` is not a VocabEntry, or ``entry.parameters``
             is None when ``parameter_values`` is supplied.
-        chemigram.core.parameterize.PatchError: parameter patching failed
-            (modversion mismatch, no decoder registered, blob size
-            mismatch).
-        ValueError: ``mask_spec`` is malformed or names an unknown form.
+        chemigram.core.parameterize.PatchError: parameter patching failed.
+        ValueError: ``mask_spec`` is malformed or names an unknown form,
+            or ``strength`` is outside [0.0, 1.0].
     """
     from chemigram.core.vocab import VocabEntry
     from chemigram.core.xmp import synthesize_xmp
@@ -284,8 +288,18 @@ def apply_entry(
             )
         dtstyle = _apply_parameter_values_to_dtstyle(dtstyle, entry.parameters, parameter_values)
 
+    # Axis 4 (RFC-035 Path B): strength interpolation. Applied after
+    # parameter overrides and before mask binding so it composes with
+    # both. None = no scaling; 1.0 = preserve authored; 0.0 = identity.
+    if strength is not None:
+        if not (0.0 <= strength <= 1.0):
+            raise ValueError(f"strength must be in [0.0, 1.0]; got {strength}")
+        from chemigram.core.strength import apply_strength_to_dtstyle
+
+        dtstyle = apply_strength_to_dtstyle(dtstyle, strength)
+
     # Axis 2: mask binding (ADR-076 drawn / ADR-085 parametric / both) —
-    # composes with parameter overrides
+    # composes with parameter overrides + strength
     if mask_spec is not None:
         return apply_with_mask(
             baseline,
@@ -295,7 +309,7 @@ def apply_entry(
             opacity=opacity,
         )
 
-    # Plain (or parameter-only) apply
+    # Plain (or parameter-only / strength-only) apply
     return synthesize_xmp(baseline, [dtstyle])
 
 

@@ -630,6 +630,7 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     primitive_name = args["primitive_name"]
     mask_spec_override = args.get("mask_spec")
     value_arg = args.get("value")
+    strength_arg = args.get("strength")
 
     workspace = resolve_workspace(ctx, image_id)
     if workspace is None:
@@ -668,9 +669,10 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
     except VocabError as exc:
         return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
 
-    # Route: parameterized OR non-parameterized.
+    # Route: parameterized OR strength-scaled OR mask-only OR plain.
     has_parameters = parameter_values is not None or entry.parameters is not None
-    if has_parameters:
+    has_strength = strength_arg is not None
+    if has_parameters or has_strength:
         from chemigram.core.helpers import apply_entry
         from chemigram.core.parameterize import PatchError
 
@@ -680,6 +682,7 @@ async def _apply_primitive(args: dict[str, Any], ctx: ToolContext) -> ToolResult
                 entry,
                 parameter_values=parameter_values,
                 mask_spec=effective_mask,
+                strength=strength_arg,
             )
         except (ValueError, TypeError, PatchError) as exc:
             return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
@@ -846,6 +849,20 @@ register_tool(
                     "entries (shorthand); object {name: value, ...} for "
                     "multi-parameter entries. Out-of-range values and "
                     "unknown parameter names fail with INVALID_INPUT."
+                ),
+            },
+            "strength": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "description": (
+                    "RFC-035 Path B — interpolate the entry's authored "
+                    "parameterized fields toward identity by this factor. "
+                    "1.0 = preserve authored (default behavior); "
+                    "0.0 = identity (no-op); 0.5 = halfway. Useful for L2 "
+                    "looks: 'apply look_landscape_dramatic_moody at "
+                    "strength=0.5' produces a softer dramatic mood without "
+                    "authoring a separate variant."
                 ),
             },
         },
