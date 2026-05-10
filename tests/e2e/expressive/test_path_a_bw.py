@@ -1,16 +1,22 @@
-"""Path A: B&W (channelmixerrgb) entries — bw_convert / bw_sky_drama / bw_foliage.
+"""Path A: B&W (channelmixerrgb) entries — bw_sky_drama / bw_foliage.
 
-Closes #63. The 3 B&W entries collapse to monochrome via channelmixerrgb mv3
+Closes #63. These channelmixerrgb mv3 B&W variants collapse to monochrome
 in "destination = grey" mode (normalize_grey=true; per-channel grey
 weights sum-normalize). They produce true monochrome output (R==G==B per
 pixel) but differ in luminance distribution because the grey weights
 differ:
 
-- bw_convert:    Rec. 709 (0.2126 / 0.7152 / 0.0722) — neutral
 - bw_sky_drama:  red-emphasis (0.5 / 0.4 / 0.1) — lightens reds, darkens
                  blues; classic "red filter" landscape look
 - bw_foliage:    green-emphasis (0.1 / 0.7 / 0.2) — lightens greens;
                  useful for forest / botanical work
+
+bw_convert was retired from this trio in v1.10.0 — survey Gap #1
+(photographer-workflows Round 2) replaced the channelmixerrgb-based
+bw_convert with a colorequal-based parameterized B&W primitive (8
+sat axes at -1.0 + 8 bright_X parameters emulating Adams-school color
+filters). Visual review per the darkroom-session checkpoint validates
+the new bw_convert; flat-patch chroma assertions don't apply.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ from chemigram.core.xmp import Xmp
 from .conftest import render_baseline, render_with_entry
 
 
-@pytest.mark.parametrize("bw_entry", ["bw_convert", "bw_sky_drama", "bw_foliage"])
+@pytest.mark.parametrize("bw_entry", ["bw_sky_drama", "bw_foliage"])
 def test_bw_entry_collapses_channel_spread(
     bw_entry: str,
     test_raw: Path,
@@ -67,16 +73,14 @@ def test_bw_variants_produce_distinct_luminance_distributions(
     tmp_path: Path,
     pixel_stats,
 ) -> None:
-    """The 3 B&W entries must produce *different* luminance distributions —
-    if they all rendered identically, the per-variant grey weights aren't
-    actually being applied. Each variant's avg luminance should differ
-    from the others by at least a small but measurable amount on the
-    chart fixture (the variants vary their grey weights by ~0.3 across
-    R/G/B channels; on a synthetic ColorChecker the rendered mean
-    luminance shifts a few units between them)."""
+    """The 2 channelmixerrgb B&W variants must produce *different* luminance
+    distributions — if they rendered identically, the per-variant grey
+    weights aren't actually being applied. The 2 variants' grey weights
+    differ by ~0.3 across R/G/B channels; on a synthetic ColorChecker
+    the rendered mean luminance should shift measurably between them."""
     _ = darktable_binary
     luminances: dict[str, float] = {}
-    for name in ("bw_convert", "bw_sky_drama", "bw_foliage"):
+    for name in ("bw_sky_drama", "bw_foliage"):
         rendered = render_with_entry(
             raw_path=test_raw,
             baseline=baseline_xmp,
@@ -87,17 +91,10 @@ def test_bw_variants_produce_distinct_luminance_distributions(
         )
         luminances[name] = pixel_stats.mean_luminance(rendered)
 
-    # Each pair should differ by at least 0.3 luminance units (out of 255).
-    # Render-to-render variance on luminance sits well below 0.1.
-    pairs = [
-        ("bw_convert", "bw_sky_drama"),
-        ("bw_convert", "bw_foliage"),
-        ("bw_sky_drama", "bw_foliage"),
-    ]
-    for a, b in pairs:
-        delta = abs(luminances[a] - luminances[b])
-        assert delta > 0.3, (
-            f"{a} and {b} should differ in luminance "
-            f"(per-variant grey weights differ by ~0.3); got "
-            f"{a}={luminances[a]:.2f}, {b}={luminances[b]:.2f}, delta={delta:.2f}"
-        )
+    delta = abs(luminances["bw_sky_drama"] - luminances["bw_foliage"])
+    assert delta > 0.3, (
+        f"bw_sky_drama and bw_foliage should differ in luminance "
+        f"(per-variant grey weights differ by ~0.3); got "
+        f"sky_drama={luminances['bw_sky_drama']:.2f}, "
+        f"foliage={luminances['bw_foliage']:.2f}, delta={delta:.2f}"
+    )

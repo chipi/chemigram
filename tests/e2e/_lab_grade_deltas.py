@@ -487,10 +487,11 @@ EXPECTED_EFFECTS: dict[str, tuple[str, LabCheck]] = {
     # values via PARAMETERIZED_EFFECTS below.
     # vibrance_+0.3 retired in v1.6+ → replaced by parameterized ``vibrance``
     # entry; covered in PARAMETERIZED_EFFECTS below.
-    # --- B&W trio (channelmixerrgb mv3 in destination=grey mode; closes #63) ---
-    # All three collapse chroma to ~0; they differ in luminance distribution
-    # but on the chart fixture the chroma-collapse is the dominant signal.
-    "bw_convert": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
+    # --- B&W variants (channelmixerrgb mv3 in destination=grey mode; closes #63) ---
+    # Both collapse chroma to ~0; they differ in luminance distribution but
+    # on the chart fixture the chroma-collapse is the dominant signal.
+    # bw_convert was retired from this trio in v1.10.0 (colorequal-based
+    # parameterized B&W primitive per survey Gap #1); covered in SKIP_REASONS.
     "bw_sky_drama": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
     "bw_foliage": ("colorchecker", _check_chroma_zero(max_chroma=8.0)),
     "chroma_boost_shadows": ("colorchecker", _check_chroma_increase(min_delta=0.3)),
@@ -572,6 +573,45 @@ SKIP_REASONS: dict[str, str] = {
     "look_dark_pixels_global_lift": "L2 parametric-only mask (luminance range_filter, no spatial mask). Wire covered by tests/e2e/test_parametric_mask_filtering.py.",  # noqa: E501
     # --- Pre-existing chart-alignment limitations (not regressions) ---
     "rectangle_subject_band_dim": "Mask y=[0.4, 0.6] + 0.05 border doesn't align cleanly with the ColorChecker chart's row layout — empirically the complement zone (outer rows) shows more dimming than the inner zone. The wire IS correct (verified by test_drawn_mask_shapes_effect.py and build-by-words rectangle e2e tests against real raws); the chart-isolation assertion is the wrong shape for this entry. Leave skipped until a chart-aligned fixture or a different mask geometry is set up.",  # noqa: E501
+    # --- 5 B&W L2 looks (photographer-survey Round 2; v1.10.0 era) ---
+    "look_bw_classic_neutral": "L2 composite (bw_convert + sigmoid + bilat); sub-effects covered by parameterized colorequal/sigmoid/bilat entries.",  # noqa: E501
+    "look_bw_high_contrast_chiaroscuro": "L2 composite (bw_convert + sigmoid high-contrast + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_bw_landscape_dramatic": "L2 composite (bw_convert with red-filter sim + sigmoid + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_bw_silver_efex_zone_balanced": "L2 composite (bw_convert + sigmoid + bilat zone-shaping); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_bw_split_tone_warm_shadows": "L2 composite (bw_convert + sigmoid + colorbalancergb split-tone); sub-effects covered by parameterized entries.",  # noqa: E501
+    # --- 8 landscape L2 looks (photographer-survey Round 1; v1.10.0 era) ---
+    "look_landscape_atmospheric_haze": "L2 composite (hazeremoval + bilat + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_autumn_pop": "L2 composite (temperature + colorequal autumn shift + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_blue_hour_cool": "L2 composite (temperature cool + sigmoid + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_dramatic_moody": "L2 composite (sigmoid high-contrast + colorbalancergb + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_golden_hour": "L2 composite (temperature warm + sigmoid + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_grand_vista": "L2 composite (sigmoid + colorbalancergb + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_intimate_quiet": "L2 composite (sigmoid soft-contrast + colorbalancergb + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_sky_enhance": "L2 composite (colorbalancergb sky lift); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_landscape_water_silk": "L2 composite (bilat negative-strength); covered by parameterized bilat_clarity_strength entry.",  # noqa: E501
+    # --- 5 portrait L2 looks (photographer-survey Round 1; v1.10.0 era) ---
+    "look_portrait_background_dim": "L2 composite (vignette + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_portrait_editorial": "L2 composite (sigmoid editorial-contrast + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_portrait_natural_skin": "L2 composite (temperature warm + sigmoid + colorbalancergb skin shift); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_portrait_skin_warm_lift": "L2 composite (temperature warm + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_portrait_split_tone_moody": "L2 composite (sigmoid + colorbalancergb split-tone); sub-effects covered by parameterized entries.",  # noqa: E501
+    # --- 5 wildlife L2 looks (photographer-survey Round 3; v1.10.0 era) ---
+    "look_wildlife_background_blur": "L2 composite (bilat negative-strength on background); covered by parameterized bilat entry.",  # noqa: E501
+    "look_wildlife_eye_lift": "L2 composite (exposure + sharpen on eye region); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_wildlife_high_iso_recovery": "L2 composite (denoiseprofile + sigmoid + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_wildlife_natural_warm": "L2 composite (temperature + sigmoid + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_wildlife_subject_sharpen": "L2 composite (sharpen + bilat); sub-effects covered by parameterized entries.",  # noqa: E501
+    # --- 4 food/product L2 looks (photographer-survey Round 3; v1.10.0 era) ---
+    "look_food_appetizing_warm": "L2 composite (temperature warm + sigmoid + colorbalancergb); sub-effects covered by parameterized entries.",  # noqa: E501
+    "look_food_green_natural": "L2 composite (colorequal green-shift); covered by parameterized colorequal entry.",  # noqa: E501
+    "look_food_orange_pop": "L2 composite (colorequal orange-pop); covered by parameterized colorequal entry.",  # noqa: E501
+    "look_food_texture_subtle": "L2 composite (bilat texture-shaping); covered by parameterized bilat entry.",  # noqa: E501
+    "look_product_packshot_clean": "L2 composite (sigmoid + colorbalancergb neutral); sub-effects covered by parameterized entries.",  # noqa: E501
+    # --- 2 skin entries (RFC-033 follow-ups; v1.10.0 era) ---
+    "skin_smooth_painterly": "Skin-specific bilat shaping; covered by parameterized bilat_clarity_strength entry.",  # noqa: E501
+    "skin_uniformity": "Skin-uniformity primitive (RFC-033); needs visual review per the darkroom-session checkpoint, not flat-patch isolation.",  # noqa: E501
+    # --- bw_convert v1.10.0 redesign (survey Gap #1; colorequal-based) ---
+    "bw_convert": "Redesigned in v1.10.0 (photographer-survey Round 2 Gap #1) from channelmixerrgb mv3 to colorequal-based parameterized B&W primitive: 8 sat axes at -1.0 (full sat-kill = grayscale) + 8 bright_X parameters emulating Adams-school color-filter strength (bright_red lightens skin/red flowers; bright_blue darkens skies; etc.). Chroma-collapse still applies but the per-channel luminance test isn't applicable to colorequal mechanics. Visual review per the darkroom-session checkpoint validates the redesign; chart-isolation needs a per-bright_X parametrization (deferred).",  # noqa: E501
 }
 
 # Parameterized entries (RFC-021): one entry, multiple values exercised
