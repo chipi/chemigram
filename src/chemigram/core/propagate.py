@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from chemigram.core.framing_bound import FRAMING_BOUND_OPS
 from chemigram.core.workspace import Workspace
 from chemigram.core.xmp import HistoryEntry, Xmp
 
@@ -27,23 +28,11 @@ from chemigram.core.xmp import HistoryEntry, Xmp
 # at ~80-100 images; bird bursts at ~30. 200 is generous-but-finite.
 MAX_TARGETS_PER_CALL = 200
 
-# Operations that depend on per-image content / coordinates and don't
-# propagate cleanly across different images. Matches Lightroom's Sync
-# discipline — settings tied to framing don't sync.
-FRAMING_BOUND_OPS: frozenset[str] = frozenset(
-    {
-        # Compositional crop is per-image
-        "ashift",
-        "crop",
-        # Retouch (heal/clone) is location-specific (RFC-025 / ADR-087)
-        "retouch",
-        # Lens correction is per-camera but EXIF-bound; usually consistent
-        # within a batch, but not across mixed-camera sets. Auto-excluded
-        # to match "no propagation across cameras" wedding discipline;
-        # opt-in via include_per_image=True for single-camera workflows.
-        "lens",
-    }
-)
+# FRAMING_BOUND_OPS is the canonical registry — kept in
+# chemigram.core.framing_bound so any future cross-image tool can
+# import the single source of truth (closes Gap D from the
+# RFC-035/036/037 retro). Re-exported here for backwards compat with
+# callers that imported it from this module.
 
 
 class PropagateError(Exception):

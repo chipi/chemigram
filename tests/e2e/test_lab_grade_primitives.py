@@ -308,16 +308,35 @@ def test_skip_reasons_documented_for_remaining_primitives(
     vocab: VocabularyIndex,
 ) -> None:
     """Every loaded primitive should either be in EXPECTED_EFFECTS (asserted)
-    or in SKIP_REASONS (explicitly skipped with a reason). No silent
-    coverage gaps."""
+    or in SKIP_REASONS (explicitly skipped with a reason) or be a structurally-
+    skipped L2 composite. No silent coverage gaps.
+
+    L2 entries (``layer=='L2'``) auto-skip from lab-grade by structural rule.
+    L2 is the composition layer — every L2 look bundles intent (specific
+    parameter values + optional mask + optional ordering) on top of
+    parameterized L3 primitives. Lab-grade chart isolation tests each L3
+    parameterized primitive's effect; testing the composition adds no
+    information over testing the parts. The right validation surface for
+    L2 looks is darkroom-session visual review against real raws.
+
+    Closes Gap B from the RFC-035/036/037 retro: replaces ~30 hand-written
+    per-entry SKIP_REASONS rationales with one structural rule.
+
+    L2 entries that genuinely need lab-grade coverage (e.g., compositional-
+    mask looks where the wire correctness is the assertion) explicitly
+    appear in EXPECTED_EFFECTS / PARAMETERIZED_EFFECTS / SKIP_REASONS to
+    document their unique rationale; the structural rule yields to those
+    explicit registrations.
+    """
     asserted = set(EXPECTED_EFFECTS.keys())
-    # Parameterized entries are covered by the parametrized test above;
-    # extract just the entry-name half of the (name, label) keys.
     parameterized_names = {k[0] for k in PARAMETERIZED_EFFECTS.keys()}
     skipped = set(SKIP_REASONS.keys())
     all_loaded = {entry.name for entry in vocab.list_all()}
 
-    missing = all_loaded - asserted - parameterized_names - skipped
+    # Structural rule: every L2 entry auto-skips from lab-grade.
+    l2_composite_skips = {entry.name for entry in vocab.list_all() if entry.layer == "L2"}
+
+    missing = all_loaded - asserted - parameterized_names - skipped - l2_composite_skips
     # canon_eos_r5_baseline_l1 is an L1 entry (camera-specific binding); not
     # applicable to chart isolation. Skip with implicit reason.
     missing.discard("canon_eos_r5_baseline_l1")
@@ -327,5 +346,7 @@ def test_skip_reasons_documented_for_remaining_primitives(
             "Primitives without lab-grade coverage (neither asserted nor "
             f"skipped): {sorted(missing)}. Add to EXPECTED_EFFECTS or "
             "PARAMETERIZED_EFFECTS in tests/e2e/_lab_grade_deltas.py if "
-            "asserting, or to SKIP_REASONS with a reason if not."
+            "asserting, or to SKIP_REASONS with a reason if not. "
+            "(L2 composites with multi-module touches auto-skip; if your "
+            "L2 entry should actually be tested, add it to EXPECTED_EFFECTS.)"
         )

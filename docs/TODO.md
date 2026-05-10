@@ -319,20 +319,12 @@ mistakes after-the-fact.
 
 ### Gap B — L2 looks have a systematic coverage skip-rationale, not codified
 
-**The gap:** every newly authored L2 look gets hand-added to
-`tests/e2e/_lab_grade_deltas.py::SKIP_REASONS` with a similar rationale
-("L2 composite (...sub-effects covered by parameterized entries)"). The
-rationale is uniform across 31+ entries; the per-entry rule is "if
-manifest entry has multiple `touches[]`, it's a composite, skip lab-grade
-chart isolation." Currently this is hand-rationale per entry, not a
-discriminator.
-
-**Trigger to revisit:** when the SKIP_REASONS dict crosses ~50 L2 entries
-(currently ~35). The fix shape: introduce a manifest-level
-`_lab_grade_coverage_strategy: "L2_composite_skip"` field; the test reads
-that field and skips with a generic rationale. Personal/idiosyncratic
-skip reasons (chart-alignment limitations, etc.) keep their per-entry
-rationale.
+**Resolution (2026-05-10):** ✅ Closed. The fix shape ended up simpler than
+the retro proposed — `test_skip_reasons_documented_for_remaining_primitives`
+now applies a structural rule: any entry with `layer == "L2"` auto-skips
+from lab-grade. Removed ~36 hand-written per-entry SKIP_REASONS rationales;
+SKIP_REASONS now holds only L1/L3 idiosyncratic skips and chart-fixture
+limitations. No manifest schema change needed.
 
 ### Gap C — Visual-review checkpoint debt has no explicit ledger
 
@@ -350,32 +342,26 @@ graduate off the list as the darkroom session validates them.
 
 ### Gap D — Framing-bound op discriminator is hard-coded, not annotated
 
-**The gap:** `propagate_state` excludes a fixed set of framing-bound ops
-(`ashift`, `crop`, `retouch`, `lens`) plus drawn-mask-bound entries.
-The list lives in `src/chemigram/core/propagate.py`'s `FRAMING_BOUND_OPS`
-constant. When future ops get added, we'll need to remember to flag them.
-
-**Trigger to revisit:** when a new operation gets added that has
-per-image framing characteristics (e.g., perspective sub-mode of ashift,
-some future depth-aware op). The fix shape: a `framing_bound: bool`
-field on the dtstyle/manifest entry, defaulted false; propagate_state
-reads the annotation rather than the hard-coded list. Drawn-mask-bound
-detection stays runtime (it inspects the blendop bytes).
+**Resolution (2026-05-10):** ✅ Closed (partial). `FRAMING_BOUND_OPS` moved
+to a dedicated `chemigram.core.framing_bound` registry module — single
+source of truth, separate from `propagate.py`'s logic, with full
+documentation of why each op is framing-bound. Propagate re-exports for
+backwards compat. The manifest-level entry override proposed in the retro
+was deferred — the trigger ("new op added with per-image framing
+characteristics") hasn't fired yet, and the registry-only fix already
+addresses the discoverability concern. Re-open if a real entry-level
+override case surfaces.
 
 ### Gap E — Multi-axis parameterized entries can't be exhaustively chart-tested
 
-**The gap:** the new `bw_convert` exposes 8 `bright_X` axes (one per hue
-band). Lab-grade test coverage strategy is `(entry_name, label) →
-(target, check, params)`; covering all 8 axes at 3 magnitudes each =
-24 parametrize ids per entry, and `bw_convert` is just one of N
-multi-axis entries. The test matrix can't grow this way.
-
-**Trigger to revisit:** when we author a second multi-axis primitive
-needing similar coverage (skin_smooth, future range_filter HSL
-variants). The fix shape: chart-isolation for the *base mechanic*
-(chroma-collapse for bw_convert; saturation reduction for sat_*) and
-delegate per-axis directional verification to the unit-test layer
-(byte-level patch + decode round-trip) which already covers it cheaply.
+**Resolution (2026-05-10):** ✅ Closed. Policy adopted: lab-grade tests the
+*base mechanic* (e.g., chroma-collapse for `bw_convert`); per-axis
+directional behavior is delegated to unit tests (byte-level patch +
+decode round-trip, already in place for the parameterize modules).
+`bw_convert` restored to EXPECTED_EFFECTS with the chroma-zero base-
+mechanic check. The same shape applies to future multi-axis primitives —
+add to EXPECTED_EFFECTS with a base-mechanic check; rely on existing
+unit-test coverage for per-axis verification.
 
 ## Items to capture as they emerge
 
