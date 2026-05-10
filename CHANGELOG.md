@@ -60,7 +60,7 @@ chemigram apply-primitive --entry look_landscape_dramatic_moody --strength 0.6
 LR-Sync analog: nail post-processing on one anchor, propagate to N targets. Inherit-everything-by-default with framing-bound auto-exclusion (`ashift` / `crop` / `retouch` / `lens` plus drawn-mask-bound entries). Parametric range masks DO propagate. Atomic. Cap 200 targets.
 
 ```
-chemigram propagate-state --source <anchor> --targets <id1>,<id2>,<id3> \
+chemigram propagate-state <anchor> --to <id1> --to <id2> --to <id3> \
     --label "wedding-reception-2026-05-08"
 ```
 

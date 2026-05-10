@@ -12,7 +12,7 @@ RFC-031's `apply_per_region` ships single-primitive batched-region application: 
 
 ## Decision
 
-Extend `apply_per_region` to accept a second payload shape: each region carries an `ops` array (`[{entry, parameter_values?}, ...]`) instead of relying on a top-level `entry`. The discriminator is the presence of `ops` on any region — single-primitive shape preserved unchanged for backwards compatibility.
+Extend `apply_per_region` to accept a second payload shape: each region carries an `ops` array (`[{primitive_name, parameter_values?}, ...]`) instead of relying on a top-level `primitive_name`. The discriminator is the presence of `ops` on any region — single-primitive shape preserved unchanged for backwards compatibility.
 
 Atomic semantics carry over from RFC-031: every (op × region) combination validates first (parameter range, mask resolution, entry lookup); if any validation fails, the whole batch aborts and no snapshot is taken.
 

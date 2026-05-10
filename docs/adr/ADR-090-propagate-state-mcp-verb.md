@@ -12,7 +12,7 @@ The photographer-workflow survey surfaced anchor-and-sync as a genre-spanning mo
 
 ## Decision
 
-Add a single MCP verb `propagate_state(source_workspace, target_workspaces, *, exclude_ops?, include_per_image?, label?)` that copies the source image's history entries to every target image, with framing-bound ops auto-excluded by default.
+Add a single MCP verb `propagate_state(source_image_id, target_image_ids, *, exclude_ops?, include_per_image?, label?)` that copies the source image's history entries to every target image, with framing-bound ops auto-excluded by default. (The core Python function takes `source_workspace`/`target_workspaces` Workspace objects directly; the MCP wrapper resolves image_ids to workspaces.)
 
 Inheritance discipline: **inherit everything by default, exclude framing-bound ops**. Same shape as Lightroom Sync — settings that depend on per-image content or coordinates don't propagate.
 
@@ -26,7 +26,7 @@ Atomic semantics: every target validates first; any modversion mismatch / missin
 
 Cap: `MAX_TARGETS_PER_CALL = 200`. Generous-but-finite; covers wedding lighting groups (~80-100 max), bird bursts (~30), product variants (~20).
 
-CLI: `chemigram propagate-state --source <id> --targets <id1>,<id2>,... [--label <label>] [--include-per-image]`.
+CLI: `chemigram propagate-state <source_id> --to <id1> --to <id2> ... [--exclude-op <name>...] [--include-per-image] [--label <label>]` (positional source; repeatable `--to` per target; repeatable `--exclude-op` for fine-grained opt-outs).
 
 ## Rationale
 

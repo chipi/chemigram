@@ -252,16 +252,16 @@ Sky cooled and darkened; foreground shadows lifted; one snapshot. The named-mask
 
 ### Mixed-op per-region (RFC-036)
 
-For composite moves like "lighten the iris **and** sharpen the lashes" — primitives differ across regions but the move is conceptually one snapshot — `apply-per-region` accepts an `ops` array per region. Each region names its own `entry` with optional `parameter_values`:
+For composite moves like "lighten the iris **and** sharpen the lashes" — primitives differ across regions but the move is conceptually one snapshot — `apply-per-region` accepts an `ops` array per region. Each op names a `primitive_name` with optional `parameter_values`:
 
 ```
 chemigram apply-per-region <image_id> --regions '[
   {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.45,"center_y":0.4,"radius_x":0.04,"radius_y":0.05,"border":0.02}},
-   "ops":[{"entry":"exposure","parameter_values":{"ev":0.3}},
-          {"entry":"sharpen","parameter_values":{"amount":0.8}}]},
+   "ops":[{"primitive_name":"exposure","parameter_values":{"ev":0.3}},
+          {"primitive_name":"sharpen","parameter_values":{"amount":0.8}}]},
   {"mask_spec":{"dt_form":"ellipse","dt_params":{"center_x":0.55,"center_y":0.4,"radius_x":0.04,"radius_y":0.05,"border":0.02}},
-   "ops":[{"entry":"exposure","parameter_values":{"ev":0.3}},
-          {"entry":"sharpen","parameter_values":{"amount":0.8}}]}
+   "ops":[{"primitive_name":"exposure","parameter_values":{"ev":0.3}},
+          {"primitive_name":"sharpen","parameter_values":{"amount":0.8}}]}
 ]'
 ```
 
@@ -290,10 +290,12 @@ When to reach for `--strength`: dialing back an L2 look that's "almost right but
 `propagate_state` is the LR-Sync analog: nail the post-processing on one image, then propagate that edit state to a list of related target images. The target images inherit every history entry from the source workspace **except** framing-bound ops that must stay per-image:
 
 ```
-chemigram propagate-state --source <anchor_id> \
-  --targets <id1>,<id2>,<id3> \
+chemigram propagate-state <anchor_id> \
+  --to <id1> --to <id2> --to <id3> \
   --label "wedding-reception-batch-2026-05-08"
 ```
+
+The source `<anchor_id>` is positional. Each `--to <id>` flag names one target (repeatable; cap 200 per call). Skip extra ops with repeated `--exclude-op <name>`. Use `--include-per-image` to override the framing-bound auto-exclusion (only for tripod-fixed series).
 
 Framing-bound exclusions (auto-applied):
 - `ashift` — perspective correction (per-camera-angle)

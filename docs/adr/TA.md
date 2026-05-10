@@ -298,10 +298,10 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 - `list_masks_vocabulary(tags?)` → entries (RFC-032 named maskdefs)
 - `get_state(image_id)` → entries + head hash
 - `apply_primitive(image_id, primitive_name, mask_spec?, parameter_values?, strength?)` → state_after, snapshot_hash. `strength ∈ [0.0, 1.0]` interpolates parameterized L2 looks per RFC-035 / ADR-088.
-- `apply_per_region(image_id, regions, primitive_name?, label?)` → state_after, snapshot_hash, n_regions. Single-op shape (RFC-031): top-level `primitive_name` + each region carries `mask_spec` + optional `parameter_values`. Mixed-op shape (RFC-036 / ADR-089): omit top-level `primitive_name`; each region carries `ops: [{entry, parameter_values?}, ...]`. Discriminator is presence of `ops` on any region. Atomic validate-then-apply.
+- `apply_per_region(image_id, regions, primitive_name?, label?)` → state_after, snapshot_hash, n_regions. Single-op shape (RFC-031): top-level `primitive_name` + each region carries `mask_spec` + optional `parameter_values`. Mixed-op shape (RFC-036 / ADR-089): omit top-level `primitive_name`; each region carries `ops: [{primitive_name, parameter_values?}, ...]`. Discriminator is presence of `ops` on any region. Atomic validate-then-apply.
 - `apply_spot(image_id, kind, x, y, radius, source_x?, source_y?, opacity?)` → state_after, snapshot_hash (RFC-025 / ADR-087 — heal/clone)
 - `wb_from_gray_card(image_path, x, y, sample_radius)` → temperature_coefficients (v1.10.0)
-- `propagate_state(source_workspace, target_workspaces, exclude_ops?, include_per_image?, label?)` → results, n_succeeded, n_failed (RFC-037 / ADR-090 — LR-Sync analog)
+- `propagate_state(source_image_id, target_image_ids, exclude_ops?, include_per_image?, label?)` → results, n_succeeded, n_failed (RFC-037 / ADR-090 — LR-Sync analog). Core Python API takes `source_workspace`/`target_workspaces` directly; MCP wrapper resolves image_ids to workspaces.
 - `remove_module(image_id, module_name)` → state_after, snapshot_hash
 - `reset(image_id)` → state_after (resets to baseline_end, not empty)
 

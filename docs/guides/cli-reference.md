@@ -117,27 +117,26 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
 Usage: chemigram apply-per-region [OPTIONS] IMAGE_ID
 
  Apply one or more primitives to N mask-bound regions atomically.
- Single-primitive shape closes RFC-031; mixed-op shape closes RFC-036
- / ADR-089.
+ Single-op shape closes RFC-031; mixed-op shape closes RFC-036 / ADR-089.
 
- *    image_id      TEXT  Image ID. [required]
-    --entry              TEXT  Vocabulary entry name (single-op shape).
-                               Omit when using mixed-op shape (regions
-                               carry their own `ops`).
- *  --regions            TEXT  JSON array of regions. [required]
-                               Single-op shape: `{"mask_spec": {...},
-                               "parameter_values": {...}}`. Mixed-op
-                               shape (RFC-036): each region carries
-                               `ops: [{"entry": "...", "parameter_values":
-                               {...}}, ...]`. Discriminator: presence of
-                               `ops` on any region routes to mixed-op.
-    --pack       -p      TEXT  Pack name (repeatable). Defaults to
-                               ['starter'].
-    --label              TEXT  Optional snapshot label.
-    --help                     Show this message and exit.
+ *    image_id     TEXT  Image ID. [required]
+      --entry      TEXT  Vocabulary entry name (single-op shape per
+                         RFC-031). Omit when using mixed-op shape — each
+                         region then carries its own `ops` list.
+ *    --regions    TEXT  JSON array of regions. [required]
+                         Single-op shape: `{"mask_spec": {...},
+                         "parameter_values": {...}}`.
+                         Mixed-op shape (RFC-036): each region is
+                         `{"mask_spec": {...}, "ops": [{"primitive_name":
+                         "...", "parameter_values": {...}}, ...]}`.
+                         Discriminator: presence of `ops` on any region
+                         routes to mixed-op.
+      --pack  -p   TEXT  Pack name (repeatable). Defaults to ['starter'].
+      --label      TEXT  Optional snapshot label.
+      --help             Show this message and exit.
 ```
 
-The single-op shape canonical use case is dodge-and-burn: brighten cheekbones,
+The single-op canonical use case is dodge-and-burn: brighten cheekbones,
 brighten nose bridge, deepen jaw shadow — one move from the photographer's
 perspective, N region-specific applications underneath. Soft cap: 32 regions.
 
@@ -154,25 +153,25 @@ modversion mismatch), none apply.
 ### `chemigram propagate-state`
 
 ```
-Usage: chemigram propagate-state [OPTIONS]
+Usage: chemigram propagate-state [OPTIONS] SOURCE_IMAGE_ID
 
- Propagate a source image's edit state to N target images. Anchor-and-sync
- workflow — Lightroom Sync analog. Closes RFC-037 / ADR-090.
+ Sync edit state from one anchor to N targets atomically (RFC-037 / ADR-090).
+ Lightroom-Sync analog.
 
- *  --source              TEXT  Source image_id (the anchor). [required]
- *  --targets             TEXT  Comma-separated target image_ids. [required]
-                                Cap: 200 targets per call.
-    --label               TEXT  Optional snapshot label per target.
-    --include-per-image          Override the framing-bound auto-exclusion.
-                                 Default: ashift / crop / retouch / lens /
-                                 drawn-mask-bound entries are skipped because
-                                 they're per-image. Set this only for tripod-
-                                 fixed series where framing-bound moves are
-                                 portable.
-    --exclude-ops         TEXT  Comma-separated extra op names to exclude
-                                (rare).
-    --pack       -p       TEXT  Pack name (repeatable).
-    --help                      Show this message and exit.
+ *    source_image_id        TEXT  Anchor image (state propagates FROM).
+                                   [required]
+ *    --to                   TEXT  Target image_id (repeatable; state
+                                   propagates TO). Cap: 200 targets per
+                                   call. [required]
+      --exclude-op           TEXT  Operation name to skip (repeatable).
+                                   Default: inherit everything except the
+                                   framing-bound auto-exclusion list.
+      --include-per-image          Override framing-bound auto-exclusion
+                                   (drawn masks, retouch, crop, lens). Use
+                                   for tripod-fixed series where framing-
+                                   bound moves are portable.
+      --label                TEXT  Optional snapshot label per target.
+      --help                       Show this message and exit.
 ```
 
 Inheritance discipline: inherit everything by default; auto-exclude framing-

@@ -205,7 +205,7 @@ Recommended cadence: every 2-3 weeks while debt is high; less once it's small. E
 **How to validate:**
 1. Pick 5-10 images from a real burst (wedding lighting group, product color variants, or landscape series with consistent light).
 2. Edit one anchor with the full chemigram pipeline: WB, exposure, sigmoid, color grading, optionally a parametric range mask.
-3. Run `chemigram propagate-state --source <anchor> --targets <id1>,<id2>,...`
+3. Run `chemigram propagate-state <anchor> --to <id1> --to <id2> ...`
 4. Render each target. Visually inspect: does the look propagate? Are there obvious framing-bound issues (crop / retouch leaking through)?
 5. Try a target intentionally outside the burst (different lighting / different scene). Does it look bad? (Should — propagating cross-genre is misuse but should fail gracefully not catastrophically.)
 
