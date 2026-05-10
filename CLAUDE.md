@@ -326,10 +326,11 @@ The project is currently in **Phase 2** (vocabulary maturation):
 - **Phase 1.7** (Tier 2 + Bucket A; RFC-022 → ADR-081) — ✅ **closed v1.7.0**.
 - **Phase 1.8** (HSL via colorequal; RFC-023 → ADR-083; Lightroom daily-use parity 51/52) — ✅ **closed v1.8.0**.
 - **Phase 1.9** (mask + retouch architecture trilogy; RFC-024/025/026/029 → ADR-084..087) — ✅ **closed v1.9.0**. 83 vocabulary entries, 1811 tests.
+- **Phase 1.10** (photographer-survey vocabulary expansion + workflow primitives; RFC-035/036/037 → ADR-088/089/090) — ✅ **closed v1.10.0**. 114 vocabulary entries (29 new L2 looks across 6 genres + bw_convert v2), 1849 tests, parametric L2 strength + mixed-op `apply_per_region` + `propagate_state`. ADR-088/089/090 ship as Draft pending darkroom-session validation.
 - **Phase 2** (vocabulary maturation) — **in progress (use-driven)**. Intermittent, not slice-and-gate. The work shape: run real sessions, log gaps via `log_vocabulary_gap`, periodically open darktable to capture missing primitives as `.dtstyle` files, drop into `~/.chemigram/vocabulary/personal/`. Markers: ~30–60 personal entries after 3 months.
 - **Phase 4** (content-aware masking) — Phase 1 ✅ closed v1.9.0 (LLM-vision via RFC-026 / ADR-086); Phase 2 (RFC-030 deployed sibling-provider scaffolding) drafted, deferred.
 
-If you're doing implementation work, Phase 1 + the v1.6–v1.9 mask + Lightroom-parity sub-phases are closed; you're either maintaining shipped functionality (bug fixes, polish, doc updates) or starting Phase 2 work (authoring vocabulary entries, running sessions, logging findings) or RFC-027/RFC-028/RFC-030 work when those unfreeze. The Phase 2 framing is in `IMPLEMENTATION.md` § "Phase 2 — Vocabulary maturation"; the personal-vocabulary growth pattern is in `vocabulary/starter/README.md`.
+If you're doing implementation work, Phase 1 + the v1.6–v1.10 sub-phases are closed; you're either maintaining shipped functionality (bug fixes, polish, doc updates) or starting Phase 2 work (authoring vocabulary entries, running sessions, logging findings) or RFC-027/RFC-028/RFC-030 work when those unfreeze. The Phase 2 framing is in `IMPLEMENTATION.md` § "Phase 2 — Vocabulary maturation"; the personal-vocabulary growth pattern is in `vocabulary/starter/README.md`.
 
 If you're doing doc work, you're maintaining the system, not bootstrapping it. Most additions now are ADRs (closing remaining open RFCs as evidence comes in) or new PRDs (when scope expands).
 

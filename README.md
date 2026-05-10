@@ -17,13 +17,20 @@ richer over time.
 **Status:** v1.9.0 shipped May 2026 — Phase 1 closed at v1.0.0
 (minimum viable loop), Phase 2 in progress (use-driven vocabulary
 maturation). v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%);
-v1.9.0 closed the **mask + retouch architecture trilogy**: spatial
-masks (RFC-029 / ADR-084), parametric range filters (RFC-024 /
-ADR-085), LLM-vision content-derived masks (RFC-026 / ADR-086), spot
-heal/clone (RFC-025 / ADR-087). 1811 tests, real-darktable e2e suite,
-83 vocabulary entries. Not a Lightroom replacement. Not a digital
-asset manager. A probe into where photographic taste lives and how it
-transmits through language and feedback.
+v1.10.0 added the **photographer-workflows survey** vocabulary
+expansion (29 new L2 looks across 6 genres + colorequal-based
+bw_convert v2) plus three workflow primitives: parametric L2
+strength (RFC-035 / ADR-088), mixed-op `apply_per_region`
+(RFC-036 / ADR-089), and `propagate_state` (RFC-037 / ADR-090,
+the Lightroom-Sync analog). v1.9.0 closed the **mask + retouch
+architecture trilogy**: spatial masks (RFC-029 / ADR-084),
+parametric range filters (RFC-024 / ADR-085), LLM-vision
+content-derived masks (RFC-026 / ADR-086), spot heal/clone
+(RFC-025 / ADR-087). 1849 tests, real-darktable e2e suite, **114
+vocabulary entries** (2 starter + 112 expressive-baseline). Not a
+Lightroom replacement. Not a digital asset manager. A probe into
+where photographic taste lives and how it transmits through
+language and feedback.
 
 ## What this is
 

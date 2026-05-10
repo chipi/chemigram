@@ -13,7 +13,7 @@
 
 A craft-research project. The agent reads your taste, you describe intent, the agent edits via a vocabulary of named moves on top of darktable. Sessions accumulate; the project gets richer over time.
 
-**v1.9.0 shipped May 2026** — Phase 1 closed at v1.0.0; v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%); v1.9.0 closed the mask + retouch architecture trilogy (RFC-024/025/026/029 + ADR-084..087). Phase 2 (use-driven vocabulary maturation) in progress; 83 vocabulary entries shipped.
+**v1.10.0 shipped May 2026** — Phase 1 closed at v1.0.0; v1.6–v1.8 closed Lightroom daily-use parity (51/52, 98%); v1.9.0 closed the mask + retouch architecture trilogy (RFC-024/025/026/029 + ADR-084..087); v1.10.0 added photographer-workflow vocabulary (29 new L2 looks across 6 genres + bw_convert v2) plus three workflow primitives — parametric L2 strength (RFC-035 / ADR-088), mixed-op `apply_per_region` (RFC-036 / ADR-089), `propagate_state` LR-Sync analog (RFC-037 / ADR-090). Phase 2 (use-driven vocabulary maturation) in progress; **114 vocabulary entries** shipped.
 
 ---
 

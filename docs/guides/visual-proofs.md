@@ -48,7 +48,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (102 entries)
+## `expressive-baseline` pack (112 entries)
 
 ### `grain_strength`
 

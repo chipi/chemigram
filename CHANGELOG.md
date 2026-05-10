@@ -23,11 +23,12 @@ flips them to Accepted.
 
 ### Stats
 
-- Tests: 1811 → **1845** (+34: dtstyle drift + framing-bound + strength + propagate + mixed-op)
+- Tests: 1811 → **1849** (+38: dtstyle drift + framing-bound + strength + propagate + mixed-op)
 - ADRs: 87 → **90** (ADR-088 / ADR-089 / ADR-090; all Draft pending darkroom)
 - RFCs Decided: 27 → **30** (RFC-035 / RFC-036 / RFC-037)
-- Vocabulary entries: 83 → **102** (+29 L2 looks across 6 genres + bw_convert v2)
-- New MCP tools: `propagate_state`, `wb_from_gray_card` + mixed-op shape on `apply_per_region`
+- Vocabulary entries (`expressive-baseline`): 83 → **112** (+29 L2 looks across 6 genres + bw_convert v2)
+- Total vocabulary corpus (`starter` + `expressive-baseline`): **114 entries**, **40 parameterized**, **19 modules touched**
+- New MCP tools: `propagate_state`, `wb_from_gray_card` + mixed-op shape on `apply_per_region` (now **27 tools total**)
 - New CLI verbs: `propagate-state`, `wb-from-gray-card` + `--strength` flag on `apply-primitive`
 
 ### Vocabulary expansion (29 new L2 looks + bw_convert v2)
@@ -35,7 +36,7 @@ flips them to Accepted.
 29 new L2 looks composed from the parameterized L3 primitives:
 
 - **5 B&W** (survey Round 2): `look_bw_classic_neutral`, `_high_contrast_chiaroscuro`, `_landscape_dramatic`, `_silver_efex_zone_balanced`, `_split_tone_warm_shadows`.
-- **8 Landscape** (Round 1): `look_landscape_atmospheric_haze`, `_autumn_pop`, `_blue_hour_cool`, `_dramatic_moody`, `_golden_hour`, `_grand_vista`, `_intimate_quiet`, `_sky_enhance`, `_water_silk`.
+- **9 Landscape** (Round 1): `look_landscape_atmospheric_haze`, `_autumn_pop`, `_blue_hour_cool`, `_dramatic_moody`, `_golden_hour`, `_grand_vista`, `_intimate_quiet`, `_sky_enhance`, `_water_silk`.
 - **5 Portrait** (Round 1): `look_portrait_background_dim`, `_editorial`, `_natural_skin`, `_skin_warm_lift`, `_split_tone_moody`.
 - **5 Wildlife** (Round 3): `look_wildlife_background_blur`, `_eye_lift`, `_high_iso_recovery`, `_natural_warm`, `_subject_sharpen`.
 - **4 Food / 1 Product** (Round 3): `look_food_appetizing_warm`, `_green_natural`, `_orange_pop`, `_texture_subtle`, `look_product_packshot_clean`.
@@ -69,7 +70,7 @@ chemigram propagate-state --source <anchor> --targets <id1>,<id2>,<id3> \
 - **L2-composite test-skip** (Gap B) codified as a structural rule (`layer == "L2"` auto-skips lab-grade); replaces ~36 hand-written per-entry SKIP_REASONS rationales.
 - **`FRAMING_BOUND_OPS` registry** (Gap D) extracted to a dedicated `chemigram.core.framing_bound` module — single source of truth.
 - **`bw_convert` lab-grade** restored to EXPECTED_EFFECTS with chroma-zero base-mechanic check; per-axis behavior unit-tested (Gap E policy).
-- **Visual-proof gallery regenerated** — 102 entries × 2 chart targets = 785 renders + baseline.
+- **Visual-proof gallery regenerated** — 112 entries × 2 chart targets = 785+ renders + baseline.
 
 ### What's next
 

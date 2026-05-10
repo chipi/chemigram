@@ -297,8 +297,11 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 - `list_vocabulary(layer?, tags?)` → entries
 - `list_masks_vocabulary(tags?)` → entries (RFC-032 named maskdefs)
 - `get_state(image_id)` → entries + head hash
-- `apply_primitive(image_id, primitive_name, mask_spec?)` → state_after, snapshot_hash
-- `apply_per_region(image_id, primitive_name, regions, label?)` → state_after, snapshot_hash, n_regions (RFC-031 atomic batched apply)
+- `apply_primitive(image_id, primitive_name, mask_spec?, parameter_values?, strength?)` → state_after, snapshot_hash. `strength ∈ [0.0, 1.0]` interpolates parameterized L2 looks per RFC-035 / ADR-088.
+- `apply_per_region(image_id, regions, primitive_name?, label?)` → state_after, snapshot_hash, n_regions. Single-op shape (RFC-031): top-level `primitive_name` + each region carries `mask_spec` + optional `parameter_values`. Mixed-op shape (RFC-036 / ADR-089): omit top-level `primitive_name`; each region carries `ops: [{entry, parameter_values?}, ...]`. Discriminator is presence of `ops` on any region. Atomic validate-then-apply.
+- `apply_spot(image_id, kind, x, y, radius, source_x?, source_y?, opacity?)` → state_after, snapshot_hash (RFC-025 / ADR-087 — heal/clone)
+- `wb_from_gray_card(image_path, x, y, sample_radius)` → temperature_coefficients (v1.10.0)
+- `propagate_state(source_workspace, target_workspaces, exclude_ops?, include_per_image?, label?)` → results, n_succeeded, n_failed (RFC-037 / ADR-090 — LR-Sync analog)
 - `remove_module(image_id, module_name)` → state_after, snapshot_hash
 - `reset(image_id)` → state_after (resets to baseline_end, not empty)
 
@@ -315,12 +318,7 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 - `diff(image_id, hash_a, hash_b)` → primitive diffs
 - `tag(image_id, name, hash?)` → ref
 
-**Masking**
-- `generate_mask(image_id, target, prompt?, name?)` → mask_id, name
-- `list_masks(image_id)` → entries
-- `regenerate_mask(image_id, name, target?, prompt?)` → mask_id
-- `invalidate_mask(image_id, name)` → ok
-- `tag_mask(image_id, source, new_name)` → mask_id
+**Masking** — the v1.0.0 mask-tool surface (`generate_mask`, `list_masks`, `regenerate_mask`, `invalidate_mask`, `tag_mask`) was retired in v1.5.0 per ADR-076. Mask construction now happens inline via `mask_spec` on `apply_primitive` / `apply_per_region` (drawn forms RFC-029 / ADR-084 + parametric range filters RFC-024 / ADR-085 + named maskdefs RFC-032). LLM-vision mask construction lands via the same wire (RFC-026 / ADR-086 — chat-client constructs `mask_spec` from spatial reasoning).
 
 **Ingestion and binding**
 - `ingest(raw_path, image_id?)` → image_id, exif_summary, suggested_bindings
