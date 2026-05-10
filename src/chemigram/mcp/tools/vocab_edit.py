@@ -335,12 +335,15 @@ register_tool(
 async def _apply_per_region(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
     from chemigram.core.batched import (
         BatchedApplyError,
+        MixedRegionSpec,
+        OpSpec,
         RegionSpec,
         apply_per_region,
+        apply_per_region_mixed,
     )
 
     image_id = args["image_id"]
-    primitive_name = args["primitive_name"]
+    primitive_name = args.get("primitive_name")
     regions_raw = args.get("regions", [])
     label = args.get("label")
 
@@ -359,22 +362,69 @@ async def _apply_per_region(args: dict[str, Any], ctx: ToolContext) -> ToolResul
 
     if not isinstance(regions_raw, list):
         return ToolResult.fail(error_invalid_input("regions must be a list"))
-    regions = [
-        RegionSpec(
-            mask_spec=r.get("mask_spec"),
-            parameter_values=r.get("parameter_values"),
+
+    # RFC-036 dispatch: presence of "ops" on any region signals mixed-op shape.
+    has_ops = any("ops" in r for r in regions_raw)
+    if has_ops and primitive_name is not None:
+        return ToolResult.fail(
+            error_invalid_input(
+                "cannot specify both top-level 'primitive_name' (single-op shape) "
+                "and per-region 'ops' (mixed-op shape) — pick one"
+            )
         )
-        for r in regions_raw
-    ]
+    if not has_ops and primitive_name is None:
+        return ToolResult.fail(
+            error_invalid_input(
+                "must specify either top-level 'primitive_name' (single-op) or "
+                "per-region 'ops' (mixed-op)"
+            )
+        )
 
-    try:
-        new_xmp = apply_per_region(baseline_xmp, primitive_name, regions, vocab=ctx.vocabulary)
-    except BatchedApplyError as exc:
-        return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+    if has_ops:
+        # Mixed-op shape (RFC-036)
+        mixed_regions = [
+            MixedRegionSpec(
+                mask_spec=r.get("mask_spec"),
+                ops=tuple(
+                    OpSpec(
+                        primitive_name=op["primitive_name"],
+                        parameter_values=op.get("parameter_values"),
+                    )
+                    for op in r.get("ops", [])
+                ),
+            )
+            for r in regions_raw
+        ]
+        try:
+            new_xmp = apply_per_region_mixed(baseline_xmp, mixed_regions, vocab=ctx.vocabulary)
+        except BatchedApplyError as exc:
+            return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+        n_regions = len(mixed_regions)
+        n_pairs = sum(len(r.ops) for r in mixed_regions)
+        snapshot_label = (
+            label if label else f"apply_per_region_mixed: {n_regions} regions, {n_pairs} ops"
+        )
+    else:
+        # Single-op shape (RFC-031)
+        regions = [
+            RegionSpec(
+                mask_spec=r.get("mask_spec"),
+                parameter_values=r.get("parameter_values"),
+            )
+            for r in regions_raw
+        ]
+        # primitive_name guaranteed non-None here by the dispatch above.
+        assert primitive_name is not None
+        try:
+            new_xmp = apply_per_region(baseline_xmp, primitive_name, regions, vocab=ctx.vocabulary)
+        except BatchedApplyError as exc:
+            return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+        n_regions = len(regions)
+        n_pairs = n_regions
+        snapshot_label = (
+            label if label else f"apply_per_region: {primitive_name} ({n_regions} regions)"
+        )
 
-    snapshot_label = (
-        label if label else f"apply_per_region: {primitive_name} ({len(regions)} regions)"
-    )
     try:
         new_hash = snapshot(workspace.repo, new_xmp, label=snapshot_label)
     except VersioningError as exc:
@@ -384,8 +434,10 @@ async def _apply_per_region(args: dict[str, Any], ctx: ToolContext) -> ToolResul
         {
             "state_after": summarize_state(new_xmp),
             "snapshot_hash": new_hash,
-            "n_regions": len(regions),
+            "n_regions": n_regions,
+            "n_op_region_pairs": n_pairs,
             "primitive_name": primitive_name,
+            "shape": "mixed" if has_ops else "single",
         }
     )
 
@@ -393,24 +445,36 @@ async def _apply_per_region(args: dict[str, Any], ctx: ToolContext) -> ToolResul
 register_tool(
     name="apply_per_region",
     description=(
-        "Apply one vocabulary primitive to N mask-bound regions atomically "
-        "(RFC-031). Use for batched moves like dodge-and-burn where the "
-        "photographer thinks of one coherent action ('sculpt the face') but "
-        "executes it across multiple regions. Each region declares its own "
-        "mask_spec (drawn / parametric / named via RFC-032) and optional "
-        "parameter_values. All regions validate first; if any fails, none "
-        "apply (atomic). Single-primitive restriction — mixed-op batching "
-        "is deferred. Soft cap: 32 regions per call."
+        "Apply vocabulary primitives to N mask-bound regions atomically. "
+        "Two shapes:\n"
+        "(1) **Single-op (RFC-031)** — supply top-level `primitive_name`; "
+        "each region applies that one primitive. Canonical use: dodge-and-"
+        "burn (one primitive `exposure`, varied across regions).\n"
+        "(2) **Mixed-op (RFC-036)** — supply per-region `ops: [{primitive_name, "
+        "parameter_values?}, ...]` instead. Canonical uses: composed skin "
+        "retouch (skin_uniformity + skin_smooth_painterly on mask_skin_region "
+        "in one move) and eye-detail lift (exposure + sharpening + saturation "
+        "on the eye region).\n"
+        "Pick one shape — can't mix `primitive_name` and per-region `ops`. "
+        "Either way, all regions validate first; any failure aborts the batch "
+        "(atomic). Soft caps: 32 regions (single-op) or 64 (op * region) "
+        "pairs (mixed-op)."
     ),
     input_schema={
         "type": "object",
         "properties": {
             "image_id": {"type": "string"},
-            "primitive_name": {"type": "string"},
+            "primitive_name": {
+                "type": "string",
+                "description": (
+                    "Single-op shape (RFC-031). Specify together with regions "
+                    "where each region carries optional parameter_values."
+                ),
+            },
             "regions": {
                 "type": "array",
                 "minItems": 1,
-                "maxItems": 32,
+                "maxItems": 64,
                 "items": {
                     "type": "object",
                     "properties": {
@@ -426,10 +490,27 @@ register_tool(
                         "parameter_values": {
                             "type": "object",
                             "description": (
-                                "Optional per-region parameter overrides; "
-                                "required when the primitive declares "
-                                "parameters."
+                                "Single-op shape only — per-region parameter "
+                                "overrides for the top-level primitive_name."
                             ),
+                        },
+                        "ops": {
+                            "type": "array",
+                            "description": (
+                                "Mixed-op shape (RFC-036) — ordered list of "
+                                "{primitive_name, parameter_values?} pairs "
+                                "applied to this region's mask. Same primitive "
+                                "may appear twice; each gets its own "
+                                "multi_priority."
+                            ),
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "primitive_name": {"type": "string"},
+                                    "parameter_values": {"type": "object"},
+                                },
+                                "required": ["primitive_name"],
+                            },
                         },
                     },
                     "required": ["mask_spec"],
@@ -440,7 +521,7 @@ register_tool(
                 "description": "Optional snapshot label.",
             },
         },
-        "required": ["image_id", "primitive_name", "regions"],
+        "required": ["image_id", "regions"],
         "additionalProperties": False,
     },
     handler=_apply_per_region,

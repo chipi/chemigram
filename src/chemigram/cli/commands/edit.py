@@ -437,17 +437,24 @@ def apply_primitive(
 def apply_per_region_cli(
     ctx: typer.Context,
     image_id: str = typer.Argument(..., help="Image ID."),
-    entry: str = typer.Option(..., "--entry", help="Vocabulary entry name."),
+    entry: str | None = typer.Option(
+        None,
+        "--entry",
+        help=(
+            "Vocabulary entry name (single-op shape per RFC-031). Omit to use "
+            "mixed-op shape where each region carries its own 'ops' list."
+        ),
+    ),
     regions_json: str = typer.Option(
         ...,
         "--regions",
         help=(
-            "JSON array of regions. Each region: "
+            "JSON array of regions. Single-op shape: each region is "
             '{"mask_spec": {...}, "parameter_values": {...}}. '
-            "mask_spec accepts drawn / parametric / named-mask shapes. "
-            'Example: \'[{"mask_spec":{"dt_form":"ellipse",'
-            '"dt_params":{"center_x":0.3,"center_y":0.5,"radius_x":0.1,'
-            '"radius_y":0.1,"border":0.02}},"parameter_values":{"ev":0.3}}]\''
+            "Mixed-op shape (RFC-036): each region is "
+            '{"mask_spec": {...}, "ops": [{"primitive_name": "...", '
+            '"parameter_values": {...}}, ...]}. '
+            "mask_spec accepts drawn / parametric / named-mask shapes."
         ),
     ),
     pack: list[str] = typer.Option(
@@ -458,11 +465,15 @@ def apply_per_region_cli(
     ),
     label: str = typer.Option(None, "--label", help="Optional snapshot label."),
 ) -> None:
-    """Apply one primitive to N mask-bound regions atomically (RFC-031)."""
+    """Apply primitives to N mask-bound regions atomically (RFC-031 single-op
+    OR RFC-036 mixed-op)."""
     from chemigram.core.batched import (
         BatchedApplyError,
+        MixedRegionSpec,
+        OpSpec,
         RegionSpec,
         apply_per_region,
+        apply_per_region_mixed,
     )
 
     obj = cast(CliContext, ctx.obj)
@@ -481,6 +492,22 @@ def apply_per_region_cli(
         writer.error("--regions must be a JSON array", ExitCode.INVALID_INPUT)
         raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
 
+    # RFC-036 dispatch.
+    has_ops = any("ops" in r for r in regions_raw)
+    if has_ops and entry is not None:
+        writer.error(
+            "cannot specify both --entry (single-op) and per-region 'ops' "
+            "(mixed-op) — pick one shape",
+            ExitCode.INVALID_INPUT,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
+    if not has_ops and entry is None:
+        writer.error(
+            "must specify either --entry (single-op) or per-region 'ops' (mixed-op) in --regions",
+            ExitCode.INVALID_INPUT,
+        )
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value)
+
     try:
         vocabulary = load_packs(pack_names)
     except Exception as exc:
@@ -490,14 +517,6 @@ def apply_per_region_cli(
             packs=pack_names,
         )
         raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
-
-    regions = [
-        RegionSpec(
-            mask_spec=r.get("mask_spec"),
-            parameter_values=r.get("parameter_values"),
-        )
-        for r in regions_raw
-    ]
 
     workspace = resolve_workspace_or_fail(ctx, image_id)
     baseline_xmp = current_xmp(workspace)
@@ -510,12 +529,46 @@ def apply_per_region_cli(
         raise typer.Exit(code=ExitCode.STATE_ERROR.value)
 
     try:
-        new_xmp = apply_per_region(baseline_xmp, entry, regions, vocab=vocabulary)
+        if has_ops:
+            mixed_regions = [
+                MixedRegionSpec(
+                    mask_spec=r.get("mask_spec"),
+                    ops=tuple(
+                        OpSpec(
+                            primitive_name=op["primitive_name"],
+                            parameter_values=op.get("parameter_values"),
+                        )
+                        for op in r.get("ops", [])
+                    ),
+                )
+                for r in regions_raw
+            ]
+            new_xmp = apply_per_region_mixed(baseline_xmp, mixed_regions, vocab=vocabulary)
+            n_regions = len(mixed_regions)
+            n_pairs = sum(len(r.ops) for r in mixed_regions)
+            snapshot_label = (
+                label if label else f"apply_per_region_mixed: {n_regions} regions, {n_pairs} ops"
+            )
+            shape = "mixed"
+        else:
+            regions = [
+                RegionSpec(
+                    mask_spec=r.get("mask_spec"),
+                    parameter_values=r.get("parameter_values"),
+                )
+                for r in regions_raw
+            ]
+            # entry guaranteed non-None here by the dispatch validation above.
+            assert entry is not None
+            new_xmp = apply_per_region(baseline_xmp, entry, regions, vocab=vocabulary)
+            n_regions = len(regions)
+            n_pairs = n_regions
+            snapshot_label = label if label else f"apply_per_region: {entry} ({n_regions} regions)"
+            shape = "single"
     except BatchedApplyError as exc:
         writer.error(str(exc), ExitCode.INVALID_INPUT, entry=entry)
         raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
 
-    snapshot_label = label if label else f"apply_per_region: {entry} ({len(regions)} regions)"
     try:
         new_hash = snapshot(workspace.repo, new_xmp, label=snapshot_label)
     except VersioningError as exc:
@@ -523,10 +576,12 @@ def apply_per_region_cli(
         raise typer.Exit(code=ExitCode.VERSIONING_ERROR.value) from exc
 
     writer.result(
-        message=f"applied {entry} to {len(regions)} regions of {image_id}",
+        message=f"applied to {n_regions} regions of {image_id} ({shape}-op shape)",
         image_id=image_id,
         entry=entry,
-        n_regions=len(regions),
+        n_regions=n_regions,
+        n_op_region_pairs=n_pairs,
+        shape=shape,
         snapshot_hash=new_hash,
         state_after=summarize_state(new_xmp),
     )
