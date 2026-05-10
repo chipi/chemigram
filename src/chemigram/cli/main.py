@@ -78,6 +78,10 @@ app.command(
     name="wb-from-gray-card",
     help="Sample a gray-card region; return temperature coefficients (survey Gap #20).",
 )(edit.wb_from_gray_card_cli)
+app.command(
+    name="propagate-state",
+    help="Sync edit state from one anchor to N targets atomically (RFC-037).",
+)(edit.propagate_state_cli)
 app.command(name="remove-module", help="Strip all history entries for an operation.")(
     edit.remove_module
 )

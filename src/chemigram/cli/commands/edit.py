@@ -533,6 +533,80 @@ def apply_per_region_cli(
 
 
 # ---------------------------------------------------------------------------
+# propagate-state (RFC-037)
+# ---------------------------------------------------------------------------
+
+
+def propagate_state_cli(
+    ctx: typer.Context,
+    source_image_id: str = typer.Argument(..., help="Anchor image (state propagates FROM)."),
+    target: list[str] = typer.Option(
+        ...,
+        "--to",
+        help="Target image_id (repeatable; state propagates TO).",
+    ),
+    exclude_op: list[str] = typer.Option(
+        None,
+        "--exclude-op",
+        help="Operation name to skip (repeatable). Default: inherit everything.",
+    ),
+    include_per_image: bool = typer.Option(
+        False,
+        "--include-per-image",
+        help=(
+            "Override framing-bound auto-exclusion (drawn masks, retouch, "
+            "crop, lens). Use for tripod-fixed series."
+        ),
+    ),
+    label: str = typer.Option(None, "--label", help="Optional snapshot label."),
+) -> None:
+    """Propagate the source image's edit state to N target images atomically (RFC-037)."""
+    from chemigram.core.propagate import PropagateError, propagate_state
+
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+
+    try:
+        source_ws = resolve_workspace_or_fail(ctx, source_image_id)
+    except typer.Exit as exc:
+        raise typer.Exit(code=int(exc.exit_code)) from exc
+
+    target_workspaces = []
+    for tid in target:
+        try:
+            target_workspaces.append(resolve_workspace_or_fail(ctx, tid))
+        except typer.Exit as exc:
+            raise typer.Exit(code=int(exc.exit_code)) from exc
+
+    try:
+        batch = propagate_state(
+            source_ws,
+            target_workspaces,
+            exclude_ops=exclude_op if exclude_op else None,
+            include_per_image=include_per_image,
+            label=label,
+        )
+    except PropagateError as exc:
+        writer.error(str(exc), ExitCode.INVALID_INPUT, source=source_image_id)
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    for r in batch.results:
+        writer.event(
+            "propagated",
+            image_id=r.image_id,
+            snapshot_hash=r.snapshot_hash,
+            n_ops=len(r.applied_ops),
+        )
+
+    writer.result(
+        message=(f"propagated state from {source_image_id} to {batch.n_succeeded} target(s)"),
+        source_image_id=source_image_id,
+        n_succeeded=batch.n_succeeded,
+        n_failed=batch.n_failed,
+    )
+
+
+# ---------------------------------------------------------------------------
 # wb-from-gray-card (survey Gap #20)
 # ---------------------------------------------------------------------------
 

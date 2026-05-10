@@ -224,6 +224,111 @@ register_tool(
 )
 
 
+# --- propagate_state (RFC-037) ------------------------------------------
+
+
+async def _propagate_state(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
+    """Propagate the source workspace's edit state to N targets atomically
+    (RFC-037 / wedding-defining anchor-and-sync workflow)."""
+    from chemigram.core.propagate import PropagateError, propagate_state
+
+    source_id = args["source_image_id"]
+    target_ids = args.get("target_image_ids", [])
+    exclude_ops = args.get("exclude_ops")
+    include_per_image = bool(args.get("include_per_image", False))
+    label = args.get("label")
+
+    source_ws = resolve_workspace(ctx, source_id)
+    if source_ws is None:
+        return ToolResult.fail(error_not_found(f"source image {source_id!r}"))
+
+    if not isinstance(target_ids, list):
+        return ToolResult.fail(error_invalid_input("target_image_ids must be a list"))
+
+    target_workspaces = []
+    for tid in target_ids:
+        ws = resolve_workspace(ctx, tid)
+        if ws is None:
+            return ToolResult.fail(error_not_found(f"target image {tid!r}"))
+        target_workspaces.append(ws)
+
+    try:
+        batch = propagate_state(
+            source_ws,
+            target_workspaces,
+            exclude_ops=exclude_ops,
+            include_per_image=include_per_image,
+            label=label,
+        )
+    except PropagateError as exc:
+        return ToolResult.fail(ToolError(code=ErrorCode.INVALID_INPUT, message=str(exc)))
+
+    return ToolResult.ok(
+        {
+            "n_succeeded": batch.n_succeeded,
+            "n_failed": batch.n_failed,
+            "results": [
+                {
+                    "image_id": r.image_id,
+                    "snapshot_hash": r.snapshot_hash,
+                    "applied_ops": list(r.applied_ops),
+                }
+                for r in batch.results
+            ],
+            "source_image_id": source_id,
+        }
+    )
+
+
+register_tool(
+    name="propagate_state",
+    description=(
+        "Propagate the source image's edit state (everything in its current "
+        "history) to N target images atomically. Same mental model as "
+        "Lightroom's Sync function — edit one anchor, sync to many. "
+        "Default: inherit everything except framing-bound ops (drawn masks, "
+        "retouch, crop, lens corrections); these don't propagate cleanly "
+        "across different framings. Override via include_per_image=true for "
+        "tripod-fixed series. Optional exclude_ops list for fine-grained "
+        "opt-out (e.g., keep each target's individual exposure). Atomic — "
+        "all targets receive propagated state or none do. Soft cap at 200 "
+        "targets per call. Per RFC-037 / survey Gap #4 (wedding-defining)."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "source_image_id": {"type": "string", "description": "Anchor image."},
+            "target_image_ids": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "maxItems": 200,
+                "description": "Images to propagate state TO.",
+            },
+            "exclude_ops": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": (
+                    "Optional list of operation names to skip. Default: empty (inherit everything)."
+                ),
+            },
+            "include_per_image": {
+                "type": "boolean",
+                "default": False,
+                "description": (
+                    "Override the framing-bound auto-exclusion (drawn masks, "
+                    "retouch, crop, lens). Use for tripod-fixed series."
+                ),
+            },
+            "label": {"type": "string", "description": "Optional snapshot label."},
+        },
+        "required": ["source_image_id", "target_image_ids"],
+        "additionalProperties": False,
+    },
+    handler=_propagate_state,
+)
+
+
 # --- apply_per_region (RFC-031) -----------------------------------------
 
 

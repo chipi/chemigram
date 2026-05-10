@@ -44,11 +44,13 @@ Wedding is the genre where this is *defining*; the others are where it's *helpfu
 
 1. **One agent move = one tool call.** "Propagate this image's edit state to these 50 images" is one tool call, not 50.
 2. **Atomic semantics.** Either all targets receive the propagated state, or none do (either-or; partial application is a UX failure mode).
-3. **Scope-controllable.** The photographer chooses what propagates: full state / WB-only / exposure-only / color-only / non-mask-only. Not all anchor edits should propagate (per-image masks, in particular, often shouldn't).
-4. **Composable with named masks (RFC-032).** Named-mask references propagate cleanly because they're abstract (e.g., `mask_skin_region` resolves per-image at apply time). Drawn masks should NOT propagate by default (the eye-region ellipse on the anchor doesn't fit the same coordinates on the next image).
-5. **Composable with `apply_per_region` (RFC-031).** Batched per-region calls in the anchor's history propagate as batched per-region calls on each target.
-6. **One snapshot per target image.** Each target's snapshot history shows a clean "applied propagated state from <source_image>" entry.
-7. **Versioning-friendly.** The propagation respects the per-image content-addressed snapshot store (ADR-018).
+3. **Inherit-everything-by-default.** The reference image's edit IS the contract. Whatever the photographer did to nail it — WB, exposure, sigmoid, color grade, masked moves — that's what propagates. **No scope-preset menu.** Same mental model as Lightroom's Sync function: "sync this edit to these targets" without first picking categories. Predefined scope presets force a "what counts as WB?" taxonomy debate; the photographer's choices ARE the answer.
+4. **Auto-exclude framing-bound ops** (the LR-parity discipline). Settings that depend on per-image content / coordinates don't propagate by default: drawn masks (eye ellipse, retouch ellipse), compositional crop, spot retouch (heal/clone), L1 EXIF-bound camera baselines. Opt-in via `include_per_image: true` for the rare tripod-fixed series case.
+5. **Optional fine-grained opt-out** via `exclude_ops: list[str]` for the rare "everything except <X>" case (e.g., "inherit everything but keep each target's individual exposure"). Default empty.
+6. **Composable with named masks (RFC-032).** Named-mask references propagate cleanly because they're abstract (e.g., `mask_skin_region` resolves per-image at apply time). Drawn masks are caught by goal 4.
+7. **Composable with `apply_per_region` (RFC-031).** Batched per-region calls in the anchor's history propagate as batched per-region calls on each target.
+8. **One snapshot per target image.** Each target's snapshot history shows a clean "propagated from <source_image>" entry.
+9. **Versioning-friendly.** The propagation respects the per-image content-addressed snapshot store (ADR-018).
 
 ## Constraints
 
@@ -60,26 +62,25 @@ Wedding is the genre where this is *defining*; the others are where it's *helpfu
 
 ## Proposed approach
 
-**Add a single MCP verb: `propagate_state(source_image_id, target_image_ids, scope, *, label?) → results`.**
+**Add a single MCP verb: `propagate_state(source_image_id, target_image_ids, *, exclude_ops?, include_per_image?, label?) → results`.**
 
 Where:
 - `source_image_id` — the anchor image.
 - `target_image_ids` — list of image_ids; soft cap at 200 (enough for typical wedding lighting group; well above bird-burst range).
-- `scope` — controls what propagates. Either a preset scope name OR an explicit list of operations:
-  - **Preset scopes:** `"all"`, `"wb_only"`, `"color_only"`, `"tone_only"`, `"non_mask_only"`, `"global_only"`. Each maps to a documented set of vocabulary touches.
-  - **Custom scope:** `{"include_ops": ["temperature", "exposure", "sigmoid"]}` for explicit control.
+- `exclude_ops` — optional list of operation names to skip (default `[]`, i.e., inherit everything). For the rare "everything except <X>" case.
+- `include_per_image` — optional boolean (default `false`) to override the framing-bound auto-exclusion (drawn masks, spot retouch, crop, L1 baselines). Use for tripod-fixed series.
 - `label` — optional snapshot label per target.
 - Returns: `{results: [{image_id, snapshot_hash, applied_ops}], n_succeeded, n_failed}`.
 
 ### Resolution algorithm
 
 1. **Read source state.** Load the source image's current XMP via `current_xmp(source_workspace)`.
-2. **Filter ops by scope.** Walk the source XMP's history; keep only ops matching the scope. By default exclude **drawn-mask-bound history entries** (per goal 4 — drawn masks are coordinate-specific and don't propagate cleanly).
+2. **Filter ops** — by default keep everything; auto-exclude the framing-bound op set (drawn-mask-bound entries, retouch, crop, L1) unless `include_per_image=True`. Drop any op explicitly listed in `exclude_ops`.
 3. **For each target image:**
    a. Load the target's current XMP as baseline.
    b. Apply the filtered ops in source's order. Same module + same multi_priority replaces (per ADR-002 SET semantics); different multi_priority appends (Path B).
    c. **Atomic check** — if any op fails (modversion mismatch, parameter validation), abort the entire batch (no targets receive partial state).
-   d. Snapshot per target with the supplied or default label `"propagate_state from <source_image_id> [<n_ops> ops, <scope>]"`.
+   d. Snapshot per target with the supplied or default label `"propagated from <source_image_id> [<n_ops> ops]"`.
 4. **Return aggregate result** with per-target snapshot hashes.
 
 ### Atomicity discipline
@@ -90,17 +91,19 @@ The validation phase walks ALL targets first; only after all validations pass do
 - Source XMP's history is empty (nothing to propagate).
 - Any target image not found.
 - Any target's modversion conflicts with the source's (rare; surfaces stale-pack drift).
-- Scope filter produces empty op set (no propagatable ops match the scope).
+- Filter (auto-exclusions + caller-supplied `exclude_ops`) produces empty op set.
 - N targets exceeds soft cap (200).
 
-### Default exclusions (the drawn-mask discipline)
+### Default framing-bound exclusions (the LR-parity discipline)
 
-By default, propagation excludes:
-- Drawn-form mask history entries (`dt_form` masks have coordinate-specific geometry — not portable).
-- Spot retouch entries (per RFC-025; healing/cloning is location-specific).
-- Compositional crop (typically per-image).
+Same discipline as Lightroom's Sync — settings that depend on per-image content / coordinates don't propagate. By default, propagation excludes:
 
-Override: `scope: {"include_drawn_masks": true}` for the rare case where the photographer explicitly wants to propagate the same crop / drawn mask across a fixed-camera-tripod sequence (architectural still life, brackets, time-lapse).
+- **Drawn-form mask history entries** (`dt_form` masks have coordinate-specific geometry — not portable).
+- **Spot retouch entries** (heal/clone per RFC-025 / ADR-087; location-specific).
+- **Compositional crop** (per-image framing).
+- **L1 EXIF-bound camera baselines** (per-camera; usually consistent in batch but propagating across mixed-camera sets produces wrong color science).
+
+Override: `include_per_image=True` for the rare case where the photographer explicitly wants to propagate framing-bound moves across a fixed-camera-tripod sequence (architectural still life, brackets, time-lapse).
 
 ## Alternatives considered
 
