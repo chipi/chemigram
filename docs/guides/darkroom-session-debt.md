@@ -1,6 +1,6 @@
 # Darkroom-session debt — what to validate when you next sit down with darktable
 
-> Last updated · 2026-05-09
+> Last updated · 2026-05-10 (v1.10.0 release pass)
 > Status · Operational tracker — single source of truth for visual / hands-on validation work that has accumulated and needs a human-in-the-loop session.
 > Companion to `visual-review-survey-l2-looks.md` (which is the *checklist* for one specific batch — this doc is the *running tracker* across all pending validation work, including future batches).
 
@@ -150,6 +150,132 @@ Recommended cadence: every 2-3 weeks while debt is high; less once it's small. E
 
 ---
 
+### 7. `--strength` parameter on L2 looks (RFC-035 / ADR-088 — Path B per-parameter interpolation)
+
+**What:** Verify that strength-scaled L2 looks read perceptually right at strengths 0.3 / 0.5 / 0.7 across the 29 new survey-derived L2 looks.
+
+**Why:** RFC-035 / ADR-088 ships Path B (per-parameter interpolation: `interpolated = identity + strength * (authored - identity)`) on the hypothesis that parameter-space interpolation produces results photographers find usable. The unit + integration tests verify the math is right; the visual validation answers "does strength=0.5 actually feel like half-effect?"
+
+**How to validate:**
+1. Pick 3 representative L2 looks across genres: e.g. `look_landscape_dramatic_moody`, `look_portrait_natural_skin`, `look_bw_landscape_dramatic`.
+2. For each, on a representative raw: render at strengths 0.0 / 0.3 / 0.5 / 0.7 / 1.0.
+3. Side-by-side: does the strength axis read monotonically? Is 0.5 visually close to "halfway between baseline and full-strength"?
+4. Specifically: any plugin types where Path B's interpolation produces non-linear-feeling results (color grading is the suspect — interpolating hue is not the same as interpolating chroma)?
+
+**What to record:**
+- Per-look monotonicity check
+- Any plugin types where the strength feels off (these are candidates for Path C hybrid in a future round)
+- Recommended default strengths (e.g., "0.5 reads as a useful 'softer' default for moody looks")
+
+**Downstream impact:** Flips ADR-088 from Draft to Accepted. If Path B fails visually, Path C (hybrid) becomes the next deliberation in a follow-up RFC.
+
+**Test images needed:** 3-5 raws across genres that exercise the looks meaningfully (a stormy landscape for `_dramatic_moody`, a portrait for `_natural_skin`, a B&W-suitable scene for `_landscape_dramatic`).
+
+---
+
+### 8. Mixed-op `apply_per_region` (RFC-036 / ADR-089) — eye-detail and dodge-and-burn-with-sharpening composites
+
+**What:** Verify the new `ops`-array shape produces visually-correct composite moves on a real portrait.
+
+**Why:** RFC-036 / ADR-089 ships per-(op, region) `multi_priority` allocation on the hypothesis that stacked instances of the same op (multiple `exposure` regions) coexist cleanly with different ops (`exposure` + `sharpen` on the same region). Unit tests verify the synthesizer produces correct XMP; visual review answers "does the eye-region look like the photographer's mental model?"
+
+**How to validate:**
+1. Pick a portrait with clearly-defined iris + lashes regions.
+2. Apply the eye-region recipe: `+exposure(0.3)` + `+sharpen(0.8)` on each iris ellipse, atomically via mixed-op `apply_per_region`.
+3. Compare to the same effect achieved via two separate single-op `apply_per_region` calls (per RFC-031 single-op shape). Should be visually identical.
+4. Check the snapshot count is 1 (the whole point — composite move = one snapshot).
+
+**What to record:**
+- Visual identity of mixed-op vs sequential-single-op
+- Snapshot-log entry shape (`apply_per_region_mixed` vs two `apply_per_region`)
+- Edge cases — what happens if one op's parameter validation fails atomically (no partial state)
+
+**Downstream impact:** Flips ADR-089 from Draft to Accepted.
+
+**Test images needed:** 1-2 close portraits with visible iris/lashes detail.
+
+---
+
+### 9. `propagate_state` (RFC-037 / ADR-090) — wedding-burst anchor-and-sync
+
+**What:** Verify the LR-Sync-parity discipline works on a real burst (wedding, portrait series, or product variants).
+
+**Why:** RFC-037 / ADR-090 ships inherit-everything-with-framing-bound-exclusion on the hypothesis that this is right-thing-by-default. Unit tests verify atomic-batch + framing-bound exclusion. Visual review answers "do the targets actually look right after sync, or did we miss an exclusion?"
+
+**How to validate:**
+1. Pick 5-10 images from a real burst (wedding lighting group, product color variants, or landscape series with consistent light).
+2. Edit one anchor with the full chemigram pipeline: WB, exposure, sigmoid, color grading, optionally a parametric range mask.
+3. Run `chemigram propagate-state --source <anchor> --targets <id1>,<id2>,...`
+4. Render each target. Visually inspect: does the look propagate? Are there obvious framing-bound issues (crop / retouch leaking through)?
+5. Try a target intentionally outside the burst (different lighting / different scene). Does it look bad? (Should — propagating cross-genre is misuse but should fail gracefully not catastrophically.)
+
+**What to record:**
+- Per-target visual quality on the in-burst targets
+- Edge cases — what happens with mixed-camera targets (modversion-drift hard-reject expected)
+- Whether the framing-bound exclusion list is right (do we need to add anything? remove anything?)
+- Any obvious gaps (e.g., parametric range masks should propagate but if they don't, that's a real bug)
+
+**Downstream impact:** Flips ADR-090 from Draft to Accepted. May surface refinements to FRAMING_BOUND_OPS (the v1.10.0 single-source-of-truth registry per Gap D closure).
+
+**Test images needed:** A burst of 5-10 from a real shoot. Wedding lighting group is canonical; product variants and landscape series also work.
+
+---
+
+### 10. v1.10.0 photographer-survey L2 looks — intent-vs-result match (29 looks)
+
+**What:** Render each of the 29 new L2 looks at full strength on a representative raw for its genre. Verify the look matches the photographer-survey-cited intent.
+
+**Why:** Each look ships against a survey citation (which photographer reaches for this move, in which genre, for what intent). Visual sign-off confirms the look's authored parameters actually produce the cited intent.
+
+**Looks to validate:**
+
+| Genre | Looks | Source raw recommendation |
+|-|-|-|
+| B&W (5) | `look_bw_classic_neutral`, `_high_contrast_chiaroscuro`, `_landscape_dramatic`, `_silver_efex_zone_balanced`, `_split_tone_warm_shadows` | A landscape scene with both highlight + shadow detail |
+| Landscape (8) | `look_landscape_atmospheric_haze`, `_autumn_pop`, `_blue_hour_cool`, `_dramatic_moody`, `_golden_hour`, `_grand_vista`, `_intimate_quiet`, `_sky_enhance`, `_water_silk` | One per scene type per the "Landscapes" inventory above |
+| Portrait (5) | `look_portrait_background_dim`, `_editorial`, `_natural_skin`, `_skin_warm_lift`, `_split_tone_moody` | One per "Portraits" inventory entry |
+| Wildlife (5) | `look_wildlife_background_blur`, `_eye_lift`, `_high_iso_recovery`, `_natural_warm`, `_subject_sharpen` | A real wildlife frame with subject + busy background |
+| Food/Product (5) | `look_food_appetizing_warm`, `_green_natural`, `_orange_pop`, `_texture_subtle`, `look_product_packshot_clean` | A food shot + a clean-product shot |
+
+**How to validate (per look):**
+1. Render baseline → render with the look at strength 1.0 → render with the look at strength 0.5 (validates RFC-035 in passing).
+2. Compare to the survey citation: does the result match the intent the photographer was reaching for?
+3. Note any looks where the authored parameters need a tune (e.g., "look_landscape_dramatic_moody is too aggressive — sigmoid 1.7 → 1.5").
+
+**What to record:**
+- Per-look pass / approximate / fail
+- Tunable adjustments that surface from real raws (these become a v1.10.1 vocabulary tune-up commit)
+- Any look that doesn't survive at all (re-author from a different survey citation)
+
+**Downstream impact:** Confirms or tunes the 29 new entries' default values. May surface vocabulary gaps (a survey-cited intent that the chosen primitive composition doesn't actually produce).
+
+**Test images needed:** 1-3 raws per genre (the validation set above is the reusable benchmark).
+
+---
+
+### 11. `bw_convert` v2 (colorequal-based, 8 Adams-school axes)
+
+**What:** Verify the new bw_convert mechanic produces useful B&W with photographer-controlled per-color-band luminance. Specifically test the Adams-school filter sims: red filter (bright_red+0.3 / bright_blue-0.2) lightens skin and red flowers, darkens skies; green filter (bright_green+0.3) lightens foliage; etc.
+
+**Why:** v1.10.0 redesigned bw_convert from channelmixerrgb-mv3 (3 hard-coded grey-weight variants) to colorequal-based (8 sat=-1 + 8 bright_X axes). Lab-grade tests verify chroma-zero (the base mechanic). Visual validation answers "does the per-band filter sim feel like a Silver Efex / Photoshop Channel Mixer (Monochrome) workflow?"
+
+**How to validate:**
+1. Pick a color landscape scene with sky + foliage + a red element (flower, skin, flag).
+2. Render: baseline → bw_convert (defaults, all bright_X = 0) → bw_convert with red-filter sim (bright_red+0.3, bright_blue-0.2) → bw_convert with green-filter sim (bright_green+0.3).
+3. Verify each filter sim affects the right tones in the expected direction.
+4. Side-by-side with bw_sky_drama and bw_foliage (the v1.4.0 channelmixerrgb variants for comparison).
+
+**What to record:**
+- Filter-sim correctness per axis
+- Whether 8 bright_X axes is the right surface or whether photographers want a smaller pre-baked recipe set (then we author L2 looks on top)
+- Recommended bright_X magnitudes for the canonical filters (red / orange / yellow / green / blue)
+
+**Downstream impact:** Confirms the Adams-school filter mental model translates to colorequal mechanics. If filter sims don't read right, the bright_X axis is misnamed or the magnitudes need tuning.
+
+**Test images needed:** A landscape with sky + foliage + a saturated red element, and a portrait (skin tone × red filter is a classic test).
+
+---
+
 ## Closed / resolved debt
 
 (Empty — populate as items resolve.)
@@ -186,9 +312,13 @@ These decisions are blocked until specific debt items resolve:
 
 - **Closing RFC-033 into ADR** → blocked on items 1, 2, 3 (the skin primitives + the 14 L2 looks)
 - **Updating `llm-vision-for-masks.md` Pattern 7 with concrete leakage cases** → blocked on item 4
-- **RFC-031 mixed-op batching un-defer (RFC-036)** → informed by item 5 findings (whether single-op-per-batch is fine in practice)
+- **RFC-031 mixed-op batching un-defer (RFC-036 / ADR-089)** → ✅ shipped 2026-05-10; ADR-089 flips Draft → Accepted on **item 8**
 - **RFC-034 closing into ADR** → blocked on item 6 (validating the invert-flag shorthand actually works)
-- **Continuing to remaining 4 genres** (Wedding/Event, B&W, Nature/Wildlife, Food/Product) of the photographer-workflows survey → not blocked but informed by how Portrait + Landscape validation went
+- **RFC-035 closing into ADR-088** → ✅ ADR drafted; flips Draft → Accepted on **item 7** (parametric L2 strength visual quality bar)
+- **RFC-037 closing into ADR-090** → ✅ ADR drafted; flips Draft → Accepted on **item 9** (propagate_state on a real burst)
+- **Tuning the 29 v1.10.0 L2 looks** → blocked on **item 10** (intent-vs-result match per genre)
+- **Locking the bw_convert v2 mechanic** → blocked on **item 11** (Adams-school filter sims read right)
+- **Continuing to remaining 4 genres** (Wedding/Event, B&W, Nature/Wildlife, Food/Product) of the photographer-workflows survey → ✅ all 6 genres shipped in v1.10.0
 
 ---
 
