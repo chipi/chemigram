@@ -155,6 +155,75 @@ register_tool(
 )
 
 
+# --- wb_from_gray_card (survey Gap #20) ---------------------------------
+
+
+async def _wb_from_gray_card(args: dict[str, Any], ctx: ToolContext) -> ToolResult[dict[str, Any]]:
+    """Sample a gray-card region of a rendered image and return the
+    temperature-primitive coefficients that would correct it to neutral."""
+    from pathlib import Path
+
+    from chemigram.core.gray_card import GrayCardError, wb_from_gray_card
+
+    image_path = args["image_path"]
+    x = int(args["x"])
+    y = int(args["y"])
+    sample_radius = int(args.get("sample_radius", 5))
+
+    try:
+        coeffs = wb_from_gray_card(Path(image_path), x=x, y=y, sample_radius=sample_radius)
+    except GrayCardError as exc:
+        return ToolResult.fail(error_invalid_input(str(exc)))
+
+    return ToolResult.ok(
+        {
+            "red_coeff": coeffs.red_coeff,
+            "green_coeff": coeffs.green_coeff,
+            "blue_coeff": coeffs.blue_coeff,
+            "sampled_r": coeffs.sampled_r,
+            "sampled_g": coeffs.sampled_g,
+            "sampled_b": coeffs.sampled_b,
+            "sample_radius": coeffs.sample_radius,
+            "parameter_values": coeffs.as_parameter_values(),
+        }
+    )
+
+
+register_tool(
+    name="wb_from_gray_card",
+    description=(
+        "Sample a gray-card region of a rendered image at pixel coordinates "
+        "(x, y) and return the temperature-primitive coefficients that "
+        "correct the sample to neutral gray. Typical workflow: call "
+        "render_preview to get a JPEG, examine for the gray-card region, "
+        "call this tool with the sampled coordinates, then call "
+        "apply_primitive(image_id, 'temperature', parameter_values=<...>) "
+        "with the returned coefficients. Per RFC-postponed / survey Gap #20."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "image_path": {
+                "type": "string",
+                "description": "Path to a rendered image (typically from render_preview).",
+            },
+            "x": {"type": "integer", "minimum": 0, "description": "Pixel x coordinate."},
+            "y": {"type": "integer", "minimum": 0, "description": "Pixel y coordinate."},
+            "sample_radius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100,
+                "default": 5,
+                "description": "Half-side of square sample region (default 5 → 11x11).",
+            },
+        },
+        "required": ["image_path", "x", "y"],
+        "additionalProperties": False,
+    },
+    handler=_wb_from_gray_card,
+)
+
+
 # --- apply_per_region (RFC-031) -----------------------------------------
 
 

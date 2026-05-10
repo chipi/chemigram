@@ -533,6 +533,59 @@ def apply_per_region_cli(
 
 
 # ---------------------------------------------------------------------------
+# wb-from-gray-card (survey Gap #20)
+# ---------------------------------------------------------------------------
+
+
+def wb_from_gray_card_cli(
+    ctx: typer.Context,
+    image_path: str = typer.Argument(
+        ..., help="Path to rendered image (e.g., from render-preview)."
+    ),
+    x: int = typer.Option(..., "--x", help="Pixel x coordinate of gray-card sample."),
+    y: int = typer.Option(..., "--y", help="Pixel y coordinate of gray-card sample."),
+    sample_radius: int = typer.Option(
+        5, "--sample-radius", help="Half-side of square sample region (default 5 → 11x11 pixels)."
+    ),
+) -> None:
+    """Sample a gray-card region; print the temperature-primitive coefficients."""
+    from pathlib import Path
+
+    from chemigram.core.gray_card import GrayCardError, wb_from_gray_card
+
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+
+    try:
+        coeffs = wb_from_gray_card(Path(image_path), x=x, y=y, sample_radius=sample_radius)
+    except GrayCardError as exc:
+        writer.error(str(exc), ExitCode.INVALID_INPUT)
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    writer.result(
+        message=(
+            f"gray-card-pick at ({x}, {y}) → "
+            f"red_coeff={coeffs.red_coeff:.3f}, "
+            f"green_coeff={coeffs.green_coeff:.3f}, "
+            f"blue_coeff={coeffs.blue_coeff:.3f}"
+        ),
+        red_coeff=coeffs.red_coeff,
+        green_coeff=coeffs.green_coeff,
+        blue_coeff=coeffs.blue_coeff,
+        sampled_r=coeffs.sampled_r,
+        sampled_g=coeffs.sampled_g,
+        sampled_b=coeffs.sampled_b,
+        sample_radius=coeffs.sample_radius,
+        next_step=(
+            f"chemigram apply-primitive <image_id> --entry temperature "
+            f"--param red_coeff={coeffs.red_coeff:.3f} "
+            f"--param green_coeff={coeffs.green_coeff:.3f} "
+            f"--param blue_coeff={coeffs.blue_coeff:.3f}"
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
 # remove-module
 # ---------------------------------------------------------------------------
 

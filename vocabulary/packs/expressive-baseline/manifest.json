@@ -4458,6 +4458,270 @@
       "darktable_version": "5.4",
       "source": "expressive-baseline",
       "license": "MIT"
+    },
+    {
+      "name": "look_wildlife_subject_sharpen",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_wildlife_subject_sharpen.dtstyle",
+      "touches": [
+        "sharpen",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "wildlife",
+        "nature",
+        "subject",
+        "masked"
+      ],
+      "description": "Subject-isolated wildlife sharpening — feather / fur / scale detail lifted ON THE SUBJECT only via mask_subject (RFC-032). Sharpen amount 2.0 + bilat clarity 0.3. The chemigram realization of LR's Subject-mask + Sharpening + selective Texture pattern (Sweileh, Matiash, Dale, Gardner all reach for this). Compose with mask_subject in the manifest; pair with look_wildlife_background_blur for compositional subject emphasis.",
+      "modversions": {
+        "sharpen": 1,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_subject"
+      }
+    },
+    {
+      "name": "look_wildlife_background_blur",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_wildlife_background_blur.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "wildlife",
+        "nature",
+        "background",
+        "masked"
+      ],
+      "description": "Background softening for wildlife — bilat clarity_strength -0.5 (the softening direction; opposite of clarity boost). Pre-baked with mask_subject + invert: true (RFC-034) so the softening scopes to everything-except-subject. Mimics longer-lens / shallower-DOF rendering at edit time. Pair with look_wildlife_subject_sharpen for complete subject emphasis. Marc/Bushcrafter darktable-discipline made portable.",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_subject",
+        "invert": true
+      }
+    },
+    {
+      "name": "look_wildlife_eye_lift",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_wildlife_eye_lift.dtstyle",
+      "touches": [
+        "exposure",
+        "sharpen"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "wildlife",
+        "nature",
+        "eye",
+        "masked"
+      ],
+      "description": "Catchlight emphasis on the wildlife subject's eye — exposure +0.3 EV + sharpen amount 1.5, scoped to mask_eye_region (RFC-032). The eye becomes the brightest, sharpest point in the frame; gives the bird / animal its 'life.' Cross-genre echo of Portrait Move 7 (eye-detail lift). For close-up wildlife where the subject's gaze is the picture.",
+      "modversions": {
+        "exposure": 7,
+        "sharpen": 1
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_eye_region"
+      }
+    },
+    {
+      "name": "look_wildlife_high_iso_recovery",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_wildlife_high_iso_recovery.dtstyle",
+      "touches": [
+        "denoiseprofile",
+        "sigmoid",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "wildlife",
+        "nature",
+        "high-iso"
+      ],
+      "description": "High-ISO wildlife recovery (low-light dance-floor, late dusk owl, early-dawn bird-burst). Manual denoiseprofile (nbhood 7, strength 1.2, scattering 2.0) + gentle sigmoid 1.25 + subtle clarity 0.2. **Note:** for ISO ≥ 1600 most surveyed wildlife photographers ROUTE THROUGH a sibling AI-NR tool (Topaz DeNoise / DxO PureRAW / LR AI Denoise) BEFORE this look applies; document the BYOA pattern in vocabulary-patterns.md. This look is the chemigram-only manual fallback when sibling tooling isn't configured.",
+      "modversions": {
+        "denoiseprofile": 12,
+        "sigmoid": 3,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_wildlife_natural_warm",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_wildlife_natural_warm.dtstyle",
+      "touches": [
+        "temperature",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "wildlife",
+        "nature",
+        "warm"
+      ],
+      "description": "Warm golden-hour wildlife default — temperature +0.05 red shift + sigmoid 1.25 + vibrance +0.10 with slight saturation_global pull (-0.03 to keep the warmth credible, not cartoonish). The starting point for early-morning / late-afternoon wildlife where natural warmth IS the subject. Compose with look_wildlife_subject_sharpen for full effect.",
+      "modversions": {
+        "temperature": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_food_appetizing_warm",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_food_appetizing_warm.dtstyle",
+      "touches": [
+        "temperature",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "food",
+        "warm"
+      ],
+      "description": "Default food editorial — warm WB (+0.04 red), gentle sigmoid 1.25, vibrance +0.15 + lifted midtone brilliance +0.08. Lauren C. Short / Darina Kopcok / Joanie Simon's foundational starting point for food blog and editorial work. Pre-WB-foundation (gray card recommended); downstream HSL color shaping per look_food_orange_pop / look_food_green_natural compose orthogonally.",
+      "modversions": {
+        "temperature": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_food_orange_pop",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_food_orange_pop.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "food",
+        "color-shaping"
+      ],
+      "description": "Lift the orange / red food band — tomato, carrot, salmon, paprika, peach. Colorequal sat_orange +0.30 + sat_red +0.20 (saturation lift on warm food colors) + slight brightness lifts. The HSL-per-color discipline that food photographers use INSTEAD of global saturation (which would destroy whites and greens). Compose on top of look_food_appetizing_warm.",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_food_green_natural",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_food_green_natural.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "food",
+        "color-shaping"
+      ],
+      "description": "Lift greens — fresh herbs, salad, parsley, basil — without crossing into the cartoonish lime-green that over-edited food photography shows. Colorequal sat_green +0.20 + sat_yellow +0.10 + bright_green +0.05. The restraint discipline applied to color shaping (Tucker / Marino voice in food work). Compose on top of look_food_appetizing_warm.",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_food_texture_subtle",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_food_texture_subtle.dtstyle",
+      "touches": [
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "food",
+        "texture",
+        "masked"
+      ],
+      "description": "Subtle texture lift for food — bread crust, pastry layers, meat fibers, fruit skin texture. Bilat clarity_strength +0.20 — explicit ceiling matching the food-photography-academy 'never overdone' discipline (Kopcok: 'overdoing clarity makes food look dry and unappealing'). Pre-baked with mask_subject so the texture lift scopes to the food, not the table / plate. Compose with look_food_appetizing_warm.",
+      "modversions": {
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "mask_spec": {
+        "kind": "named",
+        "name": "mask_subject"
+      }
+    },
+    {
+      "name": "look_product_packshot_clean",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_product_packshot_clean.dtstyle",
+      "touches": [
+        "sigmoid",
+        "vignette"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "product",
+        "commercial"
+      ],
+      "description": "Commercial packshot baseline — gentle sigmoid 1.10 (avoids the punch-the-product look), subtle vignette -0.10 (-10% brightness edges; pulls the eye to the centered product). Karl Taylor / Zoe Noble's commercial-product clean-on-white starting point. Assumes WB has been gray-card-corrected (use wb_from_gray_card MCP tool / CLI before this look applies).",
+      "modversions": {
+        "sigmoid": 3,
+        "vignette": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
     }
   ]
 }

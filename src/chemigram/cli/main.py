@@ -74,6 +74,10 @@ app.command(
     name="apply-per-region",
     help="Apply one primitive to N mask-bound regions atomically (RFC-031).",
 )(edit.apply_per_region_cli)
+app.command(
+    name="wb-from-gray-card",
+    help="Sample a gray-card region; return temperature coefficients (survey Gap #20).",
+)(edit.wb_from_gray_card_cli)
 app.command(name="remove-module", help="Strip all history entries for an operation.")(
     edit.remove_module
 )
