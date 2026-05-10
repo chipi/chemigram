@@ -3,7 +3,7 @@
 > The slice-by-slice implementation guide for Chemigram.
 > Names slices, gates, RFC closures.
 > Source of truth for "what gets built when."
-> Last updated · 2026-05-08 (v1.9.0 release pass)
+> Last updated · 2026-05-10 (v1.10.0 release pass)
 
 This document describes the implementation phases for building Chemigram, decomposed where possible into concrete slices with acceptance gates. Each slice's gate is the moment when a set of RFCs gets closed into ADRs — closure is not a continuous process, it's a checkpoint.
 
@@ -26,6 +26,7 @@ This document supersedes earlier phase descriptions in `docs/briefs/architecture
 | **Phase 1.7** | Tier 2 expansion + Lightroom-parity Bucket A (A.1–A.7) | ✅ **Closed (v1.7.0)** — RFC-022 → ADR-081 tiering policy. Buckets A.2–A.7 shipped (dehaze, WB tint, midtones grade, Color Grading 9 axes, Texture, ashift Transform, WB Kelvin UX). |
 | **Phase 1.8** | HSL Color Mixer + denoise + lens + filmic v6 | ✅ **Closed (v1.8.0)** — RFC-023 → ADR-083 (HSL via colorequal mv4, 24 axes). Plus #95–#97 closures for noise/lens/filmic. Lightroom daily-use parity: 51/52 (98%). |
 | **Phase 1.9** | Mask + retouch architecture trilogy | ✅ **Closed (v1.9.0)** — RFC-029 / ADR-084 (compositional spatial masks), RFC-024 / ADR-085 (parametric range filters), RFC-026 / ADR-086 (LLM-vision-as-provider), RFC-025 / ADR-087 (spot heal/clone via `apply_spot` MCP tool). 5 compositional-mask L2 looks added; CLI verbs `vocab validate` and `cache` added. RFC-030 deferred (deployed sibling-provider precision tier). 83 vocabulary entries shipped. |
+| **Phase 1.10** | Photographer-survey vocabulary expansion + workflow primitives | ✅ **Closed (v1.10.0)** — 6-genre photographer-workflow survey shipped; 29 new L2 looks (5 B&W / 8 landscape / 5 portrait / 5 wildlife / 4 food / 1 product / 1 skin) + bw_convert v2 (colorequal-based 8-axis Adams-school B&W). Three workflow primitives: RFC-035 / ADR-088 (parametric L2 strength via Path B), RFC-036 / ADR-089 (mixed-op `apply_per_region`), RFC-037 / ADR-090 (`propagate_state` LR-Sync analog). Vocab-load dtstyle-modversion drift check (Gap A from RFC-035/036/037 retro). 102 expressive-baseline entries shipped. ADRs in Draft until darkroom-session validation flips them to Accepted. |
 | **Phase 2** | Vocabulary maturation — grow vocab from session evidence | **In progress** — use-driven; intermittent; grows the *personal* pack on top of starter + expressive-baseline. Not slice-and-gate. |
 | **Phase 3** | Additional drawn-form geometries in vocabulary | ✅ **Effectively closed via v1.9.0** — path geometry shipped (RFC-026 substrate / N-vertex polygons). Brush geometry remains conditional per Phase 2 evidence. |
 | **Phase 4** | Content-aware masking | ✅ **Phase 1 closed via RFC-026 / ADR-086** (LLM-vision-as-provider, conversation-native, zero deployment). **Phase 2 (RFC-030, drafted, deferred)** holds the deployed sibling-provider scaffolding for the precision tier (SAM-class subject masks, depth, AI auto-spot detection). |

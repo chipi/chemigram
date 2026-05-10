@@ -97,6 +97,15 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
                                entries (e.g. '--param temp=+0.4 --param
                                tint=-0.1'). May be combined with --value if
                                values agree.
+    --strength           FLOAT Scale a parameterized L2 look's authored
+                               magnitudes by `strength ∈ [0.0, 1.0]`
+                               (default 1.0 = authored). Each parameterized
+                               field interpolates from identity:
+                               `interpolated = identity + strength *
+                               (authored - identity)`. Non-parameterized
+                               fields preserve authored values. Modules
+                               without a registered Path C decoder pass
+                               through unchanged. Closes RFC-035 / ADR-088.
     --stdin                    Read image_ids from stdin (one per line); same
                                entry applied to each.
     --help                     Show this message and exit.
@@ -107,28 +116,75 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
 ```
 Usage: chemigram apply-per-region [OPTIONS] IMAGE_ID
 
- Apply one primitive to N mask-bound regions atomically (RFC-031).
+ Apply one or more primitives to N mask-bound regions atomically.
+ Single-primitive shape closes RFC-031; mixed-op shape closes RFC-036
+ / ADR-089.
 
  *    image_id      TEXT  Image ID. [required]
- *  --entry              TEXT  Vocabulary entry name. [required]
- *  --regions            TEXT  JSON array of regions. Each region:
-                               {"mask_spec": {...}, "parameter_values":
-                               {...}}. mask_spec accepts drawn / parametric /
-                               named-mask shapes. [required]
+    --entry              TEXT  Vocabulary entry name (single-op shape).
+                               Omit when using mixed-op shape (regions
+                               carry their own `ops`).
+ *  --regions            TEXT  JSON array of regions. [required]
+                               Single-op shape: `{"mask_spec": {...},
+                               "parameter_values": {...}}`. Mixed-op
+                               shape (RFC-036): each region carries
+                               `ops: [{"entry": "...", "parameter_values":
+                               {...}}, ...]`. Discriminator: presence of
+                               `ops` on any region routes to mixed-op.
     --pack       -p      TEXT  Pack name (repeatable). Defaults to
                                ['starter'].
     --label              TEXT  Optional snapshot label.
     --help                     Show this message and exit.
 ```
 
-The canonical use case is dodge-and-burn: brighten cheekbones, brighten nose
-bridge, deepen jaw shadow — one move from the photographer's perspective, N
-region-specific applications underneath. Atomic semantics — all regions
-validate first; if any fails (out-of-range parameter, unresolved named-mask
-reference, etc.), none apply. Single-primitive restriction (mixed-op
-batching deferred per RFC-031). Soft cap: 32 regions per call. Each region
-gets a unique `multi_priority` so the synthesizer treats them as distinct
-masked instances rather than collapsing to last-writer.
+The single-op shape canonical use case is dodge-and-burn: brighten cheekbones,
+brighten nose bridge, deepen jaw shadow — one move from the photographer's
+perspective, N region-specific applications underneath. Soft cap: 32 regions.
+
+The mixed-op shape (RFC-036 / ADR-089) handles composite moves where regions
+need different primitives — eye-region work (`+exposure` on iris, `+sharpen`
+on lashes), face-sculpt-with-clarity, sky-and-foreground twin moves. Per-(op,
+region) `multi_priority` allocation keeps stacked instances coexisting cleanly.
+Cap: 64 (op × region) pairs.
+
+Atomic semantics in both shapes — all (op × region) combinations validate
+first; if any fails (out-of-range parameter, unresolved named-mask reference,
+modversion mismatch), none apply.
+
+### `chemigram propagate-state`
+
+```
+Usage: chemigram propagate-state [OPTIONS]
+
+ Propagate a source image's edit state to N target images. Anchor-and-sync
+ workflow — Lightroom Sync analog. Closes RFC-037 / ADR-090.
+
+ *  --source              TEXT  Source image_id (the anchor). [required]
+ *  --targets             TEXT  Comma-separated target image_ids. [required]
+                                Cap: 200 targets per call.
+    --label               TEXT  Optional snapshot label per target.
+    --include-per-image          Override the framing-bound auto-exclusion.
+                                 Default: ashift / crop / retouch / lens /
+                                 drawn-mask-bound entries are skipped because
+                                 they're per-image. Set this only for tripod-
+                                 fixed series where framing-bound moves are
+                                 portable.
+    --exclude-ops         TEXT  Comma-separated extra op names to exclude
+                                (rare).
+    --pack       -p       TEXT  Pack name (repeatable).
+    --help                      Show this message and exit.
+```
+
+Inheritance discipline: inherit everything by default; auto-exclude framing-
+bound ops. Parametric range masks (color-range / luminance-range) DO propagate
+— they're content-relative, not coordinate-bound. Atomic — every target
+validates first; any modversion mismatch / missing target / empty-history
+source aborts the entire batch. Each target gets a single snapshot capturing
+the propagated state plus the supplied label.
+
+Use cases: wedding lighting groups (anchor on the best frame, propagate to
+the burst), product photography variants (anchor on the hero shot, propagate
+to color-A vs color-B), portfolio series consistency.
 
 ### `chemigram remove-module`
 

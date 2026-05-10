@@ -1,10 +1,10 @@
 # Chemigram capability survey — what a user can actually do today
 
-> Honest, unvarnished snapshot of every photographic move and workflow operation chemigram supports as of **v1.7.0** (released 2026-05-07). Two purposes: (1) baseline for planning what to add next, (2) read-from-cold reference for new contributors / agents asking "is X in scope?"
+> Honest, unvarnished snapshot of every photographic move and workflow operation chemigram supports as of **v1.10.0** (released 2026-05-10). Two purposes: (1) baseline for planning what to add next, (2) read-from-cold reference for new contributors / agents asking "is X in scope?"
 
 This document organizes capabilities by **what a photographer wants to do**, not by code structure. Each section lists what's there, what's missing, and where the gap is. Honest about both.
 
-**Inventory (post-v1.7.0):** Vocabulary loaded: `starter` (3 entries) + `expressive-baseline` (39 entries) = **42 vocabulary primitives**. **18 of those are parameterized** (RFC-021 / RFC-022 / ADR-077..081). **12 darktable modules** have at least one shipped entry. MCP tools exposed: **23**. CLI verbs mirror the MCP tool surface verb-for-verb plus a diagnostic `chemigram status` (per RFC-020).
+**Inventory (post-v1.10.0):** Vocabulary loaded: `starter` (3 entries) + `expressive-baseline` (102 entries) = **105 vocabulary primitives**. **38+ parameterized** (RFC-021 / RFC-022 / RFC-035; ADR-077..081 + ADR-088). **17+ darktable modules** have at least one shipped entry. MCP tools exposed: **27** (added `apply_per_region_mixed` shape via ADR-089, `propagate_state` per ADR-090, `wb_from_gray_card`). CLI verbs mirror the MCP surface verb-for-verb plus diagnostic `chemigram status` (per RFC-020).
 
 ---
 
@@ -252,7 +252,19 @@ The "thin" list has narrowed dramatically since v1.7.0. v1.8.0 closed the bulk o
 - ✅ **WB Kelvin UX** — closed via #102 → `wb_kelvin_delta` (UX wrapper on temperature).
 - ✅ **Color Grading completion** — closed via #91 + #90 A.4.
 
-**Closed / drafted in v1.9.0 (in-progress)**:
+**Closed / shipped in v1.10.0** (photographer-survey-driven vocabulary expansion + workflow primitives):
+- ✅ **6-genre photographer-workflow survey** (`docs/photographer-workflows-survey.md`) — 36 photographers across portrait / landscape / wedding / B&W / nature-wildlife / food-product genres; full intent-vs-tool mapping; gap matrix at v1.0.
+- ✅ **29 new L2 looks** drawn from the survey: 5 B&W (`look_bw_classic_neutral` / `_high_contrast_chiaroscuro` / `_landscape_dramatic` / `_silver_efex_zone_balanced` / `_split_tone_warm_shadows`) + 8 landscape + 5 portrait + 5 wildlife + 4 food + 1 product + 1 skin. All composites of the parameterized L3 primitives.
+- ✅ **bw_convert v2** — colorequal-based 8-axis Adams-school B&W primitive (8 sat=-1.0 + 8 bright_X parameters per hue band; emulates Photoshop Channel Mixer (Monochrome) + Silver Efex color filters). Replaces the v1.4.0 channelmixerrgb-mv3 bw_convert.
+- ✅ **Parametric L2 strength** — RFC-035 / ADR-088 (Path B per-parameter interpolation). `chemigram apply-primitive --entry <look> --strength 0.5` dials any L2 look from 0 (identity) to 1.0 (authored). Identity values from the parameterize registry; no per-look manifest declarations.
+- ✅ **Mixed-op `apply_per_region`** — RFC-036 / ADR-089. Each region carries its own `ops` array; per-(op, region) `multi_priority` allocation. Eye-detail / face-sculpt-with-clarity / sky-and-foreground twin moves now ship as one snapshot.
+- ✅ **`propagate_state` MCP verb** — RFC-037 / ADR-090. LR-Sync analog: anchor on one image, propagate edit state to N targets with framing-bound auto-exclusion (ashift / crop / retouch / lens / drawn-mask). Cap 200 targets per call. Atomic.
+- ✅ **`wb_from_gray_card`** — derive temperature coefficients from a gray-card region. Closes survey Gap #20.
+- ✅ **Vocab-load dtstyle-modversion drift check** — sister to ADR-082's manifest-drift check; catches the bug class where a dtstyle's `<module>` byte disagrees with the engine pin (would have caught the v1.10.0-author-time bug that hung darktable for 60s × 25 entries).
+
+ADR-088 / 089 / 090 ship as Draft; flip to Accepted on darkroom-session validation. The architectural decisions are locked; only visual-quality validation gates the status flip.
+
+**Closed / drafted in v1.9.0**:
 - ✅ **Real-raw visual-proof fixture path** — closed via #103 (commit `830f89f`); script extension supports HSL skip-listed entries against a real raw fixture; awaits the iguana fixture file drop.
 - ✅ **Cinematic L2 looks** — closed via #104; 9 named photographic recipes (cinematic / portrait / decade) compose existing primitives.
 - ✅ **Gap-log analytics CLI** — closed via #106; Phase 2 use-driven feedback loop now has read-side tooling.
