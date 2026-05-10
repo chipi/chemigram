@@ -185,6 +185,38 @@ Use cases: wedding lighting groups (anchor on the best frame, propagate to
 the burst), product photography variants (anchor on the hero shot, propagate
 to color-A vs color-B), portfolio series consistency.
 
+### `chemigram apply-spot`
+
+```
+Usage: chemigram apply-spot [OPTIONS] IMAGE_ID
+
+ Apply a spot retouch (heal or clone) at the given coordinate (RFC-025 / ADR-087).
+ Sister to apply-primitive for the structurally different spot-correction
+ primitive class.
+
+ *    image_id          TEXT   Image ID. [required]
+ *    --kind            TEXT   'heal' (auto-source via wavelet decomposition)
+                               or 'clone' (caller specifies source). [required]
+ *    --x               FLOAT  Spot center x in normalized [0, 1]. [required]
+ *    --y               FLOAT  Spot center y in normalized [0, 1]. [required]
+ *    --radius          FLOAT  Spot radius in normalized [0, 1]. Typical:
+                               0.01-0.10 for blemishes / dust spots. [required]
+      --source-x        FLOAT  Clone source x in normalized [0, 1]. Required
+                               when --kind=clone.
+      --source-y        FLOAT  Clone source y in normalized [0, 1]. Required
+                               when --kind=clone.
+      --opacity         FLOAT  Mask opacity 0..100 (default 100).
+      --border          FLOAT  Mask feather border 0..1 (default 0.02).
+      --label           TEXT   Optional snapshot label.
+      --help                   Show this message and exit.
+```
+
+v1.9.0 scope: heal + clone, single form per call (CIRCLE geometry). AI
+auto-detection of multiple spots routes to RFC-030 when that unfreezes.
+Use heal for blemishes, sensor dust, distracting elements (darktable picks
+the source via wavelet decomposition); use clone to mirror features or copy
+texture from a specific source point.
+
 ### `chemigram remove-module`
 
 ```

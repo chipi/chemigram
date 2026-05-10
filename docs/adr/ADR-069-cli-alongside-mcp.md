@@ -23,10 +23,10 @@ The engine had been the right shape for a CLI all along: per ADR-006 / ADR-033 /
 
 The CLI ships in v1.3.0:
 
-- 22 verbs mirroring the MCP tool surface verb-for-verb (with `_` → `-` for shell ergonomics — `apply_primitive` ↔ `apply-primitive`)
+- Verbs mirroring the MCP tool surface verb-for-verb (with `_` → `-` for shell ergonomics — `apply_primitive` ↔ `apply-primitive`). v1.3.0 shipped 22 mirrored verbs; subsequent versions add their MCP counterparts on the same release: `apply-spot` (v1.9.0 / ADR-087), `apply-per-region` (v1.9.0 / RFC-031), `propagate-state` + `wb-from-gray-card` (v1.10.0). The CLI mirror grows with the MCP surface; this verb-for-verb discipline is what this ADR enforces.
 - 4 conversational MCP tools (`propose_taste_update`, `confirm_taste_update`, and the notes counterparts) intentionally do NOT have CLI mirrors; the CLI offers `apply-taste-update` / `apply-notes-update` as direct verbs because the propose/confirm protocol requires per-process state across two tool calls, which doesn't fit the subprocess-per-invocation CLI shape (a parallel `for f in *.NEF` loop would race on a shared proposal store).
 - Output: human-readable text by default, NDJSON via `--json`. Exit codes are stable per ADR-072.
-- Mask `generate` / `regenerate` exit `MASKING_ERROR (7)` because the subprocess CLI has no provider-injection path equivalent to MCP's `build_server(masker=...)`. List/tag/invalidate work fully without a provider. Future RFC may add config-driven provider selection.
+- The v1.0.0 mask MCP tools (`generate_mask`, `regenerate_mask`, `list_masks`, `tag_mask`, `invalidate_mask`) were retired in v1.5.0 per ADR-076. Mask construction now happens inline via `mask_spec` on `apply_primitive` / `apply_per_region` (drawn forms / parametric range filters / named maskdefs / LLM-vision-constructed masks).
 
 **The MCP server is unchanged.** No tool removed, no parameter renamed, no transport altered. Existing integrations (Claude Code, Cursor, Claude Desktop, etc.) continue to work without modification.
 

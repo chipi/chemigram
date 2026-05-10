@@ -75,6 +75,10 @@ app.command(
     help="Apply one primitive to N mask-bound regions atomically (RFC-031).",
 )(edit.apply_per_region_cli)
 app.command(
+    name="apply-spot",
+    help="Apply a spot retouch (heal/clone) at the given coordinate (RFC-025 / ADR-087).",
+)(edit.apply_spot_cli)
+app.command(
     name="wb-from-gray-card",
     help="Sample a gray-card region; return temperature coefficients (survey Gap #20).",
 )(edit.wb_from_gray_card_cli)

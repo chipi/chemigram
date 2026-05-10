@@ -676,6 +676,95 @@ def propagate_state_cli(
 
 
 # ---------------------------------------------------------------------------
+# apply-spot (RFC-025 / ADR-087 — sister to apply-primitive for retouch)
+# ---------------------------------------------------------------------------
+
+
+def apply_spot_cli(
+    ctx: typer.Context,
+    image_id: str = typer.Argument(..., help="Image ID."),
+    kind: str = typer.Option(
+        ...,
+        "--kind",
+        help="'heal' (auto-source via wavelet decomposition) or 'clone' (caller-specified source).",
+    ),
+    x: float = typer.Option(..., "--x", help="Spot center x in normalized [0, 1] coords."),
+    y: float = typer.Option(..., "--y", help="Spot center y in normalized [0, 1] coords."),
+    radius: float = typer.Option(
+        ...,
+        "--radius",
+        help="Spot radius in normalized [0, 1]. Typical: 0.01-0.10 for blemishes / dust spots.",
+    ),
+    source_x: float | None = typer.Option(
+        None,
+        "--source-x",
+        help="Clone source x in normalized [0, 1] coords. Required when --kind=clone.",
+    ),
+    source_y: float | None = typer.Option(
+        None,
+        "--source-y",
+        help="Clone source y in normalized [0, 1] coords. Required when --kind=clone.",
+    ),
+    opacity: float = typer.Option(100.0, "--opacity", help="Mask opacity 0..100 (default 100)."),
+    border: float = typer.Option(0.02, "--border", help="Mask feather border 0..1 (default 0.02)."),
+    label: str | None = typer.Option(None, "--label", help="Optional snapshot label."),
+) -> None:
+    """Apply a spot retouch (heal or clone) at the given coordinate; snapshot.
+
+    Mirrors the ``apply_spot`` MCP tool (RFC-025 / ADR-087). Sister to
+    apply-primitive for the structurally different spot-correction
+    primitive class.
+    """
+    from chemigram.core.helpers import apply_spot_retouch
+
+    obj = cast(CliContext, ctx.obj)
+    writer = obj["writer"]
+
+    workspace = resolve_workspace_or_fail(ctx, image_id)
+
+    baseline_xmp = current_xmp(workspace)
+    if baseline_xmp is None:
+        writer.error(
+            f"workspace {image_id!r} has no baseline snapshot to apply onto",
+            ExitCode.STATE_ERROR,
+            image_id=image_id,
+        )
+        raise typer.Exit(code=ExitCode.STATE_ERROR.value)
+
+    try:
+        new_xmp = apply_spot_retouch(
+            baseline_xmp,
+            kind=kind,
+            x=x,
+            y=y,
+            radius=radius,
+            source_x=source_x,
+            source_y=source_y,
+            opacity=opacity,
+            border=border,
+        )
+    except (ValueError, TypeError) as exc:
+        writer.error(str(exc), ExitCode.INVALID_INPUT, image_id=image_id)
+        raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
+
+    snapshot_label = label or f"apply_spot: {kind} at ({x:.3f},{y:.3f}) r={radius:.3f}"
+    try:
+        new_hash = snapshot(workspace.repo, new_xmp, label=snapshot_label)
+    except VersioningError as exc:
+        writer.error(str(exc), ExitCode.VERSIONING_ERROR, image_id=image_id)
+        raise typer.Exit(code=ExitCode.VERSIONING_ERROR.value) from exc
+
+    writer.result(
+        message=f"applied {kind} spot at ({x:.3f},{y:.3f}); snapshot {new_hash[:7]}",
+        image_id=image_id,
+        kind=kind,
+        coordinates={"x": x, "y": y, "radius": radius},
+        snapshot_hash=new_hash,
+        state_after=summarize_state(new_xmp),
+    )
+
+
+# ---------------------------------------------------------------------------
 # wb-from-gray-card (survey Gap #20)
 # ---------------------------------------------------------------------------
 
