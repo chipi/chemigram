@@ -48,7 +48,7 @@ _Neutral L2 look — exposure + warm-subtle WB baseline._
 
 ---
 
-## `expressive-baseline` pack (81 entries)
+## `expressive-baseline` pack (102 entries)
 
 ### `grain_strength`
 
@@ -163,18 +163,6 @@ _Open whites: target 300 (3x default)._
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker.jpg" alt="whites_open ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale.jpg" alt="whites_open grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-colorchecker-masked.jpg" alt="whites_open ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/whites_open-grayscale-masked.jpg" alt="whites_open grayscale masked" width="180"> |
-
-### `bw_convert`
-
-_Neutral B&W conversion via channelmixerrgb (Rec. 709 luminance weights: R 0.2126, G 0.7152, B 0.0722). normalize_grey=true so weights sum-normalize. Closes the v1.4.0 milestone B&W trio (#63)._
-
-| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
-|-|-|-|-|
-| <img src="../visual-proofs/expressive-baseline/bw_convert-colorchecker.jpg" alt="bw_convert ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-grayscale.jpg" alt="bw_convert grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-colorchecker-masked.jpg" alt="bw_convert ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-grayscale-masked.jpg" alt="bw_convert grayscale masked" width="180"> |
-
-_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
-
-_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
 
 ### `bw_sky_drama`
 
@@ -1317,7 +1305,7 @@ _L2 look — Kodak Portra 400 portrait film (#104). sigmoid_contrast 0.9 (soft s
 
 ### `look_high_key_portrait`
 
-_L2 look — high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05._
+_L2 look — high-key portrait (Adler-style fashion / commercial). exposure +0.3 EV + sigmoid_contrast 0.8 (soft s-curve) + colorbalancergb brilliance_highlights=+0.2 + saturation_global=-0.05 (retains skin saturation while reducing global). For magazine / beauty work where bright skin tones drive the look. Compose with skin_uniformity for a complete editorial pass._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
@@ -1325,7 +1313,7 @@ _L2 look — high-key portrait (#104). exposure +0.3 EV + sigmoid_contrast 0.8 (
 
 ### `look_low_key_portrait`
 
-_L2 look — low-key portrait (#104). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.1._
+_L2 look — low-key portrait (Tucker / chiaroscuro voice). exposure -0.2 EV + sigmoid_contrast 1.8 (strong s-curve) + colorbalancergb brilliance_shadows=-0.3 + saturation_global=-0.10. For dramatic editorial / character portraits where deep shadows carry the mood. Compose with look_portrait_split_tone_moody for a more cinematic grade._
 
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
@@ -1406,6 +1394,200 @@ _L2 look — lift dark pixels globally (no spatial mask). Pure parametric range_
 | ColorChecker | Grayscale ramp |
 |-|-|
 | <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-colorchecker.jpg" alt="look_dark_pixels_global_lift ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-grayscale.jpg" alt="look_dark_pixels_global_lift grayscale" width="180"> |
+
+### `look_portrait_natural_skin`
+
+_Restraint-first portrait foundation — Tucker/Marino-aligned. Slight warm temperature (+0.03 red), exposure +0.1 EV, sigmoid contrast 1.2 (gentle s-curve), saturation_global -0.05 + vibrance +0.1 (mild chroma shaping that protects skin tones). The starting point for portrait work that doesn't push contrast or saturation as a stylistic choice._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_portrait_natural_skin-colorchecker.jpg" alt="look_portrait_natural_skin ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_natural_skin-grayscale.jpg" alt="look_portrait_natural_skin grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_natural_skin-colorchecker-masked.jpg" alt="look_portrait_natural_skin ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_natural_skin-grayscale-masked.jpg" alt="look_portrait_natural_skin grayscale masked" width="180"> |
+
+### `look_portrait_editorial`
+
+_Magazine / fashion editorial grade. Punchier sigmoid contrast (1.6), global saturation pull-back (-0.10) — counterintuitive but the move Adler/Woloszynowicz reach for; reduced overall sat lets the split-tone read. Cool-shadows + warm-highlights split (hue_shadows=210, hue_highlights=45). Compose with skin_uniformity if skin patches fight the grade._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-colorchecker.jpg" alt="look_portrait_editorial ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-grayscale.jpg" alt="look_portrait_editorial grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-colorchecker-masked.jpg" alt="look_portrait_editorial ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-grayscale-masked.jpg" alt="look_portrait_editorial grayscale masked" width="180"> |
+
+### `look_portrait_split_tone_moody`
+
+_Cinematic split-tone portrait — cool blue shadows (hue 210, sat 0.30) + warm orange highlights (hue 45, sat 0.20), sigmoid contrast 1.4. Stronger split than look_portrait_editorial; some photographers (Adler) consider this 'fashion-only' rather than a general portrait move. Borderline survey candidate — ships, but exercise judgment._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_portrait_split_tone_moody-colorchecker.jpg" alt="look_portrait_split_tone_moody ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_split_tone_moody-grayscale.jpg" alt="look_portrait_split_tone_moody grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_split_tone_moody-colorchecker-masked.jpg" alt="look_portrait_split_tone_moody ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_split_tone_moody-grayscale-masked.jpg" alt="look_portrait_split_tone_moody grayscale masked" width="180"> |
+
+### `look_landscape_grand_vista`
+
+_Heaton/PureRAW-style grand vista. Sigmoid contrast 1.4, mildly warm shadows (hue 30, sat 0.10), vibrance +0.10, bilat clarity_strength 0.5. The chemigram shape of LR's adaptive sky + foreground lift workflow rendered globally; for sky-specific work compose with look_landscape_sky_enhance instead._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_grand_vista-colorchecker.jpg" alt="look_landscape_grand_vista ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_grand_vista-grayscale.jpg" alt="look_landscape_grand_vista grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_grand_vista-colorchecker-masked.jpg" alt="look_landscape_grand_vista ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_grand_vista-grayscale-masked.jpg" alt="look_landscape_grand_vista grayscale masked" width="180"> |
+
+### `look_landscape_intimate_quiet`
+
+_Marino-style intimate / small-scene restraint. Very gentle sigmoid contrast (1.05), saturation pulled back (-0.10), bilat softened (clarity_strength -0.3 — opposite of clarity boost). The defining stylistic choice for forest interiors, abstract details, and any scene where drama would betray the subject. Applies LESS than the baseline does, deliberately._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_intimate_quiet-colorchecker.jpg" alt="look_landscape_intimate_quiet ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_intimate_quiet-grayscale.jpg" alt="look_landscape_intimate_quiet grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_intimate_quiet-colorchecker-masked.jpg" alt="look_landscape_intimate_quiet ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_intimate_quiet-grayscale-masked.jpg" alt="look_landscape_intimate_quiet grayscale masked" width="180"> |
+
+### `look_landscape_golden_hour`
+
+_Sunset / sunrise mood. Warm temperature shift (+0.07 red), sigmoid contrast 1.3, warm shadows (hue 30, sat 0.20) + amber highlights (hue 50, sat 0.15), vibrance +0.10. Pushes the warmth that golden-hour light almost has and amplifies it without breaking color credibility. For scenes already on the warm side, apply at lower strength via opacity — not authored as parametric (look-not-primitive)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_golden_hour-colorchecker.jpg" alt="look_landscape_golden_hour ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_golden_hour-grayscale.jpg" alt="look_landscape_golden_hour grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_golden_hour-colorchecker-masked.jpg" alt="look_landscape_golden_hour ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_golden_hour-grayscale-masked.jpg" alt="look_landscape_golden_hour grayscale masked" width="180"> |
+
+### `look_landscape_blue_hour_cool`
+
+_Twilight / pre-dawn / blue-hour mood. Cool temperature shift (+0.07 blue), sigmoid contrast 1.3, cool shadows (hue 210, sat 0.20) + neutral-cool highlights (hue 200, sat 0.10), saturation_global -0.05. Opposite mood from golden_hour; equally valid genre signature. Composes with sigmoid_contrast for stronger drama if needed._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_blue_hour_cool-colorchecker.jpg" alt="look_landscape_blue_hour_cool ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_blue_hour_cool-grayscale.jpg" alt="look_landscape_blue_hour_cool grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_blue_hour_cool-colorchecker-masked.jpg" alt="look_landscape_blue_hour_cool ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_blue_hour_cool-grayscale-masked.jpg" alt="look_landscape_blue_hour_cool grayscale masked" width="180"> |
+
+### `look_landscape_atmospheric_haze`
+
+_Misty / hazy / fog-as-subject mood. Hazeremoval strength 0.5 (lift visibility while preserving the moody atmosphere), bilat clarity 0.3, warm shadows (hue 30, sat 0.10) + vibrance +0.05. The trick: lift JUST enough to read details, not enough to flatten the atmosphere. Strong hazeremoval values (>1.0) produce 'no atmosphere' results that defeat the intent — keep restrained._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_atmospheric_haze-colorchecker.jpg" alt="look_landscape_atmospheric_haze ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_atmospheric_haze-grayscale.jpg" alt="look_landscape_atmospheric_haze grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_atmospheric_haze-colorchecker-masked.jpg" alt="look_landscape_atmospheric_haze ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_atmospheric_haze-grayscale-masked.jpg" alt="look_landscape_atmospheric_haze grayscale masked" width="180"> |
+
+### `look_landscape_dramatic_moody`
+
+_Page/Adamus-style dramatic atmospheric. Sigmoid contrast 1.7 (strong), cool shadows (hue 210, sat 0.20) + warm highlights (hue 30, sat 0.15), bilat clarity_strength 0.6. The dramatic counterpart to intimate_quiet — for stormy skies, rugged terrain, and weather drama. Pair with mask_luminosity_brightest_quartile darkening for stormy-cloud emphasis._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_dramatic_moody-colorchecker.jpg" alt="look_landscape_dramatic_moody ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_dramatic_moody-grayscale.jpg" alt="look_landscape_dramatic_moody grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_dramatic_moody-colorchecker-masked.jpg" alt="look_landscape_dramatic_moody ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_dramatic_moody-grayscale-masked.jpg" alt="look_landscape_dramatic_moody grayscale masked" width="180"> |
+
+### `look_landscape_autumn_pop`
+
+_Autumn foliage / fall color. Slight warm temperature (+0.04 red), colorequal sat_orange +0.30 + sat_red +0.20 (lift autumn colors) + sat_blue -0.10 (compensating to keep skies natural — without this, skies turn cartoonish). Bilat clarity_strength 0.4 for foliage definition. A targeted seasonal grade; not for non-foliage scenes._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-colorchecker.jpg" alt="look_landscape_autumn_pop ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-grayscale.jpg" alt="look_landscape_autumn_pop grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-colorchecker-masked.jpg" alt="look_landscape_autumn_pop ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-grayscale-masked.jpg" alt="look_landscape_autumn_pop grayscale masked" width="180"> |
+
+### `bw_convert`
+
+_B&W conversion (RFC-033 follow-up; survey Gap #1). Single colorequal plugin with all 8 sat axes set to -1.0 (full saturation kill = grayscale). Exposes 8 bright_X parameters emulating Adams-school color-filter strength: bright_red +0.3 lightens skin / red flowers / darkens skies in B&W; bright_blue -0.2 darkens skies; bright_green +0.3 lightens foliage; etc. The chemigram analog of Photoshop Channel Mixer (Monochrome) and Silver Efex Color Filters. Universal Step 1 of any B&W workflow per the photographer survey (6/6 photographers reach for color-filter-driven conversion as their foundational B&W move)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/bw_convert-colorchecker.jpg" alt="bw_convert ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-grayscale.jpg" alt="bw_convert grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-colorchecker-masked.jpg" alt="bw_convert ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-grayscale-masked.jpg" alt="bw_convert grayscale masked" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+**Parameter sweep** (`bright_blue`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-0.60` | `-0.30` | `0.00` | `+0.20` | `+0.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/bw_convert-sweep-bright_blue-n0_60.jpg" alt="bw_convert bright_blue=-0.60" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-sweep-bright_blue-n0_30.jpg" alt="bw_convert bright_blue=-0.30" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-sweep-bright_blue-0_00.jpg" alt="bw_convert bright_blue=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-sweep-bright_blue-p0_20.jpg" alt="bw_convert bright_blue=+0.20" width="180"> | <img src="../visual-proofs/expressive-baseline/bw_convert-sweep-bright_blue-p0_50.jpg" alt="bw_convert bright_blue=+0.50" width="180"> |
+
+### `look_bw_classic_neutral`
+
+_Classic B&W foundation — neutral channel weighting (no filter), mid contrast (sigmoid 1.3), mild structure (clarity 0.3). The starting point for any B&W work; compose with split-tone or chiaroscuro variants for stylistic direction. Per RFC-033 / survey Gap #1._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_bw_classic_neutral-colorchecker.jpg" alt="look_bw_classic_neutral ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_classic_neutral-grayscale.jpg" alt="look_bw_classic_neutral grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_classic_neutral-colorchecker-masked.jpg" alt="look_bw_classic_neutral ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_classic_neutral-grayscale-masked.jpg" alt="look_bw_classic_neutral grayscale masked" width="180"> |
+
+### `look_bw_high_contrast_chiaroscuro`
+
+_Tucker/Thompson-style chiaroscuro B&W — strong sigmoid contrast (1.7), deep shadow brilliance (-0.20), lifted highlight brilliance (+0.10). For street/portrait B&W where dramatic light-shadow interplay defines the image. Compose with mask_subject for directional facial sculpting (Tucker portrait discipline)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_bw_high_contrast_chiaroscuro-colorchecker.jpg" alt="look_bw_high_contrast_chiaroscuro ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_high_contrast_chiaroscuro-grayscale.jpg" alt="look_bw_high_contrast_chiaroscuro grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_high_contrast_chiaroscuro-colorchecker-masked.jpg" alt="look_bw_high_contrast_chiaroscuro ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_high_contrast_chiaroscuro-grayscale-masked.jpg" alt="look_bw_high_contrast_chiaroscuro grayscale masked" width="180"> |
+
+### `look_bw_landscape_dramatic`
+
+_Page/Adamus dramatic B&W landscape — red-filter-emulated conversion (bright_red +0.20 lightens land; bright_blue -0.30 darkens skies — the classic Adams-school red filter for storm-cloud drama). Sigmoid contrast 1.6 + clarity 0.5. For stormy skies, rugged terrain, weather drama. The B&W counterpart of look_landscape_dramatic_moody._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_bw_landscape_dramatic-colorchecker.jpg" alt="look_bw_landscape_dramatic ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_landscape_dramatic-grayscale.jpg" alt="look_bw_landscape_dramatic grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_landscape_dramatic-colorchecker-masked.jpg" alt="look_bw_landscape_dramatic ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_landscape_dramatic-grayscale-masked.jpg" alt="look_bw_landscape_dramatic grayscale masked" width="180"> |
+
+### `look_bw_split_tone_warm_shadows`
+
+_Subtle warm-shadows toned B&W — sepia / selenium print evocation. Neutral B&W conversion + mid-strong sigmoid contrast (1.35) + warm-tone shadows (hue 30, sat 0.05) + cool-tone highlights (hue 210, sat 0.03). The split-tone tinting reads as 'toned print' rather than pure neutral B&W._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_bw_split_tone_warm_shadows-colorchecker.jpg" alt="look_bw_split_tone_warm_shadows ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_split_tone_warm_shadows-grayscale.jpg" alt="look_bw_split_tone_warm_shadows grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_split_tone_warm_shadows-colorchecker-masked.jpg" alt="look_bw_split_tone_warm_shadows ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_split_tone_warm_shadows-grayscale-masked.jpg" alt="look_bw_split_tone_warm_shadows grayscale masked" width="180"> |
+
+### `look_bw_silver_efex_zone_balanced`
+
+_Whalley/Boutwell zone-system-aware balanced B&W — the restraint discipline applied to monochrome. Neutral conversion + gentle sigmoid contrast (1.15) + subtle clarity (0.15). The defining stylistic position for B&W work that doesn't push contrast or structure as a dramatic move; reads as 'measured tonal development' (Adams-school)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-colorchecker.jpg" alt="look_bw_silver_efex_zone_balanced ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-grayscale.jpg" alt="look_bw_silver_efex_zone_balanced grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-colorchecker-masked.jpg" alt="look_bw_silver_efex_zone_balanced ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-grayscale-masked.jpg" alt="look_bw_silver_efex_zone_balanced grayscale masked" width="180"> |
+
+### `look_wildlife_high_iso_recovery`
+
+_High-ISO wildlife recovery (low-light dance-floor, late dusk owl, early-dawn bird-burst). Manual denoiseprofile (nbhood 7, strength 1.2, scattering 2.0) + gentle sigmoid 1.25 + subtle clarity 0.2. **Note:** for ISO ≥ 1600 most surveyed wildlife photographers ROUTE THROUGH a sibling AI-NR tool (Topaz DeNoise / DxO PureRAW / LR AI Denoise) BEFORE this look applies; document the BYOA pattern in vocabulary-patterns.md. This look is the chemigram-only manual fallback when sibling tooling isn't configured._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_wildlife_high_iso_recovery-colorchecker.jpg" alt="look_wildlife_high_iso_recovery ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_high_iso_recovery-grayscale.jpg" alt="look_wildlife_high_iso_recovery grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_high_iso_recovery-colorchecker-masked.jpg" alt="look_wildlife_high_iso_recovery ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_high_iso_recovery-grayscale-masked.jpg" alt="look_wildlife_high_iso_recovery grayscale masked" width="180"> |
+
+### `look_wildlife_natural_warm`
+
+_Warm golden-hour wildlife default — temperature +0.05 red shift + sigmoid 1.25 + vibrance +0.10 with slight saturation_global pull (-0.03 to keep the warmth credible, not cartoonish). The starting point for early-morning / late-afternoon wildlife where natural warmth IS the subject. Compose with look_wildlife_subject_sharpen for full effect._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_wildlife_natural_warm-colorchecker.jpg" alt="look_wildlife_natural_warm ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_natural_warm-grayscale.jpg" alt="look_wildlife_natural_warm grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_natural_warm-colorchecker-masked.jpg" alt="look_wildlife_natural_warm ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_natural_warm-grayscale-masked.jpg" alt="look_wildlife_natural_warm grayscale masked" width="180"> |
+
+### `look_food_appetizing_warm`
+
+_Default food editorial — warm WB (+0.04 red), gentle sigmoid 1.25, vibrance +0.15 + lifted midtone brilliance +0.08. Lauren C. Short / Darina Kopcok / Joanie Simon's foundational starting point for food blog and editorial work. Pre-WB-foundation (gray card recommended); downstream HSL color shaping per look_food_orange_pop / look_food_green_natural compose orthogonally._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_food_appetizing_warm-colorchecker.jpg" alt="look_food_appetizing_warm ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_appetizing_warm-grayscale.jpg" alt="look_food_appetizing_warm grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_appetizing_warm-colorchecker-masked.jpg" alt="look_food_appetizing_warm ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_appetizing_warm-grayscale-masked.jpg" alt="look_food_appetizing_warm grayscale masked" width="180"> |
+
+### `look_food_orange_pop`
+
+_Lift the orange / red food band — tomato, carrot, salmon, paprika, peach. Colorequal sat_orange +0.30 + sat_red +0.20 (saturation lift on warm food colors) + slight brightness lifts. The HSL-per-color discipline that food photographers use INSTEAD of global saturation (which would destroy whites and greens). Compose on top of look_food_appetizing_warm._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_food_orange_pop-colorchecker.jpg" alt="look_food_orange_pop ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_orange_pop-grayscale.jpg" alt="look_food_orange_pop grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_orange_pop-colorchecker-masked.jpg" alt="look_food_orange_pop ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_orange_pop-grayscale-masked.jpg" alt="look_food_orange_pop grayscale masked" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+### `look_food_green_natural`
+
+_Lift greens — fresh herbs, salad, parsley, basil — without crossing into the cartoonish lime-green that over-edited food photography shows. Colorequal sat_green +0.20 + sat_yellow +0.10 + bright_green +0.05. The restraint discipline applied to color shaping (Tucker / Marino voice in food work). Compose on top of look_food_appetizing_warm._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_food_green_natural-colorchecker.jpg" alt="look_food_green_natural ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_green_natural-grayscale.jpg" alt="look_food_green_natural grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_green_natural-colorchecker-masked.jpg" alt="look_food_green_natural ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_green_natural-grayscale-masked.jpg" alt="look_food_green_natural grayscale masked" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+### `look_product_packshot_clean`
+
+_Commercial packshot baseline — gentle sigmoid 1.10 (avoids the punch-the-product look), subtle vignette -0.10 (-10% brightness edges; pulls the eye to the centered product). Karl Taylor / Zoe Noble's commercial-product clean-on-white starting point. Assumes WB has been gray-card-corrected (use wb_from_gray_card MCP tool / CLI before this look applies)._
+
+| ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
+|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_product_packshot_clean-colorchecker.jpg" alt="look_product_packshot_clean ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_product_packshot_clean-grayscale.jpg" alt="look_product_packshot_clean grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_product_packshot_clean-colorchecker-masked.jpg" alt="look_product_packshot_clean ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_product_packshot_clean-grayscale-masked.jpg" alt="look_product_packshot_clean grayscale masked" width="180"> |
 
 ---
 
