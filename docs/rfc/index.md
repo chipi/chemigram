@@ -47,6 +47,7 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-034 | `invert` flag on named-mask references | Draft v0.1 (parametric impl shipped) | — (pending) |
 | RFC-035 | Parametric L2 strength (opacity-as-amount) | Draft v0.1 (deferred — informed by darkroom-session) | — |
 | RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Draft v0.1 (deferred — informed by darkroom-session) | — |
+| RFC-037 | `propagate_state` MCP verb (anchor-and-sync workflow) | Draft v0.1 | — (pending; surfaced by survey R2 Wedding Gap #4) |
 
 ## Maturity legend
 

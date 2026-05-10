@@ -226,28 +226,6 @@
       "license": "MIT"
     },
     {
-      "name": "bw_convert",
-      "layer": "L3",
-      "subtype": "channelmixerrgb",
-      "path": "layers/L3/channelmixerrgb/bw_convert.dtstyle",
-      "touches": [
-        "channelmixerrgb"
-      ],
-      "tags": [
-        "bw",
-        "monochrome",
-        "fundamental",
-        "global"
-      ],
-      "description": "Neutral B&W conversion via channelmixerrgb (Rec. 709 luminance weights: R 0.2126, G 0.7152, B 0.0722). normalize_grey=true so weights sum-normalize. Closes the v1.4.0 milestone B&W trio (#63).",
-      "modversions": {
-        "channelmixerrgb": 3
-      },
-      "darktable_version": "5.4",
-      "source": "expressive-baseline",
-      "license": "MIT"
-    },
-    {
       "name": "bw_sky_drama",
       "layer": "L3",
       "subtype": "channelmixerrgb",
@@ -4196,6 +4174,290 @@
         "kind": "named",
         "name": "mask_water_blue_cyan"
       }
+    },
+    {
+      "name": "bw_convert",
+      "layer": "L3",
+      "subtype": "colorequal",
+      "path": "layers/L3/colorequal/bw_convert.dtstyle",
+      "touches": [
+        "colorequal"
+      ],
+      "_test_coverage_exempt": "Survey Gap #1 (6/6 B&W universal). Lab-grade global / lab-grade masked / visual proof tiers require human review of channel-filter rendering against representative B&W test images — natural skin tone in B&W vs. red-filter-darkened sky vs. green-filter-lightened foliage are visual judgments per ADR-080. Unit + integration coverage ships; lab-grade lands alongside the darkroom-session sign-off.",
+      "tags": [
+        "bw",
+        "monochrome",
+        "channel-mixer",
+        "color-filter",
+        "fundamental",
+        "global",
+        "parameterized",
+        "multi-axis"
+      ],
+      "description": "B&W conversion (RFC-033 follow-up; survey Gap #1). Single colorequal plugin with all 8 sat axes set to -1.0 (full saturation kill = grayscale). Exposes 8 bright_X parameters emulating Adams-school color-filter strength: bright_red +0.3 lightens skin / red flowers / darkens skies in B&W; bright_blue -0.2 darkens skies; bright_green +0.3 lightens foliage; etc. The chemigram analog of Photoshop Channel Mixer (Monochrome) and Silver Efex Color Filters. Universal Step 1 of any B&W workflow per the photographer survey (6/6 photographers reach for color-filter-driven conversion as their foundational B&W move).",
+      "modversions": {
+        "colorequal": 4
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT",
+      "parameters": [
+        {
+          "name": "bright_red",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 92,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_orange",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 96,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_yellow",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 100,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_green",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 104,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_cyan",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 108,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_blue",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 112,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_lavender",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 116,
+            "encoding": "le_f32"
+          }
+        },
+        {
+          "name": "bright_magenta",
+          "type": "float",
+          "range": [
+            -1.0,
+            1.0
+          ],
+          "default": 0.0,
+          "field": {
+            "module": "colorequal",
+            "modversion": 4,
+            "offset": 120,
+            "encoding": "le_f32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "look_bw_classic_neutral",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_bw_classic_neutral.dtstyle",
+      "touches": [
+        "colorequal",
+        "sigmoid",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "bw",
+        "monochrome"
+      ],
+      "description": "Classic B&W foundation — neutral channel weighting (no filter), mid contrast (sigmoid 1.3), mild structure (clarity 0.3). The starting point for any B&W work; compose with split-tone or chiaroscuro variants for stylistic direction. Per RFC-033 / survey Gap #1.",
+      "modversions": {
+        "colorequal": 4,
+        "sigmoid": 3,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_bw_high_contrast_chiaroscuro",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_bw_high_contrast_chiaroscuro.dtstyle",
+      "touches": [
+        "colorequal",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "bw",
+        "monochrome",
+        "dramatic"
+      ],
+      "description": "Tucker/Thompson-style chiaroscuro B&W — strong sigmoid contrast (1.7), deep shadow brilliance (-0.20), lifted highlight brilliance (+0.10). For street/portrait B&W where dramatic light-shadow interplay defines the image. Compose with mask_subject for directional facial sculpting (Tucker portrait discipline).",
+      "modversions": {
+        "colorequal": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_bw_landscape_dramatic",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_bw_landscape_dramatic.dtstyle",
+      "touches": [
+        "colorequal",
+        "sigmoid",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "bw",
+        "monochrome",
+        "dramatic",
+        "landscape"
+      ],
+      "description": "Page/Adamus dramatic B&W landscape — red-filter-emulated conversion (bright_red +0.20 lightens land; bright_blue -0.30 darkens skies — the classic Adams-school red filter for storm-cloud drama). Sigmoid contrast 1.6 + clarity 0.5. For stormy skies, rugged terrain, weather drama. The B&W counterpart of look_landscape_dramatic_moody.",
+      "modversions": {
+        "colorequal": 4,
+        "sigmoid": 3,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_bw_split_tone_warm_shadows",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_bw_split_tone_warm_shadows.dtstyle",
+      "touches": [
+        "colorequal",
+        "sigmoid",
+        "colorbalancergb"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "bw",
+        "monochrome",
+        "split-tone"
+      ],
+      "description": "Subtle warm-shadows toned B&W — sepia / selenium print evocation. Neutral B&W conversion + mid-strong sigmoid contrast (1.35) + warm-tone shadows (hue 30, sat 0.05) + cool-tone highlights (hue 210, sat 0.03). The split-tone tinting reads as 'toned print' rather than pure neutral B&W.",
+      "modversions": {
+        "colorequal": 4,
+        "sigmoid": 3,
+        "colorbalancergb": 5
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
+    },
+    {
+      "name": "look_bw_silver_efex_zone_balanced",
+      "layer": "L2",
+      "subtype": "look",
+      "path": "layers/L2/look/look_bw_silver_efex_zone_balanced.dtstyle",
+      "touches": [
+        "colorequal",
+        "sigmoid",
+        "bilat"
+      ],
+      "tags": [
+        "look",
+        "composite",
+        "bw",
+        "monochrome",
+        "restrained"
+      ],
+      "description": "Whalley/Boutwell zone-system-aware balanced B&W — the restraint discipline applied to monochrome. Neutral conversion + gentle sigmoid contrast (1.15) + subtle clarity (0.15). The defining stylistic position for B&W work that doesn't push contrast or structure as a dramatic move; reads as 'measured tonal development' (Adams-school).",
+      "modversions": {
+        "colorequal": 4,
+        "sigmoid": 3,
+        "bilat": 3
+      },
+      "darktable_version": "5.4",
+      "source": "expressive-baseline",
+      "license": "MIT"
     }
   ]
 }
