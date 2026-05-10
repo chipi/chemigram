@@ -45,9 +45,9 @@ RFCs are not implementation specs and not justifications-after-the-fact. They're
 | RFC-032 | Named-mask vocabulary on v1.9.0 mask primitives | Draft v0.1 (impl shipped) | — (pending; possibly two ADRs) |
 | RFC-033 | Skin-tone uniformity primitive | Draft v0.1 (Path B impl shipped; gated on visual review) | — (pending; path depends on visual review) |
 | RFC-034 | `invert` flag on named-mask references | Draft v0.1 (parametric impl shipped) | — (pending) |
-| RFC-035 | Parametric L2 strength (opacity-as-amount) | Draft v0.1 (Path B impl shipped 2026-05-10) | — (pending) |
-| RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Draft v0.1 (impl shipped 2026-05-10) | — (pending) |
-| RFC-037 | `propagate_state` MCP verb (anchor-and-sync workflow) | Draft v0.1 | — (pending; surfaced by survey R2 Wedding Gap #4) |
+| RFC-035 | Parametric L2 strength (opacity-as-amount) | Decided (Path B); ADR-088 Draft until darkroom validation | ADR-088 (closes; flips to Accepted on darkroom-session sign-off) |
+| RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Decided; ADR-089 Draft until darkroom validation | ADR-089 (closes; flips to Accepted on darkroom-session sign-off) |
+| RFC-037 | `propagate_state` MCP verb (anchor-and-sync workflow) | Decided; ADR-090 Draft until darkroom validation | ADR-090 (closes; flips to Accepted on darkroom-session sign-off) |
 
 ## Maturity legend
 

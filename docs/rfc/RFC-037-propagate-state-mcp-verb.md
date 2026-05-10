@@ -1,8 +1,9 @@
 # RFC-037 — `propagate_state` MCP verb (anchor-and-sync workflow)
 
-> Status · Draft v0.1
+> Status · Decided (impl shipped 2026-05-10; ADR-090 stays Draft until darkroom validation)
 > TA anchor · /contracts/mcp-tools · /components/synthesizer · /components/versioning
 > Related · RFC-031 (apply_per_region — single-image batched), RFC-032 (named-mask vocabulary), photographer-workflows survey Gap #4
+> Closes into · ADR-090 (closes; flips to Accepted on darkroom-session sign-off)
 > Closes into · ADR-NNN (pending)
 > Why this is an RFC · Surfaced cleanly by R2 (Wedding/Event) and reinforced by R3 — 4/6 wedding photographers ship anchor-and-sync as a load-bearing technique. chemigram's `apply_primitive --stdin` propagates the same primitive call across N image_ids but does *not* propagate edit STATE (the resulting XMP / vocabulary entries) from a source image to N targets. Wedding-defining gap. Multiple legitimate API shapes; the right answer needs deliberation: should propagation copy raw vocabulary entries, copy resolved XMP plugins, or replay the op-log? Each costs differently in semantics, atomicity, and downstream state-tracking. Genuinely-open question.
 

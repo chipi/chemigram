@@ -1,8 +1,9 @@
 # RFC-036 — Mixed-op `apply_per_region` (un-defer of RFC-031)
 
-> Status · Draft v0.1 (deferred until darkroom-session findings)
+> Status · Decided (impl shipped 2026-05-10; ADR-089 stays Draft until darkroom validation)
 > TA anchor · /contracts/mcp-tools · /components/synthesizer
 > Related · RFC-031 (apply_per_region single-primitive — closes into pending ADR), RFC-032 (named-mask vocabulary), RFC-035 (parametric L2 strength)
+> Closes into · ADR-089 (closes; flips to Accepted on darkroom-session sign-off)
 > Closes into · ADR-NNN (pending)
 > Why this is an RFC · RFC-031 explicitly deferred mixed-op batching: "the agent emits one apply_per_region per primitive instead. That's 3 calls instead of 6 for an eye-detail move — a real win — but doesn't pretend to solve mixed-op-mixed-region batching." After shipping RFC-031 and the 14 L2 looks, the eye-detail and skin-spot patterns recur prominently in the proposed-L2-portrait set. The deferral feels weaker now. **Question: can we lift the single-primitive restriction without exploding the API surface or the snapshot semantics?**
 

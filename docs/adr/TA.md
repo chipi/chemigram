@@ -474,9 +474,9 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | RFC-032 | Named-mask vocabulary on v1.9.0 mask primitives | Draft v0.1 (impl shipped) | — (pending; possibly two ADRs) |
 | RFC-033 | Skin-tone uniformity primitive | Draft v0.1 (Path B impl shipped; gated on visual review) | — (pending; path depends on visual review) |
 | RFC-034 | `invert` flag on named-mask references | Draft v0.1 (parametric impl shipped) | — (pending) |
-| RFC-035 | Parametric L2 strength (opacity-as-amount) | Draft v0.1 (Path B impl shipped 2026-05-10) | — (pending) |
-| RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Draft v0.1 (impl shipped 2026-05-10) | — (pending) |
-| RFC-037 | `propagate_state` MCP verb (anchor-and-sync workflow) | Draft v0.1 | — (pending; surfaced by survey R2 Wedding Gap #4) |
+| RFC-035 | Parametric L2 strength (opacity-as-amount) | Decided (Path B); ADR-088 Draft until darkroom validation | ADR-088 (closes) |
+| RFC-036 | Mixed-op `apply_per_region` (un-defer of RFC-031) | Decided; ADR-089 Draft until darkroom validation | ADR-089 (closes) |
+| RFC-037 | `propagate_state` MCP verb (anchor-and-sync workflow) | Decided; ADR-090 Draft until darkroom validation | ADR-090 (closes) |
 
 ### ADRs
 
@@ -568,6 +568,9 @@ The canonical state board for the tech plane. When an RFC closes into an ADR, bo
 | ADR-085 | Parametric mask encoding via blendif; range_filter mask_spec field; AND composition with drawn masks (closes RFC-024) | Accepted |
 | ADR-086 | LLM-vision-as-provider for AI-derived masks (MVP via existing wire + workflow guide; closes RFC-026; precision tier deferred to RFC-030) | Accepted |
 | ADR-087 | Retouch byte encoding + apply_spot MCP tool (closes RFC-025; HEAL+CLONE on CIRCLE geometry, single-form per call; AI auto-detection deferred to RFC-030) | Accepted |
+| ADR-088 | Parametric L2 strength via Path B (per-parameter interpolation); closes RFC-035 | Draft (impl shipped; flips to Accepted on darkroom validation) |
+| ADR-089 | Mixed-op `apply_per_region` schema extension; closes RFC-036 | Draft (impl shipped; flips to Accepted on darkroom validation) |
+| ADR-090 | `propagate_state` MCP verb (anchor-and-sync workflow); closes RFC-037 | Draft (impl shipped; flips to Accepted on darkroom validation) |
 
 ---
 

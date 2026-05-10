@@ -1,9 +1,9 @@
 # RFC-035 — Parametric L2 strength (opacity-as-amount)
 
-> Status · Draft v0.1 (deferred until darkroom-session findings)
+> Status · Decided (Path B; impl shipped 2026-05-10; ADR-088 stays Draft until darkroom validation)
 > TA anchor · /components/synthesizer · /contracts/vocabulary-manifest
 > Related · RFC-021 (parameterized vocabulary / ADR-077..080), RFC-022 (bulk parameterization / ADR-081), RFC-018 (vocabulary expansion / ADR-063)
-> Closes into · ADR-NNN (pending)
+> Closes into · ADR-088 (closes; flips to Accepted on darkroom-session sign-off)
 > Why this is an RFC · L2 looks today ship as fixed-value composites — `look_landscape_dramatic_moody` has sigmoid contrast 1.7, full saturation grade, full clarity bite, all baked. There's no shorthand for "this look at 50% strength." Three real options: (a) author intensity ladders (`_subtle` / `_medium` / `_strong` per look), (b) parameterize via per-plugin opacity scaling, (c) parameterize via composition-level parameters that scale all touches. Each costs differently in vocabulary surface, authoring effort, and agent reasoning load. The right answer is genuinely not obvious — and depends on what the darkroom-session findings show about whether the fixed-value defaults are *usually right* or *usually need scaling*.
 
 ## The question
