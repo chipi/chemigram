@@ -1,7 +1,8 @@
 # Darkroom-session debt — what to validate when you next sit down with darktable
 
-> Last updated · 2026-05-10 (v1.10.0 release pass)
+> Last updated · 2026-05-14 (v1.10.0 + post-tag stabilization passes)
 > Status · Operational tracker — single source of truth for visual / hands-on validation work that has accumulated and needs a human-in-the-loop session.
+> **Doing the work?** See the sequential checkbox-driven [`darkroom-session-checklist.md`](darkroom-session-checklist.md). This doc is the "why" per item; the checklist is the "what to do."
 > Companion to `visual-review-survey-l2-looks.md` (which is the *checklist* for one specific batch — this doc is the *running tracker* across all pending validation work, including future batches).
 
 This file lives until the debt is paid down. After each darktable session, update the status of each item; mark closed items as resolved with a date and any follow-up tasks they spawned.

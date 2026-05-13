@@ -7,6 +7,7 @@ Reference and methodology guides — companions to the design docs (RFCs/ADRs/co
 Day-to-day usage:
 
 - [**Cookbook**](cookbook.md) — intent-driven worked recipes: "I want X look" → numbered steps. Pulls from the 114-entry vocabulary, 9 named maskdefs, the mask trilogy, and the v1.10.0 workflow primitives. ~60 recipes grouped by genre (cinematic / portrait / landscape / B&W / wildlife / food / mask-driven moves / workflow primitives). The first stop for "how do I do X."
+- [**Darkroom-session checklist**](darkroom-session-checklist.md) — sequential, checkbox-driven actionable doc for the periodic visual-validation passes. 11 items across 3 batches (v1.10.0 ADRs / v1.10.0 vocab / pre-v1.10 debt). 4–6 hours total; can be split across sessions. Companion: [`darkroom-session-debt.md`](darkroom-session-debt.md) for the per-item rationale.
 - [**Tastes quickstart**](tastes-quickstart.md) — your first taste file in 5 minutes; what goes in `_default.md`, when to add genre files
 - [**Vocabulary patterns**](vocabulary-patterns.md) — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
 - [**Visual proofs**](visual-proofs.md) — auto-generated before/after gallery for every vocabulary entry, rendered against the synthetic ColorChecker + grayscale chart in isolation. For human visual validation that each primitive does what its description claims.
