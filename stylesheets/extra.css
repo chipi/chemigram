@@ -1,0 +1,369 @@
+/*
+ * Chemigram — visual identity overrides for mkdocs-material.
+ *
+ * Goal: a confident, modern dev-tool aesthetic that nods to the
+ * project's photographic roots (darkroom amber / safelight warmth)
+ * without leaning into anything kitsch. Tight type, sharp accents,
+ * generous whitespace. Tested in both light and dark modes.
+ */
+
+/* ============================================================
+ *  Display font for headings
+ *  ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --md-text-font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --md-code-font: "JetBrains Mono", ui-monospace, monospace;
+  --chem-display-font: "Space Grotesk", "Inter", -apple-system, sans-serif;
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+  font-family: var(--chem-display-font);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: var(--chem-display-font);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.md-header__title,
+.md-tabs__link {
+  font-family: var(--chem-display-font);
+  letter-spacing: -0.01em;
+}
+
+.md-header__title {
+  font-weight: 600;
+}
+
+/* ============================================================
+ *  Tighter type scale
+ *  ============================================================ */
+.md-typeset h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0.5em;
+}
+
+.md-typeset h2 {
+  font-size: 1.6rem;
+  margin-top: 1.6em;
+}
+
+.md-typeset h3 {
+  font-size: 1.15rem;
+  margin-top: 1.2em;
+}
+
+/* ============================================================
+ *  Color refinement
+ *  ============================================================ */
+[data-md-color-scheme="default"] {
+  /* Light: warm-leaning charcoal text on near-white; amber accent */
+  --md-default-fg-color: #1a1a1a;
+  --md-default-fg-color--light: #404040;
+  --md-default-fg-color--lighter: #707070;
+  --md-default-bg-color: #fafaf7;        /* hint of warmth */
+  --md-accent-fg-color: #d97706;          /* amber-600 */
+  --md-typeset-a-color: #c2410c;          /* orange-700 */
+}
+
+[data-md-color-scheme="slate"] {
+  /* Dark: deep neutral with amber accent; not pure black to keep it readable */
+  --md-default-fg-color: #e5e5e5;
+  --md-default-fg-color--light: #b8b8b8;
+  --md-default-fg-color--lighter: #888;
+  --md-default-bg-color: #0e0e10;         /* near-black, slight blue undertone */
+  --md-default-bg-color--light: #161618;
+  --md-default-bg-color--lighter: #1f1f22;
+  --md-code-bg-color: #1a1a1d;
+  --md-accent-fg-color: #f59e0b;          /* amber-500 */
+  --md-typeset-a-color: #fbbf24;          /* amber-400 — readable on dark */
+}
+
+/* Header always gets a subtle treatment */
+.md-header {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: rgba(14, 14, 16, 0.85);
+}
+
+/* ============================================================
+ *  Hero treatment for the home page
+ *  Use a `.chem-hero` class on the first H1 in index.md if added.
+ *  ============================================================ */
+.chem-hero {
+  margin: 1.5rem 0 3rem;
+  padding: 3rem 0 2.5rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lighter);
+}
+
+.chem-hero h1 {
+  font-size: 3.4rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: linear-gradient(
+    135deg,
+    var(--md-default-fg-color) 0%,
+    var(--md-accent-fg-color) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  line-height: 1.05;
+}
+
+.chem-hero p.chem-tagline {
+  font-size: 1.25rem;
+  color: var(--md-default-fg-color--light);
+  margin-top: 0;
+  margin-bottom: 1.75rem;
+  font-family: var(--chem-display-font);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.chem-hero .chem-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.75em 1.4em;
+  background: var(--md-accent-fg-color);
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  font-family: var(--chem-display-font);
+  text-decoration: none !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid var(--md-accent-fg-color);
+}
+
+.chem-hero .chem-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.25);
+}
+
+.chem-hero .chem-cta--ghost {
+  background: transparent;
+  color: var(--md-default-fg-color);
+  border: 1px solid var(--md-default-fg-color--lighter);
+  margin-left: 0.5rem;
+}
+
+[data-md-color-scheme="slate"] .chem-hero .chem-cta--ghost {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.chem-hero .chem-cta--ghost:hover {
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-fg-color);
+}
+
+/* ============================================================
+ *  Cards (for the doc-tier sections, etc.)
+ *  Apply via grid-card class on a UL with attr_list:
+ *    - **Item** — desc { .grid-card }
+ *  ============================================================ */
+.chem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  list-style: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  margin-top: 1.5rem;
+}
+
+.chem-grid li {
+  list-style: none !important;
+  padding: 1.25rem 1.4rem !important;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 8px;
+  background: var(--md-default-bg-color);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  margin-left: 0 !important;
+}
+
+.chem-grid li:hover {
+  border-color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+}
+
+[data-md-color-scheme="slate"] .chem-grid li {
+  background: var(--md-default-bg-color--light);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-md-color-scheme="slate"] .chem-grid li:hover {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* ============================================================
+ *  Code blocks: tighter
+ *  ============================================================ */
+.md-typeset code {
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+}
+
+.md-typeset pre code {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+
+/* ============================================================
+ *  Better tables
+ *  ============================================================ */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+
+.md-typeset table:not([class]) th {
+  font-family: var(--chem-display-font);
+  font-weight: 600;
+  background: var(--md-default-bg-color--light, rgba(0, 0, 0, 0.03));
+  letter-spacing: -0.01em;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ============================================================
+ *  Admonitions (note / warning / tip)
+ *  Subtle accent on left, no heavy fill.
+ *  ============================================================ */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 6px;
+  border-left-width: 3px;
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+/* ============================================================
+ *  Navigation polish
+ *  ============================================================ */
+.md-tabs {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-md-color-scheme="slate"] .md-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.md-tabs__link {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.md-tabs__link:hover,
+.md-tabs__link--active {
+  opacity: 1;
+}
+
+/* Sidebar nav item that's active gets the accent on the left */
+.md-nav__item--active > .md-nav__link {
+  font-weight: 600;
+  color: var(--md-accent-fg-color);
+}
+
+/* ============================================================
+ *  Better blockquotes
+ *  ============================================================ */
+.md-typeset blockquote {
+  border-left: 3px solid var(--md-accent-fg-color);
+  font-style: normal;
+  color: var(--md-default-fg-color--light);
+}
+
+/* ============================================================
+ *  Footer / announcement
+ *  ============================================================ */
+.md-banner {
+  background: linear-gradient(
+    90deg,
+    rgba(217, 119, 6, 0.08) 0%,
+    rgba(217, 119, 6, 0.02) 100%
+  );
+  font-size: 0.85rem;
+}
+
+[data-md-color-scheme="slate"] .md-banner {
+  background: linear-gradient(
+    90deg,
+    rgba(245, 158, 11, 0.12) 0%,
+    rgba(245, 158, 11, 0.03) 100%
+  );
+}
+
+.md-banner__inner {
+  text-align: center;
+}
+
+/* ============================================================
+ *  Better selection
+ *  ============================================================ */
+::selection {
+  background: rgba(217, 119, 6, 0.25);
+}
+
+[data-md-color-scheme="slate"] ::selection {
+  background: rgba(245, 158, 11, 0.35);
+}
+
+/* ============================================================
+ *  Smooth scroll
+ *  ============================================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+ *  Logo / repo button cleanup
+ *  ============================================================ */
+.md-header__button.md-logo {
+  padding: 0.4rem;
+}
+
+.md-source__repository {
+  font-family: var(--chem-display-font);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+/* ============================================================
+ *  Search box
+ *  ============================================================ */
+.md-search__form {
+  border-radius: 6px;
+}
+
+[data-md-color-scheme="slate"] .md-search__form {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-md-color-scheme="slate"] .md-search__input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
