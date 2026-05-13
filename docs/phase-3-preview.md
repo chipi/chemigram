@@ -1,8 +1,20 @@
-# Phase 3 Preview — Expanding the masked vocabulary
+# Phase 3 preview — historical (mostly dissolved into v1.9.0)
 
-> A guide to thinking about Phase 3 while you're in Phase 2. Heads up: Phase 3 may dissolve into Phase 2 entirely — you might just author masked entries from day one of Phase 2 and never have a separate "Phase 3" transition. This page is for understanding the move, not waiting for permission.
+> ⚠️ **Historical artifact.** Phase 3 as originally framed has dissolved
+> into Phase 2 + the v1.9.0 mask + retouch architecture trilogy. The
+> substance — vocabulary entries carrying their own masks — shipped
+> via RFC-024 / RFC-025 / RFC-026 / RFC-029 (closed into ADR-084..087
+> in v1.9.0). The named-mask layer (RFC-032) shipped on top in v1.10.0.
 >
-> **v1.5.0 update:** the original Phase 3 framing positioned parametric masks against a "Phase 1 raster mask" path that has since been retired (ADR-076 — darktable doesn't read external PNGs for raster masks). The substance survives: vocabulary entries can carry their own masks. The mask flavors are now drawn-form (gradient/ellipse/rectangle, shipping today) and parametric (range-based, blendop-encoded).
+> What's current: the cookbook ([`guides/cookbook.md`](guides/cookbook.md))
+> has masked-vocabulary recipes; the mask trilogy diagram
+> ([`diagrams/mask-trilogy.md`](diagrams/mask-trilogy.md)) shows the
+> four sources converging on one wire.
+>
+> This page is kept as a historical record of how Phase 3 was framed
+> mid-Phase-1 — it reflects the v1.5.0-era thinking before the
+> trilogy closed. The substance is correct; the future-tense
+> framing is not.
 
 ## What Phase 3 is
 

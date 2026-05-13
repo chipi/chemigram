@@ -44,11 +44,45 @@ N/A in v1 — Chemigram is an MCP server with no UI surfaces. Folder exists for 
 ## Tier 3 — Operational docs
 
 - `../CLAUDE.md` — operational handbook for AI-assisted work (at repo root)
+- `onboarding.md` — opinionated 2.5–3h reading order through the doc tree for new contributors
 - `IMPLEMENTATION.md` — canonical phase plan and slice-by-slice implementation guide
-- `LICENSING.md` — what's MIT, what's separate
+- `LICENSING.md` — what's MIT, what's separate (incl. darktable's GPLv3 boundary)
 - `CONTRIBUTING.md` — code and vocabulary contribution flows
 - `TODO.md` — research backlog, deferred items
+- `capability-survey.md` — long-form module-by-module state-of-the-system audit
+- `photographer-workflows-survey.md` — 6-genre photographer-workflow extraction (36 photographers; informs L2 vocabulary)
 - `briefs/` — historical design-conversation artifacts
+
+### Guides (`guides/`)
+
+How-do-I docs and methodology references — companion material to the design docs. Per-topic, not per-phase.
+
+- `guides/cookbook.md` — ~60 intent-driven worked recipes by genre + workflow primitives. **First stop** for "I want X look."
+- `guides/vocabulary-patterns.md` — composition patterns ("for *X* intent, reach for *Y* combination")
+- `guides/recipes.md` — verb-level "how do I" patterns
+- `guides/cli-reference.md` — auto-generated CLI surface reference (CI-checked)
+- `guides/visual-proofs.md` — auto-generated before/after gallery for every vocabulary entry
+- `guides/mask-applicable-controls.md` — what can be masked + per-module compatibility
+- `guides/mask-shapes-from-words.md` — phrase → drawn-mask spec
+- `guides/llm-vision-for-masks.md` — vision-constructed precision masks (Pattern 7)
+- `guides/lightroom-to-chemigram.md` — "where do I find X" for migrating Lightroom users
+- `guides/tastes-quickstart.md` — your first taste file in 5 minutes
+- `guides/authoring-vocabulary-entries.md` — Phase 2 daily-use authoring flow
+- `guides/expressive-baseline-authoring.md` — programmatic Path C methodology
+- `guides/standardized-testing.md` — reference-image validation methodology
+- `guides/cli-completion.md`, `guides/cli-env-vars.md`, `guides/cli-output-schema.md`, `guides/config-toml.md` — CLI surface reference docs
+- `guides/gap-log.md`, `guides/session-log.md` — Phase 2 read-side analytics
+- `guides/darkroom-session-debt.md` — visual-validation backlog tracker
+- `guides/index.md` — full guides index, organized by audience
+
+### Diagrams (`diagrams/`)
+
+Four Mermaid one-pagers companion to the prose architecture docs. GitHub + MkDocs render inline.
+
+- `diagrams/stack.md` — adapters + engine + darktable + filesystem
+- `diagrams/mask-trilogy.md` — four mask sources → one wire → XMP
+- `diagrams/vocabulary-layers.md` — L1 / L2 / L3 + maskdefs composition
+- `diagrams/phase-1-timeline.md` — release sequence from Phase 0 to v1.10.0
 
 ## How the tiers relate
 
@@ -63,7 +97,10 @@ Reference docs evolve with the project; concept-package docs evolve more slowly.
 | If you want to... | Go to... |
 |-|-|
 | Install and use Chemigram | [`getting-started.md`](getting-started.md) |
-| Understand the project | `concept/00-introduction.md` |
+| Get a recipe for a specific look | [`guides/cookbook.md`](guides/cookbook.md) (~60 intent-driven recipes) |
+| Understand the project deeply (contributor onboarding path) | [`onboarding.md`](onboarding.md) |
+| See the project's intellectual frame | `concept/00-introduction.md` |
+| Get the architecture as a one-pager | [`diagrams/`](diagrams/index.md) (4 Mermaid diagrams) |
 | See the phase plan / current status | `IMPLEMENTATION.md` |
 | Know how to work in this repo (conventions, voice, code rules) | `../CLAUDE.md` (at repo root) |
 | Argue for / understand a user-experience | `prd/PRD-NNN-*.md` |
@@ -72,6 +109,7 @@ Reference docs evolve with the project; concept-package docs evolve more slowly.
 | Find what's settled in tech | `adr/TA.md` |
 | Find what we promise users | `prd/PA.md` |
 | Contribute vocabulary | `CONTRIBUTING.md` § Vocabulary contributions |
+| Lightroom-user "where do I find X?" | [`guides/lightroom-to-chemigram.md`](guides/lightroom-to-chemigram.md) |
 
 ## Conventions
 

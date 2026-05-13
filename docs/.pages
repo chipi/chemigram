@@ -1,8 +1,8 @@
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Onboarding (deeper read): onboarding.md
   - Phase 2 playbook: phase-2-playbook.md
-  - Phase 3 preview: phase-3-preview.md
   - Roadmap & TODO: TODO.md
   - API Reference:
       - api
@@ -10,6 +10,8 @@ nav:
   - Project Internals:
       - Doc tree: doc-tree.md
       - Implementation: IMPLEMENTATION.md
+      - Architecture diagrams:
+          - diagrams
       - Testing strategy: testing.md
       - Concept Package:
           - concept
@@ -21,4 +23,5 @@ nav:
           - adr
       - Guides:
           - guides
+      - Phase 3 preview (historical): phase-3-preview.md
       - Contributing: CONTRIBUTING.md

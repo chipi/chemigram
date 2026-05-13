@@ -251,6 +251,7 @@ The visual-proof gallery shows each look applied to the synthetic ColorChecker c
 
 ## See also
 
+- [`cookbook.md`](cookbook.md) — once you know which slider maps to which chemigram entry, the cookbook has ~60 worked recipes by genre (cinematic / portrait / landscape / B&W / wildlife / food). Use this guide as the lookup; the cookbook as the example library.
 - [`capability-survey.md`](../capability-survey.md) — full module-by-module state
 - [`docs/concept/00-introduction.md`](../concept/00-introduction.md) — what chemigram is and why
 - [`docs/guides/visual-proofs.md`](visual-proofs.md) — every primitive rendered against a reference chart

@@ -17,6 +17,20 @@ A craft-research project. The agent reads your taste, you describe intent, the a
 
 ---
 
+## Three doors in
+
+Depending on what you came here for:
+
+| If you want to... | Start here | Time |
+|-|-|-|
+| **Run chemigram on a real photo** | [Getting started](getting-started.md) | 30–60 min setup + first session |
+| **Know "I want X look — how?"** | [Cookbook](guides/cookbook.md) — ~60 intent-driven recipes by genre | as needed |
+| **Understand chemigram deeply** | [Onboarding guide](onboarding.md) — opinionated reading order through the doc tree | 2.5–3 hours |
+
+Visual companion: [Architecture diagrams](diagrams/index.md) — stack, mask trilogy, vocabulary layers, release timeline (4 Mermaid one-pagers, render inline on GitHub).
+
+---
+
 ## The question
 
 Can a photographer transmit taste through language and feedback? And does an agent develop something resembling judgment when given good tools, good vocabulary, and a real craftsperson in the loop?

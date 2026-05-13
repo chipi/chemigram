@@ -157,6 +157,7 @@ Genre files compose with `_default.md`: both load when the brief calls for the g
 
 ## See also
 
+- [`cookbook.md`](cookbook.md) — once your taste file is in place, the cookbook has ~60 worked recipes by genre. "I want X look" → here's the command sequence.
 - [`examples/templates/tastes/_default.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/tastes/_default.md) — full sample showing the shape of a real taste file (~25 entries)
 - [`examples/templates/brief.md`](https://github.com/chipi/chemigram/blob/main/examples/templates/brief.md) — per-image brief format (where you declare which tastes apply)
 - [`docs/getting-started.md#your-first-session`](../getting-started.md#your-first-session) — full onboarding walkthrough

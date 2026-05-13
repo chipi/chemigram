@@ -232,23 +232,42 @@ Full procedure in **[`docs/getting-started.md`](docs/getting-started.md#growing-
 
 ## Documentation
 
-For users:
+### Three doors in
 
-- **[`docs/getting-started.md`](docs/getting-started.md)** — install, MCP-client config, first session, troubleshooting, CLI quickstart
+The doc tree is dense; these three docs are the right entry points depending on your intent:
+
+| If you want to... | Start here | Time |
+|-|-|-|
+| **Run chemigram on a real photo** | [`docs/getting-started.md`](docs/getting-started.md) — install, MCP-client config, first session | 30–60 min |
+| **Know "I want X look — how?"** | [`docs/guides/cookbook.md`](docs/guides/cookbook.md) — ~60 intent-driven recipes grouped by genre | browse as needed |
+| **Understand chemigram deeply** | [`docs/onboarding.md`](docs/onboarding.md) — opinionated reading order through the doc tree | 2.5–3 hours |
+
+Visual companion: [`docs/diagrams/`](docs/diagrams/index.md) — four Mermaid one-pagers (stack / mask trilogy / vocabulary layers / Phase 1 timeline) that render inline on GitHub and MkDocs.
+
+### Full doc tree
+
+For users (everyday):
+
+- **[`docs/guides/cookbook.md`](docs/guides/cookbook.md)** — "I want X look → here's the recipe." ~60 worked examples (cinematic / portrait / landscape / B&W / wildlife / food / mask-driven / workflow primitives). First stop for "how do I do X."
 - **[`docs/guides/tastes-quickstart.md`](docs/guides/tastes-quickstart.md)** — your first taste file in 5 minutes
-- **[`docs/guides/cookbook.md`](docs/guides/cookbook.md)** — "I want X look → here's the recipe." ~60 intent-driven worked examples grouped by genre + mask-driven moves + workflow primitives. First stop for "how do I do X."
 - **[`docs/guides/vocabulary-patterns.md`](docs/guides/vocabulary-patterns.md)** — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
-- **[`docs/guides/recipes.md`](docs/guides/recipes.md)** — common "how do I" patterns: reset to baseline, find by tag, export multiple sizes, replay a session
-- **[`docs/guides/cli-reference.md`](docs/guides/cli-reference.md)** — every verb, every flag, every exit code
+- **[`docs/guides/recipes.md`](docs/guides/recipes.md)** — common "how do I" patterns at the verb layer: reset to baseline, find by tag, export multiple sizes, replay a session
+- **[`docs/guides/visual-proofs.md`](docs/guides/visual-proofs.md)** — auto-generated before/after gallery for every vocabulary entry against the synthetic chart fixture
+- **[`docs/guides/lightroom-to-chemigram.md`](docs/guides/lightroom-to-chemigram.md)** — "where do I find X" mapping for Lightroom users
+- **[`docs/guides/mask-shapes-from-words.md`](docs/guides/mask-shapes-from-words.md)** — spatial English → `mask_spec` ("bottom third" → gradient)
+- **[`docs/guides/llm-vision-for-masks.md`](docs/guides/llm-vision-for-masks.md)** — vision-constructed precision masks (RFC-026 / ADR-086 Pattern 7)
+- **[`docs/guides/cli-reference.md`](docs/guides/cli-reference.md)** — every verb, every flag, every exit code (auto-generated; CI-checked)
 - **[`docs/guides/cli-output-schema.md`](docs/guides/cli-output-schema.md)** — NDJSON event format for `--json` output
 - **[`docs/guides/cli-env-vars.md`](docs/guides/cli-env-vars.md)** — env var reference
 - **[`docs/guides/config-toml.md`](docs/guides/config-toml.md)** — `~/.chemigram/config.toml` schema
-- **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)**, **[`vocabulary/packs/expressive-baseline/README.md`](vocabulary/packs/expressive-baseline/README.md)** — what ships in each pack
+- **[`vocabulary/starter/README.md`](vocabulary/starter/README.md)** + **[`vocabulary/packs/expressive-baseline/README.md`](vocabulary/packs/expressive-baseline/README.md)** — what ships in each pack
 - **[`examples/iguana-galapagos.md`](examples/iguana-galapagos.md)** — a worked Mode A session, prose form
 - **[`examples/cli-agent-loop.py`](examples/cli-agent-loop.py)** + **[`examples/cli-batch-watch.sh`](examples/cli-batch-watch.sh)** — runnable CLI examples
 
-For contributors and people engaging with the project deeper:
+For contributors (project-deep):
 
+- **[`docs/onboarding.md`](docs/onboarding.md)** — opinionated 2.5–3h reading order through concept package, mask architecture, cookbook
+- **[`docs/diagrams/`](docs/diagrams/index.md)** — four Mermaid one-pagers (stack / mask trilogy / vocabulary layers / Phase 1 timeline)
 - **[`docs/guides/authoring-vocabulary-entries.md`](docs/guides/authoring-vocabulary-entries.md)** — Phase 2 daily-use authoring flow
 - **[`docs/guides/expressive-baseline-authoring.md`](docs/guides/expressive-baseline-authoring.md)** — programmatic struct-RE methodology (Path C)
 - **`docs/concept/`** — six numbered concept documents (read end-to-end, ~2h):
@@ -257,7 +276,7 @@ For contributors and people engaging with the project deeper:
 - **`docs/prd/`**, **`docs/rfc/`**, **`docs/adr/`** — definition documents (PRDs argue user-value; RFCs argue open technical questions; ADRs commit to settled decisions). Anchored by `docs/prd/PA.md` and `docs/adr/TA.md`.
 - **`docs/IMPLEMENTATION.md`** — canonical phase plan
 - **`docs/CONTRIBUTING.md`** — code + vocabulary contribution flows
-- **`docs/LICENSING.md`** — what's MIT, what's separate
+- **`docs/LICENSING.md`** — what's MIT, what's separate (incl. darktable's GPLv3 boundary at the subprocess)
 - **`docs/TODO.md`** — research backlog, deferred items
 - **[`docs/guides/index.md`](docs/guides/index.md)** — full guides index, organized by audience
 

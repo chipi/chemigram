@@ -495,18 +495,26 @@ Markers of growth: ~30–60 personal entries after 3 months of regular use; ~80�
 
 ## Where to go next
 
+**First stop** (after you've done a session):
+
+- **[`cookbook.md`](guides/cookbook.md)** — "I want X look → here's the recipe." ~60 intent-driven worked examples grouped by genre (cinematic / portrait / landscape / B&W / wildlife / food) + mask-driven moves + workflow primitives. The shortest path from "I have an idea" to "I have the command sequence."
+
 User guides (everyday usage):
 
 - **[`tastes-quickstart.md`](guides/tastes-quickstart.md)** — your first taste file in 5 minutes
-- **[`vocabulary-patterns.md`](guides/vocabulary-patterns.md)** — recipes for combining primitives
-- **[`recipes.md`](guides/recipes.md)** — common "how do I" patterns
+- **[`vocabulary-patterns.md`](guides/vocabulary-patterns.md)** — primitive composition patterns ("for *X* intent, reach for *Y* composition") — the layer below cookbook
+- **[`recipes.md`](guides/recipes.md)** — common "how do I" patterns at the verb level: reset / branch / checkout / export
+- **[`lightroom-to-chemigram.md`](guides/lightroom-to-chemigram.md)** — "where do I find X" for Lightroom users
+- **[`visual-proofs.md`](guides/visual-proofs.md)** — auto-generated before/after gallery for every vocabulary entry
+- **[`mask-shapes-from-words.md`](guides/mask-shapes-from-words.md)** — spatial English → `mask_spec`
+- **[`llm-vision-for-masks.md`](guides/llm-vision-for-masks.md)** — vision-constructed precision masks
 - **[`cli-reference.md`](guides/cli-reference.md)** + **[`cli-output-schema.md`](guides/cli-output-schema.md)** + **[`cli-env-vars.md`](guides/cli-env-vars.md)** — CLI surface in detail
 - **[`config-toml.md`](guides/config-toml.md)** — `~/.chemigram/config.toml` reference
 
 Vocabulary catalogs:
 
-- **[`vocabulary/starter/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/starter/README.md)** — what's in the bundled starter pack (4 entries)
-- **[`vocabulary/packs/expressive-baseline/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/packs/expressive-baseline/README.md)** — the 35-entry expressive-baseline catalog with intensity ladders + by-tag index
+- **[`vocabulary/starter/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/starter/README.md)** — what's in the bundled starter pack (2 entries — small by design)
+- **[`vocabulary/packs/expressive-baseline/README.md`](https://github.com/chipi/chemigram/blob/main/vocabulary/packs/expressive-baseline/README.md)** — the 112-entry expressive-baseline catalog (40 parameterized + 66 discrete) plus 9 named maskdefs
 - **[`authoring-vocabulary-entries.md`](guides/authoring-vocabulary-entries.md)** — author your own personal-pack entries (Phase 2 flow)
 
 Worked examples:
@@ -515,8 +523,10 @@ Worked examples:
 - **[`examples/cli-agent-loop.py`](https://github.com/chipi/chemigram/blob/main/examples/cli-agent-loop.py)** — runnable Python agent-loop example
 - **[`examples/cli-batch-watch.sh`](https://github.com/chipi/chemigram/blob/main/examples/cli-batch-watch.sh)** — bash watch-folder script
 
-Going deeper:
+Going deeper (project-internal — for contributors):
 
+- **[`onboarding.md`](onboarding.md)** — opinionated 2.5–3h reading order through the concept package, mask architecture, and cookbook. The path through the doc tree without guessing.
+- **[`diagrams/`](diagrams/index.md)** — four Mermaid one-pagers (stack / mask trilogy / vocabulary layers / Phase 1 timeline)
 - **The concept package** (`docs/concept/`) — the project's intellectual frame. Read `00-introduction.md` if you want to engage with the why.
 - **`docs/IMPLEMENTATION.md`** — phase plan; what's shipped, what's next.
 - **`docs/CONTRIBUTING.md`** — code + vocabulary contribution flows.
