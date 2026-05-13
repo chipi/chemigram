@@ -1395,6 +1395,34 @@ _L2 look — lift dark pixels globally (no spatial mask). Pure parametric range_
 |-|-|
 | <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-colorchecker.jpg" alt="look_dark_pixels_global_lift ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_dark_pixels_global_lift-grayscale.jpg" alt="look_dark_pixels_global_lift grayscale" width="180"> |
 
+### `skin_smooth_painterly` 🟦 mask-bound
+
+_Approximate frequency separation for skin smoothing (Portrait Gap #4, cheap variant). Reduces local contrast (texture-band frequency) within the skin region — the color band stays untouched. Pass --value V or --param clarity_strength=V; range [-1.0, 4.0], typical -0.3 to -0.7 for natural smoothing. -0.5 default. Pre-baked with mask_skin_region. **Not** Photoshop's true frequency separation (band decomposition); approximation via bilat softening on a hue-masked region. Compose orthogonally with skin_uniformity (color-band uniformity) for the full skin-uniformity-plus-smoothing move. For sharper precision, override mask_spec via render_preview + LLM-vision (see docs/guides/llm-vision-for-masks.md Pattern 7)._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-colorchecker.jpg" alt="skin_smooth_painterly ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-grayscale.jpg" alt="skin_smooth_painterly grayscale" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+**Parameter sweep** (`clarity_strength`): rendered at multiple values via the parameterized apply path (`--value V` / `--param NAME=V`); other parameterized axes (if any) held at their dtstyle defaults.
+
+| `-0.50` | `0.00` | `+0.50` | `+1.50` | `+2.50` |
+|-|-|-|-|-|
+| <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-sweep-clarity_strength-n0_50.jpg" alt="skin_smooth_painterly clarity_strength=-0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-sweep-clarity_strength-0_00.jpg" alt="skin_smooth_painterly clarity_strength=0.00" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-sweep-clarity_strength-p0_50.jpg" alt="skin_smooth_painterly clarity_strength=+0.50" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-sweep-clarity_strength-p1_50.jpg" alt="skin_smooth_painterly clarity_strength=+1.50" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_smooth_painterly-sweep-clarity_strength-p2_50.jpg" alt="skin_smooth_painterly clarity_strength=+2.50" width="180"> |
+
+### `skin_uniformity` 🟦 mask-bound
+
+_Skin-tone uniformity (RFC-033). Compresses skin-band saturation variance toward uniform appearance — Capture One's Skin Tone Uniformity equivalent for chemigram. Pre-baked with mask_skin_region so the move is scoped automatically. Pass --value V or --param sat_orange=V; range [-1.0, 0.0]. -0.3 is moderate uniformity; -0.6 is strong (typical Woloszynowicz/Adler/Nordqvist range); -1.0 fully desaturates the skin band; 0.0 is no-op. Override mask_spec for per-image manual mask if mask_skin_region's hue-range fallback leaks (Phase-1 LLM-vision fallback per RFC-032). Frequency-separation texture work composes orthogonally; this primitive is color-band uniformity only._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/skin_uniformity-colorchecker.jpg" alt="skin_uniformity ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/skin_uniformity-grayscale.jpg" alt="skin_uniformity grayscale" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
 ### `look_portrait_natural_skin`
 
 _Restraint-first portrait foundation — Tucker/Marino-aligned. Slight warm temperature (+0.03 red), exposure +0.1 EV, sigmoid contrast 1.2 (gentle s-curve), saturation_global -0.05 + vibrance +0.1 (mild chroma shaping that protects skin tones). The starting point for portrait work that doesn't push contrast or saturation as a stylistic choice._
@@ -1410,6 +1438,22 @@ _Magazine / fashion editorial grade. Punchier sigmoid contrast (1.6), global sat
 | ColorChecker (global) | Grayscale (global) | ColorChecker (centered ellipse mask) | Grayscale (centered ellipse mask) |
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-colorchecker.jpg" alt="look_portrait_editorial ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-grayscale.jpg" alt="look_portrait_editorial grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-colorchecker-masked.jpg" alt="look_portrait_editorial ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_editorial-grayscale-masked.jpg" alt="look_portrait_editorial grayscale masked" width="180"> |
+
+### `look_portrait_skin_warm_lift` 🟦 mask-bound
+
+_Subject-region warm + brighten. Slight warm temperature (+0.04 red) + exposure +0.2 EV. Pre-baked with mask_skin_region so the lift scopes to skin without affecting clothing or background. Pairs with skin_uniformity for a complete portrait skin pass._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_portrait_skin_warm_lift-colorchecker.jpg" alt="look_portrait_skin_warm_lift ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_skin_warm_lift-grayscale.jpg" alt="look_portrait_skin_warm_lift grayscale" width="180"> |
+
+### `look_portrait_background_dim` 🟦 mask-bound
+
+_Dim and de-saturate the background to push the subject forward. Exposure -0.4 EV + saturation_global -0.15. Pre-baked with mask_subject + invert: true (RFC-034) — the photographer doesn't have to construct an inverse-subject mask manually. The parametric fallback for mask_subject is coarse (midtone luminance + center-bias); for clean subject vs. background separation override the mask_spec at apply time with a manually-drawn inverted ellipse, or escalate via render_preview + LLM-vision construction (llm-vision-for-masks.md Pattern 7) for a path-form subject mask._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_portrait_background_dim-colorchecker.jpg" alt="look_portrait_background_dim ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_portrait_background_dim-grayscale.jpg" alt="look_portrait_background_dim grayscale" width="180"> |
 
 ### `look_portrait_split_tone_moody`
 
@@ -1475,6 +1519,26 @@ _Autumn foliage / fall color. Slight warm temperature (+0.04 red), colorequal sa
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-colorchecker.jpg" alt="look_landscape_autumn_pop ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-grayscale.jpg" alt="look_landscape_autumn_pop grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-colorchecker-masked.jpg" alt="look_landscape_autumn_pop ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_autumn_pop-grayscale-masked.jpg" alt="look_landscape_autumn_pop grayscale masked" width="180"> |
 
+### `look_landscape_sky_enhance` 🟦 mask-bound
+
+_Sky-targeted enhancement (Heaton 'adaptive sky' shape). Cool-tone highlights shift (hue 200, sat 0.15) + slight vibrance (+0.05). Pre-baked with mask_sky (RFC-032) so the move scopes to the sky region automatically. **Compose, don't replace** — this is a focused enhancement to stack on top of any landscape look. For complex skies (sunsets, partial clouds, trees protruding into sky), override mask_spec with a constructed path mask via render_preview + LLM-vision (llm-vision-for-masks.md Pattern 7)._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_sky_enhance-colorchecker.jpg" alt="look_landscape_sky_enhance ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_sky_enhance-grayscale.jpg" alt="look_landscape_sky_enhance grayscale" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+### `look_landscape_water_silk` 🟦 mask-bound
+
+_Water surfaces — silky water in long-exposure work, glassy lakes. Bilat clarity_strength -0.4 (smooths the texture, OPPOSITE of clarity), cool-tone shadows (hue 200, sat 0.10), vibrance +0.05. Pre-baked with mask_water_blue_cyan so the smoothing scopes to water without affecting rocks, foliage, or sky. Reduces clarity selectively to enhance the smoothness photographers spent shutter-time creating._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_landscape_water_silk-colorchecker.jpg" alt="look_landscape_water_silk ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_landscape_water_silk-grayscale.jpg" alt="look_landscape_water_silk grayscale" width="180"> |
+
 ### `bw_convert`
 
 _B&W conversion (RFC-033 follow-up; survey Gap #1). Single colorequal plugin with all 8 sat axes set to -1.0 (full saturation kill = grayscale). Exposes 8 bright_X parameters emulating Adams-school color-filter strength: bright_red +0.3 lightens skin / red flowers / darkens skies in B&W; bright_blue -0.2 darkens skies; bright_green +0.3 lightens foliage; etc. The chemigram analog of Photoshop Channel Mixer (Monochrome) and Silver Efex Color Filters. Universal Step 1 of any B&W workflow per the photographer survey (6/6 photographers reach for color-filter-driven conversion as their foundational B&W move)._
@@ -1533,6 +1597,34 @@ _Whalley/Boutwell zone-system-aware balanced B&W — the restraint discipline ap
 |-|-|-|-|
 | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-colorchecker.jpg" alt="look_bw_silver_efex_zone_balanced ColorChecker global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-grayscale.jpg" alt="look_bw_silver_efex_zone_balanced grayscale global" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-colorchecker-masked.jpg" alt="look_bw_silver_efex_zone_balanced ColorChecker masked" width="180"> | <img src="../visual-proofs/expressive-baseline/look_bw_silver_efex_zone_balanced-grayscale-masked.jpg" alt="look_bw_silver_efex_zone_balanced grayscale masked" width="180"> |
 
+### `look_wildlife_subject_sharpen` 🟦 mask-bound
+
+_Subject-isolated wildlife sharpening — feather / fur / scale detail lifted ON THE SUBJECT only via mask_subject (RFC-032). Sharpen amount 2.0 + bilat clarity 0.3. The chemigram realization of LR's Subject-mask + Sharpening + selective Texture pattern (Sweileh, Matiash, Dale, Gardner all reach for this). Compose with mask_subject in the manifest; pair with look_wildlife_background_blur for compositional subject emphasis._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_wildlife_subject_sharpen-colorchecker.jpg" alt="look_wildlife_subject_sharpen ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_subject_sharpen-grayscale.jpg" alt="look_wildlife_subject_sharpen grayscale" width="180"> |
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
+
+### `look_wildlife_background_blur` 🟦 mask-bound
+
+_Background softening for wildlife — bilat clarity_strength -0.5 (the softening direction; opposite of clarity boost). Pre-baked with mask_subject + invert: true (RFC-034) so the softening scopes to everything-except-subject. Mimics longer-lens / shallower-DOF rendering at edit time. Pair with look_wildlife_subject_sharpen for complete subject emphasis. Marc/Bushcrafter darktable-discipline made portable._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_wildlife_background_blur-colorchecker.jpg" alt="look_wildlife_background_blur ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_background_blur-grayscale.jpg" alt="look_wildlife_background_blur grayscale" width="180"> |
+
+### `look_wildlife_eye_lift` 🟦 mask-bound
+
+_Catchlight emphasis on the wildlife subject's eye — exposure +0.3 EV + sharpen amount 1.5, scoped to mask_eye_region (RFC-032). The eye becomes the brightest, sharpest point in the frame; gives the bird / animal its 'life.' Cross-genre echo of Portrait Move 7 (eye-detail lift). For close-up wildlife where the subject's gaze is the picture._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_wildlife_eye_lift-colorchecker.jpg" alt="look_wildlife_eye_lift ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_wildlife_eye_lift-grayscale.jpg" alt="look_wildlife_eye_lift grayscale" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
 ### `look_wildlife_high_iso_recovery`
 
 _High-ISO wildlife recovery (low-light dance-floor, late dusk owl, early-dawn bird-burst). Manual denoiseprofile (nbhood 7, strength 1.2, scattering 2.0) + gentle sigmoid 1.25 + subtle clarity 0.2. **Note:** for ISO ≥ 1600 most surveyed wildlife photographers ROUTE THROUGH a sibling AI-NR tool (Topaz DeNoise / DxO PureRAW / LR AI Denoise) BEFORE this look applies; document the BYOA pattern in vocabulary-patterns.md. This look is the chemigram-only manual fallback when sibling tooling isn't configured._
@@ -1580,6 +1672,18 @@ _Lift greens — fresh herbs, salad, parsley, basil — without crossing into th
 _(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
 _(near-baseline diff in grayscale (masked): below visible threshold on this chart input)_
+
+### `look_food_texture_subtle` 🟦 mask-bound
+
+_Subtle texture lift for food — bread crust, pastry layers, meat fibers, fruit skin texture. Bilat clarity_strength +0.20 — explicit ceiling matching the food-photography-academy 'never overdone' discipline (Kopcok: 'overdoing clarity makes food look dry and unappealing'). Pre-baked with mask_subject so the texture lift scopes to the food, not the table / plate. Compose with look_food_appetizing_warm._
+
+| ColorChecker | Grayscale ramp |
+|-|-|
+| <img src="../visual-proofs/expressive-baseline/look_food_texture_subtle-colorchecker.jpg" alt="look_food_texture_subtle ColorChecker" width="180"> | <img src="../visual-proofs/expressive-baseline/look_food_texture_subtle-grayscale.jpg" alt="look_food_texture_subtle grayscale" width="180"> |
+
+_(near-baseline diff in ColorChecker (global): below visible threshold on this chart input)_
+
+_(near-baseline diff in grayscale (global): below visible threshold on this chart input)_
 
 ### `look_product_packshot_clean`
 

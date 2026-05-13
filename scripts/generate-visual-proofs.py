@@ -402,14 +402,27 @@ def _render_one(input_path: Path, xmp_path: Path, output_path: Path, configdir: 
     return result.success
 
 
-def _synthesize_for_entry(baseline, entry):
+def _synthesize_for_entry(baseline, entry, vocab=None):
     """Build the XMP that applies entry to baseline.
 
     Mask-bound entries (`mask_spec` set) route through `apply_with_drawn_mask`;
-    others go through the plain `synthesize_xmp` path.
+    others go through the plain `synthesize_xmp` path. Named-mask
+    references (``{"kind": "named", "name": "mask_X"}``) require the
+    vocabulary index to resolve to a real drawn / parametric spec
+    (RFC-032). Without ``vocab``, named refs cannot be applied.
     """
     if entry.mask_spec is not None:
-        return apply_with_drawn_mask(baseline, entry.dtstyle, entry.mask_spec)
+        spec = entry.mask_spec
+        if isinstance(spec, dict) and spec.get("kind") == "named":
+            if vocab is None:
+                raise ValueError(
+                    f"entry {entry.name!r} uses a named-mask reference but "
+                    "no vocab was passed to _synthesize_for_entry"
+                )
+            from chemigram.core.vocab import resolve_named_mask_spec
+
+            spec = resolve_named_mask_spec(spec, vocab)
+        return apply_with_drawn_mask(baseline, entry.dtstyle, spec)
     return synthesize_xmp(baseline, [entry.dtstyle])
 
 
@@ -479,7 +492,7 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
             # the same; only the input differs.
             print(f"rendering {pack_name}/{entry.name} against real raw…")
             try:
-                applied_xmp = _synthesize_for_entry(baseline, entry)
+                applied_xmp = _synthesize_for_entry(baseline, entry, vocab)
             except Exception as exc:
                 print(f"  ✗ synthesize failed: {exc}", file=sys.stderr)
                 return
@@ -507,7 +520,7 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
 
     print(f"rendering {pack_name}/{entry.name}…")
     try:
-        applied_xmp = _synthesize_for_entry(baseline, entry)
+        applied_xmp = _synthesize_for_entry(baseline, entry, vocab)
     except Exception as exc:
         print(f"  ✗ synthesize failed: {exc}", file=sys.stderr)
         return
@@ -529,7 +542,7 @@ def _render_entry(entry, vocab, baseline, configdir, rendered: dict) -> None:
     xmp_path.unlink(missing_ok=True)
 
     _render_masked_variant(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
-    _render_clipped_fixture(entry, baseline, entry_dir, configdir, rendered)
+    _render_clipped_fixture(entry, baseline, entry_dir, configdir, rendered, vocab)
     _render_parameter_sweep(entry, baseline, entry_dir, configdir, rendered, baseline_paths)
 
 
@@ -613,7 +626,7 @@ def _render_parameter_sweep(
 
 
 def _render_clipped_fixture(
-    entry, baseline, entry_dir: Path, configdir: Path, rendered: dict
+    entry, baseline, entry_dir: Path, configdir: Path, rendered: dict, vocab=None
 ) -> None:
     """Render the clipped-gradient fixture for entries whose subtype
     benefits from continuous-tone or blown-highlights signal that the
@@ -641,7 +654,7 @@ def _render_clipped_fixture(
 
     # Global render against the clipped fixture.
     global_xmp_path = entry_dir / f"_{entry.name}_clipped.xmp"
-    write_xmp(_synthesize_for_entry(baseline, entry), global_xmp_path)
+    write_xmp(_synthesize_for_entry(baseline, entry, vocab), global_xmp_path)
     out = entry_dir / f"{entry.name}-clipped.jpg"
     if _render_one(CLIPPED_GRADIENT, global_xmp_path, out, configdir):
         rendered[entry.name]["clipped"] = out

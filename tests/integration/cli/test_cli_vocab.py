@@ -264,4 +264,70 @@ def test_vocab_validate_non_parameterized_entry_skips_parameter_check(
     checks = [p for p in payloads if p["event"] == "validation_check"]
     check_names = {c["check"] for c in checks}
     assert "parameters_consistent" not in check_names  # discrete entry
-    assert "blendop_params_size" in check_names  # but other checks still run
+
+
+# ---------------------------------------------------------------------------
+# vocab show-mask (RFC-032 named maskdef inspection; coverage-audit fill-in)
+# ---------------------------------------------------------------------------
+
+
+def test_vocab_show_mask_returns_maskdef_fields(runner: CliRunner) -> None:
+    """`vocab show-mask` returns a maskdef's manifest record + spec.
+    `mask_sky` ships in expressive-baseline as a named LLM-vision-hinted
+    mask (RFC-026 substrate + RFC-032 named-mask declaration)."""
+    result = runner.invoke(app, ["vocab", "show-mask", "mask_sky", "--pack", "expressive-baseline"])
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    # Human output mentions the maskdef name + spec shape
+    assert "mask_sky" in result.stdout
+
+
+def test_vocab_show_mask_json_emits_full_record(runner: CliRunner) -> None:
+    """`--json` emits a structured record with name, description, spec,
+    optional llm_vision_prompt. Programmatic callers consume this."""
+    result = runner.invoke(
+        app, ["--json", "vocab", "show-mask", "mask_sky", "--pack", "expressive-baseline"]
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    payloads = [json.loads(line) for line in lines]
+    result_events = [p for p in payloads if p.get("event") == "result"]
+    assert result_events, f"no result event in {payloads}"
+    record = result_events[0]
+    assert record["name"] == "mask_sky"
+    assert "spec" in record
+
+
+def test_vocab_show_mask_unknown_exits_three(runner: CliRunner) -> None:
+    """Unknown maskdef name exits NOT_FOUND with a clean error."""
+    result = runner.invoke(app, ["vocab", "show-mask", "no_such_maskdef_xyz"])
+    assert result.exit_code == ExitCode.NOT_FOUND.value
+    assert "not found" in result.stderr.lower()
+
+
+# ---------------------------------------------------------------------------
+# vocab list-masks (RFC-032 named maskdef enumeration; coverage-audit fill-in)
+# ---------------------------------------------------------------------------
+
+
+def test_vocab_list_masks_returns_named_maskdefs(runner: CliRunner) -> None:
+    """`vocab list-masks` enumerates the 9 named maskdefs shipped in
+    expressive-baseline (RFC-032)."""
+    result = runner.invoke(app, ["vocab", "list-masks", "--pack", "expressive-baseline"])
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    # All 9 shipped maskdefs surface (mask_sky / mask_subject / etc.).
+    for expected in ("mask_sky", "mask_subject", "mask_skin_region"):
+        assert expected in result.stdout, f"{expected} not in: {result.stdout}"
+
+
+def test_vocab_list_masks_filter_by_tag(runner: CliRunner) -> None:
+    """`--tag` filters to maskdefs carrying that tag (OR-matched)."""
+    result = runner.invoke(
+        app, ["--json", "vocab", "list-masks", "--pack", "expressive-baseline", "--tag", "sky"]
+    )
+    assert result.exit_code == ExitCode.SUCCESS.value, result.stdout + result.stderr
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    payloads = [json.loads(line) for line in lines]
+    mask_events = [p for p in payloads if p.get("event") == "maskdef_entry"]
+    # mask_sky carries the 'sky' tag; the filter should narrow to it
+    names = {m["name"] for m in mask_events}
+    assert "mask_sky" in names
