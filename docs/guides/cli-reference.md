@@ -79,36 +79,34 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
  Apply a vocabulary entry; snapshot the result.
 
    image_id      [IMAGE_ID]  Image ID (or '-' with --stdin for batch).
- *  --entry              TEXT  Vocabulary entry name. [required]
-    --pack       -p      TEXT  Vocabulary pack(s). Defaults to ['starter'].
-    --mask-spec          TEXT  Optional JSON mask spec to apply this
-                               primitive through a drawn mask region. Schema:
-                               '{"dt_form":"gradient|ellipse|rectangle","dt_…
-                               Overrides the entry's manifest mask_spec when
-                               both are present. See
-                               docs/guides/mask-applicable-controls.md for
-                               parameter semantics and the per-module
-                               compatibility matrix.
-    --value              TEXT  Single-parameter shorthand for parameterized
-                               entries (e.g. 'exposure --value 0.7'). For
-                               multi-parameter entries, use --param NAME=V
-                               instead. See docs/guides/recipes.md.
-    --param              TEXT  Repeatable NAME=VALUE for multi-parameter
-                               entries (e.g. '--param temp=+0.4 --param
-                               tint=-0.1'). May be combined with --value if
-                               values agree.
-    --strength           FLOAT Scale a parameterized L2 look's authored
-                               magnitudes by `strength ∈ [0.0, 1.0]`
-                               (default 1.0 = authored). Each parameterized
-                               field interpolates from identity:
-                               `interpolated = identity + strength *
-                               (authored - identity)`. Non-parameterized
-                               fields preserve authored values. Modules
-                               without a registered Path C decoder pass
-                               through unchanged. Closes RFC-035 / ADR-088.
-    --stdin                    Read image_ids from stdin (one per line); same
-                               entry applied to each.
-    --help                     Show this message and exit.
+ *  --entry              TEXT   Vocabulary entry name. [required]
+    --pack       -p      TEXT   Vocabulary pack(s). Defaults to ['starter'].
+    --mask-spec          TEXT   Optional JSON mask spec to apply this
+                                primitive through a drawn mask region.
+                                Schema:
+                                '{"dt_form":"gradient|ellipse|rectangle","dt…
+                                Overrides the entry's manifest mask_spec when
+                                both are present. See
+                                docs/guides/mask-applicable-controls.md for
+                                parameter semantics and the per-module
+                                compatibility matrix.
+    --value              TEXT   Single-parameter shorthand for parameterized
+                                entries (e.g. 'exposure --value 0.7'). For
+                                multi-parameter entries, use --param NAME=V
+                                instead. See docs/guides/recipes.md.
+    --param              TEXT   Repeatable NAME=VALUE for multi-parameter
+                                entries (e.g. '--param temp=+0.4 --param
+                                tint=-0.1'). May be combined with --value if
+                                values agree.
+    --strength           FLOAT  RFC-035 Path B — interpolate the entry's
+                                authored parameterized fields toward identity
+                                by this factor [0.0, 1.0]. 1.0 preserves
+                                authored (default); 0.0 = identity / no-op;
+                                0.5 = halfway. Useful for L2 looks:
+                                '--strength 0.5' produces a softer variant.
+    --stdin                     Read image_ids from stdin (one per line);
+                                same entry applied to each.
+    --help                      Show this message and exit.
 ```
 
 ### `chemigram apply-per-region`
@@ -116,106 +114,95 @@ Usage: chemigram apply-primitive [OPTIONS] [IMAGE_ID]
 ```
 Usage: chemigram apply-per-region [OPTIONS] IMAGE_ID
 
- Apply one or more primitives to N mask-bound regions atomically.
- Single-op shape closes RFC-031; mixed-op shape closes RFC-036 / ADR-089.
+ Apply one primitive to N mask-bound regions atomically (RFC-031).
 
- *    image_id     TEXT  Image ID. [required]
-      --entry      TEXT  Vocabulary entry name (single-op shape per
-                         RFC-031). Omit when using mixed-op shape — each
-                         region then carries its own `ops` list.
- *    --regions    TEXT  JSON array of regions. [required]
-                         Single-op shape: `{"mask_spec": {...},
-                         "parameter_values": {...}}`.
-                         Mixed-op shape (RFC-036): each region is
-                         `{"mask_spec": {...}, "ops": [{"primitive_name":
-                         "...", "parameter_values": {...}}, ...]}`.
-                         Discriminator: presence of `ops` on any region
-                         routes to mixed-op.
-      --pack  -p   TEXT  Pack name (repeatable). Defaults to ['starter'].
-      --label      TEXT  Optional snapshot label.
-      --help             Show this message and exit.
+ *    image_id      TEXT  Image ID. [required]
+    --entry            TEXT  Vocabulary entry name (single-op shape per
+                             RFC-031). Omit to use mixed-op shape where each
+                             region carries its own 'ops' list.
+ *  --regions          TEXT  JSON array of regions. Single-op shape: each
+                             region is {"mask_spec": {...},
+                             "parameter_values": {...}}. Mixed-op shape
+                             (RFC-036): each region is {"mask_spec": {...},
+                             "ops": [{"primitive_name": "...",
+                             "parameter_values": {...}}, ...]}. mask_spec
+                             accepts drawn / parametric / named-mask shapes.
+                             [required]
+    --pack     -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
+    --label            TEXT  Optional snapshot label.
+    --help                   Show this message and exit.
 ```
-
-The single-op canonical use case is dodge-and-burn: brighten cheekbones,
-brighten nose bridge, deepen jaw shadow — one move from the photographer's
-perspective, N region-specific applications underneath. Soft cap: 32 regions.
-
-The mixed-op shape (RFC-036 / ADR-089) handles composite moves where regions
-need different primitives — eye-region work (`+exposure` on iris, `+sharpen`
-on lashes), face-sculpt-with-clarity, sky-and-foreground twin moves. Per-(op,
-region) `multi_priority` allocation keeps stacked instances coexisting cleanly.
-Cap: 64 (op × region) pairs.
-
-Atomic semantics in both shapes — all (op × region) combinations validate
-first; if any fails (out-of-range parameter, unresolved named-mask reference,
-modversion mismatch), none apply.
-
-### `chemigram propagate-state`
-
-```
-Usage: chemigram propagate-state [OPTIONS] SOURCE_IMAGE_ID
-
- Sync edit state from one anchor to N targets atomically (RFC-037 / ADR-090).
- Lightroom-Sync analog.
-
- *    source_image_id        TEXT  Anchor image (state propagates FROM).
-                                   [required]
- *    --to                   TEXT  Target image_id (repeatable; state
-                                   propagates TO). Cap: 200 targets per
-                                   call. [required]
-      --exclude-op           TEXT  Operation name to skip (repeatable).
-                                   Default: inherit everything except the
-                                   framing-bound auto-exclusion list.
-      --include-per-image          Override framing-bound auto-exclusion
-                                   (drawn masks, retouch, crop, lens). Use
-                                   for tripod-fixed series where framing-
-                                   bound moves are portable.
-      --label                TEXT  Optional snapshot label per target.
-      --help                       Show this message and exit.
-```
-
-Inheritance discipline: inherit everything by default; auto-exclude framing-
-bound ops. Parametric range masks (color-range / luminance-range) DO propagate
-— they're content-relative, not coordinate-bound. Atomic — every target
-validates first; any modversion mismatch / missing target / empty-history
-source aborts the entire batch. Each target gets a single snapshot capturing
-the propagated state plus the supplied label.
-
-Use cases: wedding lighting groups (anchor on the best frame, propagate to
-the burst), product photography variants (anchor on the hero shot, propagate
-to color-A vs color-B), portfolio series consistency.
 
 ### `chemigram apply-spot`
 
 ```
 Usage: chemigram apply-spot [OPTIONS] IMAGE_ID
 
- Apply a spot retouch (heal or clone) at the given coordinate (RFC-025 / ADR-087).
- Sister to apply-primitive for the structurally different spot-correction
- primitive class.
+ Apply a spot retouch (heal/clone) at the given coordinate (RFC-025 / ADR-087).
 
- *    image_id          TEXT   Image ID. [required]
- *    --kind            TEXT   'heal' (auto-source via wavelet decomposition)
-                               or 'clone' (caller specifies source). [required]
- *    --x               FLOAT  Spot center x in normalized [0, 1]. [required]
- *    --y               FLOAT  Spot center y in normalized [0, 1]. [required]
- *    --radius          FLOAT  Spot radius in normalized [0, 1]. Typical:
-                               0.01-0.10 for blemishes / dust spots. [required]
-      --source-x        FLOAT  Clone source x in normalized [0, 1]. Required
-                               when --kind=clone.
-      --source-y        FLOAT  Clone source y in normalized [0, 1]. Required
-                               when --kind=clone.
-      --opacity         FLOAT  Mask opacity 0..100 (default 100).
-      --border          FLOAT  Mask feather border 0..1 (default 0.02).
-      --label           TEXT   Optional snapshot label.
-      --help                   Show this message and exit.
+ *    image_id      TEXT  Image ID. [required]
+ *  --kind            TEXT   'heal' (auto-source via wavelet decomposition)
+                             or 'clone' (caller-specified source).
+                             [required]
+ *  --x               FLOAT  Spot center x in normalized [0, 1] coords.
+                             [required]
+ *  --y               FLOAT  Spot center y in normalized [0, 1] coords.
+                             [required]
+ *  --radius          FLOAT  Spot radius in normalized [0, 1]. Typical:
+                             0.01-0.10 for blemishes / dust spots.
+                             [required]
+    --source-x        FLOAT  Clone source x in normalized [0, 1] coords.
+                             Required when --kind=clone.
+    --source-y        FLOAT  Clone source y in normalized [0, 1] coords.
+                             Required when --kind=clone.
+    --opacity         FLOAT  Mask opacity 0..100 (default 100).
+                             [default: 100.0]
+    --border          FLOAT  Mask feather border 0..1 (default 0.02).
+                             [default: 0.02]
+    --label           TEXT   Optional snapshot label.
+    --help                   Show this message and exit.
 ```
 
-v1.9.0 scope: heal + clone, single form per call (CIRCLE geometry). AI
-auto-detection of multiple spots routes to RFC-030 when that unfreezes.
-Use heal for blemishes, sensor dust, distracting elements (darktable picks
-the source via wavelet decomposition); use clone to mirror features or copy
-texture from a specific source point.
+### `chemigram wb-from-gray-card`
+
+```
+Usage: chemigram wb-from-gray-card [OPTIONS] IMAGE_PATH
+
+ Sample a gray-card region; return temperature coefficients (survey Gap #20).
+
+ *    image_path      TEXT  Path to rendered image (e.g., from
+                            render-preview).
+                            [required]
+ *  --x                    INTEGER  Pixel x coordinate of gray-card sample.
+                                    [required]
+ *  --y                    INTEGER  Pixel y coordinate of gray-card sample.
+                                    [required]
+    --sample-radius        INTEGER  Half-side of square sample region
+                                    (default 5 → 11x11 pixels).
+                                    [default: 5]
+    --help                          Show this message and exit.
+```
+
+### `chemigram propagate-state`
+
+```
+Usage: chemigram propagate-state [OPTIONS] SOURCE_IMAGE_ID
+
+ Sync edit state from one anchor to N targets atomically (RFC-037).
+
+ *    source_image_id      TEXT  Anchor image (state propagates FROM).
+                                 [required]
+ *  --to                       TEXT  Target image_id (repeatable; state
+                                     propagates TO).
+                                     [required]
+    --exclude-op               TEXT  Operation name to skip (repeatable).
+                                     Default: inherit everything.
+    --include-per-image              Override framing-bound auto-exclusion
+                                     (drawn masks, retouch, crop, lens). Use
+                                     for tripod-fixed series.
+    --label                    TEXT  Optional snapshot label.
+    --help                           Show this message and exit.
+```
 
 ### `chemigram remove-module`
 
@@ -502,18 +489,11 @@ Usage: chemigram vocab list-masks [OPTIONS]
 
  List named masks (RFC-032) across the loaded packs.
 
- --pack   -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
- --tag            TEXT  Filter by tag (repeatable; OR — any matching tag
-                        includes the maskdef).
- --help                 Show this message and exit.
+ --pack  -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
+ --tag           TEXT  Filter by tag (repeatable; OR — any matching tag
+                       includes the maskdef).
+ --help                Show this message and exit.
 ```
-
-Each entry's `spec` field is the apply-time `mask_spec`; reference a named
-mask in any `apply_primitive` / `apply_per_region` / `--mask-spec` argument
-as `{"kind": "named", "name": "<maskdef-name>"}`. Maskdefs that ship an
-`llm_vision_prompt` field can be upgraded from the parametric fallback to a
-constructed mask via render_preview + LLM-vision (per
-`docs/guides/llm-vision-for-masks.md` Pattern 7).
 
 ### `chemigram vocab show-mask`
 
@@ -527,7 +507,198 @@ Usage: chemigram vocab show-mask [OPTIONS] NAME
  --help                Show this message and exit.
 ```
 
-When the maskdef has an `llm_vision_prompt`, the output includes a
-`llm_vision_hint` line pointing to Pattern 7 of
-`docs/guides/llm-vision-for-masks.md` for the higher-precision construction
-workflow.
+### `chemigram vocab validate`
+
+```
+Usage: chemigram vocab validate [OPTIONS] NAME
+
+ Run consistency checks on a vocabulary entry.
+
+ Validates: manifest schema, dtstyle file exists + parses, blendop_params
+ bytes decode at the expected size, modversion drift between manifest
+ and dtstyle, parameters block declarations valid (ranges + offsets).
+ Useful mid-authoring to catch drift before commit.
+
+ Per ADR-072: text + --json output modes. Returns NOT_FOUND if entry
+ missing; INVALID_INPUT if any check fails; SUCCESS if all pass.
+
+ *    name      TEXT  Vocabulary entry name to validate. [required]
+ --pack  -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
+ --help                Show this message and exit.
+```
+
+### `chemigram gap-log list`
+
+```
+Usage: chemigram gap-log list [OPTIONS]
+
+ List vocabulary-gap entries across the workspace, filterable.
+
+ Each row is one ``vocabulary_entry``-equivalent event. The result
+ summary reports the total count + the filter scope.
+
+ --since         TEXT  Only show gaps logged after this point. ISO 8601
+                       (2026-05-01) or relative (7d / 2w / 24h / 30m).
+ --image         TEXT  Filter to one image_id. Omit to scan all images in the
+                       workspace.
+ --module        TEXT  Filter to gaps mentioning a darktable module name
+                       (matches missing_capability, operations_involved, or
+                       description).
+ --help                Show this message and exit.
+```
+
+### `chemigram gap-log rank`
+
+```
+Usage: chemigram gap-log rank [OPTIONS]
+
+ Rank vocabulary gaps by frequency.
+
+ Aggregation key: ``(description, missing_capability)``. Each unique
+ key is one row; ``count`` is the occurrence frequency; ``examples``
+ surfaces a sample image_id + timestamp for the row.
+
+ --since        TEXT                  Only count gaps logged after this
+                                      point. ISO 8601 or relative.
+ --image        TEXT                  Filter to one image_id. Omit to scan
+                                      all images.
+ --top          INTEGER RANGE [x>=0]  Show the top N most frequent gaps
+                                      (default 20). 0 = no limit.
+                                      [default: 20]
+ --help                               Show this message and exit.
+```
+
+### `chemigram gap-log show`
+
+```
+Usage: chemigram gap-log show [OPTIONS] IMAGE_ID
+
+ Show all gap entries for one image, chronological (oldest first).
+
+ *    image_id      TEXT  Image identifier. [required]
+ --help          Show this message and exit.
+```
+
+### `chemigram gap-log clear`
+
+```
+Usage: chemigram gap-log clear [OPTIONS] IMAGE_ID
+
+ Delete the vocabulary_gaps.jsonl for one image (opt-in cleanup).
+
+ Intended for use after the photographer / maintainer has reviewed
+ the image's gaps and either authored missing primitives or decided
+ they don't need addressing. The file is deleted, not truncated, so
+ a fresh empty file is created when the agent next logs a gap.
+
+ *    image_id      TEXT  Image identifier. [required]
+ --yes   -y        Skip the confirmation prompt. Use after you've reviewed
+                   and addressed the gaps for this image.
+ --help            Show this message and exit.
+```
+
+### `chemigram session-log list`
+
+```
+Usage: chemigram session-log list [OPTIONS]
+
+ List session transcripts across the workspace, newest-first.
+
+ --since        TEXT  Only show sessions started after this point. ISO 8601
+                      or relative (7d / 2w / 24h / 30m).
+ --image        TEXT  Filter to one image_id. Omit to scan all images.
+ --help               Show this message and exit.
+```
+
+### `chemigram session-log show`
+
+```
+Usage: chemigram session-log show [OPTIONS] SESSION_ID
+
+ Show all entries from one session, chronological.
+
+ *    session_id      TEXT  Session identifier (matches the JSONL filename or
+                            header's session_id).
+                            [required]
+ --help          Show this message and exit.
+```
+
+### `chemigram session-log find`
+
+```
+Usage: chemigram session-log find [OPTIONS]
+
+ Find entries across all session transcripts matching the query.
+
+ --primitive        TEXT  Match tool_call entries where args.name == this
+                          primitive (e.g. 'exposure').
+ --module           TEXT  Match anywhere in the entry's serialized JSON
+                          (covers tool args, error messages, notes).
+ --tool             TEXT  Match tool_call / tool_result entries with this
+                          tool name (e.g. 'apply_primitive').
+ --image            TEXT  Restrict to one image_id.
+ --help                   Show this message and exit.
+```
+
+### `chemigram session-log replay`
+
+```
+Usage: chemigram session-log replay [OPTIONS] SESSION_ID
+
+ Re-emit a session's tool calls as CLI invocation hints.
+
+ Best-effort rendering: each tool_call becomes a line you could
+ re-run from the shell. Tool-specific argument shapes are mapped for
+ the common cases (apply_primitive, versioning verbs); others fall
+ through as a comment.
+
+ *    session_id      TEXT  Session identifier. [required]
+ --help          Show this message and exit.
+```
+
+### `chemigram cache list`
+
+```
+Usage: chemigram cache list [OPTIONS]
+
+ List cached preview JPEGs newest-first across the workspace.
+
+ Each row reports image_id, filename, size (bytes + human-friendly),
+ and modified time. Matches the gap-log / session-log row pattern.
+
+ --image        TEXT  Restrict to one image_id.
+ --since        TEXT  Only show previews modified within this window (e.g.
+                      7d, 24h, 30m).
+ --help               Show this message and exit.
+```
+
+### `chemigram cache size`
+
+```
+Usage: chemigram cache size [OPTIONS]
+
+ Aggregate cache size: total bytes + per-image breakdown.
+
+ --image        TEXT  Restrict to one image_id.
+ --help               Show this message and exit.
+```
+
+### `chemigram cache clear`
+
+```
+Usage: chemigram cache clear [OPTIONS]
+
+ Remove cached preview JPEGs.
+
+ Previews are regenerable from snapshots, so this is a safe cleanup
+ operation. Requires ``--yes`` to skip the interactive confirmation
+ prompt; without ``--yes``, prints what would be removed and exits
+ without modifying anything (matches the gap-log clear UX).
+
+ Removes only ``previews/*.jpg`` files. The directory itself is
+ preserved (other tools assume it exists).
+
+ --image          TEXT  Restrict to one image_id.
+ --yes    -y            Skip confirmation; required for non-interactive use.
+ --help                 Show this message and exit.
+```

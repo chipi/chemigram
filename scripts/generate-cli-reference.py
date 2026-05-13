@@ -136,30 +136,56 @@ def _section(title: str, body: str) -> str:
     return f"### `chemigram {title}`\n\n```\n{body.strip()}\n```\n\n"
 
 
-# Order mirrors the README quick-start grouping.
+# Order mirrors the README quick-start grouping; grows as the CLI grows
+# per ADR-069's verb-for-verb discipline. New verbs MUST be added here
+# or the auto-generated cli-reference will silently miss them.
 _VERBS: tuple[tuple[str, list[str]], ...] = (
     ("status", ["status"]),
     ("ingest", ["ingest"]),
+    # Edit / state
     ("apply-primitive", ["apply-primitive"]),
+    ("apply-per-region", ["apply-per-region"]),
+    ("apply-spot", ["apply-spot"]),
+    ("wb-from-gray-card", ["wb-from-gray-card"]),
+    ("propagate-state", ["propagate-state"]),
     ("remove-module", ["remove-module"]),
     ("reset", ["reset"]),
     ("get-state", ["get-state"]),
+    # Versioning
     ("snapshot", ["snapshot"]),
     ("branch", ["branch"]),
     ("tag", ["tag"]),
     ("checkout", ["checkout"]),
     ("log", ["log"]),
     ("diff", ["diff"]),
+    # Binding / rendering / export
     ("bind-layers", ["bind-layers"]),
     ("render-preview", ["render-preview"]),
     ("compare", ["compare"]),
     ("export-final", ["export-final"]),
+    # Context
     ("read-context", ["read-context"]),
     ("log-vocabulary-gap", ["log-vocabulary-gap"]),
     ("apply-taste-update", ["apply-taste-update"]),
     ("apply-notes-update", ["apply-notes-update"]),
+    # Vocab sub-app
     ("vocab list", ["vocab", "list"]),
     ("vocab show", ["vocab", "show"]),
+    ("vocab list-masks", ["vocab", "list-masks"]),
+    ("vocab show-mask", ["vocab", "show-mask"]),
+    ("vocab validate", ["vocab", "validate"]),
+    # Analytics sub-apps (CLI-only — no MCP mirror)
+    ("gap-log list", ["gap-log", "list"]),
+    ("gap-log rank", ["gap-log", "rank"]),
+    ("gap-log show", ["gap-log", "show"]),
+    ("gap-log clear", ["gap-log", "clear"]),
+    ("session-log list", ["session-log", "list"]),
+    ("session-log show", ["session-log", "show"]),
+    ("session-log find", ["session-log", "find"]),
+    ("session-log replay", ["session-log", "replay"]),
+    ("cache list", ["cache", "list"]),
+    ("cache size", ["cache", "size"]),
+    ("cache clear", ["cache", "clear"]),
 )
 
 

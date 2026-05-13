@@ -32,10 +32,6 @@ Testing:
 
 - [**Standardized testing**](standardized-testing.md) — companion to RFC-019 / ADR-067. Industry methodology for reference-image validation, the Calibrite ColorChecker reference values, Delta E 2000 interpretation, and synthetic-fixture generation.
 
-## Time-bound (delete when no longer applicable)
-
-- [**Closing #62 + #63 (v1.6.0 carry)**](closing-62-and-63.md) — step-by-step for the v1.4.0 carry items: close #62 (resolved by retirement) + ship #63 (channelmixerrgb B&W trio). Delete after v1.6.0 ships.
-
 ## Adding a guide
 
 A guide is appropriate when:

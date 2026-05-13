@@ -91,7 +91,7 @@ At least one of `dt_form` or `range_filter` must be present. Both present = draw
 
 Adapts subsystems 1–4 as agent-callable tools. Thin layer.
 
-**Files:** `src/chemigram/mcp/server.py` (bootstrap + stdio), `src/chemigram/mcp/registry.py` (tool registry + `ToolContext`), `src/chemigram/mcp/errors.py` (`ToolResult` / `ToolError` / `ErrorCode`), `src/chemigram/mcp/_test_harness.py` (in-memory client/server harness), `src/chemigram/mcp/tools/*` — 22 tools as of v1.5.0 across vocab/edit (5), versioning (6), rendering (3), ingest (3), context (5). The 5 mask tools (`generate_mask`/`regenerate_mask`/`list_masks`/`tag_mask`/`invalidate_mask`) shipped in v0.3.0–v0.4.0 and were removed in v1.5.0 per ADR-076 — see CHANGELOG.
+**Files:** `src/chemigram/mcp/server.py` (bootstrap + stdio), `src/chemigram/mcp/registry.py` (tool registry + `ToolContext`), `src/chemigram/mcp/errors.py` (`ToolResult` / `ToolError` / `ErrorCode`), `src/chemigram/mcp/_test_harness.py` (in-memory client/server harness), `src/chemigram/mcp/tools/*` — **27 tools as of v1.10.0** across vocab/edit (8: list_vocabulary, list_masks_vocabulary, apply_primitive, apply_per_region, propagate_state, wb_from_gray_card, remove_module, reset, get_state), retouch (1: apply_spot per ADR-087), versioning (6), rendering (3), ingest (3), context (6 including log_vocabulary_gap). The 5 mask tools (`generate_mask`/`regenerate_mask`/`list_masks`/`tag_mask`/`invalidate_mask`) shipped in v0.3.0–v0.4.0 and were removed in v1.5.0 per ADR-076. Subsequent additions: `apply_spot` (v1.9.0 / ADR-087), `apply_per_region` (v1.9.0 / RFC-031), `list_masks_vocabulary` (v1.9.0 / RFC-032), `propagate_state` + `wb_from_gray_card` (v1.10.0). See CHANGELOG.
 
 **Tool surface:** see TA/contracts/mcp-tools.
 
