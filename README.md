@@ -163,28 +163,33 @@ The CLI is stateless per invocation — parallel calls against different images 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    subgraph CLIENT["AI client"]
+        CC[Claude Code / Desktop /<br/>Cursor / Continue / ...]
+    end
+    subgraph ADAPTERS["adapters"]
+        MCP[chemigram-mcp<br/>27 tools]
+        CLI[chemigram CLI<br/>28 verbs]
+    end
+    subgraph CORE["chemigram.core"]
+        ENGINE[vocab / versioning /<br/>masking / context /<br/>pipeline / session]
+    end
+    DT[darktable-cli]
+    FS["~/Pictures/Chemigram/&lt;image_id&gt;/<br/>snapshots/ exports/ sessions/ previews/"]
+    TASTES["~/.chemigram/<br/>tastes/ vocabulary/personal/"]
+
+    CC -.stdio.-> MCP
+    CLI --> CORE
+    MCP --> CORE
+    CORE --> ENGINE
+    ENGINE -- spawns --> DT
+    ENGINE -- writes --> FS
+    ENGINE -- reads / proposes --> TASTES
 ```
-       ┌────────────────────┐         ┌──────────────────────────────┐
-       │  Your AI client    │  MCP    │  chemigram-mcp (this package) │
-       │  Claude Code, etc. │◄───────►│                              │
-       └────────────────────┘ stdio   │   ┌─────────────────────┐    │
-                  ▲                   │   │ chemigram.core      │    │
-                  │ vision              │   │   vocab │ versioning │    │
-                  │ (preview review)    │   │   masking│ context    │    │
-                  ▼                   │   │   pipeline │ session  │    │
-       ┌────────────────────┐         │   └──────────┬──────────┘    │
-       │  ~/.chemigram/     │         │              │               │
-       │   tastes/          │         │              ▼               │
-       │   vocabulary/      │         │       ┌──────────────┐       │
-       │     personal/      │         │       │ darktable-cli│       │
-       └────────────────────┘         │       │  (rendering) │       │
-                                      │       └──────────────┘       │
-                                      └──────────────┬───────────────┘
-                                                     │ writes
-                                                     ▼
-                              ~/Pictures/Chemigram/<image_id>/
-                                objects/  exports/  sessions/  previews/
-```
+
+For the full architecture (subsystem breakdown, mask trilogy, vocabulary
+layers, release timeline) see [`docs/diagrams/`](docs/diagrams/index.md).
 
 The agent reads your context and the brief, drives darktable through a vocabulary of named moves, manages snapshots, binds drawn-form masks where the vocabulary calls for them, and proposes updates to your taste files at session end. Every tool call is recorded to a JSONL transcript so sessions are auditable and replayable.
 

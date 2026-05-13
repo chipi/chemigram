@@ -7,6 +7,8 @@
 
 This document describes the implementation phases for building Chemigram, decomposed where possible into concrete slices with acceptance gates. Each slice's gate is the moment when a set of RFCs gets closed into ADRs — closure is not a continuous process, it's a checkpoint.
 
+> **Visual one-pager:** [`docs/diagrams/phase-1-timeline.md`](diagrams/phase-1-timeline.md) renders the release sequence from Phase 0 → v1.10.0 as a Mermaid timeline. Update it whenever a new release row is added below.
+
 This document supersedes earlier phase descriptions in `docs/briefs/architecture.md` (now historical) and consolidates references previously scattered across `concept/`, `TODO.md`, and ADRs.
 
 ---

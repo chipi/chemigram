@@ -52,6 +52,8 @@ This makes Chemigram consistently a substrate that orchestrates AI capabilities 
 
 ## 2. Subsystems
 
+> **Visual one-pager:** [`docs/diagrams/stack.md`](../diagrams/stack.md) renders the same shape as a Mermaid diagram. [`docs/diagrams/vocabulary-layers.md`](../diagrams/vocabulary-layers.md) covers the L1/L2/L3 + maskdef composition; [`docs/diagrams/mask-trilogy.md`](../diagrams/mask-trilogy.md) covers the four mask sources flowing into one wire.
+
 Chemigram has four engine subsystems plus two adapter layers, all with stable boundaries:
 
 | # | Subsystem | Responsibility |

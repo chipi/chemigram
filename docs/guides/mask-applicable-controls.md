@@ -1,6 +1,8 @@
 # Mask-applicable controls
 
 > Companion to ADR-076 (drawn-mask-only architecture). What can be applied through a mask, what can't, how to do it.
+>
+> **Visual one-pager:** [`docs/diagrams/mask-trilogy.md`](../diagrams/mask-trilogy.md) renders the v1.9.0+v1.10.0 mask architecture — the four mask sources (drawn / parametric / LLM-vision / retouch) plus named-mask references, all converging on one `mask_spec` wire that serializes to XMP `masks_history`.
 
 Chemigram supports binding **any vocabulary primitive** to a drawn mask region (gradient, ellipse, or rectangle). The four mask-bound primitives shipped in `expressive-baseline` (`gradient_top_dampen_highlights`, `gradient_bottom_lift_shadows`, `radial_subject_lift`, `rectangle_subject_band_dim`) are *examples* of common photographic moves, not the boundary of what's possible. The underlying mechanism — `chemigram.core.helpers.apply_with_drawn_mask` — works on every loaded vocab entry mechanically. The differences this guide covers are about whether the *photographic result* of masking a particular module is sensible.
 

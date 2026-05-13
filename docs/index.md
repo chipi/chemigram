@@ -47,28 +47,32 @@ Twenty-five conversational turns. One photo, deeply edited. Five new vocabulary 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    subgraph CLIENT["AI client"]
+        CC[Claude Code / Desktop /<br/>Cursor / Continue / ...]
+    end
+    subgraph ADAPTERS["adapters"]
+        MCP[chemigram-mcp<br/>27 tools]
+        CLI[chemigram CLI<br/>28 verbs]
+    end
+    subgraph CORE["chemigram.core"]
+        ENGINE[vocab / versioning /<br/>masking / context /<br/>pipeline / session]
+    end
+    DT[darktable-cli]
+    FS["~/Pictures/Chemigram/&lt;image_id&gt;/<br/>snapshots/ exports/ sessions/ previews/"]
+    TASTES["~/.chemigram/<br/>tastes/ vocabulary/personal/"]
+
+    CC -.stdio.-> MCP
+    CLI --> CORE
+    MCP --> CORE
+    CORE --> ENGINE
+    ENGINE -- spawns --> DT
+    ENGINE -- writes --> FS
+    ENGINE -- reads / proposes --> TASTES
 ```
-       ┌────────────────────┐         ┌──────────────────────────────┐
-       │  Your AI client    │  MCP    │  chemigram-mcp (this package) │
-       │  Claude Code, etc. │◄───────►│                              │
-       └────────────────────┘ stdio   │   ┌─────────────────────┐    │
-                  ▲                   │   │ chemigram.core      │    │
-                  │ vision             │   │   vocab │ versioning │    │
-                  │ (for review)       │   │   masking│ context    │    │
-                  ▼                   │   │   pipeline │ session  │    │
-       ┌────────────────────┐         │   └──────────┬──────────┘    │
-       │  ~/.chemigram/     │         │              │               │
-       │   tastes/          │         │              ▼               │
-       │   vocabulary/      │         │       ┌──────────────┐       │
-       │     personal/      │         │       │ darktable-cli│       │
-       └────────────────────┘         │       │  (rendering) │       │
-                                      │       └──────────────┘       │
-                                      └──────────────┬───────────────┘
-                                                     │ writes
-                                                     ▼
-                              ~/Pictures/Chemigram/<image_id>/
-                                snapshots/  exports/  sessions/
-```
+
+For the four-diagram architecture set (stack, mask trilogy, vocabulary layers, release timeline) see [`docs/diagrams/`](diagrams/index.md).
 
 Four engine subsystems plus two adapter layers:
 
