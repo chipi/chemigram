@@ -236,6 +236,7 @@ For users:
 
 - **[`docs/getting-started.md`](docs/getting-started.md)** — install, MCP-client config, first session, troubleshooting, CLI quickstart
 - **[`docs/guides/tastes-quickstart.md`](docs/guides/tastes-quickstart.md)** — your first taste file in 5 minutes
+- **[`docs/guides/cookbook.md`](docs/guides/cookbook.md)** — "I want X look → here's the recipe." ~60 intent-driven worked examples grouped by genre + mask-driven moves + workflow primitives. First stop for "how do I do X."
 - **[`docs/guides/vocabulary-patterns.md`](docs/guides/vocabulary-patterns.md)** — recipes for combining primitives ("for *X* intent, reach for *Y* composition")
 - **[`docs/guides/recipes.md`](docs/guides/recipes.md)** — common "how do I" patterns: reset to baseline, find by tag, export multiple sizes, replay a session
 - **[`docs/guides/cli-reference.md`](docs/guides/cli-reference.md)** — every verb, every flag, every exit code
