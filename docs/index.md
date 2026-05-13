@@ -138,4 +138,6 @@ If the bet works, the photographer ends up with something more than edited photo
 
 [Install and run your first session →](getting-started.md){ .chem-cta }
 
+**Want to understand the project deeply (not just use it)?** See the [onboarding guide](onboarding.md) — opinionated 2.5–3 hour reading order through the concept package, mask architecture, and cookbook.
+
 For project internals — the concept package, definition documents (PRDs / RFCs / ADRs), implementation plan — see the **Project Internals** section in the sidebar, or jump to the [doc tree](doc-tree.md).

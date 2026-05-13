@@ -278,9 +278,13 @@ cd chemigram
 ./scripts/setup.sh
 ```
 
-That checks prerequisites, creates a venv, and installs everything. See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for the full process and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for what's being worked on now.
+That checks prerequisites, creates a venv, and installs everything.
 
-If you want to contribute vocabulary entries (Phase 2 path), see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) § Vocabulary contributions.
+**New contributor?** Start with [`docs/onboarding.md`](docs/onboarding.md) — opinionated reading order through the concept package, the operational handbook, the mask architecture, and the cookbook. ~2.5–3 hours end-to-end. Path through the doc tree without guessing.
+
+For the contribution flow itself (code review vs vocabulary review — they're meaningfully different): see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). For what's being worked on now: see [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md).
+
+If you want to contribute vocabulary entries (Phase 2 path), see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) § Vocabulary contributions and [`docs/guides/authoring-vocabulary-entries.md`](docs/guides/authoring-vocabulary-entries.md).
 
 ## License
 
