@@ -112,6 +112,83 @@ def test_batch_2_verbs_are_implemented() -> None:
     assert not missing, f"Batch 2 verbs missing from CLI: {sorted(missing)}"
 
 
+def test_cli_reference_generator_covers_every_live_verb() -> None:
+    """Every command path in the live Typer app must appear in
+    ``scripts/generate-cli-reference.py``'s ``_VERBS`` allowlist.
+
+    Catches the bug class that silently shipped past v1.10.0: the
+    allowlist was hard-coded at the v1.3.0 22-verb surface and
+    stopped being updated, so the auto-generated ``cli-reference.md``
+    was missing every verb added in v1.9.0 and v1.10.0 (apply-spot,
+    apply-per-region, propagate-state, wb-from-gray-card, plus the
+    gap-log/session-log/cache analytics sub-apps + the vocab sub-app
+    additions). CI's ``--check`` passed because the generator and
+    the checked-in file were both wrong consistently.
+
+    This test reads the generator's allowlist directly, walks the
+    live CLI, and asserts every command path is covered. If a new
+    verb ships, this fails immediately; if a verb is removed, this
+    flags the stale generator entry so it can be deleted from the
+    allowlist before the file regrows.
+
+    Closes the v1.10.0 holistic-audit follow-up (see commit adbc04e).
+    """
+    import importlib.util
+    from pathlib import Path
+
+    # Load the generator script as a module without executing main().
+    repo_root = Path(__file__).resolve().parents[3]
+    generator_path = repo_root / "scripts" / "generate-cli-reference.py"
+    assert generator_path.exists(), f"generator script missing: {generator_path}"
+
+    spec = importlib.util.spec_from_file_location("_gen", generator_path)
+    assert spec is not None and spec.loader is not None
+    gen = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gen)
+    allowlist_entries: tuple[tuple[str, list[str]], ...] = gen._VERBS
+
+    # Each generator entry maps to a space-joined verb path.
+    allowlist_verbs = {label for label, _argv in allowlist_entries}
+
+    # Walk the live Typer app — leaf paths only (skip pure sub-app names
+    # like ``vocab`` since they're just namespaces; the generator's
+    # allowlist documents the leaves like ``vocab list`` / ``vocab show``).
+    def _leaf_verbs(t: typer.Typer, prefix: str = "") -> set[str]:
+        verbs: set[str] = set()
+        cmd = get_command(t)
+        if not hasattr(cmd, "commands"):
+            return verbs
+        for name, sub in cmd.commands.items():  # type: ignore[attr-defined]
+            full = f"{prefix} {name}".strip()
+            if hasattr(sub, "commands") and sub.commands:  # type: ignore[attr-defined]
+                # Sub-app: recurse into leaves.
+                for sub_name in sub.commands:  # type: ignore[attr-defined]
+                    verbs.add(f"{full} {sub_name}")
+            else:
+                verbs.add(full)
+        return verbs
+
+    live_verbs = _leaf_verbs(app)
+
+    missing_from_generator = live_verbs - allowlist_verbs
+    stale_in_generator = allowlist_verbs - live_verbs
+
+    failure_lines: list[str] = []
+    if missing_from_generator:
+        failure_lines.append(
+            f"Live CLI verbs missing from scripts/generate-cli-reference.py's "
+            f"_VERBS allowlist: {sorted(missing_from_generator)}. Add them — "
+            "auto-generated cli-reference.md silently misses them otherwise."
+        )
+    if stale_in_generator:
+        failure_lines.append(
+            f"Generator allowlist entries for verbs that no longer exist in "
+            f"the live CLI: {sorted(stale_in_generator)}. Remove them."
+        )
+
+    assert not failure_lines, "\n\n".join(failure_lines)
+
+
 def test_pending_verbs_are_actually_pending() -> None:
     """If a verb is in ``_KNOWN_PENDING_VERBS`` but already shipped in the CLI,
     remove it from the allowlist — keeps the audit honest.

@@ -33,6 +33,11 @@ def list_(
         help="Pack name (repeatable). Defaults to ['starter'].",
     ),
     layer: str | None = typer.Option(None, "--layer", help="Filter by layer (L1/L2/L3)."),
+    tag: list[str] = typer.Option(
+        None,
+        "--tag",
+        help="Filter by tag (repeatable; OR-matched). Mirrors the MCP `tags` arg.",
+    ),
 ) -> None:
     """List vocabulary entries across the loaded packs."""
     obj = cast(CliContext, ctx.obj)
@@ -49,7 +54,7 @@ def list_(
         )
         raise typer.Exit(code=ExitCode.INVALID_INPUT.value) from exc
 
-    entries = list(index.list_all(layer=layer))
+    entries = list(index.list_all(layer=layer, tags=tag or None))
     for entry in entries:
         pack_root = index.pack_for(entry.name)
         writer.event(

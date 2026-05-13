@@ -297,9 +297,9 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 - `list_vocabulary(layer?, tags?)` → entries
 - `list_masks_vocabulary(tags?)` → entries (RFC-032 named maskdefs)
 - `get_state(image_id)` → entries + head hash
-- `apply_primitive(image_id, primitive_name, mask_spec?, parameter_values?, strength?)` → state_after, snapshot_hash. `strength ∈ [0.0, 1.0]` interpolates parameterized L2 looks per RFC-035 / ADR-088.
+- `apply_primitive(image_id, primitive_name, mask_spec?, value?, strength?)` → state_after, snapshot_hash. `value` accepts scalar (single-parameter shorthand) or dict (multi-parameter `{name: value, ...}`) per RFC-021 / ADR-079. `strength ∈ [0.0, 1.0]` interpolates parameterized L2 looks per RFC-035 / ADR-088.
 - `apply_per_region(image_id, regions, primitive_name?, label?)` → state_after, snapshot_hash, n_regions. Single-op shape (RFC-031): top-level `primitive_name` + each region carries `mask_spec` + optional `parameter_values`. Mixed-op shape (RFC-036 / ADR-089): omit top-level `primitive_name`; each region carries `ops: [{primitive_name, parameter_values?}, ...]`. Discriminator is presence of `ops` on any region. Atomic validate-then-apply.
-- `apply_spot(image_id, kind, x, y, radius, source_x?, source_y?, opacity?)` → state_after, snapshot_hash (RFC-025 / ADR-087 — heal/clone)
+- `apply_spot(image_id, kind, x, y, radius, source_x?, source_y?, opacity?, border?)` → state_after, snapshot_hash (RFC-025 / ADR-087 — heal/clone)
 - `wb_from_gray_card(image_path, x, y, sample_radius)` → temperature_coefficients (v1.10.0)
 - `propagate_state(source_image_id, target_image_ids, exclude_ops?, include_per_image?, label?)` → results, n_succeeded, n_failed (RFC-037 / ADR-090 — LR-Sync analog). Core Python API takes `source_workspace`/`target_workspaces` directly; MCP wrapper resolves image_ids to workspaces.
 - `remove_module(image_id, module_name)` → state_after, snapshot_hash
@@ -314,23 +314,23 @@ The agent-visible MCP tool surface. Grouped by subsystem.
 - `snapshot(image_id, label?)` → hash
 - `checkout(image_id, ref_or_hash)` → state
 - `branch(image_id, name, from?)` → ref
-- `log(image_id, ref?, limit=20)` → entries
+- `log(image_id, limit=20)` → entries
 - `diff(image_id, hash_a, hash_b)` → primitive diffs
 - `tag(image_id, name, hash?)` → ref
 
 **Masking** — the v1.0.0 mask-tool surface (`generate_mask`, `list_masks`, `regenerate_mask`, `invalidate_mask`, `tag_mask`) was retired in v1.5.0 per ADR-076. Mask construction now happens inline via `mask_spec` on `apply_primitive` / `apply_per_region` (drawn forms RFC-029 / ADR-084 + parametric range filters RFC-024 / ADR-085 + named maskdefs RFC-032). LLM-vision mask construction lands via the same wire (RFC-026 / ADR-086 — chat-client constructs `mask_spec` from spatial reasoning).
 
 **Ingestion and binding**
-- `ingest(raw_path, image_id?)` → image_id, exif_summary, suggested_bindings
+- `ingest(raw_path, image_id?, workspace_root?)` → image_id, exif_summary, suggested_bindings. `workspace_root` defaults to the server's configured root (CLI passes the global `--workspace` flag here).
 - `bind_layers(image_id, l1_template?, l2_template?)` → state_after
 
 **Context**
 - `read_context(image_id)` → taste_md + brief_md + notes_md + recent_log
-- `propose_taste_update(content, category)` → proposal_id
+- `propose_taste_update(content, category, file?)` → proposal_id. `file` defaults to the active taste file selected by the current scope.
 - `confirm_taste_update(proposal_id)` → ok
 - `propose_notes_update(image_id, content)` → proposal_id
 - `confirm_notes_update(proposal_id)` → ok
-- `log_vocabulary_gap(image_id, description, workaround)` → ok
+- `log_vocabulary_gap(image_id, description, workaround?, intent?, intent_category?, missing_capability?, operations_involved?, vocabulary_used?, satisfaction?, notes?)` → ok. Required: `image_id`, `description`. Optional fields capture richer gap structure for Phase 2 analytics (per `docs/guides/gap-log.md`).
 
 ---
 

@@ -13,6 +13,36 @@ For the user-value rationale and design discussion see
 [RFC-020](../rfc/RFC-020-command-line-interface.md). When to reach for
 the CLI vs the MCP server: see `docs/index.md` § Two planes of control.
 
+## CLI ↔ MCP param name mapping
+
+For most verbs, CLI flags and MCP schema fields use the same name
+(modulo `_` ↔ `-`). A few verbs use deliberately different names — CLI
+favors photographer-vocabulary (`--entry`, `--operation`); MCP favors
+engine-API names (`primitive_name`, `module_name`). The full canonical
+mapping is enforced by
+`tests/integration/cli/test_cli_mcp_param_alignment.py`:
+
+| CLI flag | MCP property | Verbs | Reason |
+|-|-|-|-|
+| `--entry` | `primitive_name` | `apply-primitive`, `apply-per-region` | Photographer vocab vs engine API |
+| `--operation` | `module_name` | `remove-module` | Reads cleaner on the CLI |
+| `--l1` / `--l2` | `l1_template` / `l2_template` | `bind-layers` | Short flag forms |
+| `--from` | `from_` | `branch` | Python keyword collision |
+| `--hash` | `hash` (schema spelled `hash_` only via Typer) | `tag` | Same shape |
+| `--format` | `format` (Typer collides with builtin) | `export-final` | Same shape |
+| `--to` (repeatable) | `target_image_ids` (array) | `propagate-state` | CLI singular-flag, MCP array |
+| `--exclude-op` (repeatable) | `exclude_ops` (array) | `propagate-state` | Same shape |
+| `--tag` (repeatable) | `tags` (array) | `vocab list`, `vocab list-masks` | CLI singular-flag, MCP array |
+
+CLI-only flags (no MCP equivalent, by design): `--stdin` (batch mode),
+`--param NAME=VAL` (shorthand for the MCP `value` dict), `--pack -p`
+(per-invocation pack loading; MCP loads packs at server startup),
+`--label` on `apply-spot` (snapshot label override), the global flags
+`--workspace`/`--configdir`/`--json`/`--quiet`/`--verbose`/`--dry-run`.
+
+MCP-only props: `workspace_root` on `ingest` (CLI uses the global
+`--workspace` flag instead).
+
 ## Global options
 
 These apply to every verb. See `chemigram --help` for the canonical
@@ -467,6 +497,8 @@ Usage: chemigram vocab list [OPTIONS]
 
  --pack   -p      TEXT  Pack name (repeatable). Defaults to ['starter'].
  --layer          TEXT  Filter by layer (L1/L2/L3).
+ --tag            TEXT  Filter by tag (repeatable; OR-matched). Mirrors the
+                        MCP `tags` arg.
  --help                 Show this message and exit.
 ```
 
