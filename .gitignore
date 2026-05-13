@@ -66,3 +66,6 @@ phase-0-scratch/
 
 # MkDocs build output
 site/
+
+# Local tool caches (lean-ctx indexer, etc.) — not part of the project
+.lean-ctx/
